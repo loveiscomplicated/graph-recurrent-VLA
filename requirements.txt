@@ -1,0 +1,8 @@
+mani-skill==3.0.1
+gymnasium==1.3.0
+sapien==3.0.3
+torch>=2.2
+# CPU pd_ee_delta_pose control requires Pinocchio on macOS/Linux.
+pin>=3.0
+# PNG frame output in examples/render_episode.py.
+Pillow>=10

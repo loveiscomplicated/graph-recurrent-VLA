@@ -206,6 +206,15 @@ tempCodeRunnerFile.py
 # Ruff stuff:
 .ruff_cache/
 
+# Prototype outputs
+outputs/
+videos/
+*.mp4
+checkpoints/
+wandb/
+.DS_Store
+agent-data/
+
 # PyPI configuration file
 .pypirc
 
