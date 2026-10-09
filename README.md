@@ -58,3 +58,8 @@ see [project context](docs/PROJECT_CONTEXT.md) for scope.
 The Graph team's independent surface-geometry comparison prototype is documented
 in [graph/prototype/README.md](graph/prototype/README.md), with its measured
 results in [docs/graph_prototype.md](docs/graph_prototype.md).
+
+The Graph team's PegInsertionSide subtask conditions and expert segmentation
+pipeline are documented in [graph/subtasks/README.md](graph/subtasks/README.md).
+See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measured
+91-episode validation, boundary limitations, and Reach baseline data readiness.
