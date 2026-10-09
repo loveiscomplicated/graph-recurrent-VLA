@@ -32,7 +32,7 @@ available in the factory but has not been run on this host.
 
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,
-`graph/`, and `recurrent/` directories are deliberately empty. Each team chooses
+`graph/`, and `recurrent/` directories are team-owned. Each team chooses
 its own files, features, data, models, training, evaluation, and configuration.
 
 ```python
@@ -54,3 +54,7 @@ The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
 see [project context](docs/PROJECT_CONTEXT.md) for scope.
+
+The Graph team's independent surface-geometry comparison prototype is documented
+in [graph/prototype/README.md](graph/prototype/README.md), with its measured
+results in [docs/graph_prototype.md](docs/graph_prototype.md).
