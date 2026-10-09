@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from itertools import product
 import sys
 from pathlib import Path
 
@@ -13,7 +12,8 @@ import numpy as np
 import torch
 from PIL import Image, ImageDraw
 
-from envs.maniskill import make_peg_insertion_env
+from envs.maniskill import get_gt_state, make_peg_insertion_env
+from graph.gt_nodes import get_gt_node_positions
 
 
 COLORS = {
@@ -26,55 +26,19 @@ COLORS = {
 
 
 def _quat_wxyz_to_matrix(quat: torch.Tensor) -> torch.Tensor:
-    """Convert [..., 4] wxyz quaternions to rotation matrices."""
     quat = quat / torch.linalg.vector_norm(quat, dim=-1, keepdim=True).clamp_min(1e-12)
     w, x, y, z = quat.unbind(dim=-1)
-    return torch.stack(
-        (
-            1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w),
-            2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w),
-            2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y),
-        ),
-        dim=-1,
-    ).reshape(quat.shape[:-1] + (3, 3))
-
-
-def _box_corners(half_sizes: torch.Tensor) -> torch.Tensor:
-    signs = torch.tensor(
-        list(product((-1.0, 1.0), repeat=3)),
-        device=half_sizes.device,
-        dtype=half_sizes.dtype,
+    rows = (
+        1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w),
+        2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w),
+        2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y),
     )
-    return signs * half_sizes
+    return torch.stack(rows, dim=-1).reshape(quat.shape[:-1] + (3, 3))
 
 
-def _local_to_world(local_points: torch.Tensor, pose: torch.Tensor) -> torch.Tensor:
-    rotation = _quat_wxyz_to_matrix(pose[3:])
-    return local_points @ rotation.T + pose[:3]
-
-
-def _collect_points(state) -> tuple[np.ndarray, list[str]]:
-    """Return world XYZ points and color keys for the first env."""
-    points = [state.ee_pose[0, :3], state.left_fingertip_pos[0], state.right_fingertip_pos[0]]
-    groups = ["TCP", "L_tip", "R_tip"]
-
-    peg_pose = state.peg_pose[0]
-    peg_corners = _local_to_world(_box_corners(state.peg_half_sizes[0]), peg_pose)
-    points.extend(peg_corners.unbind(0))
-    groups.extend(["peg"] * 8)
-
-    # The task's square aperture lies in the hole frame's yz plane; x is its axis.
-    radius = state.hole_radius[0]
-    hole_local = torch.tensor(
-        [[0.0, sy * radius, sz * radius] for sy, sz in product((-1.0, 1.0), repeat=2)],
-        device=radius.device,
-        dtype=radius.dtype,
-    )
-    hole_corners = _local_to_world(hole_local, state.hole_pose[0])
-    points.extend(hole_corners.unbind(0))
-    groups.extend(["hole"] * 4)
-
-    return torch.stack(points).detach().cpu().numpy(), groups
+def _tcp_relative_to_world(points_tcp: torch.Tensor, tcp_pose: torch.Tensor) -> torch.Tensor:
+    rotation = _quat_wxyz_to_matrix(tcp_pose[:, 3:])
+    return torch.matmul(points_tcp, rotation.transpose(-1, -2)) + tcp_pose[:, None, :3]
 
 
 def _draw_projected_points(
@@ -125,10 +89,20 @@ def main() -> None:
         if args.camera not in obs["sensor_data"]:
             parser.error(f"unknown camera {args.camera!r}; choose from {list(obs['sensor_data'])}")
 
-        from envs.maniskill import get_gt_state
-
+        nodes = get_gt_node_positions(env)
+        points = torch.cat(
+            (
+                nodes["gripper_tcp"].unsqueeze(1),
+                nodes["left_fingertip"].unsqueeze(1),
+                nodes["right_fingertip"].unsqueeze(1),
+                nodes["peg_corners"],
+                nodes["hole_corners"],
+            ),
+            dim=1,
+        )
         state = get_gt_state(env)
-        points_world, groups = _collect_points(state)
+        points_world = _tcp_relative_to_world(points, state.ee_pose)[0].detach().cpu().numpy()
+        groups = ["TCP", "L_tip", "R_tip"] + ["peg"] * 8 + ["hole"] * 4
         camera = obs["sensor_data"][args.camera]
         camera_params = obs["sensor_param"][args.camera]
         image = _draw_projected_points(
