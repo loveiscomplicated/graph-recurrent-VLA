@@ -1,0 +1,17 @@
+seed = 0
+peg_points = 64
+hole_points = 64
+sampling_seed = 17
+surface_k = 8
+interaction_k = 4
+hidden_dim = 128
+embedding_dim = 128
+layers = 3
+flat_width = 128
+batch_size = 32
+learning_rate = 0.001
+weight_decay = 0.00001
+epochs = 30
+threads = 4
+control_mode = "pd_ee_delta_pose"
+max_episode_steps = 100
