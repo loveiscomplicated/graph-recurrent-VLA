@@ -8,6 +8,15 @@ live `task.backend` reported `sim_backend="physx_cpu"`,
 `render_backend="sapien_cpu"`, and `device=cpu` on macOS. This is ManiSkill +
 SAPIEN + PhysX, not MuJoCo. The registered task has a 100-step time limit.
 
+Linux Reach BC validation also executed this shared factory with Torch 2.8.0+cpu
+on Vast.ai 55512455. CPU-only Torch now consistently selects `sapien_cpu` host
+image readback, including for state-only factory environments, so later RGB
+environments do not attempt ATen CUDA readback. Vulkan still uses the available
+graphics device. Shared CPU/RGB tests passed (8 tests including GT nodes).
+The Graph subtask source wrapper separately preserves its recorded environment
+configuration; SAPIEN 3.0.3 source-render and host-readback regression suites must
+run in separate processes because render-device selection is process-global.
+
 ```python
 from envs.maniskill import make_peg_insertion_env, get_gt_state
 import torch
