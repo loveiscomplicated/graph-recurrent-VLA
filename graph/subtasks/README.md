@@ -1,7 +1,7 @@
 # PegInsertionSide subtask evidence pipeline
 
 Graph-team code for [Specification v0](../../docs/subtask.md). No new model,
-training, randomized reset or GCSL implementation. Technical decisions and
+training or GCSL implementation. Technical decisions and
 measured results: [subtask_segmentation.md](../../docs/subtask_segmentation.md).
 
 Run from repository root, using the existing Python 3.11 environment and datasets:
@@ -87,3 +87,41 @@ ctx.update(metrics, 0, cfg, align.align_raw(metrics))
 Grasp/Align temporal conditions need a context. Geometry boundaries are estimates,
 not recovered oracle phase labels. Only Reach is currently marked `bc_eligible`;
 other extracted segments remain candidates for independent rollout validation.
+
+## Independent environments and new expert data
+
+The original segmentation index above is preserved. New independent replay
+evidence lives in separate reports/eligibility sidecars. See
+[environment interface](../../docs/subtask_environment.md) and
+[collection/results](../../docs/subtask_data_generation.md) for the full runtime,
+data format, host differences, budgets, failure handling and measured results.
+
+```python
+from graph.subtasks.env import make_subtask_env
+env = make_subtask_env('transport', index='outputs/subtasks/segments/index.json')
+obs, info = env.reset(options={'source_episode_id': 29})
+# obs, sparse_reward, terminated, truncated, info = env.step(policy(obs))
+env.close()
+```
+
+```bash
+# Existing Mac CPU replay: all 91 sources, all five independent tasks.
+.venv/bin/python -m graph.subtasks.evaluate --output outputs/subtasks/independent_new
+# Collection: dedicated Linux Python 3.11 environment with requirements-generator.txt.
+.venv-collection/bin/python -m graph.subtasks.generate \
+  --num-episodes 3 --seed-start 10000 --output outputs/subtasks/generated_smoke_new
+# Expand only after smoke passes.
+.venv-collection/bin/python -m graph.subtasks.generate \
+  --num-episodes 50 --seed-start 11000 --output outputs/subtasks/generated_50_new
+# Existing Flat MLP dataset format, no training.
+.venv/bin/python -m graph.subtasks.export_bc --output outputs/subtasks/bc/reach_new.pt
+SUBTASK_INTEGRATION=1 .venv/bin/python -m unittest \
+  graph.subtasks.tests.test_subtasks graph.subtasks.tests.test_environment -v
+```
+
+Middle-task resets require explicit source selection. Reach also supports a fresh
+`reset(seed=...)`. Source/learner control modes must agree. New source collection
+records joint actions, then converts and verifies EE actions before segmentation.
+Use the pinned Linux runtime for new-source paired evaluation; changing hosts or
+IK dependencies can change contact/trajectory replay. Original 73/9/9 splits,
+models and source results are not overwritten.

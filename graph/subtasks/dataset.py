@@ -31,11 +31,36 @@ def save_segments(path, payload): write_json(path,payload)
 def load_segments(path,verify_sources=True):
     data=json.loads(Path(path).read_text())
     if verify_sources:
+        validate_splits(data)
         for key in ('source','initial_state_source'):
             if sha256(data[key])!=data[key+'_sha256']: raise ValueError(f'{key} changed')
         for ep in data['episodes']:
             if sha256(ep['audit_file'])!=ep['audit_sha256']: raise ValueError('audit changed')
     return data
+
+
+def validate_splits(data):
+    """Episode IDs and identical seed/reset groups cannot cross splits."""
+    episode_ids=[e['episode_id'] for e in data['episodes']]
+    split_ids=[eid for ids in data['splits'].values() for eid in ids]
+    if len(episode_ids)!=len(set(episode_ids)) or len(split_ids)!=len(set(split_ids)) or set(episode_ids)!=set(split_ids):
+        raise ValueError('duplicate/missing episode in splits')
+    reset_splits={}
+    for ep in data['episodes']:
+        split=next(k for k,v in data['splits'].items() if ep['episode_id'] in v)
+        if ep['split']!=split:
+            raise ValueError('episode split label differs')
+        for segment in ep['segments']:
+            ref=segment['initial_state_ref']
+            kwargs=dict(ref['reset_kwargs'])
+            kwargs['seed']=ref['episode_seed']
+            kwargs['options']=kwargs.get('options') or {}
+            reset_key=json.dumps(kwargs,sort_keys=True)
+            if reset_key in reset_splits and reset_splits[reset_key]!=split:
+                raise ValueError('same reset seed/config leaks across splits')
+            reset_splits[reset_key]=split
+            if segment['source_episode_id']!=ep['episode_id'] or segment['split']!=split:
+                raise ValueError('segment episode/split differs')
 
 
 def segment_arrays(dataset,segment):
@@ -47,7 +72,8 @@ def segment_arrays(dataset,segment):
     with h5py.File(dataset['source']) as h5, h5py.File(dataset['initial_state_source']) as orig:
         group=h5[f'traj_{eid}']
         actions=np.asarray(group['actions'][i:j])
-        # Converted s0 is corrupt: always use the separately verified original s0.
+        # Legacy conversion has a corrupt s0; native s0 is separately verified.
+        # New recordings have matching native and converted initial states.
         states=[state_at(orig[f"traj_{segment['initial_state_ref']['original_episode_id']}/env_states"],0)
             if t==0 else state_at(group['env_states'],t) for t in range(i,j+1)]
         obs=np.asarray(group['obs'][i:j+1])

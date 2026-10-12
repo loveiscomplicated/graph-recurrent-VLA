@@ -1,0 +1,16 @@
+# Dedicated Linux Python 3.11 collection environment, separate from the Mac env.
+# The old official mplib binary crashed with NumPy 2; this combination ran.
+mani-skill==3.0.1
+sapien==3.0.3
+gymnasium==1.3.0
+torch==2.8.0
+numpy==1.26.4
+mplib==0.1.1
+pin==2.7.0
+opencv-python==4.11.0.86
+h5py==3.16.0
+scipy==1.17.1
+matplotlib==3.11.2
+Pillow==12.3.0
+imageio==2.38.1
+imageio-ffmpeg==0.6.0

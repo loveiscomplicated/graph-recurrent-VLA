@@ -17,6 +17,43 @@ COLORS=dict(zip(NAMES,plt.get_cmap('tab10').colors[:5]))
 DEFAULT_EPISODES=[0,1,2,13,29,38,54,90]
 
 
+def _make_replay_env(data):
+    from envs.maniskill import make_peg_insertion_env
+    if not data.get('environment'):
+        return make_peg_insertion_env(control_mode=data['control_mode'],render_mode='rgb_array')
+    import os
+    import gymnasium as gym
+    import mani_skill.envs  # noqa: F401
+    from envs.maniskill.peg_insertion import _configure_macos_vulkan
+    _configure_macos_vulkan()
+    cwd=Path.cwd()
+    try:
+        # Vulkan still renders on the GPU; CPU readback does not require CUDA Torch.
+        return gym.make('PegInsertionSide-v1',**dict(data['environment'],
+            control_mode=data['control_mode'],render_mode='rgb_array',render_backend='cpu'))
+    finally:
+        os.chdir(cwd)
+
+
+def _initialize_replay(env, original, ref):
+    import copy
+    from graph.prototype.data import reset_episode, state_at
+    from .env import tree_error
+    reference=copy.deepcopy(ref)
+    if reference['reset_kwargs'].get('options') is None:
+        reference['reset_kwargs']['options']={}
+    reset_episode(env,reference)
+    initial=state_at(original[f"traj_{ref['original_episode_id']}/env_states"],0)
+    if ref['method']=='seed_reset_then_expert_prefix':
+        if tree_error(env.unwrapped.get_state_dict(),initial)>2e-6:
+            raise ValueError('render reset differs from source s0')
+    elif ref['method']=='original_s0_then_expert_prefix':
+        env.unwrapped.set_state_dict(initial)
+        env.unwrapped.agent.controller.reset()
+    else:
+        raise ValueError('unknown replay initialization method')
+
+
 def _phase_at(ep, t):
     for segment in ep['segments']:
         if segment['status'] == 'detected' and segment['start_t'] <= t < segment['end_t']:
@@ -50,7 +87,7 @@ def plots(index_path,output,ids=DEFAULT_EPISODES):
         for s in ep['segments']:
             if s['status']=='detected':ax.barh(row,s['end_t']-s['start_t'],left=s['start_t'],color=COLORS[s['subtask']])
     ax.set_yticks(range(len(data['episodes'])));ax.set_yticklabels([e['episode_id'] for e in data['episodes']],fontsize=6)
-    ax.set(xlabel='Original action index (grey = uncovered)',ylabel='Episode',title='91 expert episodes: geometric milestone partitions')
+    ax.set(xlabel='Converted source action index (grey = uncovered)',ylabel='Episode',title=f'{len(data["episodes"])} expert episodes: geometric milestone partitions')
     fig.tight_layout();fig.savefig(output/'all_durations.png',dpi=150);plt.close(fig)
     for ep in data['episodes']:
         if ep['episode_id'] not in ids:continue
@@ -102,7 +139,7 @@ def render_boundaries(index_path,output,ids):
     from graph.prototype.data import reset_episode,state_at
     data=load_segments(index_path);output=Path(output);output.mkdir(parents=True,exist_ok=True)
     torch.set_num_threads(4)
-    env=make_peg_insertion_env(control_mode=data['control_mode'],render_mode='rgb_array')
+    env=_make_replay_env(data)
     checks=[]
     try:
         with h5py.File(data['source']) as source,h5py.File(data['initial_state_source']) as original:
@@ -111,9 +148,7 @@ def render_boundaries(index_path,output,ids):
                 if eid not in ids:continue
                 audit=load_audit(ep['audit_file']);ref=ep['segments'][0]['initial_state_ref'];T=ep['total_actions']
                 env=TimeLimitWrapper(env.unwrapped,T+1)
-                reset_episode(env,dict(episode_seed=ref['episode_seed'],reset_kwargs=ref['reset_kwargs']))
-                env.unwrapped.set_state_dict(state_at(original[f"traj_{ref['original_episode_id']}/env_states"],0))
-                env.unwrapped.agent.controller.reset()
+                _initialize_replay(env,original,ref)
                 selected={s[k] for s in ep['segments'] for k in ('start_t','end_t') if s[k] is not None}
                 frames={};max_error=0.;grasp_equal=True
                 for t in range(T+1):
@@ -146,7 +181,7 @@ def render_videos(index_path, output, ids, fps=10, stride=1):
     from graph.prototype.data import reset_episode, state_at
     data=load_segments(index_path);output=Path(output);output.mkdir(parents=True,exist_ok=True)
     torch.set_num_threads(4)
-    env=make_peg_insertion_env(control_mode=data['control_mode'],render_mode='rgb_array')
+    env=_make_replay_env(data)
     records=[]
     try:
         with h5py.File(data['source']) as source,h5py.File(data['initial_state_source']) as original:
@@ -157,9 +192,7 @@ def render_videos(index_path, output, ids, fps=10, stride=1):
                 metrics=json.loads((Path(index_path).parent/f'metrics_{eid}.json').read_text())['metrics']
                 ref=ep['segments'][0]['initial_state_ref']; T=ep['total_actions']
                 env=TimeLimitWrapper(env.unwrapped,T+1)
-                reset_episode(env,dict(episode_seed=ref['episode_seed'],reset_kwargs=ref['reset_kwargs']))
-                env.unwrapped.set_state_dict(state_at(original[f"traj_{ref['original_episode_id']}/env_states"],0))
-                env.unwrapped.agent.controller.reset()
+                _initialize_replay(env,original,ref)
                 path=output/f'episode_{eid}_subtasks.mp4'
                 max_error=0.0; frame_count=0
                 with imageio.get_writer(path, fps=fps, macro_block_size=1) as writer:
@@ -173,6 +206,7 @@ def render_videos(index_path, output, ids, fps=10, stride=1):
                             max_error=max(max_error,float(np.max(np.abs(obs.cpu().numpy()[0]-source[f'traj_{eid}/obs'][t+1]))))
                 record=dict(episode_id=eid,video=str(path.resolve()),fps=fps,stride=stride,
                     frames=frame_count,max_observation_error=max_error,source_actions=T,
+                    replay_valid=max_error<=.001,
                     phase_boundaries=[dict(subtask=s['subtask'],start_t=s['start_t'],end_t=s['end_t']) for s in ep['segments']])
                 records.append(record);print(record,flush=True)
         write_json(output/'videos.json',dict(videos=records,kind='expert prefix replay with annotated geometric milestones',
