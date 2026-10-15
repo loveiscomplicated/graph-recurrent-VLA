@@ -225,3 +225,9 @@ __marimo__/
 
 # Local audit artifacts
 /audit_outputs/
+
+# Experiment tracking artifacts and local credentials
+/experiments/
+*.tracking.json
+.env.*
+!.env.example
