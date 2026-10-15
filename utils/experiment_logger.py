@@ -6,48 +6,46 @@ checkpoint format, random state, or training schedule is owned by this module.
 import importlib
 import json
 import math
-import netrc
 import os
 from pathlib import Path
 import re
 import subprocess
 from datetime import datetime, timezone
 from uuid import uuid4
-from urllib.parse import urlparse
 import warnings
 
 REPO = Path(__file__).resolve().parents[1]
-PROJECT = 'graph-recurrent-vla'
+DEFAULT_PROJECT = 'graph-recurrent-vla'
+DEFAULT_ENV_FILE = Path('/root/.secrets/wandb.env')
 GROUPS = {'Graph-Recurrent-VLA-controller': 'controller',
           'Graph-Recurrent-VLA-vision': 'vision',
           'Graph-Recurrent-VLA-graph': 'graph'}
 SECRET = re.compile(r'api.?key|token|password|secret|credential', re.I)
 
 
-def has_wandb_credentials():
-    """Detect an env key or CLI-saved netrc entry without prompting/network IO.
-
-    Only return presence; never copy credentials into config or metadata. W&B
-    itself reads and uses the saved key when initializing an online run.
-    """
-    if os.environ.get('WANDB_API_KEY', '').strip():
-        return True
-    host = urlparse(os.getenv('WANDB_BASE_URL', 'https://api.wandb.ai')).hostname
-    if not host:
+def load_wandb_env(path=None):
+    """Load optional local credentials without replacing existing environment."""
+    env_path = Path(path or os.getenv('WANDB_ENV_FILE') or DEFAULT_ENV_FILE).expanduser()
+    if not env_path.is_file():
         return False
-    configured = os.getenv('NETRC')
-    paths = [Path(configured).expanduser()] if configured else [
-        Path.home() / '.netrc', Path.home() / '_netrc']
-    for path in paths:
-        try:
-            entries = netrc.netrc(str(path)).hosts
-            # Ignore a generic default entry: it may belong to another service.
-            credentials = entries.get(host)
-            if credentials and credentials[2]:
-                return True
-        except (OSError, netrc.NetrcParseError, UnicodeError):
-            continue
-    return False
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return False
+    try:
+        return load_dotenv(dotenv_path=env_path, override=False, verbose=False)
+    except (OSError, UnicodeError):
+        return False
+
+
+def project_name(config=None):
+    config = config or {}
+    return os.getenv('WANDB_PROJECT') or config.get('wandb_project') or DEFAULT_PROJECT
+
+
+def has_wandb_api_key():
+    """Return whether an API key exists in the merged process environment."""
+    return bool(os.environ.get('WANDB_API_KEY', '').strip())
 
 
 def clean(value):
@@ -103,16 +101,19 @@ class ExperimentLogger:
                  job_type='train', root=None):
         if team not in ('visual', 'graph', 'recurrent', 'integration'):
             raise ValueError('unknown team')
+        load_wandb_env()
         self.run_id = uuid4().hex
         self.directory = Path(root or os.getenv('EXPERIMENTS_DIR', REPO / 'experiments')) / self.run_id
         self.directory.mkdir(parents=True, exist_ok=False)
-        workspace = os.getenv('VESSL_WORKSPACE_NAME', '')
-        self.group = group or os.getenv('WANDB_RUN_GROUP') or GROUPS.get(workspace) or {
-            'visual': 'vision', 'recurrent': 'controller'}.get(team, team)
         self.config = clean(config or {})
+        workspace = os.getenv('VESSL_WORKSPACE_NAME', '')
+        self.group = (group or os.getenv('WANDB_RUN_GROUP')
+                      or self.config.get('wandb_group') or self.config.get('group')
+                      or GROUPS.get(workspace)
+                      or {'visual': 'vision', 'recurrent': 'controller'}.get(team, team))
         self.metadata = dict(run_id=self.run_id, team=team, group=self.group,
                              model=model, seed=seed, job_type=job_type,
-                             project=PROJECT, entity=os.getenv('WANDB_ENTITY'),
+                             project=project_name(self.config), entity=os.getenv('WANDB_ENTITY') or self.config.get('wandb_entity'),
                              started_at=datetime.now(timezone.utc).isoformat(),
                              status='running', outputs=[], **git_info())
         self.run = None
@@ -125,12 +126,12 @@ class ExperimentLogger:
         self._save()
         requested = os.getenv('WANDB_MODE', 'online').lower()
         mode = requested if requested in ('offline', 'disabled') else (
-            'online' if has_wandb_credentials() and os.getenv('WANDB_ENTITY') else 'offline')
+            'online' if has_wandb_api_key() and self.metadata['entity'] else 'offline')
         self.metadata['wandb_mode'] = mode
         if mode != 'disabled':
             try:
                 wandb = importlib.import_module('wandb')
-                self.run = wandb.init(project=PROJECT, entity=self.metadata['entity'],
+                self.run = wandb.init(project=self.metadata['project'], entity=self.metadata['entity'],
                     id=self.run_id, group=self.group, job_type=job_type,
                     config=dict(parameters=self.config, experiment=self.metadata.copy()),
                     dir=str(self.directory), mode=mode, resume='never',

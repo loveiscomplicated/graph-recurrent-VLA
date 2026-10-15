@@ -8,10 +8,11 @@ import json
 import os
 from pathlib import Path
 
-from .experiment_logger import PROJECT, has_wandb_credentials
+from .experiment_logger import has_wandb_api_key, load_wandb_env, project_name
 
 
 def sync(directory):
+    load_wandb_env()
     import wandb
 
     directory = Path(directory).resolve()
@@ -19,11 +20,11 @@ def sync(directory):
     if metadata['status'] == 'running':
         raise ValueError('finish the experiment before synchronizing')
     entity = os.environ.get('WANDB_ENTITY') or metadata.get('entity')
-    if not has_wandb_credentials() or not entity:
-        raise ValueError('W&B credentials and WANDB_ENTITY are required; run wandb login or inject a key securely')
+    if not has_wandb_api_key() or not entity:
+        raise ValueError('W&B credentials and WANDB_ENTITY are required; set WANDB_API_KEY through dotenv or the environment')
     config = json.loads((directory / 'config.yaml').read_text())
     events = json.loads((directory / 'metrics.json').read_text())
-    run = wandb.init(project=PROJECT, entity=entity, id=metadata['run_id'],
+    run = wandb.init(project=metadata.get('project') or project_name(config), entity=entity, id=metadata['run_id'],
                      group=metadata['group'], job_type=metadata['job_type'],
                      config=dict(parameters=config, experiment=metadata), mode='online',
                      resume='never', dir=str(directory),

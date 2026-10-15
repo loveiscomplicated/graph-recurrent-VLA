@@ -9,64 +9,67 @@ import unittest
 from unittest.mock import Mock, patch
 from concurrent.futures import ThreadPoolExecutor
 
-from utils.experiment_logger import ExperimentLogger, GROUPS, has_wandb_credentials
+from utils.experiment_logger import ExperimentLogger, GROUPS, has_wandb_api_key, load_wandb_env
 
 
 class ExperimentLoggerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.env = patch.dict(os.environ, {'EXPERIMENTS_DIR': self.temp.name, 'NETRC': str(Path(self.temp.name)/'netrc')}, clear=True)
+        self.env = patch.dict(os.environ, {'EXPERIMENTS_DIR': self.temp.name}, clear=True)
         self.env.start(); self.addCleanup(self.env.stop)
 
     def logger(self, **kwargs):
         return ExperimentLogger(team='graph', **kwargs)
 
-    def save_credentials(self, host='api.wandb.ai'):
-        path = Path(os.environ['NETRC'])
-        path.write_text(f'machine {host}\n  login user\n  password mock-key\n')
-        path.chmod(0o600)
+    def test_dotenv_auth_and_existing_environment_precedence(self):
+        env_file = Path(self.temp.name)/'wandb.env'
+        env_file.write_text('\n'.join([
+            'WANDB_API_KEY=file-secret', 'WANDB_ENTITY=file-entity',
+            'WANDB_RUN_GROUP=file-group', 'WANDB_PROJECT=file-project',
+        ])+'\n')
+        with patch.dict(os.environ, WANDB_ENV_FILE=str(env_file), WANDB_API_KEY='existing-secret',
+                        WANDB_ENTITY='existing-entity', WANDB_RUN_GROUP='existing-group'), patch(
+                            'utils.experiment_logger.importlib.import_module') as sdk_import:
+            sdk = sdk_import.return_value; sdk.init.return_value.dir='/mock'; sdk.init.return_value.url='https://example.test'
+            with self.logger(config={'group': 'config-group', 'wandb_project': 'config-project'}, seed=5) as log:
+                log.log({'loss': .4})
+            args = sdk.init.call_args.kwargs
+            self.assertEqual(args['mode'], 'online')
+            self.assertEqual(args['entity'], 'existing-entity')
+            self.assertEqual(args['group'], 'existing-group')
+            self.assertEqual(args['project'], 'file-project')
+            self.assertNotIn('existing-secret', json.dumps(args['config']))
+            for name in ('metadata.json', 'config.yaml', 'metrics.json'):
+                self.assertNotIn('existing-secret', (log.directory/name).read_text())
+                self.assertNotIn('file-secret', (log.directory/name).read_text())
+            self.assertEqual(os.environ['WANDB_API_KEY'], 'existing-secret')
 
-    def test_cli_saved_login_selects_online_without_env_key(self):
-        self.save_credentials()
-        sdk = Mock(); sdk.init.return_value.dir = '/mock'; sdk.init.return_value.url = 'https://example.test'
-        with patch.dict(os.environ, WANDB_ENTITY='central'), patch('utils.experiment_logger.importlib.import_module', return_value=sdk):
-            with self.logger() as log: log.log({'loss': 1})
-        self.assertEqual(sdk.init.call_args.kwargs['mode'], 'online')
-        self.assertNotIn('WANDB_API_KEY', os.environ)
-        for name in ('metadata.json', 'config.yaml', 'metrics.json'):
-            self.assertNotIn('mock-key', (log.directory/name).read_text())
+    def test_dotenv_file_values_and_config_group(self):
+        env_file = Path(self.temp.name)/'wandb.env'
+        env_file.write_text('WANDB_API_KEY=file-secret\nWANDB_ENTITY=central\nWANDB_RUN_GROUP=file-group\n')
+        sdk = Mock(); sdk.init.return_value.dir='/mock'; sdk.init.return_value.url='https://example.test'
+        with patch.dict(os.environ, WANDB_ENV_FILE=str(env_file)), patch(
+                'utils.experiment_logger.importlib.import_module', return_value=sdk):
+            with self.logger(config={'group': 'config-group', 'wandb_project': 'custom-project'}) as log:
+                log.log({'loss': .2})
+            args=sdk.init.call_args.kwargs
+            self.assertEqual((args['mode'], args['entity'], args['group'], args['project']),
+                             ('online', 'central', 'file-group', 'custom-project'))
+            for name in ('metadata.json', 'config.yaml', 'metrics.json'):
+                self.assertNotIn('file-secret', (log.directory/name).read_text())
+            self.assertNotIn('file-secret', json.dumps(args['config']))
 
-    def test_saved_login_requires_entity_and_matching_host(self):
-        self.save_credentials(host='unrelated.example')
-        self.assertFalse(has_wandb_credentials())
-        self.save_credentials()
-        sdk = Mock(); sdk.init.return_value.dir = '/mock'
-        with patch('utils.experiment_logger.importlib.import_module', return_value=sdk):
-            with self.logger(): pass
-        self.assertEqual(sdk.init.call_args.kwargs['mode'], 'offline')
-        with patch.dict(os.environ, WANDB_BASE_URL='https://unrelated.example'):
-            self.assertFalse(has_wandb_credentials())
-
-    def test_default_home_login_and_corrupt_file(self):
-        Path(os.environ['NETRC']).write_text('machine')
-        self.assertFalse(has_wandb_credentials())
-        self.save_credentials()
-        Path(os.environ['NETRC']).rename(Path(self.temp.name)/'.netrc')
-        with patch.dict(os.environ):
-            del os.environ['NETRC']
-            with patch('utils.experiment_logger.Path.home', return_value=Path(self.temp.name)):
-                self.assertTrue(has_wandb_credentials())
-
-    def test_json_sync_accepts_saved_login(self):
-        from utils.sync_experiment import sync
-        with patch.dict(os.environ, WANDB_MODE='disabled'):
-            with self.logger() as log: log.log({'loss': 1})
-        self.save_credentials()
-        sdk = Mock()
-        with patch.dict(os.environ, WANDB_ENTITY='central'), patch.dict('sys.modules', wandb=sdk):
-            sync(log.directory)
-        self.assertEqual(sdk.init.call_args.kwargs['mode'], 'online')
+    def test_missing_auth_file_keeps_local_logging_available(self):
+        absent = Path(self.temp.name)/'missing.env'
+        with patch.dict(os.environ, WANDB_ENV_FILE=str(absent)):
+            self.assertFalse(load_wandb_env())
+            sdk=Mock(); sdk.init.return_value.dir='/mock'
+            with patch('utils.experiment_logger.importlib.import_module', return_value=sdk):
+                with self.logger() as log:
+                    log.log({'loss': 1})
+            self.assertEqual(sdk.init.call_args.kwargs['mode'], 'offline')
+            self.assertEqual(json.loads((log.directory/'metrics.json').read_text())[0]['metrics']['loss'], 1)
 
     def test_online_contract(self):
         sdk = Mock(); sdk.init.return_value.dir = '/mock/run'; sdk.init.return_value.url = 'https://example.test'
