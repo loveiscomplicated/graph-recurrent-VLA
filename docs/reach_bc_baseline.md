@@ -254,3 +254,227 @@ Video rollout도 main 결과와 trace가 동일하다. Plot은
 기여를 분리하기 어렵다. Graph 성능 우위의 본격 해석 전에 Reach BC의 실패 병목을
 확인하는 것이 적절하다. 이번 작업에는 미실행 필수 deliverable이 없으며, 안정적인
 학습 정책 확보와 Graph 비교는 이후 연구 과제로 남는다.
+
+## 추가 병목 진단: frozen checkpoint의 제어 피드백
+
+같은 날 사용자 요청에 따라 실패를 더 세밀하게 분석했다. **학습, architecture,
+checkpoint 선택, success threshold, 데이터 split을 변경하지 않았다.** 새 결과는
+`outputs/subtasks/reach_bc_v1/bottleneck_v1/`에 별도로 기록했다. 아래 결과를 원래
+Flat BC의 6% main SR로 대체하지 않는다.
+
+### 방법과 검증 범위
+
+1. 원래 55개 rollout의 모든 5,418 control step을 저장 action으로 Linux에서 다시
+   실행했다. 매 state에서 입력 그룹별 값을 바꾼 prediction, 정규화 값, action의
+   목표 방향 성분을 계산했다. 원래 prediction·qpos·qvel·EE/peg pose 최대 오차 **0**.
+2. 민감한 입력 그룹에 대한 input Jacobian을 일부 초기/근접 state에서 계산했다.
+   Optimizer나 weight gradient update는 없었다.
+3. 사전에 고정한 입력 intervention 4개를 **각각 같은 55 starts**에서 실행했다.
+   Bounds와 평균은 기존 train 40 episode에서만 계산했다. 총 220개 추가 rollout이다.
+4. Train seed 11000/11001, validation 11005, held-out 11029/11033, fresh
+   12000/12005에서 실제 simulator 1-step finite difference를 실행했다.
+5. 실패 rollout의 실제 prefix를 그대로 실행한 뒤 reference로 전환하는 5개 probe를
+   실행했다. Snapshot injection, budget/조건 변경, training dataset export는 없었다.
+
+Code는 `bottleneck.py`, 집계·figure는 `bottleneck_report.py`다. Probe input 변경이
+원본 feature/weight를 수정하지 않고 지정한 channel만 바꾸는 새 테스트 **2/2**가
+Linux 및 Mac에서 통과했다. 실제 실행·초기 fingerprint 일치는 보고서에 보존했다.
+
+### 확인된 병목 1: 작은 gripper 오차가 EE action으로 재유입된다
+
+Train gripper command는 모두 +1이다. 실제 finger position의 train 표준편차는
+left **8.34e-8 m**, right **2.70e-7 m**, finger velocity 표준편차는
+**1.45e-4 / 1.41e-4 m/s**였다. 기존 normalizer는 이 channel에 **std floor 0.001**을
+사용한다. Finger position은 gripper context와 qpos에 중복 포함되고, finger velocity는
+v2의 31D bypass를 통해 action head로 직접 들어간다.
+
+여기서 z는 `(값 - train mean) / max(train std, 0.001)`이다. 실제 표준편차가
+floor보다 작으므로 raw population 표준편차로 나눈 값과 구분한다. Floor는 오히려
+그 경우의 수치 증폭을 줄인다. **Floor 0.001 자체가 계산 오류라고 주장하지 않는다.**
+Rollout에서 생기는 finger 움직임과 그것에 대한 policy의 큰 출력 민감도가 문제다.
+
+Seed **11033**의 구체적인 전개:
+
+| 시점 | 실제/예측 값 |
+|---|---|
+| 첫 policy gripper command | **0.9581** |
+| Controller의 finger target | 약 **0.038953 m**, fully-open target보다 1.05 mm 작음 |
+| 첫 step 뒤 finger position | 약 **0.039589 m**, 여전히 open 기준 0.035 m 만족 |
+| Finger 이동 | 약 **0.411 mm** |
+| Finger velocity | **−0.006446 / −0.006310 m/s** |
+| 정규화 finger velocity | **−6.44 / −6.43** |
+| 첫 yaw action | **0.0712** |
+| 다음 yaw action | **1.1208**, controller component bounds 초과 |
+| 같은 두 번째 state에서 finger 입력을 train mean으로 대체한 yaw | **0.1501** |
+| 같은 state에서 qvel 전부를 physical zero로 대체한 yaw | **0.0716** |
+
+이 same-state probe에서는 simulator state, peg geometry, 목표, model weights가 모두
+동일하다. Finger 입력 그룹만 바꾸면 6D motion prediction 차이의 norm이 **1.1501**이다.
+Jacobian의 국소 선형 추정으로 yaw에 대한 finger velocity contribution은 **−0.7626**,
+finger position contribution은 **+0.000321**이었다. 실제 비선형 mean-replacement의
+yaw 차이는 −0.9707이다. 이 state에서는 **finger velocity 경로가 주된 증폭 요인**이다.
+Position과 velocity를 동시에 바꾼 intervention 자체를 완전한 physical state로 해석하지 않는다.
+
+Fresh 50개 중 첫 gripper prediction이 +1 미만인 **25개는 모두 실패**했다. 이 그룹의
+두 번째 state에서 finger 입력을 평균으로 바꿨을 때 6D action 차이 median은 **0.416**,
+velocity z 최대값 median은 **2.223**이다. 첫 prediction이 +1 이상인 나머지 25개의
+동일 값은 **0.0118 / 0.148**이고 3개가 성공했다. 이 cohort 비교는 상관관계지만,
+same-state intervention과 실제 첫 step의 손가락 움직임이 영향 경로를 직접 뒷받침한다.
+
+다만 +1 이상으로 시작한 25개도 22개 실패했다. Finger coupling만으로 전체 실패를
+설명할 수 없다. Finger-qvel input weight의 RMS 변화는 초기 weight RMS의 **71.6%**였다.
+따라서 단순히 학습되지 않은 random weight가 남았다고 단정하지 않는다. Train에서는
+finger velocity와 일부 EE action이 상관되어 있었다(최대 |Pearson r| **0.502**).
+작은 수동적 finger dynamics를 motion 예측 신호로 사용할 수 있었던 것이 실제 gripper
+오차로 발생한 능동적 finger 움직임에서는 취약해진 것으로 해석할 수 있다.
+
+### 확인된 병목 2: qvel 의존적 action 피드백이 작은 오차를 확대할 수 있다
+
+실제 환경의 동일 reset state에서 현재 action 6개 component를 각각 ±0.01만 바꿔
+한 step 실행한 뒤 다음 policy action을 측정했다. Translation perturbation은 ±1 mm,
+rotation Euler component perturbation은 ±0.001 rad다. 모든 비교는 실제 qpos/qvel,
+controller 및 geometry response를 포함하며, reset fingerprint가 동일함을 확인했다.
+
+| 다음 action을 계산하는 조건 | 최대 singular gain 범위 | Median |
+|---|---:|---:|
+| 원래 Flat policy | **1.804–2.934** | **2.254** |
+| Finger input train mean | 1.606–2.850 | 2.291 |
+| qvel input physical zero | **0.063–0.113** | **0.082** |
+| EE Rzz만 train range 제한 | 1.804–2.934 | 2.254 |
+| 낮은 분산 channel train range 제한 | 1.583–2.874 | 2.363 |
+| 동일 perturbed state의 reference | **0.190–0.276** | **0.196** |
+
+현재 action의 작은 차이가 다음 predicted action의 더 큰 차이로 전달될 수 있다.
+Finger 입력을 안정화해도 팔 qvel 경로의 영향이 남는다. 이 현상은 **train 및 validation
+seed에서도** 관측돼 fresh 초기화만의 문제로 보기 어렵다.
+
+부호도 확인했다. 현재 normalized X translation action에 대한 다음 X action의
+finite-difference coefficient는 policy에서 **+0.782–+1.089**, 같은 state의 reference는
+**−0.188–−0.184**였다. Held-out 11029에서는 X action을 0.01 늘릴 때 다음 policy
+X prediction은 약 0.01035 증가하고 reference는 약 0.00188 감소한다. 이 초기 state들에서
+policy가 이전 움직임을 이어가려는 응답을 보이는 반면, reference는 바뀐 현재 pose를
+기준으로 남은 오차를 줄이는 응답을 보였다. 모든 축·state의 전역 제어 법칙으로 일반화하지 않는다.
+
+이는 **한 step의 local action-to-next-action sensitivity**이며 full robot/controller
+state의 asymptotic stability를 증명한 결과는 아니다. 원래 probe matrix spectral radius는
+0.771–1.175이고, 성공 seed 12005도 singular gain 2.300이다. Gain이 1보다 크다는
+사실만으로 모든 episode가 불안정하다고 분류하지 않는다. 실제 rollout 이탈, qvel
+intervention, reference 비교를 함께 볼 때 강한 속도 의존성과 오차 증폭 가능성의 근거다.
+
+### 전체 rollout intervention: 입력 제한만으로 해결되지 않는다
+
+| Frozen-checkpoint 조건 | Held-out | Fresh | Fresh peg 이동 실패 | Fresh timeout |
+|---|---:|---:|---:|---:|
+| **원래 Flat BC** | **0/5** | **3/50** | **22** | **25** |
+| Finger position/velocity 입력 → train mean | 0/5 | 5/50 | 11 | 34 |
+| qvel 9개 입력 → physical zero | 0/5 | **0/50** | **0** | **50** |
+| EE rotation Rzz만 train min/max 제한 | 0/5 | **3/50** | 19 | 28 |
+| 기존 std가 0.001 floor인 channel → train min/max 제한 | 0/5 | 5/50 | 8 | 37 |
+
+Finger mean intervention은 learned gripper command를 그대로 사용한다. 기존 fixed-open은
+실제 command를 +1로 바꾼 별도 조건이다. 서로 다른 실험이므로 혼동하지 않는다.
+Floor-channel intervention은 context 33개와 shared state 6개를 제한한다.
+모든 bounds는 train에서만 계산했고, variant별로 다른 threshold를 탐색하지 않았다.
+
+qvel zero는 충격성 peg 이동 실패를 없앴지만 **전부 timeout**이었다. Fresh 최종
+position error median **154.9 mm**, rotation error median **9.19°**, 마지막 raw 6D motion
+command norm median **0.0609**였다. 속도 입력을 없애면 정책의 이동 능력도 크게 변한다.
+실제 이동 중인 state에 qvel zero를 넣는 것은 expert manifold 밖의 진단이므로,
+이 결과로 qvel 삭제가 올바른 최종 설계라고 결론 내리지 않는다. 현재 checkpoint의
+goal-conditioned imitation이 속도 변화 없이 안정적으로 목표까지 조절하는 controller로
+작동하지 않는다는 관측이다.
+
+Rzz channel 단독 제한은 원래 3개 성공을 유지했다. 초기 급증 state에서 Rzz를 바꿔도
+거의 효과가 없었다(held-out 두 번째 state 최대 action 차이 약 1.6e-7).
+이전 보고서의 큰 geometry z-score가 **실패의 최초 원인임은 입증되지 않았다**.
+EE가 크게 기울어진 뒤 이 channel이 확대되는 현상은 후속 증폭 또는 결과일 수 있다.
+낮은 분산 channel 전반의 제한도 SR은 5/50에 그쳤다. 단순 normalization clipping이
+안정적인 baseline을 만들었다고 해석하지 않는다.
+
+### 실패 위치: 대부분 충분히 가까워지지 못한다
+
+Fresh 50개에서 position 20 mm 조건을 한 번이라도 통과한 것은 **4개**,
+rotation 15° 조건을 한 번이라도 통과한 것은 **41개**, 두 조건을 같은 state에서
+통과한 것은 **3개**였다. 이 세 episode가 원래 성공 episode다. 실패의 대부분은
+미세한 gripper success 판정만 남은 상황이 아니며, 위치 접근·유지부터 실패한다.
+기존 workspace predicate의 실패는 **0개**였다. 이 predicate는 peg의 workspace를
+검사하며, EE workspace 전체의 안전성/IK reachability 인증으로 해석하지 않는다.
+
+48/50 fresh episode에서 목표로부터 멀어지는 방향의 translation command가 적어도
+한 번 관측됐다. Planner 경로는 언제나 거리를 단조 감소시켜야 하는 것은 아니므로
+이 count 자체를 control error의 정의로 쓰지 않는다. 최소 거리 이후 큰 이탈과
+oscillation trace가 동반되는 episode에서 제어 방향·크기 불안정의 증거로 사용한다.
+
+같은 learner state에서 목표가 여전히 가능한지 확인한 reference-switch 결과:
+
+| Seed | 그대로 replay한 learner prefix | Reference 성공까지 추가 step |
+|---|---:|---:|
+| 11029 | 30 | **7** |
+| 11033 | 1 | **11** |
+| 12000 | 14 | **4** |
+| 12001 | 23 | **12** |
+| 12017 | 50 | **8** |
+
+다섯 곳 모두 성공했다. 이전 learner action과 실제 접촉/controller history를 유지하고
+원래 130-step budget과 context를 그대로 사용했다. 이 probe는 진단용이고 recovery
+demonstration이나 학습용 dataset은 만들지 않았다. 이 지점에서는 목표 접근 실패를
+환경의 도달 불가능성이나 controller scaling 탓으로 설명하기 어렵다. 이미 원래 failure가
+발생한 뒤의 상태나 모든 IK 상태를 검사한 것은 아니다.
+
+### 배제한 설명과 아직 확정하지 않은 부분
+
+- **Feature/API/control mismatch:** 모든 baseline step의 live replay·prediction이 정확히
+  일치하고 reference도 성공한다. 현재 검증 범위에서 주요 원인이라는 증거가 없다.
+- **Reach label / post-success 혼입:** 제거한 tail은 모두 open이며 first-success 판정도
+  일치한다. 선택 checkpoint의 마지막 pre-success state MSE는 train 0.000307,
+  validation 0.000266, test 0.000448로 전체 MSE보다 작았다. Label 경계 오류가 주된
+  병목이라는 증거는 없다.
+- **단순히 gripper 닫힘:** 손가락이 아직 open threshold를 만족해도 qvel coupling으로
+  EE output이 커졌다. Fixed-open이나 finger input 변경만으로 대부분 실패가 남는다.
+- **Rzz normalization 단독 원인:** 같은 state와 전체 rollout에서 영향 범위를 분리했고
+  단독 제한으로 SR이 개선되지 않았다. 최초 원인으로 단정하지 않는다.
+- **Grasp/Reach goal offset:** 기존 grasp residual이 실제 Reach target보다 50–60 mm
+  아래에 있다는 제한은 여전히 존재한다. 이번 진단으로 이 offset이 주원인이라고
+  입증하지는 못했다. Frozen checkpoint에 다른 목표 feature를 넣는 것은 학습 분포를
+  바꾸므로 성능 개선용 inference 수정으로 사용하지 않았다.
+- **유일한 원인 / data coverage / architecture capacity:** 40개 demonstrations의 좁은
+  state 분포, velocity와 action의 상관관계, 손가락 신호의 영향, 부족한 error correction을
+  완전히 독립적인 원인으로 분리하지 못했다. 데이터 크기나 MLP 용량만 탓할 근거도 없다.
+
+### 다음 실험의 우선순위
+
+우선 확인할 것은 **손가락 velocity가 EE prediction에 재유입되는 취약한 경로**와
+**velocity-conditioned action imitation의 closed-loop 민감도**다. 다음 변경은 같은
+Flat MLP에서 train/inference를 함께 맞춘 feature/normalization ablation으로 검토하고,
+validation 시작 상태의 closed-loop 결과와 control sensitivity를 함께 확인하는 것이
+적절하다. 현재 checkpoint에 qvel zero나 clipping을 붙이는 것으로 완료된 해법을
+주장하지 않는다. 실제 Reach residual의 명시화는 그 다음의 별도 ablation 후보다.
+
+Graph/Recurrent를 넣으면 동일 state bypass의 취약한 경로를 그대로 물려받을 수 있다.
+이번 진단 결과를 model 선택용 fresh-test tuning에 쓰지 않고, train/validation 기준으로
+최소 변경을 선택한 뒤 고정된 benchmark에서 별도 결과를 보고해야 한다. 이번에는
+새 모델 학습, RL/DAgger, recovery data 수집을 실행하지 않았다.
+
+재현 명령은 아래와 같다. Audit/rollout probes는 기존 result가 존재하면 실행을
+거부한다. Offline 집계와 figure는 같은 고정 checkpoint에서 재생성할 수 있다.
+
+```bash
+REACH_PY=/workspace/reach-bc-55512455/.venv/bin/python
+export VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --audit
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode finger_mean
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode qvel_zero
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode ee_floor_clip
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode low_variance_clip
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --feedback
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --reference-switch
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --offline
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck_report
+"$REACH_PY" -m unittest graph.subtasks.reach_bc.tests.test_bottleneck -v
+```
+
+`config.json`에 diagnostic 조건과 checkpoint/data/manifest hash를 기록했다.
+`audit.json`, 네 variant JSON, `feedback.json`, `reference_switch.json`, `offline.json`,
+`weight_updates.json`, `summary.json`, `results.md`, supervisor logs 및 figure 두 장을
+저장했다. Full trace archive도 로컬에 보존했다. 그림은
+`bottleneck_v1/figures/finger_coupling.png`, `feedback_interventions.png`다.

@@ -151,3 +151,29 @@ exact repeated closed-loop policy evaluation; old subtask/model regressions.
 `figures/*.png`, and five annotated rollout videos with state/action JSON sidecars.
 All were copied back to the local experiment directory. Videos are confirmed to
 match the main evaluation traces. See the report for limitations and next-step judgment.
+
+## Frozen-checkpoint bottleneck review
+
+Follow-up diagnosis preserves the selected checkpoint and main SR. See the
+[added technical analysis](../../../docs/reach_bc_baseline.md#추가-병목-진단-frozen-checkpoint의-제어-피드백)
+and `outputs/subtasks/reach_bc_v1/bottleneck_v1/summary.json`.
+
+```bash
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --audit
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode finger_mean
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode qvel_zero
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode ee_floor_clip
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --mode low_variance_clip
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --feedback
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --reference-switch
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck --offline
+"$REACH_PY" -m graph.subtasks.reach_bc.bottleneck_report
+"$REACH_PY" -m unittest graph.subtasks.reach_bc.tests.test_bottleneck -v
+```
+
+The audit replays all original 5,418 learner steps exactly. Four inference-only
+interventions run 220 paired episodes, with fixed train-derived statistics and
+original success/budget. Additional physical one-step perturbation and reference
+switch probes locate velocity feedback and finger-velocity coupling. New unit
+tests passed 2/2 on Linux and Mac. No model is trained, and diagnostic SRs do not
+replace the main result. `bottleneck_v1.tar.gz` preserves full raw traces locally.
