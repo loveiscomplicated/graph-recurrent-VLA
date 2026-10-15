@@ -23,9 +23,9 @@ GROUPS = {'Graph-Recurrent-VLA-controller': 'controller',
 SECRET = re.compile(r'api.?key|token|password|secret|credential', re.I)
 
 
-def load_wandb_env(path=None):
+def load_env_file(path):
     """Load optional local credentials without replacing existing environment."""
-    env_path = Path(path or os.getenv('WANDB_ENV_FILE') or DEFAULT_ENV_FILE).expanduser()
+    env_path = Path(path).expanduser()
     if not env_path.is_file():
         return False
     try:
@@ -36,6 +36,10 @@ def load_wandb_env(path=None):
         return load_dotenv(dotenv_path=env_path, override=False, verbose=False)
     except (OSError, UnicodeError):
         return False
+
+
+def load_wandb_env(path=None):
+    return load_env_file(path or os.getenv('WANDB_ENV_FILE') or DEFAULT_ENV_FILE)
 
 
 def project_name(config=None):
@@ -145,6 +149,8 @@ class ExperimentLogger:
 
     def _save(self):
         write(self.directory / 'metadata.json', self.metadata)
+        from .experiment_artifacts import save_manifest
+        save_manifest(self.directory, self.metadata)
 
     def _failure(self, operation, exc):
         # Exception text can contain authentication details; record type only.
@@ -186,11 +192,16 @@ class ExperimentLogger:
                 self._failure('config', exc)
                 self._save()
 
-    def link_output(self, path, *, checkpoint=False):
+    def link_output(self, path, *, checkpoint=False, kind=None):
         """A sidecar associates unchanged existing artifacts with this run."""
+        if kind not in (None, 'checkpoint', 'rollouts', 'episode_metadata', 'trajectory', 'metrics'):
+            raise ValueError('unknown artifact kind')
         path = Path(path).resolve()
+        if kind is not None:
+            self.metadata.setdefault('artifact_kinds', {})[str(path)] = kind
         if str(path) not in self.metadata['outputs']:
-            self.metadata['outputs'].append(str(path)); self._save()
+            self.metadata['outputs'].append(str(path))
+        self._save()
         sidecar = path.with_name(path.name + '.tracking.json')
         if checkpoint:
             if sidecar.exists():
