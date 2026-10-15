@@ -231,3 +231,7 @@ __marimo__/
 *.tracking.json
 .env.*
 !.env.example
+
+# Local experiment credentials
+.secrets/
+wandb.env
