@@ -240,6 +240,17 @@ HF card 및 Notion 분석에는 run_id, 학습 source_run_id, W&B URL, HF revisi
 
 ## 검증
 
+Vessl의 각 Workspace에서 repository 루트로 이동한 뒤 실제 학습 Python 환경으로 실행한다.
+인증 파일은 자동으로 읽으며 API key를 출력하지 않는다.
+
+```bash
+python -m scripts.check_experiment_tracking
+```
+
+이 명령은 실제 W&B에 smoke run을 만들고 `tracking/connection_check = 1`을 전송한다.
+성공하면 W&B URL을 출력하고 종료 코드 0을 반환한다. Offline, 초기화/기록/종료 오류는
+종료 코드 1을 반환한다. 출력된 URL의 대시보드에서도 metric 도착을 확인한다.
+
 ```bash
 python -m unittest tests.test_experiment_logger -v
 ```
