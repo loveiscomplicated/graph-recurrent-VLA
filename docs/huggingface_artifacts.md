@@ -1,11 +1,18 @@
 # Hugging Face 실험 산출물
 
+개발 절차와 identity 원칙은 [공통 개발 규칙](engineering_rules.md)을 따른다.
+기존 `utils/experiment_artifacts.py`와 `tools/publish_experiment.py`를 재사용한다.
+팀별 HF uploader를 새로 만들지 않으며, 명시적 요청 또는 정의된 publishing workflow에서만
+게시한다. 모든 checkpoint/영상을 기본 자동 업로드하는 학습 코드를 추가하지 않는다.
+
 ## 기존 구조와 구현 범위
 
 기존 `ExperimentLogger`의 UUID `run_id`, `experiments/<run_id>/config.yaml`,
 `metadata.json`, `metrics.json`, `link_output()` 및 `.tracking.json` 연결을 재사용한다.
 팀의 checkpoint 내용, 저장 위치, 학습 설정, trajectory 형식은 변경하지 않는다.
 Graph train/evaluate의 기존 등록 파일은 자동으로 manifest에 포함된다.
+Publisher는 별도 클래스가 아니라 `utils/experiment_artifacts.py`의 `plan_upload()`,
+`publish()`, `initialize_repositories()`, `sync_wandb_links()` 함수와 이를 호출하는 CLI다.
 Reach BC의 선택적 영상 경로에는 영상과 episode JSON 등록 두 줄을 추가했다.
 Visual/Recurrent는 기존 Logger에 연결하면 같은 도구를 사용할 수 있다.
 
@@ -104,7 +111,7 @@ python -m tools.publish_experiment --init-repos
 Token이 없거나 읽기 전용이거나 Organization의 쓰기 역할을 확인하지 못하면 생성을 건너뛴다.
 실패한 Repository는 `failed`로 보고하며 일부만 성공한 경우 결과를 각각 표시한다.
 
-| 종류 | Repository | 현재 사용 |
+| 종류 | 기본 Repository | 코드에서 지원하는 용도 |
 | --- | --- | --- |
 | Model | `Graph-Recurrent-VLA/graph-recurrent-models` | checkpoint, 재현성 정보, 선택한 metrics |
 | Dataset | `Graph-Recurrent-VLA/graph-recurrent-rollouts` | 영상, episode metadata, 재현성 정보, 선택한 metrics |
@@ -113,9 +120,20 @@ Token이 없거나 읽기 전용이거나 Organization의 쓰기 역할을 확�
 업로드하지 않는다. Repository 설정은 `Repository`와 `DEFAULT_REPOSITORIES`에 분리되어 있다.
 미래 목적지를 추가할 때에는 명시적인 artifact routing과 검증도 함께 확장한다.
 
-2026-10-15 이 호스트의 실제 초기화 요청은 실패했다. 인증을 확인한 결과 token은 `read`였다.
+### 원격 생성 상태와 지원 범위 구분
+
+Organization은 기존 [Graph-Recurrent-VLA](https://huggingface.co/Graph-Recurrent-VLA)를
+사용하며 새 Organization을 만들지 않는다. 위 두 목적지는 사용자가 지정한 현재 기본
+Repository이며 코드의 `DEFAULT_REPOSITORIES`에도 등록되어 있다.
+`Graph-Recurrent-VLA/graph-recurrent-trajectories`와
+`Graph-Recurrent-VLA/graph-recurrent-evaluations`는 향후 계획이며 현재 routing/게시 지원은 없다.
+기본 목적지로 설정되어 있다는 사실만으로 원격 생성·접근 가능성이 검증된 것은 아니다.
+
+기존 작업의 실행 기록: 2026-10-15 이 호스트의 실제 초기화 요청은 실패했다. 인증을 확인한 결과 token은 `read`였다.
 후속 권한 검사에서는 생성 API 호출 없이 `skipped`를 반환했다. 두 Repository 조회도 404였으므로
-생성 또는 존재를 확인하지 못했다. 쓰기 token을 설정한 뒤 위 초기화 명령을 다시 실행해야 한다.
+생성 또는 존재를 확인하지 못했다. 404만으로 private Repository가 없다고 단정하지 않는다.
+이번 지침 작성에서는 원격 인증·생성·업로드를 재실행하지 않았다. 접근 권한이 있는 계정에서
+확인하고 필요한 경우에만 명시적 초기화 workflow를 사용한다.
 
 ## 로컬 manifest와 산출물 등록
 
@@ -160,6 +178,8 @@ Git commit은 Logger가 실행 시작 때 기록한 값을 쓰며 게시 시점�
 `git_dirty=true`이면 commit만으로 작업 중인 코드를 복원할 수 없다.
 
 ```python
+from utils.experiment_logger import ExperimentLogger
+
 with ExperimentLogger(team="graph", config=config, seed=seed, model=model_name) as logger:
     # 기존 학습/평가 및 저장 코드
     logger.link_output(checkpoint_path)  # 기존 호출도 그대로 동작
@@ -269,6 +289,26 @@ python -m tools.publish_experiment --sync-wandb RUN_ID
 W&B 인증 누락 또는 네트워크 실패에도 HF commit/receipt는 유지된다. 나중에 위 명령만 재실행한다.
 W&B에 아직 run이 없으면 기존 offline sync 절차를 먼저 수행한다.
 
+## 현재 제약과 확장 제안
+
+로컬 `metadata.json`에는 `source_run_id`, `wandb_url`, dataset hash 등 `record()`한 정보를
+보관할 수 있지만 `save_manifest()`는 정해진 필드만 원격 manifest로 전달한다.
+현재 원격 manifest에는 이 세 필드가 자동 포함되지 않고, 원본 `metadata.json`이나
+`.tracking.json` 전체도 자동 게시하지 않는다. Git commit/dirty, config, seed, team/model,
+task/environment와 run ID는 현재 manifest/동반 config로 보존한다.
+
+따라서 평가 run에서 원본 학습 run으로의 연결과 W&B/HF 양방향 링크가 완전히 자동화됐다고
+설명하지 않는다. 원본 로컬 metadata와 sidecar를 함께 보관하고, 필요하면 기존
+`--sync-wandb`로 W&B에서 HF receipt를 연결한다. 향후 공통 manifest schema에
+`source_run_id`, W&B URL, dataset hash를 안전하게 추가하고 계약 테스트를 보완하는 것을
+제안한다. 이 지침 작업에서는 코드를 변경하지 않는다.
+
+현재 trajectory는 로컬 inventory만 지원한다. Dataset Viewer/VideoFolder,
+두 Repository 사이의 원자적 게시, 원격 버전 삭제/GC도 미구현이다.
+`publish()`는 파일 검증/로컬 receipt 쓰기 단계에서 예외가 날 수 있으므로 향후 workflow도
+별도 게시 job에서 실패를 처리하고, 성공한 로컬 checkpoint/학습 결과를 삭제하거나
+덮어쓰는 복구 동작을 추가하지 않는다.
+
 ## 검증 및 실행 한계
 
 ```bash
@@ -282,3 +322,6 @@ HF 인증값을 사용하지 않는 테스트이며 simulator나 GPU를 요구�
 
 현재 호스트의 설치된 `huggingface_hub` 2.0.0 API signature를 확인했다.
 실제 HF 쓰기/업로드, Vessl/Vast.ai 배포 실행, Linux Reach BC 영상 생성, CUDA 학습은 실행하지 않았다.
+
+이번 Agent 지침 정비의 재검증 결과와 미실행 범위는
+[tracking 검증 기록](experiment_tracking.md#agent-지침-정비-시-재검증-2026-10-15)을 참고한다.

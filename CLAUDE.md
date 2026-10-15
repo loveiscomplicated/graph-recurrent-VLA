@@ -1,11 +1,7 @@
-# Project guidance
+# Claude Code entrypoint
 
-Start with `README.md`, `envs/maniskill/README.md`, and
-`docs/PROJECT_CONTEXT.md`. The current goal is three independent feasibility
-prototypes on one shared ManiSkill `PegInsertionSide-v1` environment.
+@AGENTS.md
 
-Shared code owns simulator setup, raw ground truth access, examples, and smoke
-checks. Visual, Graph, and Recurrent teams own their own representations,
-models, data, training, evaluation, configs, and directory layouts. Do not add
-cross-team input contracts or choose the final architecture before prototype
-results. Check installed ManiSkill behavior directly before documenting APIs.
+Use the imported repository guidance as the common development rules. Follow its
+links to engineering, experiment tracking, and Hugging Face publishing details.
+If file imports are unavailable in your client, read `AGENTS.md` directly.

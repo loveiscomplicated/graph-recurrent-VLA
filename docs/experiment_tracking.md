@@ -1,12 +1,15 @@
 # 공통 Experiment Tracking
 
+개발 절차와 identity 원칙은 [공통 개발 규칙](engineering_rules.md)을 따른다.
+새 training/evaluation은 아래 `ExperimentLogger`를 재사용하며 팀별 W&B logger를 만들지 않는다.
+
 ## 저장소 분석과 적용 범위
 
 2026-10-15 작업 시점의 실제 파일 기준이다. `docs/PROJECT_CONTEXT.md`의
 팀 디렉터리가 비어 있다는 설명과 달리 Graph prototype은 구현되어 있다.
 이 작업은 공통 관측 도구를 추가하며 팀의 모델·데이터·학습 설계를 정하지 않는다.
 
-| 팀/진입점 (`python -m` 뒤 모듈명) | 설정 | 기존 기록/체크포인트 | 통합 |
+| 팀/진입점 (모듈 또는 함수) | 설정 | 기존 기록/체크포인트 | 통합 |
 | --- | --- | --- | --- |
 | Visual (`visual/`) | 구현 없음 | 구현 없음 | 향후 연결 예제 제공 |
 | Recurrent (`recurrent/`) | 구현 없음 | 구현 없음 | 향후 연결 예제 제공 |
@@ -16,7 +19,7 @@
 | `graph.prototype.v4.train` | v4 TOML + history/device/resume CLI | 위 + `last.pt`, resume JSON | epoch + 재시작 설정 |
 | `graph.subtasks.reach_bc.train` | v2 TOML, 고정 seed, CLI 경로 | training JSON, `checkpoints/best.pt` | 정식 train + 최종 test summary |
 | `graph.prototype.evaluate` | checkpoint config + CLI | offline/latency/선택 rollout JSON | 평가 summary |
-| `graph.prototype.v2.analyze.offline` | checkpoint config | offline/phase/latency 결과 | 모델별 평가 run |
+| `graph.prototype.v2.analyze`의 `offline()` | checkpoint config | offline/phase/latency 결과 | 모델별 평가 run |
 | `graph.prototype.v2.diagnostics` | CLI, checkpoint config | rollout stages JSON | stage별 평가 summary |
 | `graph.prototype.v3.compare` | candidate/baseline checkpoint + CLI | paired comparison JSON | 비교 평가 run |
 | `graph.prototype.v4.evaluate` | checkpoint config + CLI | offline/cache latency/rollout JSON | 평가 summary |
@@ -25,7 +28,8 @@
 학습은 train split의 gradient update와 validation checkpoint 선택을 유지한다.
 평가는 기존 test split 및 선택된 checkpoint를 사용하고 optimizer를 실행하지 않는다.
 Reach BC의 test는 기존대로 모든 epoch와 checkpoint 선택 후 한 번 읽는다.
-기존 W&B/TensorBoard infrastructure는 없었으며 JSON writer는 변경하지 않았다.
+공통 Logger 도입 전에는 W&B/TensorBoard infrastructure가 없었다. 현재는 아래 공통
+Logger가 구현·연결되어 있으며 팀의 기존 JSON writer도 유지된다.
 
 데이터 준비, overfit/smoke 전용 도구, `reach_bc.train --smoke`, bottleneck,
 report/figure/video 도구, 기존 JSON을 합치는 v2/v4 compare 등은 자동 run 생성 대상이 아니다.
@@ -86,9 +90,14 @@ WANDB_RUN_GROUP=<controller 또는 vision 또는 graph>
 `WANDB_PROJECT`를 지정할 수 있다. Group 결정 우선순위는 명시적 `group` 인자 →
 `WANDB_RUN_GROUP` → 전달된 config의 `wandb_group` 또는 `group` → 정확한
 `VESSL_WORKSPACE_NAME` 매핑 → team 기본값(visual→vision, recurrent→controller, graph→graph)이다.
+Project 우선순위는 `WANDB_PROJECT` → config의 `wandb_project` → 기본값이다.
 Entity는 `WANDB_ENTITY` 환경변수가 config의 `wandb_entity`보다 우선한다.
 Workspace 이름 변수가 실제로 주입되는지는 가정하지 않으므로 파일의 group 값을 지정한다.
 예를 들어 controller Workspace에서 Graph 코드를 실행하면 team=graph, group=controller다.
+
+Vast.ai에서도 같은 로딩 규칙을 사용한다. 별도 Vast.ai 감지나 자동 key 발급은 없다.
+플랫폼의 비밀 환경변수 또는 `WANDB_ENV_FILE`/기본 파일을 사용하고, 호스트 재생성 시
+비밀과 영구 볼륨의 유지 여부는 플랫폼에서 확인한다.
 
 ### macOS 로컬 설정
 
@@ -128,9 +137,9 @@ PVC로 유지되지만, 이것만으로 `/root/.secrets/wandb.env`의 지속성�
 ## 팀원 실행과 로컬 기록
 
 기존 README의 학습 command를 그대로 실행한다. 로거가 `WANDB_ENV_FILE` 경로를 읽고,
-별도 경로가 없으면 `/root/.secrets/wandb.env`를 찾는다. 파일이 없거나 API key가 없으면
-학습을 계속하면서 W&B offline mode를 쓴다. `python-dotenv`가 없는 환경도 W&B 연동 없이
-학습을 진행한다. tracking 환경에는 requirements-tracking을 설치한다. 예:
+별도 경로가 없으면 `/root/.secrets/wandb.env`를 찾는다. 파일이 없어도 기존 환경변수는
+사용한다. 로딩 후 API key 또는 Entity가 없으면 학습을 계속하면서 W&B offline mode를 쓴다. `python-dotenv`가 없으면 파일 로딩만 생략하며
+기존 환경변수 인증은 사용할 수 있다. tracking 환경에는 requirements-tracking을 설치한다. 예:
 
 ```bash
 python -m graph.prototype.v4.train --model flat --history current --output outputs/graph/v4/new-run
@@ -197,6 +206,34 @@ with ExperimentLogger(team="visual", config=cfg, seed=seed, model=model_name) as
 강요하지 않는다. config는 JSON으로 보존 가능한 값이어야 한다. 새 metric은 scalar dictionary에
 추가하면 된다. 분산 학습은 아직 통합 대상이 아니며 향후 팀에서 주 process만 로깅해야 한다.
 
+## 실제 Logger API와 호출 의미
+
+구현: `utils/experiment_logger.py`. 생성자는 keyword-only이며
+`ExperimentLogger(team=..., config=None, seed=None, model=None, group=None,
+job_type="train", root=None)`이다. 허용 team은 `visual`, `graph`, `recurrent`,
+`integration`이다. 평가는 기존 코드처럼 `job_type="evaluate"`를 전달한다.
+
+| API | 사용 규칙 |
+| --- | --- |
+| `log(metrics, *, step=None, prefix="")` | 중첩 dict를 `/`로 펼쳐 유한한 Python `int`/`float`만 기록. bool/list/tensor/nonfinite 값은 제외 |
+| `log_epoch(row)` | 기존 row의 `epoch`, `train_mse`, `val_mse`, `train_metrics`, `validation_metrics` 등을 처리. 실제 MSE가 아닌 loss를 이 alias에 억지로 넣지 말고 `log()` 사용 |
+| `record(**metadata)` | dataset hash/실제 환경 등 추가 재현성 metadata 저장. 기존 identity 필드는 변경하지 않음 |
+| `link_output(path, *, checkpoint=False, kind=None)` | 저장된 출력의 경로와 sidecar 등록. `kind`와 manifest 규격은 [HF 문서](huggingface_artifacts.md) 참고 |
+| `link_output(path, checkpoint=True)` | 평가/재개의 **입력 checkpoint** 연결. 새 checkpoint 저장용 플래그가 아님. 기존 sidecar를 읽고 유지 |
+| `finish(failed=False)` | 종료 상태와 시간 기록. context manager 사용 시 자동 실행 |
+
+`step`은 로컬 event의 `step`과 W&B의 `epoch` 값으로 저장된다. W&B transport step은
+SDK가 정하므로 `log(..., step=...)`가 W&B 내부 step을 직접 지정한다고 가정하지 않는다.
+새 metric은 기존 `log()` dictionary에 추가한다. 팀 tensor/numpy scalar 등은 실제 유한한
+Python 수치로 변환하고, metric 정의·단위·집계 분모를 명시한다. 영상은 scalar logger로
+보내지 않고 산출물로 등록한다. 필터로 누락되는 값이 없는지 로컬 metrics를 확인한다.
+
+실제 호출 예시는 `graph/prototype/train.py`의 `log_epoch()`와 출력 등록,
+`graph/prototype/v4/train.py`의 config/CLI snapshot 및 resume,
+`graph/subtasks/reach_bc/evaluate.py`의 평가 summary와 영상 등록을 참고한다.
+Logger는 config/seed/hyperparameter를 자동 수집하지 않는다. 실제 적용된 값을 호출자가
+전달해야 한다. Git 조회 실패 시 commit은 `null`일 수 있다.
+
 ## 대시보드 비교
 
 `<entity>/graph-recurrent-vla` Runs 화면에서 Group을 `graph`/`vision`/`controller`로 묶고
@@ -232,11 +269,11 @@ failed로 복구해야 한다. JSON 재전송과 native sync를 같은 run에 �
 
 ## Hugging Face와 Notion 연결
 
-이번 변경은 HF 업로드 파이프라인을 만들지 않는다. 향후 checkpoint/dataset/rollout 저장 시
-`<run_id>/best.pt`, `<run_id>/rollout.mp4`와 같은 경로를 사용하고 config/metadata 및 sidecar를
-함께 보관한다. 평가 영상은 평가 run_id와 source_run_id를 함께 기록한다.
-HF card 및 Notion 분석에는 run_id, 학습 source_run_id, W&B URL, HF revision/경로를 넣으면 된다.
-원격 URL이 정해지면 `experiment.record(hugging_face_checkpoint=uri)`로 metadata에 추가할 수 있다.
+현재 [HF Artifact Publishing Pipeline](huggingface_artifacts.md)이 구현되어 있다.
+Logger는 `manifest.json`을 로컬에 갱신하며 네트워크 업로드는 하지 않는다.
+종료 후 `tools.publish_experiment --run-id ... --include ...`로 선택한 산출물만
+명시적으로 게시한다. 원격 경로·receipt·인증·W&B summary 링크 동기화는 해당 문서를 따른다.
+Notion 자동 연동은 구현되어 있지 않다.
 
 ## 검증
 
@@ -282,3 +319,12 @@ SDK 설치 시 실제 offline binary 생성도 별도 subprocess로 검증한다
 
 이번 변경 후 전체 ManiSkill simulator test suite는 다시 실행하지 않았다. 실제 W&B online 업로드
 및 Vessl 재시작 시 인증 파일 유지 여부도 실행 검증하지 않았다.
+
+### Agent 지침 정비 시 재검증 (2026-10-15)
+
+`feature/hf-infra`에서 Logger/Artifact 계약 테스트 35개가 모두 통과했다.
+실제 W&B offline SDK 테스트를 포함하며 online/HF 전송은 mock으로 검증했다.
+게시 CLI `--help`와 문서의 로컬 링크·소스 경로·Logger API도 대조했다.
+학습 코드·공통 인프라 코드는 변경하지 않았다. Simulator 실행, CUDA/MPS,
+Vessl/Vast.ai 배포, 실제 원격 인증·게시 및 Claude Code 클라이언트의 import 동작은
+이번 문서 작업에서 실행하지 않았다.
