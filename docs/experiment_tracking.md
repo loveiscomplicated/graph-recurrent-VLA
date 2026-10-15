@@ -36,141 +36,108 @@ Visual/Recurrent의 미래 entrypoint는 아래 예제로 연결해야 한다. �
 
 ## 팀장이 최초 설정
 
-### W&B 프로젝트와 인증
+### W&B 프로젝트와 인증 파일
 
-1. 팀장 계정으로 W&B에서 사용할 Entity(팀 또는 계정의 slug)를 확정한다.
-2. 그 Entity 아래 `graph-recurrent-vla` 프로젝트를 만들고 프로젝트 visibility를 Public으로 설정한다.
-3. 계정/플랜에서 지원하면 해당 팀에 전용 service account를 만들고 실험 기록에 필요한
-   최소 role을 준다. 서비스 계정 제공 여부와 실제 권한 범위는 관리자 화면에서 확인한다.
-   지원하지 않으면 팀장이 관리하는 전용 키를 사용한다. workspace별 별도 키면 회전/폐기가 쉽다.
-4. 키는 Secret 저장소에만 보관한다. 팀원의 W&B 계정·초대·`wandb login`은 필요 없다.
-   Public은 조회 범위이며 쓰기 권한이나 인증을 제공하지 않는다.
+1. 팀장은 W&B에서 사용할 기존 Entity(팀 slug) 아래 `graph-recurrent-vla`
+   프로젝트를 만들고 Public으로 설정한다. Public 조회 설정은 쓰기 인증을 대신하지 않는다.
+2. 팀장은 사용할 업로드 계정에서 API key를 발급하고 기존 Entity 프로젝트에 기록 권한이
+   있는지 확인한다. 이 계정을 쓰는 방식의 플랜 조건은 팀에서 확인한다.
+3. 키는 Vessl Workspace별 비밀 파일에만 둔다. Git, config, metadata, W&B config,
+   image, 학습 command에 기록하지 않는다.
 
 공식 문서: [프로젝트 API의 Entity와 project](https://docs.wandb.ai/models/ref/python/functions/init),
-[API 키와 서비스 계정 관리](https://docs.wandb.ai/ko/platform/app/settings-page/user-settings).
-공유 workspace에서 실행되는 코드는 주입된 키 권한을 사용할 수 있다. Public 기록에 올릴
-config는 팀장이 검토한다. 로거는 credential 이름의 필드를 재귀적으로 가리지만
-일반 문자열에 임의로 삽입한 비밀까지 판별하지 않는다. 환경 전체를 config로 넘기지 않는다.
+[API key 관리](https://docs.wandb.ai/ko/platform/app/settings-page/user-settings).
+로거는 전달된 명시적 config에서 `api_key`, `token`, `password`, `secret`, `credential` 이름을
+가진 키를 가린다. 임의의 문자열 속 비밀까지 찾아내지는 않으므로 전체 환경변수를 config로
+넘기지 않는다.
 
-### `yonsei-ai-gpu`의 Workspace별 설정
+### Vessl Workspace별 설정
 
-세 Workspace를 각각 설정한다. 다른 Workspace의 환경변수/인증을 상속한다고 가정하지 않는다.
+세 Workspace에 각각 설정한다. 다른 Workspace의 환경변수나 인증 파일을 공유한다고 가정하지 않는다.
 
-| Workspace | `WANDB_RUN_GROUP` | 의미상 team |
-| --- | --- | --- |
-| `Graph-Recurrent-VLA-controller` | `controller` | `recurrent` |
-| `Graph-Recurrent-VLA-vision` | `vision` | `visual` |
-| `Graph-Recurrent-VLA-graph` | `graph` | `graph` |
+| Workspace | 기본 group |
+| --- | --- |
+| `Graph-Recurrent-VLA-controller` | `controller` |
+| `Graph-Recurrent-VLA-vision` | `vision` |
+| `Graph-Recurrent-VLA-graph` | `graph` |
 
-각 Workspace의 관리되는 환경/시작 설정에 다음을 등록한다.
-
-- `WANDB_API_KEY`: Secret 주입 방식을 쓸 때만 필요하다. 아래 Workspace 내부
-  `wandb login` 방식을 쓰면 이 환경변수는 없어도 된다. 키를 Git, 이미지, init script,
-  shell history, 노트북, README에 넣지 않는다.
-- `WANDB_ENTITY`: 위에서 정한 동일 Entity slug.
-- `WANDB_RUN_GROUP`: 위 표의 값. 자동 workspace 이름 감지의 불확실성을 없앤다.
-- `WANDB_MODE`: 생략(자동 선택) 또는 `online`.
-- `EXPERIMENTS_DIR`: 로컬 로그가 남을 영속 볼륨의 절대 경로. 생략하면 repo의 `experiments/`.
-
-프로젝트는 코드에서 `graph-recurrent-vla`로 고정된다. `WANDB_PROJECT`로 분산되지 않는다.
-Group 우선순위는 호출 인자 → `WANDB_RUN_GROUP` → `VESSL_WORKSPACE_NAME`의 정확한
-Workspace 이름 매핑 → team 기본값(visual→vision, recurrent→controller)이다.
-`VESSL_WORKSPACE_NAME`이 실제로 주입되는지는 가정하지 않으므로 관리 설정에 group을 지정한다.
-`team`은 실행된 코드의 소유 팀이다. 예를 들어 controller Workspace에서 Graph 코드를 실행하면
-team=graph, group=controller가 된다.
-
-팀장이 각 Workspace의 실제 Python 환경에 한 번 설치한다.
+각 Workspace의 실제 학습에 사용하는 Python 환경에 tracking 의존성을 설치한다.
 
 ```bash
 python -m pip install -r requirements-tracking.txt
 ```
 
-같은 이미지/영속 venv 또는 Workspace init script에 설치 명령을 보존하면 재시작에도 적용된다.
-SDK는 선택 의존성이고 기본 simulator requirements는 변경하지 않는다.
+각 Workspace의 `/root/.secrets/wandb.env`에 관리자가 다음 항목을 직접 저장한다.
+Logger는 이 파일을 생성하지 않는다.
 
-[Vessl Secrets 공식 문서](https://docs.vessl.ai/guides/organization/secrets)는 조직 Secret과
-Run 환경변수 연결을 설명한다. **현재 Workspace 화면의 Secret 연결 기능과 cluster 정책은
-직접 확인해야 한다.** Workspace에서 Secret 참조를 지원하면 각 실행 환경에 연결한다.
-지원하지 않으면 아래처럼 Workspace 내부에 `wandb login`으로 인증을 저장할 수 있다.
-일반 텍스트 환경변수 입력란을 Secret 저장소라고 간주하지 않는다.
-
-### Workspace 내부에 `wandb login`으로 저장하는 방법
-
-Workspace별 Secret 연결을 지원하지 않을 때 사용할 수 있다. 팀장은 세 Workspace의
-`접근 제어`에서 우리 팀 외 사용자의 접근 여부를 확인한다. Workspace 관리자와 같은
-OS 사용자/홈을 사용하는 사람은 저장된 키를 읽거나 사용할 수 있으므로 이 범위를
-기준으로 접근을 제한한다. 개인 계정 키 사용에 대한 플랜 조건은 별도로 확인한다.
-
-각 Workspace에 접속해 **실제 학습을 실행할 동일 OS 사용자와 Python 환경**에서 한 번 실행한다.
-
-```bash
-python -m pip install -r requirements-tracking.txt
-wandb login
+```dotenv
+WANDB_API_KEY=<W&B에서 발급한 실제 키>
+WANDB_ENTITY=<기존 W&B 팀 slug>
+WANDB_RUN_GROUP=<controller 또는 vision 또는 graph>
 ```
 
-키는 대화형 프롬프트에 입력하고 command 인자로 넣지 않는다.
-W&B CLI가 인증을 저장하며 로거는 환경변수 키 또는 저장된 인증의 존재를 확인한다.
-기본 경로는 `~/.netrc` (또는 `~/_netrc`)이며 `NETRC`를 지정한 환경도 지원한다.
-현재 W&B 호스트의 항목만 확인하고 키를 metadata/config에 복사하지 않는다.
-기본 파일을 사용했다면 파일 권한도 확인한다.
+`wandb.env`는 shell script가 아니라 dotenv 형식으로 작성한다. Workspace에서 한 번만
+비밀 파일을 만들고, 디렉터리/파일 권한을 Workspace 접근 정책에 맞춰 제한한다.
+실제 키를 붙여넣은 내용은 Git, 이미지, init script, shell history에 넣지 않는다.
+`/root/.secrets`를 Vessl 조직의 다른 사용자가 읽을 수 있는지는 별도 권한 설정에서 확인한다.
+동일 OS 계정으로 실행하는 사용자는 이 키를 사용할 수 있다고 보고 접근을 관리한다.
+
+프로젝트 이름 기본값은 `graph-recurrent-vla`다. 필요하면 dotenv 파일이나 Workspace 환경에서
+`WANDB_PROJECT`를 지정할 수 있다. Group 결정 우선순위는 명시적 `group` 인자 →
+`WANDB_RUN_GROUP` → 전달된 config의 `wandb_group` 또는 `group` → 정확한
+`VESSL_WORKSPACE_NAME` 매핑 → team 기본값(visual→vision, recurrent→controller, graph→graph)이다.
+Entity는 `WANDB_ENTITY` 환경변수가 config의 `wandb_entity`보다 우선한다.
+Workspace 이름 변수가 실제로 주입되는지는 가정하지 않으므로 파일의 group 값을 지정한다.
+예를 들어 controller Workspace에서 Graph 코드를 실행하면 team=graph, group=controller다.
+
+### macOS 로컬 설정
+
+로컬 컴퓨터에서는 인증 파일 경로를 `WANDB_ENV_FILE`로 지정한다. 이 파일도 Git에 추가하지 않는다.
 
 ```bash
-chmod 600 ~/.netrc
+mkdir -p "$HOME/.secrets"
+chmod 700 "$HOME/.secrets"
+# 로컬 편집기로 $HOME/.secrets/wandb.env를 만들고 실제 값을 저장한다.
+export WANDB_ENV_FILE="$HOME/.secrets/wandb.env"
 ```
 
-팀장은 비밀이 아닌 다음 설정을 Workspace 시작 환경 또는 학습 터미널에서 자동으로
-읽는 shell profile에 영속 저장한다. 아래 export만 터미널에서 실행하면 현재 세션에만 적용된다.
+파일을 만든 뒤 `chmod 600 "$HOME/.secrets/wandb.env"`로 소유자만 읽도록 제한한다.
+파일 형식은 Vessl 예제와 같으며 실제 키를 shell command line에 입력하지 않는다.
 
-```bash
-export WANDB_ENTITY="기존-WnB-팀-slug"
-export WANDB_RUN_GROUP="graph"
-```
-
-각 Workspace에 맞게 group을 `controller`, `vision`, `graph`로 바꾼다.
-프로젝트는 `graph-recurrent-vla`로 고정되어 있다. 인증 계정이 기존 팀의 프로젝트에
-기록할 권한을 갖고 있어야 한다. 로그인 계정의 개인 Entity를 팀 Entity 대신 쓰지 않는다.
-팀원은 이후 기존 training command만 실행한다.
-
-`WANDB_API_KEY`가 이미 주입돼 있으면 저장된 인증보다 우선한다. 다른 계정을 쓰려면
-관리자가 기존 환경변수 주입을 먼저 해제하고 `wandb login --relogin`으로 교체한다.
-다른 OS 사용자로 실행하거나 컨테이너에서 홈을 공유하지 않으면 인증도 공유되지 않는다.
-인증 없음/읽기 불가/손상된 netrc는 offline으로 처리한다.
-
-[W&B 로그인 API 안내](https://docs.wandb.ai/models/ref/python/functions/login).
-설치된 SDK 0.30.0의 login 문서에서도 환경변수 및 netrc 경로를 확인했다.
-이 작업에서 실제 Workspace에 로그인하거나 키를 저장하지는 않았다.
+또는 shell 환경에 `WANDB_API_KEY`, `WANDB_ENTITY`, `WANDB_RUN_GROUP`을 설정해 실행한다.
+각 프로세스에 이미 설정된 변수는 dotenv 파일의 값보다 우선한다.
+따라서 환경에 API key가 있고 파일에도 다른 키가 있으면 기존 프로세스의 키를 사용한다.
 
 ### 재시작·재생성 후 확인 및 복구
 
-이 작업에서는 Vessl 관리 콘솔에 접속하거나 인증을 설정하지 않았다. 세 Workspace의
-재시작/재생성 시 인증 유지도 실행 검증하지 않았다.
+이 작업에서는 Vessl 관리 콘솔에 접근하거나 실제 인증 파일을 설정하지 않았다.
+세 Workspace의 재시작/재생성 뒤 인증 유지 여부도 실행 검증하지 않았다.
 [Vessl Workspace 생성 문서](https://docs.vessl.ai/guides/workspace/create)에 따르면 `/root`는
-PVC로 지속되고 init script는 시작할 때 실행된다. 이것만으로 Secret 연결이나 삭제 후 재생성의
-보존을 보장할 수 없다. shell에서 한 번 `export`한 변수는 지속 설정이 아니다.
+PVC로 유지되지만, 이것만으로 `/root/.secrets/wandb.env`의 지속성을 보장할 수는 없다.
 
-팀장은 각 Workspace에서 다음 절차를 수행한다.
+팀장은 Workspace별로 다음을 확인한다.
 
-1. Secret 방식은 관리 설정의 Secret 참조를 보존한다. `wandb login` 방식은 인증 파일이
-   해당 사용자 홈의 영속 볼륨에 있는지 확인한다. Entity/group/로그 볼륨/Python 의존성도 보존한다.
-2. 기존 학습 command로 작은 실행을 한 후 `metadata.json`의 `wandb_mode=online`,
-   `wandb_url`, 대시보드의 동일 ID/metric 도착을 확인한다. 키 값은 출력하지 않는다.
-3. stop/start 후 새 터미널과 실제 학습 프로세스에서 동일 확인을 반복한다.
-4. 재생성 시 Secret 방식은 기존 Secret 참조를 다시 연결한다. 내부 login 방식은
-   팀장이 새 Workspace에서 `wandb login`을 다시 수행한다. 두 방식 모두
-   Entity/group/볼륨 및 SDK 설치를 다시 적용한다. 인증 파일을 Git으로 백업하지 않는다.
-5. 키가 만료/폐기되면 Secret을 교체하거나 `wandb login --relogin`을 수행한 후
-   workload를 재시작한다. 이후 offline bundle을 동기화한다.
+1. Vessl의 `접근 제어`에서 `/root/.secrets/wandb.env`를 읽을 수 있는 사용자를 확인한다.
+2. 파일이 위 경로에 있고 SDK 의존성이 설치돼 있는지 확인한다.
+3. 기존 학습 command로 작은 실행을 한 뒤 `metadata.json`의 `wandb_mode=online`,
+   `wandb_url`, W&B dashboard의 run ID와 metric 도착을 확인한다. 키는 화면에 출력하지 않는다.
+4. Workspace를 stop/start한 뒤 새 세션에서 같은 확인을 반복한다.
+5. 재생성 때 파일이 사라졌다면 관리자가 새 Workspace에 파일을 다시 만든다. 파일을 Git이나
+   Docker image로 복구하지 않는다. 키가 폐기되면 새 키를 발급하고 세 Workspace의 파일을 갱신한다.
 
 ## 팀원 실행과 로컬 기록
 
-기존 README의 학습 command를 그대로 실행한다. 예:
+기존 README의 학습 command를 그대로 실행한다. 로거가 `WANDB_ENV_FILE` 경로를 읽고,
+별도 경로가 없으면 `/root/.secrets/wandb.env`를 찾는다. 파일이 없거나 API key가 없으면
+학습을 계속하면서 W&B offline mode를 쓴다. `python-dotenv`가 없는 환경도 W&B 연동 없이
+학습을 진행한다. tracking 환경에는 requirements-tracking을 설치한다. 예:
 
 ```bash
 python -m graph.prototype.v4.train --model flat --history current --output outputs/graph/v4/new-run
 ```
 
-환경변수 키 또는 `wandb login`으로 저장된 인증이 있고 **Entity도 있으면** online을 사용한다. 둘 중 하나가 없으면 explicit
-`WANDB_MODE=online`이어도 offline으로 전환하므로 대화형 로그인을 요청하지 않는다.
+불러온 `WANDB_API_KEY`와 Entity가 모두 있을 때 online을 사용한다. 둘 중 하나라도 없으면
+`WANDB_MODE=online`이어도 offline으로 전환한다.
 `WANDB_MODE=offline`은 강제 offline, `disabled`는 SDK 없이 로컬 기록만 한다.
 W&B 미설치, import/init/log/finish 오류는 경고를 내고 로컬 기록을 보존한다.
 온라인 init timeout은 10초이며 실패 시 SDK를 반복 초기화하지 않는다.
@@ -241,7 +208,7 @@ with ExperimentLogger(team="visual", config=cfg, seed=seed, model=model_name) as
 
 ## Offline 동기화
 
-팀장 또는 관리된 인증 환경에서 SDK와 안전하게 주입된 키/Entity를 사용한다.
+SDK와 API key가 있는 환경에서는 같은 dotenv 파일 또는 환경변수에서 Entity와 key를 읽는다.
 SDK native offline bundle이 있으면 아래 명령으로 전송한다.
 
 ```bash
@@ -277,15 +244,16 @@ HF card 및 Notion 분석에는 run_id, 학습 source_run_id, W&B URL, HF revisi
 python -m unittest tests.test_experiment_logger -v
 ```
 
-Mock online 계약(환경변수 키/CLI 저장 인증), 무인증 offline 선택, 잘못된 호스트·손상된 netrc,
-SDK 미설치·실패 격리, config redaction,
+Mock online 계약, dotenv의 API key·Entity·group·project 적용, 기존 환경변수 우선,
+인증 파일이 없을 때 offline/로컬 기록, SDK 미설치·실패 격리, config redaction,
 seed/Git commit, 동시 UUID 생성, group 분리, 예외 시 로컬 보존, checkpoint 연결을 검증한다.
 SDK 설치 시 실제 offline binary 생성도 별도 subprocess로 검증한다.
 실제 외부 online 업로드는 유효한 키와 Entity가 있어야 별도로 확인할 수 있다.
 
 ### 이번 호스트에서 실행한 결과
 
-- macOS, Python 3.11, W&B SDK 0.30.0에서 로거 테스트 10개 통과.
+- macOS, Python 3.11, W&B SDK 0.30.0에서 이전 로거 테스트 10개 통과.
+이번 dotenv 변경에서는 전용 로거 테스트 13개가 통과했다.
 - 실제 기존 `outputs/graph/dataset.pt`로 v1/v2/v3/v4 학습을 각각 수정 전 HEAD와
   수정 후에 실행했다(1 epoch, 최대 1 batch; v1/v2 flat, v3 flat_sampling,
   v4 flat/current). model weights, optimizer state, scheduler state, 시간 제외
@@ -301,5 +269,5 @@ SDK 설치 시 실제 offline binary 생성도 별도 subprocess로 검증한다
   CUDA/MPS 학습, Vessl 환경, 외부 online 업로드는 이번 변경에서 실행하지 않았다.
   online 동작과 JSON 복구 전송은 mock 기반 계약 테스트다.
 
-후속 인증 변경에서는 저장된 login 인식과 JSON 동기화까지 포함해 로거 테스트 14개가 통과했다.
-실제 W&B online 업로드 및 Vessl 재시작 시 인증 유지 여부는 여전히 실행 검증하지 않았다.
+이번 변경 후 전체 ManiSkill simulator test suite는 다시 실행하지 않았다. 실제 W&B online 업로드
+및 Vessl 재시작 시 인증 파일 유지 여부도 실행 검증하지 않았다.

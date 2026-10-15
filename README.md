@@ -68,6 +68,6 @@ See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measure
 
 Existing Graph training and evaluation entrypoints now record scalar experiments
 to `experiments/<run_id>/`. W&B is optional; missing authentication selects offline
-mode, and missing SDK keeps local JSON logging. The team lead configures the
-central Entity and workspace Secrets once. See
+mode, and missing SDK keeps local JSON logging. Vessl optionally loads
+`/root/.secrets/wandb.env`; see the setup guide. See
 [experiment tracking setup and integration scope](docs/experiment_tracking.md).
