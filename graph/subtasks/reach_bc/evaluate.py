@@ -204,6 +204,8 @@ def evaluate(output=ROOT,dataset=DATASET,mode='flat',repeat=False,video_seed=Non
                         with imageio.get_writer(path,fps=10) as writer:
                             r=run_episode(env,start,predictor,mode,writer)
                         write_json(path.with_suffix('.json'),r)
+                        experiment.link_output(path, kind='rollouts')
+                        experiment.link_output(path.with_suffix('.json'), kind='episode_metadata')
                     else:r=run_episode(env,start,predictor,mode)
                     records.append(r)
                     experiment.log(summary(records), prefix='eval/partial')

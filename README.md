@@ -71,3 +71,7 @@ to `experiments/<run_id>/`. W&B is optional; missing authentication selects offl
 mode, and missing SDK keeps local JSON logging. Vessl optionally loads
 `/root/.secrets/wandb.env`; see the setup guide. See
 [experiment tracking setup and integration scope](docs/experiment_tracking.md).
+
+To publish selected checkpoints, rollout videos, and metrics after an experiment,
+see [Hugging Face artifacts](docs/huggingface_artifacts.md). Repository initialization
+and publishing are explicit commands; training only records a local manifest.
