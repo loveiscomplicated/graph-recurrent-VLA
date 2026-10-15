@@ -1,4 +1,5 @@
 """Executable audit and richly traced, paired v1/v2 policy evaluation."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 import hashlib
 import json
@@ -221,55 +222,60 @@ def main():
     args=p.parse_args()
     if args.horizon<1:p.error('horizon must be positive')
     data,geometry=load_dataset(args.dataset); seed_all(0,4)
-    if args.audit:
-        audit(args.output,data);return
-    predictor,ck=None,None
-    if args.checkpoint:
-        predictor,ck,*_=load_predictor(args.checkpoint,data,args.dataset)
-    elif not (args.expert or args.original_expert):
-        p.error('choose audit, expert, original-expert or checkpoint')
-    if args.episode_ids and not set(args.episode_ids).issubset(data['manifest']['splits']['test']):p.error('episode ids must be held-out')
-    episodes=[e for e in data['manifest']['episodes'] if e['episode_id'] in data['manifest']['splits']['test'] and (not args.episode_ids or e['episode_id'] in args.episode_ids)]
-    if args.new_seeds:
-        if args.stages != ['full'] or not args.checkpoint:p.error('fresh seeds require checkpoint and --stages full')
-        used={e['episode_seed'] for e in data['manifest']['episodes']}
-        if any(s<0 for s in args.new_seeds) or len(set(args.new_seeds))!=len(args.new_seeds) or used & set(args.new_seeds):p.error('fresh seeds must be unique and absent from dataset')
-        episodes=[dict(episode_id=-s,episode_seed=s,reset_kwargs={'seed':s},new_configuration=True) for s in args.new_seeds]
-    starts={}
-    if 'grasp' in args.stages or 'transport' in args.stages:
-        previous=json.loads(args.expert_report.read_text())
-        starts=previous['starts']
-    report=dict(thresholds=THRESHOLDS,horizon=args.horizon,checkpoint=str(args.checkpoint) if args.checkpoint else None,control_mode='pd_joint_pos' if args.original_expert else 'pd_ee_delta_pose',versions=versions(),settings={},starts={},new_configuration_seeds=args.new_seeds,physics_backend='physx_cpu',torch_device='cpu')
-    session=ReplaySession(data,report['control_mode'],args.horizon)
-    try:
-        with torch.inference_mode():
-            for stage in args.stages:
-                records=[]
-                for ep in episodes:
-                    eid=ep['episode_id'];prefix=0
-                    if stage=='alignment':
-                        rows=torch.where((data['episode_id']==eid)&(data['phase']==3))[0]
-                        if not len(rows): rows=torch.where((data['episode_id']==eid)&(data['phase']==4))[0]
-                        prefix=int(data['timestep'][rows[0]])
-                    elif stage!='full':
-                        prefix=starts[str(eid)].get(stage)
-                        if prefix is None: continue
-                    if args.original_expert and stage!='full':
-                        raise ValueError('original control uses original full trajectories only')
-                    r=run_episode(session,ep,predictor,prefix,args.expert or args.original_expert)
-                    records.append(r)
-                    if args.expert and stage=='full':
-                        run=0; start={'grasp':None,'transport':None}
-                        for row in r['trace']:
-                            run=run+1 if row['after']['grasped'] else 0
-                            if run>=5:
-                                if start['grasp'] is None: start['grasp']=row['absolute_t']+1
-                                if start['transport'] is None and row['after']['lifted']:start['transport']=row['absolute_t']+1
-                        report['starts'][eid]=start
-                    print(f"{stage} ep{eid} success={r['success']} steps={r['steps']} failure={r['failure_stage']}",flush=True)
-                report['settings'][stage]=dict(episodes=records,denominator=len(records),successes=sum(r['success'] for r in records),stage_counts={k:sum(r[k] for r in records) for k in ['approach','acquisition','transport','alignment','insertion']},failure_counts={k:sum(r['failure_stage']==k for r in records) for k in ['acquisition','retention','transport','alignment','insertion']})
-                write_json(args.output,report)
-    finally:session.close()
+    with ExperimentLogger(team='graph', config=vars(args), seed=0, job_type='evaluate') as experiment:
+        if args.audit:
+            audit(args.output,data);return
+        predictor,ck=None,None
+        if args.checkpoint:
+            predictor,ck,*_=load_predictor(args.checkpoint,data,args.dataset)
+            experiment.record(parameters=ck['config'], model=ck['model_name'], dataset_sha256=ck['dataset_sha256'], environment=data['manifest']['config'])
+            experiment.link_output(args.checkpoint, checkpoint=True)
+        elif not (args.expert or args.original_expert):
+            p.error('choose audit, expert, original-expert or checkpoint')
+        if args.episode_ids and not set(args.episode_ids).issubset(data['manifest']['splits']['test']):p.error('episode ids must be held-out')
+        episodes=[e for e in data['manifest']['episodes'] if e['episode_id'] in data['manifest']['splits']['test'] and (not args.episode_ids or e['episode_id'] in args.episode_ids)]
+        if args.new_seeds:
+            if args.stages != ['full'] or not args.checkpoint:p.error('fresh seeds require checkpoint and --stages full')
+            used={e['episode_seed'] for e in data['manifest']['episodes']}
+            if any(s<0 for s in args.new_seeds) or len(set(args.new_seeds))!=len(args.new_seeds) or used & set(args.new_seeds):p.error('fresh seeds must be unique and absent from dataset')
+            episodes=[dict(episode_id=-s,episode_seed=s,reset_kwargs={'seed':s},new_configuration=True) for s in args.new_seeds]
+        starts={}
+        if 'grasp' in args.stages or 'transport' in args.stages:
+            previous=json.loads(args.expert_report.read_text())
+            starts=previous['starts']
+        report=dict(thresholds=THRESHOLDS,horizon=args.horizon,checkpoint=str(args.checkpoint) if args.checkpoint else None,control_mode='pd_joint_pos' if args.original_expert else 'pd_ee_delta_pose',versions=versions(),settings={},starts={},new_configuration_seeds=args.new_seeds,physics_backend='physx_cpu',torch_device='cpu')
+        session=ReplaySession(data,report['control_mode'],args.horizon)
+        try:
+            with torch.inference_mode():
+                for stage in args.stages:
+                    records=[]
+                    for ep in episodes:
+                        eid=ep['episode_id'];prefix=0
+                        if stage=='alignment':
+                            rows=torch.where((data['episode_id']==eid)&(data['phase']==3))[0]
+                            if not len(rows): rows=torch.where((data['episode_id']==eid)&(data['phase']==4))[0]
+                            prefix=int(data['timestep'][rows[0]])
+                        elif stage!='full':
+                            prefix=starts[str(eid)].get(stage)
+                            if prefix is None: continue
+                        if args.original_expert and stage!='full':
+                            raise ValueError('original control uses original full trajectories only')
+                        r=run_episode(session,ep,predictor,prefix,args.expert or args.original_expert)
+                        records.append(r)
+                        if args.expert and stage=='full':
+                            run=0; start={'grasp':None,'transport':None}
+                            for row in r['trace']:
+                                run=run+1 if row['after']['grasped'] else 0
+                                if run>=5:
+                                    if start['grasp'] is None: start['grasp']=row['absolute_t']+1
+                                    if start['transport'] is None and row['after']['lifted']:start['transport']=row['absolute_t']+1
+                            report['starts'][eid]=start
+                        print(f"{stage} ep{eid} success={r['success']} steps={r['steps']} failure={r['failure_stage']}",flush=True)
+                    report['settings'][stage]=dict(episodes=records,denominator=len(records),successes=sum(r['success'] for r in records),stage_counts={k:sum(r[k] for r in records) for k in ['approach','acquisition','transport','alignment','insertion']},failure_counts={k:sum(r['failure_stage']==k for r in records) for k in ['acquisition','retention','transport','alignment','insertion']})
+                    write_json(args.output,report)
+                    experiment.log(report, prefix='eval')
+                    experiment.link_output(args.output)
+        finally:session.close()
 
 
 if __name__=='__main__':main()

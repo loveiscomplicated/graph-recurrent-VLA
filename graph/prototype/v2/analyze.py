@@ -1,4 +1,5 @@
 """Offline reproduction, physical one-step probes and trace summaries."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 import json
 from pathlib import Path
@@ -13,22 +14,27 @@ from .diagnostics import load_predictor, qvel_dataset, ReplaySession, run_episod
 
 def offline(checkpoint,data,geometry,qvel):
     predict,ck,model,norm,builder,sn=load_predictor(checkpoint,data)
-    ids=split_indices(data,'test')
-    with torch.inference_mode():
-        pred=torch.cat([predict(geometry.select(i),qvel[i]) for i in ids.split(32)])
-        metrics=action_metrics(pred,data['actions'][ids])
-        phases={p:dict(samples=int((data['phase'][ids]==k).sum()),**action_metrics(pred[data['phase'][ids]==k],data['actions'][ids][data['phase'][ids]==k])) for k,p in enumerate(PHASES)}
-        construction=[];state=[];network=[]
-        for t in range(60):
-            index=ids[(t*23)%len(ids):((t*23)%len(ids))+1];g=geometry.select(index)
-            start=perf_counter();inputs=norm.apply(ck['model_name'],g,builder);end=perf_counter()
-            shared=sn.apply(g,qvel[index],ck['state_mode']) if sn else None;end2=perf_counter()
-            result=model(inputs,shared) if sn else model(inputs);end3=perf_counter()
-            if t>=10:
-                construction.append((end-start)*1000);state.append((end2-end)*1000);network.append((end3-end2)*1000)
-        latency=dict(graph_stats=inputs.stats if ck['model_name']!='flat' else None,geometry_feature_or_graph_ms=float(np.mean(construction)),shared_state_ms=float(np.mean(state)),network_ms=float(np.mean(network)),total_ms=float(np.mean(construction)+np.mean(state)+np.mean(network)),repeats=50,device='cpu',threads=4)
-        distribution=dict(expert_mean=data['actions'][ids].mean(0).tolist(),predicted_mean=pred.mean(0).tolist(),expert_std=data['actions'][ids].std(0).tolist(),predicted_std=pred.std(0).tolist(),clipped_fraction=float((pred.abs()>1).float().mean()),gripper_sign_accuracy=float(((pred[:,6]>0)==(data['actions'][ids,6]>0)).float().mean()))
-    return dict(checkpoint=str(checkpoint),model=ck['model_name'],parameters=ck['parameters'],checkpoint_epoch=ck['epoch'],offline=metrics,phase_offline=phases,latency=latency,distribution=distribution)
+    with ExperimentLogger(team='graph', config=ck['config'], seed=0, model=ck['model_name'], job_type='evaluate') as experiment:
+        experiment.link_output(checkpoint, checkpoint=True)
+        ids=split_indices(data,'test')
+        with torch.inference_mode():
+            pred=torch.cat([predict(geometry.select(i),qvel[i]) for i in ids.split(32)])
+            metrics=action_metrics(pred,data['actions'][ids])
+            phases={p:dict(samples=int((data['phase'][ids]==k).sum()),**action_metrics(pred[data['phase'][ids]==k],data['actions'][ids][data['phase'][ids]==k])) for k,p in enumerate(PHASES)}
+            construction=[];state=[];network=[]
+            for t in range(60):
+                index=ids[(t*23)%len(ids):((t*23)%len(ids))+1];g=geometry.select(index)
+                start=perf_counter();inputs=norm.apply(ck['model_name'],g,builder);end=perf_counter()
+                shared=sn.apply(g,qvel[index],ck['state_mode']) if sn else None;end2=perf_counter()
+                result=model(inputs,shared) if sn else model(inputs);end3=perf_counter()
+                if t>=10:
+                    construction.append((end-start)*1000);state.append((end2-end)*1000);network.append((end3-end2)*1000)
+            latency=dict(graph_stats=inputs.stats if ck['model_name']!='flat' else None,geometry_feature_or_graph_ms=float(np.mean(construction)),shared_state_ms=float(np.mean(state)),network_ms=float(np.mean(network)),total_ms=float(np.mean(construction)+np.mean(state)+np.mean(network)),repeats=50,device='cpu',threads=4)
+            distribution=dict(expert_mean=data['actions'][ids].mean(0).tolist(),predicted_mean=pred.mean(0).tolist(),expert_std=data['actions'][ids].std(0).tolist(),predicted_std=pred.std(0).tolist(),clipped_fraction=float((pred.abs()>1).float().mean()),gripper_sign_accuracy=float(((pred[:,6]>0)==(data['actions'][ids,6]>0)).float().mean()))
+        report = dict(checkpoint=str(checkpoint),model=ck['model_name'],parameters=ck['parameters'],checkpoint_epoch=ck['epoch'],offline=metrics,phase_offline=phases,latency=latency,distribution=distribution)
+
+        experiment.log(report, prefix='eval')
+        return report
 
 
 def probes(data,geometry,paths):

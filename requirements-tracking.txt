@@ -1,0 +1,2 @@
+# Optional transport; the logger works locally without this package.
+wandb>=0.25,<1

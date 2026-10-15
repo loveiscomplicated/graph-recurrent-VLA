@@ -1,4 +1,5 @@
 """Held-out action prediction and paired simulator rollouts, separately reported."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 import hashlib
 import json
@@ -154,60 +155,64 @@ def main():
         p.error("horizon and latency-repeats must be positive")
     checkpoint = torch.load(args.checkpoint, weights_only=True)
     cfg, name = checkpoint["config"], checkpoint["model_name"]
-    seed_all(cfg["seed"], cfg["threads"])
-    data, geometry = load_dataset(args.dataset)
-    dataset_hash = sha256(args.dataset)
-    if checkpoint["dataset_sha256"] != dataset_hash or checkpoint["splits"] != data["manifest"]["splits"]:
-        raise ValueError("checkpoint dataset/split mismatch")
-    model = make_policy(name, cfg)
-    model.load_state_dict(checkpoint["model_state"])
-    model.eval()
-    norm = FeatureNormalizer(**checkpoint["normalizer"])
-    builder = GraphBuilder(cfg["surface_k"], cfg["interaction_k"], center=name == "center")
-    test = split_indices(data, "test")
-    with torch.inference_mode():
-        predictions = torch.cat([model(norm.apply(name, geometry.select(ids), builder)) for ids in test.split(cfg["batch_size"])])
-        targets = data["actions"][test]
-        metrics = action_metrics(predictions, targets)
-        by_phase = {}
-        for phase, label in enumerate(PHASES):
-            mask = data["phase"][test] == phase
-            by_phase[label] = {"samples": int(mask.sum()), **action_metrics(predictions[mask], targets[mask])} if mask.any() else {"samples": 0}
-        benchmark = test[torch.linspace(0, len(test)-1, min(16, len(test))).long()]
-        g = geometry.select(benchmark[:1])
-        for _ in range(10):
-            model(norm.apply(name, g, builder))
-        construction, inference = [], []
-        for repeat in range(args.latency_repeats):
-            g = geometry.select(benchmark[repeat % len(benchmark):repeat % len(benchmark)+1])
-            start = perf_counter()
-            inputs = norm.apply(name, g, builder)
-            construction.append((perf_counter()-start)*1000)
-            start = perf_counter()
-            model(inputs)
-            inference.append((perf_counter()-start)*1000)
-        report = {"model": name, "checkpoint": str(args.checkpoint.resolve()), "checkpoint_epoch": checkpoint["epoch"],
-                  "dataset_sha256": dataset_hash, "test_episode_ids": data["manifest"]["splits"]["test"],
-                  "test_samples": len(test), "parameters": checkpoint["parameters"], "config": cfg,
-                  "versions": versions(), "offline": metrics, "phase_offline": by_phase,
-                  "latency": {"batch_size": 1, "states": len(benchmark), "repeats": args.latency_repeats, "device": "cpu", "threads": cfg["threads"],
-                              "feature_or_graph_construction_ms": float(np.mean(construction)),
-                              "network_inference_ms": float(np.mean(inference)),
-                              "total_ms": float(np.mean(construction)+np.mean(inference)),
-                              "graph_stats": None if name == "flat" else inputs.stats},
-                  "rollout": None, "alignment_rollout": None}
-        if args.refresh_latency:
-            previous = json.loads(args.output.read_text())
-            if any(previous[k] != report[k] for k in ("model", "checkpoint", "dataset_sha256")):
-                raise ValueError("existing result does not match checkpoint/dataset")
-            for setting in ("rollout", "alignment_rollout"):
-                report[setting] = previous[setting]
-        if args.rollout:
-            report["rollout"] = rollout(model, name, cfg, norm, builder, data, geometry, args)
-        if args.warmstart:
-            report["alignment_rollout"] = rollout(model, name, cfg, norm, builder, data, geometry, args, warm=True)
-    write_json(args.output, report)
-    print(json.dumps({"model": name, "offline": metrics, "latency": report["latency"]}, indent=2))
+    with ExperimentLogger(team='graph', config=dict(parameters=cfg, command=vars(args)), seed=cfg['seed'], model=name, job_type='evaluate') as experiment:
+        experiment.link_output(args.checkpoint, checkpoint=True)
+        seed_all(cfg["seed"], cfg["threads"])
+        data, geometry = load_dataset(args.dataset)
+        dataset_hash = sha256(args.dataset)
+        if checkpoint["dataset_sha256"] != dataset_hash or checkpoint["splits"] != data["manifest"]["splits"]:
+            raise ValueError("checkpoint dataset/split mismatch")
+        model = make_policy(name, cfg)
+        model.load_state_dict(checkpoint["model_state"])
+        model.eval()
+        norm = FeatureNormalizer(**checkpoint["normalizer"])
+        builder = GraphBuilder(cfg["surface_k"], cfg["interaction_k"], center=name == "center")
+        test = split_indices(data, "test")
+        with torch.inference_mode():
+            predictions = torch.cat([model(norm.apply(name, geometry.select(ids), builder)) for ids in test.split(cfg["batch_size"])])
+            targets = data["actions"][test]
+            metrics = action_metrics(predictions, targets)
+            by_phase = {}
+            for phase, label in enumerate(PHASES):
+                mask = data["phase"][test] == phase
+                by_phase[label] = {"samples": int(mask.sum()), **action_metrics(predictions[mask], targets[mask])} if mask.any() else {"samples": 0}
+            benchmark = test[torch.linspace(0, len(test)-1, min(16, len(test))).long()]
+            g = geometry.select(benchmark[:1])
+            for _ in range(10):
+                model(norm.apply(name, g, builder))
+            construction, inference = [], []
+            for repeat in range(args.latency_repeats):
+                g = geometry.select(benchmark[repeat % len(benchmark):repeat % len(benchmark)+1])
+                start = perf_counter()
+                inputs = norm.apply(name, g, builder)
+                construction.append((perf_counter()-start)*1000)
+                start = perf_counter()
+                model(inputs)
+                inference.append((perf_counter()-start)*1000)
+            report = {"model": name, "checkpoint": str(args.checkpoint.resolve()), "checkpoint_epoch": checkpoint["epoch"],
+                      "dataset_sha256": dataset_hash, "test_episode_ids": data["manifest"]["splits"]["test"],
+                      "test_samples": len(test), "parameters": checkpoint["parameters"], "config": cfg,
+                      "versions": versions(), "offline": metrics, "phase_offline": by_phase,
+                      "latency": {"batch_size": 1, "states": len(benchmark), "repeats": args.latency_repeats, "device": "cpu", "threads": cfg["threads"],
+                                  "feature_or_graph_construction_ms": float(np.mean(construction)),
+                                  "network_inference_ms": float(np.mean(inference)),
+                                  "total_ms": float(np.mean(construction)+np.mean(inference)),
+                                  "graph_stats": None if name == "flat" else inputs.stats},
+                      "rollout": None, "alignment_rollout": None}
+            if args.refresh_latency:
+                previous = json.loads(args.output.read_text())
+                if any(previous[k] != report[k] for k in ("model", "checkpoint", "dataset_sha256")):
+                    raise ValueError("existing result does not match checkpoint/dataset")
+                for setting in ("rollout", "alignment_rollout"):
+                    report[setting] = previous[setting]
+            if args.rollout:
+                report["rollout"] = rollout(model, name, cfg, norm, builder, data, geometry, args)
+            if args.warmstart:
+                report["alignment_rollout"] = rollout(model, name, cfg, norm, builder, data, geometry, args, warm=True)
+        write_json(args.output, report)
+        experiment.log(report, prefix='eval')
+        experiment.link_output(args.output)
+        print(json.dumps({"model": name, "offline": metrics, "latency": report["latency"]}, indent=2))
 
 
 if __name__ == "__main__":

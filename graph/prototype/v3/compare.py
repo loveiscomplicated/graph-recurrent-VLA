@@ -1,4 +1,5 @@
 """Held-out offline and closed-loop comparison; no test-set selection."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 from pathlib import Path
 import torch
@@ -37,39 +38,45 @@ def main():
     args = p.parse_args(); seed_all(0, 4)
     data, g = load_dataset(args.dataset); qvel = qvel_dataset(data)
     candidate, ck = load_candidate(args.checkpoint, data, args.dataset)
-    baseline_path = f'outputs/graph/v2/training/{ck["model_name"]}_goal/best.pt'
-    original, old_ck, *_ = load_predictor(baseline_path, data, args.dataset)
-    if ck.get('smoke_max_batches') is not None or ck['config']['epochs'] != old_ck['config']['epochs']:
-        p.error('comparison requires a full equal-budget checkpoint; smoke checkpoints are execution checks only')
-    report = dict(versions=versions(), backend='physx_cpu' if args.rollouts else None, torch_device='cpu',
-                  dataset_sha256=sha256(args.dataset), splits=data['manifest']['splits'], baseline_checkpoint=baseline_path,
-                  candidate_checkpoint=str(args.checkpoint), models={})
-    ids = split_indices(data, 'test')
-    episodes = [e for e in data['manifest']['episodes'] if e['episode_id'] in data['manifest']['splits']['test']]
-    with torch.inference_mode():
-        for name, predict, checkpoint in [('original', original, old_ck), (ck.get('variant', 'interaction'), candidate, ck)]:
-            predictions = torch.cat([predict(g.select(batch), qvel[batch]) for batch in ids.split(32)])
-            result = dict(offline=action_metrics(predictions, data['actions'][ids]), parameters=checkpoint['parameters'],
-                          checkpoint_epoch=checkpoint['epoch'], settings={}, training_budget=checkpoint['config']['epochs'])
-            report['models'][name] = result
-            if args.rollouts:
-                session = ReplaySession(data, horizon=250)
-                try:
-                    for stage in ('full', 'alignment'):
-                        records = []
-                        for ep in episodes:
-                            prefix = 0
-                            if stage == 'alignment':
-                                rows = torch.where((data['episode_id'] == ep['episode_id']) & (data['phase'] == 3))[0]
-                                if not len(rows): rows = torch.where((data['episode_id'] == ep['episode_id']) & (data['phase'] == 4))[0]
-                                prefix = int(data['timestep'][rows[0]])
-                            record = run_episode(session, ep, predict, prefix)
-                            records.append(record)
-                            print(f'{name} {stage} ep{ep["episode_id"]}: success={record["success"]}', flush=True)
-                        result['settings'][stage] = dict(successes=sum(r['success'] for r in records), denominator=len(records), episodes=records)
-                        write_json(args.output, report)
-                finally: session.close()
-            write_json(args.output, report)
+    with ExperimentLogger(team='graph', config=dict(parameters=ck['config'], command=vars(args)), seed=0, model=ck['model_name'], job_type='evaluate') as experiment:
+        experiment.link_output(args.checkpoint, checkpoint=True)
+        baseline_path = f'outputs/graph/v2/training/{ck["model_name"]}_goal/best.pt'
+        original, old_ck, *_ = load_predictor(baseline_path, data, args.dataset)
+        if ck.get('smoke_max_batches') is not None or ck['config']['epochs'] != old_ck['config']['epochs']:
+            p.error('comparison requires a full equal-budget checkpoint; smoke checkpoints are execution checks only')
+        report = dict(versions=versions(), backend='physx_cpu' if args.rollouts else None, torch_device='cpu',
+                      dataset_sha256=sha256(args.dataset), splits=data['manifest']['splits'], baseline_checkpoint=baseline_path,
+                      candidate_checkpoint=str(args.checkpoint), models={})
+        ids = split_indices(data, 'test')
+        episodes = [e for e in data['manifest']['episodes'] if e['episode_id'] in data['manifest']['splits']['test']]
+        with torch.inference_mode():
+            for name, predict, checkpoint in [('original', original, old_ck), (ck.get('variant', 'interaction'), candidate, ck)]:
+                predictions = torch.cat([predict(g.select(batch), qvel[batch]) for batch in ids.split(32)])
+                result = dict(offline=action_metrics(predictions, data['actions'][ids]), parameters=checkpoint['parameters'],
+                              checkpoint_epoch=checkpoint['epoch'], settings={}, training_budget=checkpoint['config']['epochs'])
+                report['models'][name] = result
+                if args.rollouts:
+                    session = ReplaySession(data, horizon=250)
+                    try:
+                        for stage in ('full', 'alignment'):
+                            records = []
+                            for ep in episodes:
+                                prefix = 0
+                                if stage == 'alignment':
+                                    rows = torch.where((data['episode_id'] == ep['episode_id']) & (data['phase'] == 3))[0]
+                                    if not len(rows): rows = torch.where((data['episode_id'] == ep['episode_id']) & (data['phase'] == 4))[0]
+                                    prefix = int(data['timestep'][rows[0]])
+                                record = run_episode(session, ep, predict, prefix)
+                                records.append(record)
+                                print(f'{name} {stage} ep{ep["episode_id"]}: success={record["success"]}', flush=True)
+                            result['settings'][stage] = dict(successes=sum(r['success'] for r in records), denominator=len(records), episodes=records)
+                            write_json(args.output, report)
+                            experiment.log(report, prefix='eval')
+                            experiment.link_output(args.output)
+                    finally: session.close()
+                write_json(args.output, report)
+                experiment.log(report, prefix='eval')
+                experiment.link_output(args.output)
 
 
 if __name__ == '__main__': main()

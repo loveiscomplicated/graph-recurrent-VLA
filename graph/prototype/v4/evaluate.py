@@ -1,4 +1,5 @@
 """Offline metrics, cache timings and live paired v2-compatible rollouts."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 import hashlib
 import json
@@ -143,66 +144,72 @@ def main():
     if args.output.exists(): p.error('choose a fresh output file')
     data, geometry = load_dataset(args.dataset)
     ck, model, norm, sn, builder = load(args.checkpoint, data, args.dataset)
-    seed_all(ck['config']['seed'], ck['config']['threads'])
-    qvel = qvel_dataset(data); windows = HistoryDataset(data, model.length)
-    test = split_indices(data, 'test')
-    report = dict(checkpoint=str(args.checkpoint), config=ck['config'], history=model.history,
-        history_length=model.length, model=model.name, parameters=ck['parameters'], epoch=ck['epoch'],
-        dataset_sha256=ck['dataset_sha256'], splits=ck['splits'], versions=versions(),
-        ablate_history=args.ablate_history, settings={}, horizon=args.horizon, thresholds=THRESHOLDS,
-        torch_device='cpu', physics_backend='physx_cpu' if args.rollouts else None)
-    with torch.inference_mode():
-        predictions = torch.cat([windows.forward(model, ids, geometry, qvel, norm, sn, builder) for ids in test.split(ck['config']['batch_size'])])
-        report['offline'] = action_metrics(predictions, data['actions'][test])
-        if model.history != 'current':
-            ablated = []
-            for ids in test.split(ck['config']['batch_size']):
-                g = geometry.select(ids)
-                h = model.encode(norm.apply(model.name, g, builder), sn.apply(g, qvel[ids], 'goal'))
-                _, actions, valid = windows.window(ids, model.use_state_history)
-                ablated.append(model.from_history(h[:,None].expand(-1,model.state_count,-1), torch.zeros_like(actions), valid))
-            report['offline_repeated_current_zero_action'] = action_metrics(torch.cat(ablated), data['actions'][test])
-        runtime = Runtime(model, norm, sn, builder, args.ablate_history)
-        for i in range(args.latency_repeats+10):
-            ids = test[i%len(test):i%len(test)+1]; g = geometry.select(ids)
-            _, h, *_ = runtime.predict(g, qvel[ids]); runtime.buffer.commit(h, data['actions'][ids])
-        means = np.mean(runtime.timing[10:], axis=0)
-        report['latency'] = dict(zip(['feature_construction_ms','encoder_ms','history_processing_ms','action_head_ms'], means.tolist()))
-        report['latency'].update(total_ms=float(means.sum()), cache='one current encoding per step, fixed eval encoder', threads=ck['config']['threads'], repeats=args.latency_repeats, excludes='GT extraction and simulator stepping')
-        write_json(args.output, report)
-        if args.rollouts:
-            episodes = [e for e in data['manifest']['episodes'] if e['episode_id'] in ck['splits']['test']]
-            if args.episode_ids:
-                if not set(args.episode_ids).issubset(ck['splits']['test']): p.error('held-out IDs required')
-                episodes = [e for e in episodes if e['episode_id'] in args.episode_ids]
-            if args.new_seeds:
-                used = {e['episode_seed'] for e in data['manifest']['episodes']}
-                if args.stages != ['full'] or len(set(args.new_seeds)) != len(args.new_seeds) or used & set(args.new_seeds) or min(args.new_seeds)<0:
-                    p.error('fresh seeds require full stage, unique nonnegative seeds absent from dataset')
-                episodes = [dict(episode_id=-s, episode_seed=s, reset_kwargs={'seed':s}, new_configuration=True) for s in args.new_seeds]
-            starts = json.loads(Path('outputs/graph/v2/diagnostics/expert.json').read_text())['starts']
-            session = HistoryReplaySession(data, runtime, args.horizon)
-            try:
-                for stage in args.stages:
-                    records, skipped = [], []
-                    for ep in episodes:
-                        eid = ep['episode_id']; prefix = 0
-                        if stage == 'alignment':
-                            rows = torch.where((data['episode_id']==eid)&(data['phase']==3))[0]
-                            if not len(rows): rows = torch.where((data['episode_id']==eid)&(data['phase']==4))[0]
-                            if not len(rows): skipped.append(eid); continue
-                            prefix = int(data['timestep'][rows[0]])
-                        elif stage != 'full':
-                            prefix = starts[str(eid)].get(stage)
-                            if prefix is None: skipped.append(eid); continue
-                        r = run_episode(session, ep, prefix); records.append(r)
-                        print(f'{model.name}/{model.history} {stage} ep{eid}: success={r["success"]} failure={r["failure_stage"]}', flush=True)
-                    report['settings'][stage] = dict(episodes=records, denominator=len(records), skipped_episode_ids=skipped,
-                        successes=sum(r['success'] for r in records), stage_counts={k:sum(r[k] for r in records) for k in ['approach','acquisition','transport','alignment','insertion']},
-                        failure_counts={k:sum(r['failure_stage']==k for r in records) for k in ['acquisition','retention','transport','alignment','insertion']})
-                    write_json(args.output, report)
-            finally: session.close()
-    print(json.dumps({k:report[k] for k in ['model','history','offline','latency']}, indent=2))
+    with ExperimentLogger(team='graph', config=dict(parameters=ck['config'], command=vars(args)), seed=ck['config']['seed'], model=ck['model_name'], job_type='evaluate') as experiment:
+        experiment.link_output(args.checkpoint, checkpoint=True)
+        seed_all(ck['config']['seed'], ck['config']['threads'])
+        qvel = qvel_dataset(data); windows = HistoryDataset(data, model.length)
+        test = split_indices(data, 'test')
+        report = dict(checkpoint=str(args.checkpoint), config=ck['config'], history=model.history,
+            history_length=model.length, model=model.name, parameters=ck['parameters'], epoch=ck['epoch'],
+            dataset_sha256=ck['dataset_sha256'], splits=ck['splits'], versions=versions(),
+            ablate_history=args.ablate_history, settings={}, horizon=args.horizon, thresholds=THRESHOLDS,
+            torch_device='cpu', physics_backend='physx_cpu' if args.rollouts else None)
+        with torch.inference_mode():
+            predictions = torch.cat([windows.forward(model, ids, geometry, qvel, norm, sn, builder) for ids in test.split(ck['config']['batch_size'])])
+            report['offline'] = action_metrics(predictions, data['actions'][test])
+            if model.history != 'current':
+                ablated = []
+                for ids in test.split(ck['config']['batch_size']):
+                    g = geometry.select(ids)
+                    h = model.encode(norm.apply(model.name, g, builder), sn.apply(g, qvel[ids], 'goal'))
+                    _, actions, valid = windows.window(ids, model.use_state_history)
+                    ablated.append(model.from_history(h[:,None].expand(-1,model.state_count,-1), torch.zeros_like(actions), valid))
+                report['offline_repeated_current_zero_action'] = action_metrics(torch.cat(ablated), data['actions'][test])
+            runtime = Runtime(model, norm, sn, builder, args.ablate_history)
+            for i in range(args.latency_repeats+10):
+                ids = test[i%len(test):i%len(test)+1]; g = geometry.select(ids)
+                _, h, *_ = runtime.predict(g, qvel[ids]); runtime.buffer.commit(h, data['actions'][ids])
+            means = np.mean(runtime.timing[10:], axis=0)
+            report['latency'] = dict(zip(['feature_construction_ms','encoder_ms','history_processing_ms','action_head_ms'], means.tolist()))
+            report['latency'].update(total_ms=float(means.sum()), cache='one current encoding per step, fixed eval encoder', threads=ck['config']['threads'], repeats=args.latency_repeats, excludes='GT extraction and simulator stepping')
+            write_json(args.output, report)
+            experiment.log(report, prefix='eval')
+            experiment.link_output(args.output)
+            if args.rollouts:
+                episodes = [e for e in data['manifest']['episodes'] if e['episode_id'] in ck['splits']['test']]
+                if args.episode_ids:
+                    if not set(args.episode_ids).issubset(ck['splits']['test']): p.error('held-out IDs required')
+                    episodes = [e for e in episodes if e['episode_id'] in args.episode_ids]
+                if args.new_seeds:
+                    used = {e['episode_seed'] for e in data['manifest']['episodes']}
+                    if args.stages != ['full'] or len(set(args.new_seeds)) != len(args.new_seeds) or used & set(args.new_seeds) or min(args.new_seeds)<0:
+                        p.error('fresh seeds require full stage, unique nonnegative seeds absent from dataset')
+                    episodes = [dict(episode_id=-s, episode_seed=s, reset_kwargs={'seed':s}, new_configuration=True) for s in args.new_seeds]
+                starts = json.loads(Path('outputs/graph/v2/diagnostics/expert.json').read_text())['starts']
+                session = HistoryReplaySession(data, runtime, args.horizon)
+                try:
+                    for stage in args.stages:
+                        records, skipped = [], []
+                        for ep in episodes:
+                            eid = ep['episode_id']; prefix = 0
+                            if stage == 'alignment':
+                                rows = torch.where((data['episode_id']==eid)&(data['phase']==3))[0]
+                                if not len(rows): rows = torch.where((data['episode_id']==eid)&(data['phase']==4))[0]
+                                if not len(rows): skipped.append(eid); continue
+                                prefix = int(data['timestep'][rows[0]])
+                            elif stage != 'full':
+                                prefix = starts[str(eid)].get(stage)
+                                if prefix is None: skipped.append(eid); continue
+                            r = run_episode(session, ep, prefix); records.append(r)
+                            print(f'{model.name}/{model.history} {stage} ep{eid}: success={r["success"]} failure={r["failure_stage"]}', flush=True)
+                        report['settings'][stage] = dict(episodes=records, denominator=len(records), skipped_episode_ids=skipped,
+                            successes=sum(r['success'] for r in records), stage_counts={k:sum(r[k] for r in records) for k in ['approach','acquisition','transport','alignment','insertion']},
+                            failure_counts={k:sum(r['failure_stage']==k for r in records) for k in ['acquisition','retention','transport','alignment','insertion']})
+                        write_json(args.output, report)
+                        experiment.log(report, prefix='eval')
+                        experiment.link_output(args.output)
+                finally: session.close()
+        print(json.dumps({k:report[k] for k in ['model','history','offline','latency']}, indent=2))
 
 
 if __name__ == '__main__': main()

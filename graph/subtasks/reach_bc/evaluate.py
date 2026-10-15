@@ -1,4 +1,5 @@
 """Fixed paired starts, actual CPU closed-loop SR, reference, traces and videos."""
+from utils.experiment_logger import ExperimentLogger
 import argparse
 import hashlib
 import json
@@ -173,60 +174,66 @@ def run_episode(env,start,predictor,mode='flat',writer=None):
 
 def evaluate(output=ROOT,dataset=DATASET,mode='flat',repeat=False,video_seed=None):
     if platform.system()!='Linux':raise RuntimeError('Linux benchmark only')
-    seed_all(0,4);output=Path(output)
-    manifest_path=output/'evaluation/paired_starts.json'
-    manifest=json.loads(manifest_path.read_text())
-    if manifest['dataset_sha256']!=sha256(dataset) or manifest['index_sha256']!=sha256(manifest['index']):
-        raise ValueError('manifest source changed')
-    checkpoint=output/'checkpoints/best.pt'
-    predictor=None if mode=='reference' else LivePolicy(checkpoint,dataset)
-    label=mode+('_repeat' if repeat else '')
-    result_path=output/f'evaluation/{label}.json'
-    if video_seed is None and result_path.exists():raise FileExistsError(result_path)
-    env=make_subtask_env('reach',index=manifest['index'],render_mode='rgb_array' if video_seed is not None else None)
-    records=[]
-    try:
-        with torch.inference_mode():
-            for start in manifest['starts']:
-                if video_seed is not None and start['eval_seed']!=video_seed:continue
-                if not start['valid']:
-                    # Retry only the SAME fixed start; record the actual reset outcome.
-                    pass
-                if video_seed is not None:
-                    import imageio.v2 as imageio
-                    path=output/f'videos/{mode}_{video_seed}.mp4'
-                    if path.exists():raise FileExistsError(path)
-                    path.parent.mkdir(parents=True,exist_ok=True)
-                    with imageio.get_writer(path,fps=10) as writer:
-                        r=run_episode(env,start,predictor,mode,writer)
-                    write_json(path.with_suffix('.json'),r)
-                else:r=run_episode(env,start,predictor,mode)
-                records.append(r)
-                print(mode,start['group'],start['eval_seed'],r['success'],r['steps'],r['failure_reason'],flush=True)
-    finally:env.close()
-    if video_seed is not None:
-        if not records:raise ValueError('video seed not in manifest')
-        return records
-    report=dict(mode=mode,checkpoint=str(checkpoint) if predictor else None,
-                checkpoint_sha256=sha256(checkpoint) if predictor else None,manifest_sha256=sha256(manifest_path),
-                versions=versions(),backend='physx_cpu',device='cpu',records=records,
-                held_out=summary([r for r in records if r['start']['group']=='held_out']),
-                fresh=summary([r for r in records if r['start']['group']=='fresh']))
-    lat=[v for r in records if r['reset_valid'] for v in r['forward_latency_ms']]
-    full=[v for r in records if r['reset_valid'] for v in r['feature_and_forward_latency_ms']]
-    report['latency']=dict(forward_mean_ms=float(np.mean(lat)),forward_p50_ms=float(np.median(lat)),
-                           forward_p95_ms=float(np.percentile(lat,95)),feature_and_forward_mean_ms=float(np.mean(full))) if lat else None
-    if repeat:
-        old=json.loads((output/f'evaluation/{mode}.json').read_text())
-        checks=[]
-        for a,b in zip(old['records'],records):
-            fields=('reset_valid','success','steps','failure_reason','initial_state_fingerprint','trace')
-            checks.append(all(a.get(k)==b.get(k) for k in fields))
-        if len(old['records'])!=len(records) or not all(checks):raise ValueError('policy repeat not exactly reproducible')
-        report['repeat_exact']=True
-    write_json(result_path,report)
-    print('SUMMARY',json.dumps({k:report[k] for k in ('held_out','fresh','latency')}),flush=True)
-    return report
+    with ExperimentLogger(team='graph', config=dict(dataset=dataset, output=output, mode=mode, repeat=repeat, video_seed=video_seed), seed=0, model=mode, job_type='evaluate') as experiment:
+        experiment.link_output(Path(output)/'checkpoints/best.pt', checkpoint=True)
+        seed_all(0,4);output=Path(output)
+        manifest_path=output/'evaluation/paired_starts.json'
+        manifest=json.loads(manifest_path.read_text())
+        if manifest['dataset_sha256']!=sha256(dataset) or manifest['index_sha256']!=sha256(manifest['index']):
+            raise ValueError('manifest source changed')
+        checkpoint=output/'checkpoints/best.pt'
+        predictor=None if mode=='reference' else LivePolicy(checkpoint,dataset)
+        experiment.record(parameters=predictor.ck['config'] if predictor else None, dataset_sha256=manifest['dataset_sha256'], evaluation_manifest=str(manifest_path.resolve()))
+        label=mode+('_repeat' if repeat else '')
+        result_path=output/f'evaluation/{label}.json'
+        if video_seed is None and result_path.exists():raise FileExistsError(result_path)
+        env=make_subtask_env('reach',index=manifest['index'],render_mode='rgb_array' if video_seed is not None else None)
+        records=[]
+        try:
+            with torch.inference_mode():
+                for start in manifest['starts']:
+                    if video_seed is not None and start['eval_seed']!=video_seed:continue
+                    if not start['valid']:
+                        # Retry only the SAME fixed start; record the actual reset outcome.
+                        pass
+                    if video_seed is not None:
+                        import imageio.v2 as imageio
+                        path=output/f'videos/{mode}_{video_seed}.mp4'
+                        if path.exists():raise FileExistsError(path)
+                        path.parent.mkdir(parents=True,exist_ok=True)
+                        with imageio.get_writer(path,fps=10) as writer:
+                            r=run_episode(env,start,predictor,mode,writer)
+                        write_json(path.with_suffix('.json'),r)
+                    else:r=run_episode(env,start,predictor,mode)
+                    records.append(r)
+                    experiment.log(summary(records), prefix='eval/partial')
+                    print(mode,start['group'],start['eval_seed'],r['success'],r['steps'],r['failure_reason'],flush=True)
+        finally:env.close()
+        if video_seed is not None:
+            if not records:raise ValueError('video seed not in manifest')
+            return records
+        report=dict(mode=mode,checkpoint=str(checkpoint) if predictor else None,
+                    checkpoint_sha256=sha256(checkpoint) if predictor else None,manifest_sha256=sha256(manifest_path),
+                    versions=versions(),backend='physx_cpu',device='cpu',records=records,
+                    held_out=summary([r for r in records if r['start']['group']=='held_out']),
+                    fresh=summary([r for r in records if r['start']['group']=='fresh']))
+        lat=[v for r in records if r['reset_valid'] for v in r['forward_latency_ms']]
+        full=[v for r in records if r['reset_valid'] for v in r['feature_and_forward_latency_ms']]
+        report['latency']=dict(forward_mean_ms=float(np.mean(lat)),forward_p50_ms=float(np.median(lat)),
+                               forward_p95_ms=float(np.percentile(lat,95)),feature_and_forward_mean_ms=float(np.mean(full))) if lat else None
+        if repeat:
+            old=json.loads((output/f'evaluation/{mode}.json').read_text())
+            checks=[]
+            for a,b in zip(old['records'],records):
+                fields=('reset_valid','success','steps','failure_reason','initial_state_fingerprint','trace')
+                checks.append(all(a.get(k)==b.get(k) for k in fields))
+            if len(old['records'])!=len(records) or not all(checks):raise ValueError('policy repeat not exactly reproducible')
+            report['repeat_exact']=True
+        write_json(result_path,report)
+        experiment.log(report, prefix='eval')
+        experiment.link_output(result_path)
+        print('SUMMARY',json.dumps({k:report[k] for k in ('held_out','fresh','latency')}),flush=True)
+        return report
 
 
 if __name__=='__main__':

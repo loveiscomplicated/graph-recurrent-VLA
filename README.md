@@ -63,3 +63,11 @@ The Graph team's PegInsertionSide subtask conditions and expert segmentation
 pipeline are documented in [graph/subtasks/README.md](graph/subtasks/README.md).
 See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measured
 91-episode validation, boundary limitations, and Reach baseline data readiness.
+
+## Experiment tracking
+
+Existing Graph training and evaluation entrypoints now record scalar experiments
+to `experiments/<run_id>/`. W&B is optional; missing authentication selects offline
+mode, and missing SDK keeps local JSON logging. The team lead configures the
+central Entity and workspace Secrets once. See
+[experiment tracking setup and integration scope](docs/experiment_tracking.md).
