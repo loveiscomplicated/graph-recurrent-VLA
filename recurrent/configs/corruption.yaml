@@ -1,0 +1,35 @@
+fill_mode: hold
+
+levels:
+  none:
+    drop_prob: 0.0
+    drop_len: [0, 0]
+    pos_noise: 0.0
+    rot_noise: 0.0
+    burst_prob: 0.0
+    burst_scale: 1.0
+    delay: 0
+  low:
+    drop_prob: 0.02
+    drop_len: [2, 5]
+    pos_noise: 0.001
+    rot_noise: 0.01
+    burst_prob: 0.01
+    burst_scale: 5.0
+    delay: 0
+  mid:
+    drop_prob: 0.05
+    drop_len: [3, 10]
+    pos_noise: 0.003
+    rot_noise: 0.03
+    burst_prob: 0.03
+    burst_scale: 5.0
+    delay: 1
+  high:
+    drop_prob: 0.08
+    drop_len: [5, 20]
+    pos_noise: 0.005
+    rot_noise: 0.05
+    burst_prob: 0.05
+    burst_scale: 5.0
+    delay: 2

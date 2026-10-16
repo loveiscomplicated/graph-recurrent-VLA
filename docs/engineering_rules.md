@@ -10,7 +10,8 @@
 | 위치 | 현재 역할 |
 | --- | --- |
 | `envs/maniskill/`, `examples/` | 공통 simulator 생성, raw GT, 실행 예제 |
-| `visual/`, `recurrent/` | `.gitkeep`만 있음. 학습·평가 구현 없음 |
+| `visual/` | `.gitkeep`만 있음. 학습·평가 구현 없음 |
+| `recurrent/` | GT state 입력 controller 7종 비교, 관측 손상 4단계, 학습·평가·리포트 (`recurrent/README.md`) |
 | `graph/prototype/`, `v2/`, `v3/`, `v4/` | Graph 모델 비교, TOML config, 학습·평가 및 진단 |
 | `graph/subtasks/`, `graph/subtasks/reach_bc/` | subtask 데이터·환경·분할, Reach BC 학습·평가 |
 | `utils/experiment_logger.py`, `utils/sync_experiment.py` | 공통 scalar/local/W&B 기록과 사후 동기화 |

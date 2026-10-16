@@ -64,6 +64,11 @@ pipeline are documented in [graph/subtasks/README.md](graph/subtasks/README.md).
 See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measured
 91-episode validation, boundary limitations, and Reach baseline data readiness.
 
+The Recurrent team's controller comparison (MLP, stacked-history MLP, GRU, LSTM,
+CfC, RKN and Mamba on GT state under four observation-corruption levels) is
+documented in [recurrent/README.md](recurrent/README.md). On a GPU server run
+`bash recurrent/setup_server.sh` and then `sh recurrent/run_all.sh`.
+
 ## Experiment tracking
 
 Existing Graph training and evaluation entrypoints now record scalar experiments

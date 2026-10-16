@@ -12,7 +12,8 @@
 | 팀/진입점 (모듈 또는 함수) | 설정 | 기존 기록/체크포인트 | 통합 |
 | --- | --- | --- | --- |
 | Visual (`visual/`) | 구현 없음 | 구현 없음 | 향후 연결 예제 제공 |
-| Recurrent (`recurrent/`) | 구현 없음 | 구현 없음 | 향후 연결 예제 제공 |
+| `recurrent.train` | `recurrent/configs/*.yaml` + CLI | `history.json`, `best.pt`, `last.pt` | 학습 step별 train/validation + 최종 summary |
+| `recurrent.evaluate` | checkpoint + CLI (`run_experiments`가 실행) | episode JSONL, summary JSON | 조건·손상 단계별 평가 summary, `source_run_id` 연결 |
 | `graph.prototype.train` | TOML + CLI override | stdout, history/training JSON, `best.pt` | epoch train/validation |
 | `graph.prototype.v2.train` | v2 TOML + CLI | 위와 같음 | epoch + 실제 loss components |
 | `graph.prototype.v3.train` | TOML + geometry CLI | 위와 같음 | epoch + variant 기록 |
