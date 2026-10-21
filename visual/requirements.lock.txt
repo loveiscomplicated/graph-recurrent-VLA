@@ -1,0 +1,67 @@
+# venv: $VISION_ENVS/vision (python -m venv --system-site-packages, Python 3.12.3)
+# System packages (from /usr/local/lib/python3.12/dist-packages, NOT reinstalled):
+#   numpy==2.1.2
+#   pillow==11.0.0
+#   torch==2.8.0+cu128
+#   torchaudio==2.8.0+cu128
+#   torchvision==0.23.0+cu128
+# SAM2: git clone https://github.com/facebookresearch/sam2 third_party/sam2 @ 2b90b9f5ceec907a1c18123530e92e794ad901a4
+#        SAM2_BUILD_CUDA=0 pip install -c constraints.txt -e third_party/sam2
+# Packages installed in venv (pip freeze --local):
+absl-py==2.5.0
+accelerate==1.15.0
+annotated-doc==0.0.5
+antlr4-python3-runtime==4.9.3
+arm_pytorch_utilities==0.5.0
+click==8.5.0
+cloudpickle==3.1.2
+contourpy==1.4.0
+cycler==0.12.1
+dacite==1.9.2
+docstring_parser==0.18.0
+Farama-Notifications==0.0.6
+fonttools==4.66.1
+gitdb==4.0.12
+GitPython==3.2.0
+gymnasium==1.4.0
+h5py==3.16.0
+hf-xet==1.7.0
+huggingface_hub==1.33.0
+hydra-core==1.3.7
+idna==3.20
+ImageIO==2.38.1
+imageio-ffmpeg==0.6.0
+importlib_resources==7.1.0
+iopath==0.1.10
+kiwisolver==1.5.1
+lxml==6.1.3
+mani_skill==3.0.1
+markdown-it-py==4.2.0
+matplotlib==3.11.2
+mdurl==0.1.2
+mplib==0.1.1
+nvidia-ml-py==13.615.71
+omegaconf==2.3.1
+opencv-python==5.0.0.93
+opencv-python-headless==5.0.0.93
+portalocker==4.4.0
+pyperclip==1.11.0
+pytorch-kinematics==0.7.6
+pytorch-seed==0.2.0
+regex==2026.9.29
+rich==15.0.0
+safetensors==0.8.0
+sapien==3.0.3
+scipy==1.18.1
+shellingham==1.5.4
+smmap==5.0.3
+tabulate==0.10.0
+tokenizers==0.23.2
+toppra==0.6.10
+tqdm==4.70.1
+transformers==5.19.0
+transforms3d==0.4.2
+trimesh==5.1.1
+typeguard==4.6.0
+typer==0.27.3
+tyro==1.0.16

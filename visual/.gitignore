@@ -1,0 +1,13 @@
+# 크고 다시 만들 수 있는 것
+checkpoints/
+cache/
+third_party/
+logs/
+data/
+# results 는 작은 표·그림·json 만 둔다
+results/**/*.mp4
+results/**/*.npz
+results/**/*.npy
+results/**/*.h5
+results/**/frames/
+results/v1/**/runs/
