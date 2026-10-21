@@ -1,0 +1,42 @@
+{
+ "gt": {
+  "success": 1.0,
+  "lo": 1.0,
+  "hi": 1.0
+ },
+ "vision_none": {
+  "success": 0.475,
+  "lo": 0.325,
+  "hi": 0.625
+ },
+ "vision_none_r2": {
+  "success": 0.525,
+  "lo": 0.375,
+  "hi": 0.675
+ },
+ "vision_none_pegtcp_r2": {
+  "success": 0.625,
+  "lo": 0.475,
+  "hi": 0.775
+ },
+ "gt_boxmove": {
+  "success": 0.95,
+  "lo": 0.875,
+  "hi": 1.0
+ },
+ "vision_v1_boxmove": {
+  "success": 0.125,
+  "lo": 0.025,
+  "hi": 0.225
+ },
+ "pos1": {
+  "success": 0.825,
+  "lo": 0.7,
+  "hi": 0.925
+ },
+ "pos2": {
+  "success": 0.525,
+  "lo": 0.375,
+  "hi": 0.675
+ }
+}

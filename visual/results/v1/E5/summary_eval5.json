@@ -1,0 +1,92 @@
+{
+ "conditions": {
+  "eval5_gt": {
+   "success": 1.0,
+   "lo": 1.0,
+   "hi": 1.0,
+   "stages": {
+    "success": 40
+   },
+   "searched": 0
+  },
+  "eval5_vision_only_base": {
+   "success": 0.625,
+   "lo": 0.475,
+   "hi": 0.775,
+   "stages": {
+    "success": 25,
+    "align": 14,
+    "insert": 1
+   },
+   "searched": 0
+  },
+  "eval5_full_nosearch": {
+   "success": 0.85,
+   "lo": 0.725,
+   "hi": 0.95,
+   "stages": {
+    "success": 34,
+    "insert": 3,
+    "align": 3
+   },
+   "searched": 0
+  },
+  "eval5_full_search": {
+   "success": 0.85,
+   "lo": 0.725,
+   "hi": 0.95,
+   "stages": {
+    "success": 34,
+    "insert": 3,
+    "align": 3
+   },
+   "searched": 0
+  },
+  "eval4_full_nosearch": {
+   "success": 0.825,
+   "lo": 0.7,
+   "hi": 0.925,
+   "stages": {
+    "success": 33,
+    "align": 4,
+    "insert": 2,
+    "no_estimate": 1
+   },
+   "searched": 0
+  },
+  "eval4_full_search": {
+   "success": 0.725,
+   "lo": 0.575,
+   "hi": 0.85,
+   "stages": {
+    "align": 8,
+    "success": 29,
+    "insert": 3
+   },
+   "searched": 9
+  }
+ },
+ "diffs": {
+  "eval5_full_search-eval5_full_nosearch": {
+   "mean": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "wins": 0,
+   "losses": 0
+  },
+  "eval5_full_nosearch-eval5_vision_only_base": {
+   "mean": 0.225,
+   "lo": 0.1,
+   "hi": 0.35,
+   "wins": 9,
+   "losses": 0
+  },
+  "eval5_gt-eval5_full_nosearch": {
+   "mean": 0.15,
+   "lo": 0.05,
+   "hi": 0.275,
+   "wins": 6,
+   "losses": 0
+  }
+ }
+}

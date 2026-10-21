@@ -1,0 +1,259 @@
+{
+ "args": {
+  "cond": "vision",
+  "pos_mm": 0,
+  "rot_deg": 0,
+  "vcfg": "none",
+  "box_move": false,
+  "box_track": false,
+  "seeds": [
+   100,
+   101,
+   102,
+   103,
+   104
+  ],
+  "name": "dev_vision_none_fix",
+  "out": "results/v1/E5"
+ },
+ "episodes": {
+  "100": {
+   "seed": 100,
+   "success": true,
+   "stage": "success",
+   "steps": 117,
+   "align_err_mm": 0.54,
+   "seconds": 70.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 77,
+     "peg_mm": 1.1,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 83,
+     "peg_mm": 0.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0
+    }
+   ],
+   "vision_ms_p50": 508.0,
+   "vision_ms_p95": 626.2
+  },
+  "101": {
+   "seed": 101,
+   "success": true,
+   "stage": "success",
+   "steps": 149,
+   "align_err_mm": 0.69,
+   "seconds": 67.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0
+    }
+   ],
+   "vision_ms_p50": 418.8,
+   "vision_ms_p95": 553.8
+  },
+  "102": {
+   "seed": 102,
+   "success": true,
+   "stage": "success",
+   "steps": 112,
+   "align_err_mm": 2.28,
+   "seconds": 61.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 72,
+     "peg_mm": 1.2,
+     "peg_deg": 0.3,
+     "hole_mm": 2.2,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 78,
+     "peg_mm": 0.8,
+     "peg_deg": 0.1,
+     "hole_mm": 2.2,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 84,
+     "peg_mm": 1.1,
+     "peg_deg": 0.2,
+     "hole_mm": 2.2,
+     "hole_deg": 0.0
+    }
+   ],
+   "vision_ms_p50": 473.5,
+   "vision_ms_p95": 562.0
+  },
+  "103": {
+   "seed": 103,
+   "success": true,
+   "stage": "success",
+   "steps": 152,
+   "align_err_mm": 1.45,
+   "seconds": 76.4,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 1.7,
+     "peg_deg": 0.8,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 1.7,
+     "peg_deg": 0.8,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 1.1,
+     "peg_deg": 0.4,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0
+    }
+   ],
+   "vision_ms_p50": 446.1,
+   "vision_ms_p95": 576.0
+  },
+  "104": {
+   "seed": 104,
+   "success": true,
+   "stage": "success",
+   "steps": 115,
+   "align_err_mm": 0.63,
+   "seconds": 59.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 76,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 82,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 88,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "vision_ms_p50": 445.1,
+   "vision_ms_p95": 550.7
+  }
+ },
+ "summary": {
+  "n": 5,
+  "success": 1.0,
+  "stages": {
+   "success": 5
+  },
+  "align_err_mm_median": 0.69
+ }
+}

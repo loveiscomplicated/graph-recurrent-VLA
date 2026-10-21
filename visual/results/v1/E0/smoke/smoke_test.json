@@ -1,0 +1,133 @@
+{
+  "torch": {
+    "version": "2.8.0+cu128",
+    "cuda": "12.8",
+    "available": true,
+    "device": "NVIDIA GeForce RTX 3090"
+  },
+  "maniskill": {
+    "ok": true,
+    "mani_skill": "3.0.1",
+    "sapien": "3.0.3",
+    "camera": "base_camera",
+    "rgb_shape": [
+      128,
+      128,
+      3
+    ],
+    "depth_shape": [
+      128,
+      128,
+      1
+    ],
+    "depth_range": [
+      -32768.0,
+      26662.0
+    ],
+    "sec": 3.26
+  },
+  "gdino": {
+    "ok": true,
+    "transformers": "5.19.0",
+    "model": "IDEA-Research/grounding-dino-tiny",
+    "device": "cuda:0",
+    "load_s": 2.89,
+    "infer_ms": 99.6,
+    "peak_mem_gb": 1.446,
+    "prompt": "peg. box with hole.",
+    "detections": [
+      {
+        "label": "box",
+        "score": 0.741,
+        "box": [
+          52.0,
+          39.8,
+          82.2,
+          69.2
+        ]
+      },
+      {
+        "label": "hole",
+        "score": 0.325,
+        "box": [
+          72.4,
+          45.4,
+          76.7,
+          50.3
+        ]
+      },
+      {
+        "label": "peg",
+        "score": 0.312,
+        "box": [
+          39.9,
+          -0.0,
+          89.0,
+          69.3
+        ]
+      },
+      {
+        "label": "peg",
+        "score": 0.294,
+        "box": [
+          41.1,
+          70.3,
+          75.9,
+          117.5
+        ]
+      },
+      {
+        "label": "hole",
+        "score": 0.269,
+        "box": [
+          54.1,
+          45.3,
+          58.4,
+          50.4
+        ]
+      },
+      {
+        "label": "peg",
+        "score": 0.294,
+        "box": [
+          30.6,
+          0.0,
+          89.5,
+          69.4
+        ]
+      }
+    ]
+  },
+  "sam2": {
+    "small": {
+      "ok": true,
+      "ckpt": "sam2.1_hiera_small.pt",
+      "image_predictor_load_s": 1.97,
+      "video_predictor_load_s": 0.85,
+      "mask_pixels": 720,
+      "score": 0.953125,
+      "prompt_box": [
+        52.0,
+        39.8,
+        82.2,
+        69.2
+      ],
+      "peak_mem_gb": 0.584
+    },
+    "base_plus": {
+      "ok": true,
+      "ckpt": "sam2.1_hiera_base_plus.pt",
+      "image_predictor_load_s": 7.64,
+      "video_predictor_load_s": 0.96,
+      "mask_pixels": 702,
+      "score": 0.96875,
+      "prompt_box": [
+        52.0,
+        39.8,
+        82.2,
+        69.2
+      ],
+      "peak_mem_gb": 0.799
+    }
+  }
+}

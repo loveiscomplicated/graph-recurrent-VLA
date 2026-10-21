@@ -1,0 +1,2833 @@
+{
+ "args": {
+  "cond": "gt",
+  "pos_mm": 0,
+  "rot_deg": 0,
+  "vcfg": "none",
+  "box_move": true,
+  "box_track": false,
+  "inhand": "raw",
+  "fast_pose": false,
+  "tracker": "sam2",
+  "look": false,
+  "look_rule": "v2",
+  "hand_init": false,
+  "reobserve": false,
+  "peg_tcp": false,
+  "seeds": [
+   300,
+   301,
+   302,
+   303,
+   304,
+   305,
+   306,
+   307,
+   308,
+   309,
+   310,
+   311,
+   312,
+   313,
+   314,
+   315,
+   316,
+   317,
+   318,
+   319,
+   320,
+   321,
+   322,
+   323,
+   324,
+   325,
+   326,
+   327,
+   328,
+   329,
+   330,
+   331,
+   332,
+   333,
+   334,
+   335,
+   336,
+   337,
+   338,
+   339
+  ],
+  "name": "eval2_gt_boxmove",
+  "out": "results/v1/E5"
+ },
+ "episodes": {
+  "300": {
+   "seed": 300,
+   "success": true,
+   "stage": "success",
+   "steps": 162,
+   "align_err_mm": 0.15,
+   "seconds": 5.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 120,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 128,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 134,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.33
+  },
+  "301": {
+   "seed": 301,
+   "success": true,
+   "stage": "success",
+   "steps": 191,
+   "align_err_mm": 0.12,
+   "seconds": 5.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 125,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 131,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 137,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 148,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 158,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 164,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.73
+  },
+  "302": {
+   "seed": 302,
+   "success": true,
+   "stage": "success",
+   "steps": 179,
+   "align_err_mm": 0.12,
+   "seconds": 5.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 144,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 150,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.62
+  },
+  "303": {
+   "seed": 303,
+   "success": true,
+   "stage": "success",
+   "steps": 182,
+   "align_err_mm": 0.04,
+   "seconds": 5.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 114,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 120,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 137,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 147,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 153,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.83
+  },
+  "304": {
+   "seed": 304,
+   "success": true,
+   "stage": "success",
+   "steps": 166,
+   "align_err_mm": 0.2,
+   "seconds": 5.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 132,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 138,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.01
+  },
+  "305": {
+   "seed": 305,
+   "success": true,
+   "stage": "success",
+   "steps": 191,
+   "align_err_mm": 0.1,
+   "seconds": 5.2,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 127,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 139,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 150,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 158,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 164,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.21
+  },
+  "306": {
+   "seed": 306,
+   "success": true,
+   "stage": "success",
+   "steps": 150,
+   "align_err_mm": 0.34,
+   "seconds": 4.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 85,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 91,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.86
+  },
+  "307": {
+   "seed": 307,
+   "success": true,
+   "stage": "success",
+   "steps": 166,
+   "align_err_mm": 0.06,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 102,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 114,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 125,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 139,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.2
+  },
+  "308": {
+   "seed": 308,
+   "success": true,
+   "stage": "success",
+   "steps": 140,
+   "align_err_mm": 0.09,
+   "seconds": 4.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 72,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 78,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 84,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 95,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.72
+  },
+  "309": {
+   "seed": 309,
+   "success": true,
+   "stage": "success",
+   "steps": 145,
+   "align_err_mm": 0.07,
+   "seconds": 4.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 80,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 86,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 116,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.07
+  },
+  "310": {
+   "seed": 310,
+   "success": true,
+   "stage": "success",
+   "steps": 187,
+   "align_err_mm": 0.21,
+   "seconds": 5.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 127,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 144,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 152,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 158,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.09
+  },
+  "311": {
+   "seed": 311,
+   "success": true,
+   "stage": "success",
+   "steps": 160,
+   "align_err_mm": 0.1,
+   "seconds": 4.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 132,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.82
+  },
+  "312": {
+   "seed": 312,
+   "success": true,
+   "stage": "success",
+   "steps": 164,
+   "align_err_mm": 0.03,
+   "seconds": 4.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 131,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 137,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.47
+  },
+  "313": {
+   "seed": 313,
+   "success": true,
+   "stage": "success",
+   "steps": 135,
+   "align_err_mm": 0.07,
+   "seconds": 3.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 71,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 77,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 83,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 102,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.81
+  },
+  "314": {
+   "seed": 314,
+   "success": true,
+   "stage": "success",
+   "steps": 153,
+   "align_err_mm": 0.11,
+   "seconds": 4.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 86,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.95
+  },
+  "315": {
+   "seed": 315,
+   "success": false,
+   "stage": "insert",
+   "steps": 143,
+   "align_err_mm": 0.09,
+   "seconds": 4.4,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 75,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 81,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 87,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 114,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 5.0
+  },
+  "316": {
+   "seed": 316,
+   "success": true,
+   "stage": "success",
+   "steps": 179,
+   "align_err_mm": 0.07,
+   "seconds": 5.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 144,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 150,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.67
+  },
+  "317": {
+   "seed": 317,
+   "success": true,
+   "stage": "success",
+   "steps": 181,
+   "align_err_mm": 0.13,
+   "seconds": 4.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 130,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 141,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 148,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.08
+  },
+  "318": {
+   "seed": 318,
+   "success": true,
+   "stage": "success",
+   "steps": 158,
+   "align_err_mm": 0.12,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 130,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.91
+  },
+  "319": {
+   "seed": 319,
+   "success": true,
+   "stage": "success",
+   "steps": 183,
+   "align_err_mm": 0.12,
+   "seconds": 5.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 114,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 120,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 137,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 147,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 153,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.7
+  },
+  "320": {
+   "seed": 320,
+   "success": true,
+   "stage": "success",
+   "steps": 140,
+   "align_err_mm": 0.06,
+   "seconds": 3.4,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 73,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 79,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 85,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 96,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.37
+  },
+  "321": {
+   "seed": 321,
+   "success": true,
+   "stage": "success",
+   "steps": 184,
+   "align_err_mm": 0.03,
+   "seconds": 5.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 129,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 140,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 148,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.94
+  },
+  "322": {
+   "seed": 322,
+   "success": true,
+   "stage": "success",
+   "steps": 172,
+   "align_err_mm": 0.1,
+   "seconds": 5.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 129,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 138,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 144,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.91
+  },
+  "323": {
+   "seed": 323,
+   "success": true,
+   "stage": "success",
+   "steps": 144,
+   "align_err_mm": 0.05,
+   "seconds": 3.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 75,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 81,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 87,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 114,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.61
+  },
+  "324": {
+   "seed": 324,
+   "success": false,
+   "stage": "insert",
+   "steps": 178,
+   "align_err_mm": 0.17,
+   "seconds": 5.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 146,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 152,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.81
+  },
+  "325": {
+   "seed": 325,
+   "success": true,
+   "stage": "success",
+   "steps": 165,
+   "align_err_mm": 0.22,
+   "seconds": 4.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 129,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.76
+  },
+  "326": {
+   "seed": 326,
+   "success": true,
+   "stage": "success",
+   "steps": 168,
+   "align_err_mm": 0.13,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 134,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 140,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.97
+  },
+  "327": {
+   "seed": 327,
+   "success": true,
+   "stage": "success",
+   "steps": 154,
+   "align_err_mm": 0.11,
+   "seconds": 4.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 88,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 120,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.3
+  },
+  "328": {
+   "seed": 328,
+   "success": true,
+   "stage": "success",
+   "steps": 174,
+   "align_err_mm": 0.1,
+   "seconds": 4.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 116,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 141,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 147,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.98
+  },
+  "329": {
+   "seed": 329,
+   "success": true,
+   "stage": "success",
+   "steps": 153,
+   "align_err_mm": 0.24,
+   "seconds": 4.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 88,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 119,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 125,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.84
+  },
+  "330": {
+   "seed": 330,
+   "success": true,
+   "stage": "success",
+   "steps": 170,
+   "align_err_mm": 0.08,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 136,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 142,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.61
+  },
+  "331": {
+   "seed": 331,
+   "success": true,
+   "stage": "success",
+   "steps": 145,
+   "align_err_mm": 0.13,
+   "seconds": 4.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 77,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 83,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.01
+  },
+  "332": {
+   "seed": 332,
+   "success": true,
+   "stage": "success",
+   "steps": 177,
+   "align_err_mm": 0.25,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 116,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 141,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 147,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.33
+  },
+  "333": {
+   "seed": 333,
+   "success": true,
+   "stage": "success",
+   "steps": 149,
+   "align_err_mm": 0.1,
+   "seconds": 4.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 84,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 90,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 96,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 107,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.5
+  },
+  "334": {
+   "seed": 334,
+   "success": false,
+   "stage": "insert",
+   "steps": 163,
+   "align_err_mm": 0.18,
+   "seconds": 4.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 99,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 130,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 136,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.18
+  },
+  "335": {
+   "seed": 335,
+   "success": true,
+   "stage": "success",
+   "steps": 178,
+   "align_err_mm": 0.17,
+   "seconds": 4.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 116,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 133,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 143,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 149,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.26
+  },
+  "336": {
+   "seed": 336,
+   "success": true,
+   "stage": "success",
+   "steps": 178,
+   "align_err_mm": 0.07,
+   "seconds": 5.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 144,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 150,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 3.07
+  },
+  "337": {
+   "seed": 337,
+   "success": false,
+   "stage": "insert",
+   "steps": 167,
+   "align_err_mm": 0.01,
+   "seconds": 4.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 132,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 138,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.53
+  },
+  "338": {
+   "seed": 338,
+   "success": true,
+   "stage": "success",
+   "steps": 168,
+   "align_err_mm": 0.06,
+   "seconds": 5.4,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 126,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 141,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 2.63
+  },
+  "339": {
+   "seed": 339,
+   "success": true,
+   "stage": "success",
+   "steps": 187,
+   "align_err_mm": 0.09,
+   "seconds": 4.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 119,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 125,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 131,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 142,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 152,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    },
+    {
+     "tag": "refine",
+     "step": 158,
+     "peg_mm": 0.0,
+     "peg_deg": 0.0,
+     "hole_mm": 0.0,
+     "hole_deg": 0.0
+    }
+   ],
+   "box_move_offset_cm": 4.53
+  }
+ },
+ "summary": {
+  "n": 40,
+  "success": 0.9,
+  "stages": {
+   "success": 36,
+   "insert": 4
+  },
+  "align_err_mm_median": 0.1
+ }
+}

@@ -1,0 +1,93 @@
+{
+ "conditions": {
+  "eval2_gt": {
+   "success": 1.0,
+   "lo": 1.0,
+   "hi": 1.0,
+   "stages": {
+    "success": 40
+   }
+  },
+  "eval2_temporal": {
+   "success": 0.55,
+   "lo": 0.4,
+   "hi": 0.7,
+   "stages": {
+    "success": 22,
+    "align": 14,
+    "no_estimate": 2,
+    "insert": 2
+   }
+  },
+  "eval2_look3_temporal": {
+   "success": 0.55,
+   "lo": 0.4,
+   "hi": 0.7,
+   "stages": {
+    "success": 22,
+    "align": 13,
+    "no_estimate": 2,
+    "insert": 3
+   }
+  },
+  "eval2_tcp2": {
+   "success": 0.725,
+   "lo": 0.575,
+   "hi": 0.85,
+   "stages": {
+    "success": 29,
+    "align": 8,
+    "no_estimate": 2,
+    "insert": 1
+   }
+  },
+  "eval2_look3_tcp2": {
+   "success": 0.85,
+   "lo": 0.725,
+   "hi": 0.95,
+   "stages": {
+    "success": 34,
+    "insert": 3,
+    "no_estimate": 2,
+    "align": 1
+   }
+  }
+ },
+ "diffs": {
+  "eval2_look3_tcp2-eval2_tcp2": {
+   "mean": 0.125,
+   "lo": 0.025,
+   "hi": 0.225,
+   "wins": 5,
+   "losses": 0
+  },
+  "eval2_look3_temporal-eval2_temporal": {
+   "mean": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "wins": 0,
+   "losses": 0
+  },
+  "eval2_tcp2-eval2_temporal": {
+   "mean": 0.175,
+   "lo": 0.05,
+   "hi": 0.325,
+   "wins": 8,
+   "losses": 1
+  },
+  "eval2_look3_tcp2-eval2_look3_temporal": {
+   "mean": 0.3,
+   "lo": 0.15,
+   "hi": 0.45,
+   "wins": 13,
+   "losses": 1
+  },
+  "eval2_gt-eval2_look3_tcp2": {
+   "mean": 0.15,
+   "lo": 0.05,
+   "hi": 0.275,
+   "wins": 6,
+   "losses": 0
+  }
+ }
+}

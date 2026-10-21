@@ -1,0 +1,888 @@
+{
+ "args": {
+  "cond": "vision",
+  "pos_mm": 0,
+  "rot_deg": 0,
+  "vcfg": "none",
+  "box_move": true,
+  "box_track": false,
+  "inhand": "tcp2",
+  "fast_pose": true,
+  "reobserve": true,
+  "peg_tcp": false,
+  "seeds": [
+   100,
+   101,
+   102,
+   103,
+   104,
+   105,
+   106,
+   107,
+   108,
+   109
+  ],
+  "name": "dev_reobs_boxmove",
+  "out": "results/v1/E5"
+ },
+ "episodes": {
+  "100": {
+   "seed": 100,
+   "success": false,
+   "stage": "align",
+   "steps": 196,
+   "align_err_mm": 6.39,
+   "seconds": 58.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 77,
+     "peg_mm": 0.8,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 14,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 83,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 18,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 20,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 5.5,
+     "peg_deg": 3.9,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 9,
+     "hist_age": 6
+    },
+    {
+     "tag": "refine",
+     "step": 161,
+     "peg_mm": 5.8,
+     "peg_deg": 4.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 13,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 168,
+     "peg_mm": 2.7,
+     "peg_deg": 2.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 17,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 2.8,
+   "reobserve": 1,
+   "vision_ms_p50": 221.7,
+   "vision_ms_p95": 460.7
+  },
+  "101": {
+   "seed": 101,
+   "success": true,
+   "stage": "success",
+   "steps": 284,
+   "align_err_mm": 1.03,
+   "seconds": 59.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 164,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 176,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 242,
+     "peg_mm": 0.9,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 250,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 256,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    }
+   ],
+   "reobserve": 2,
+   "box_move_offset_cm": 2.32,
+   "vision_ms_p50": 156.6,
+   "vision_ms_p95": 269.5
+  },
+  "102": {
+   "seed": 102,
+   "success": true,
+   "stage": "success",
+   "steps": 195,
+   "align_err_mm": 0.99,
+   "seconds": 80.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 72,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 6
+    },
+    {
+     "tag": "refine",
+     "step": 78,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 12
+    },
+    {
+     "tag": "refine",
+     "step": 84,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 18
+    },
+    {
+     "tag": "refine",
+     "step": 150,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 84
+    },
+    {
+     "tag": "refine",
+     "step": 161,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 95
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 1,
+     "hist_age": 101
+    }
+   ],
+   "box_move_offset_cm": 4.92,
+   "reobserve": 1,
+   "vision_ms_p50": 433.6,
+   "vision_ms_p95": 572.9
+  },
+  "103": {
+   "seed": 103,
+   "success": true,
+   "stage": "success",
+   "steps": 233,
+   "align_err_mm": 2.0,
+   "seconds": 57.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 112,
+     "peg_mm": 1.1,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 24,
+     "hist_age": 3
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 1.1,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 25,
+     "hist_age": 4
+    },
+    {
+     "tag": "refine",
+     "step": 124,
+     "peg_mm": 1.1,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 26,
+     "hist_age": 4
+    },
+    {
+     "tag": "refine",
+     "step": 190,
+     "peg_mm": 9.5,
+     "peg_deg": 0.5,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 199,
+     "peg_mm": 9.7,
+     "peg_deg": 0.5,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 205,
+     "peg_mm": 9.7,
+     "peg_deg": 0.5,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 3.79,
+   "reobserve": 1,
+   "vision_ms_p50": 174.6,
+   "vision_ms_p95": 446.8
+  },
+  "104": {
+   "seed": 104,
+   "success": false,
+   "stage": "insert",
+   "steps": 200,
+   "align_err_mm": 1.33,
+   "seconds": 43.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 76,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 12,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 82,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 18,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 88,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 24,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 24.2,
+     "peg_deg": 19.3,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 1,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 165,
+     "peg_mm": 1.0,
+     "peg_deg": 1.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 12,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 173,
+     "peg_mm": 0.7,
+     "peg_deg": 0.5,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 20,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 4.88,
+   "reobserve": 1,
+   "vision_ms_p50": 167.3,
+   "vision_ms_p95": 284.9
+  },
+  "105": {
+   "seed": 105,
+   "success": false,
+   "stage": "no_estimate",
+   "steps": 0,
+   "align_err_mm": -1,
+   "seconds": 0.8,
+   "error": null,
+   "policy": "expert"
+  },
+  "106": {
+   "seed": 106,
+   "success": false,
+   "stage": "align",
+   "steps": 223,
+   "align_err_mm": 147.05,
+   "seconds": 55.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 81,
+     "peg_mm": 0.7,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 27,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 87,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 33,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 93,
+     "peg_mm": 1.2,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 39,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 159,
+     "peg_mm": 62.0,
+     "peg_deg": 62.3,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 8,
+     "hist_age": 8
+    },
+    {
+     "tag": "refine",
+     "step": 168,
+     "peg_mm": 92.6,
+     "peg_deg": 60.8,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 176,
+     "peg_mm": 12.9,
+     "peg_deg": 0.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 5,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 4.96,
+   "reobserve": 1,
+   "vision_ms_p50": 163.6,
+   "vision_ms_p95": 440.9
+  },
+  "107": {
+   "seed": 107,
+   "success": true,
+   "stage": "success",
+   "steps": 204,
+   "align_err_mm": 0.23,
+   "seconds": 32.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 85,
+     "peg_mm": 1.1,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 11,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 91,
+     "peg_mm": 1.2,
+     "peg_deg": 0.1,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 17,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 1.5,
+     "peg_deg": 0.2,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 22,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 163,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 171,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 177,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 2.34,
+   "reobserve": 1,
+   "vision_ms_p50": 105.8,
+   "vision_ms_p95": 222.0
+  },
+  "108": {
+   "seed": 108,
+   "success": false,
+   "stage": "insert",
+   "steps": 220,
+   "align_err_mm": 1.01,
+   "seconds": 34.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 10.1,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 101,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 35
+    },
+    {
+     "tag": "refine",
+     "step": 107,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 41
+    },
+    {
+     "tag": "refine",
+     "step": 113,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 47
+    },
+    {
+     "tag": "refine",
+     "step": 179,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 113
+    },
+    {
+     "tag": "refine",
+     "step": 187,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 121
+    },
+    {
+     "tag": "refine",
+     "step": 193,
+     "peg_mm": 7.6,
+     "peg_deg": 0.4,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 1,
+     "hist_age": 127
+    }
+   ],
+   "box_move_offset_cm": 2.78,
+   "reobserve": 1,
+   "vision_ms_p50": 114.1,
+   "vision_ms_p95": 215.3
+  },
+  "109": {
+   "seed": 109,
+   "success": true,
+   "stage": "success",
+   "steps": 211,
+   "align_err_mm": 0.38,
+   "seconds": 44.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.9,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 0.7,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 37,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 95,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 101,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 177,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 183,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 40,
+     "hist_age": 0
+    }
+   ],
+   "box_move_offset_cm": 4.83,
+   "reobserve": 1,
+   "vision_ms_p50": 157.4,
+   "vision_ms_p95": 338.3
+  }
+ },
+ "summary": {
+  "n": 10,
+  "success": 0.5,
+  "stages": {
+   "insert": 2,
+   "success": 5,
+   "align": 2,
+   "no_estimate": 1
+  },
+  "align_err_mm_median": 1.03
+ }
+}

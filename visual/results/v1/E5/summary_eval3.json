@@ -1,0 +1,101 @@
+{
+ "conditions": {
+  "eval3_gt": {
+   "success": 1.0,
+   "lo": 1.0,
+   "hi": 1.0,
+   "stages": {
+    "success": 40
+   },
+   "steps": 134
+  },
+  "eval3_best_plain": {
+   "success": 0.75,
+   "lo": 0.625,
+   "hi": 0.875,
+   "stages": {
+    "success": 30,
+    "no_estimate": 4,
+    "align": 2,
+    "insert": 4
+   },
+   "steps": 135
+  },
+  "eval3_ra_plain": {
+   "success": 0.775,
+   "lo": 0.65,
+   "hi": 0.9,
+   "stages": {
+    "success": 31,
+    "no_estimate": 4,
+    "align": 1,
+    "insert": 4
+   },
+   "steps": 208
+  },
+  "eval3_gt_boxmove": {
+   "success": 0.975,
+   "lo": 0.925,
+   "hi": 1.0,
+   "stages": {
+    "success": 39,
+    "insert": 1
+   },
+   "steps": 160
+  },
+  "eval3_best_boxmove": {
+   "success": 0.35,
+   "lo": 0.2,
+   "hi": 0.5,
+   "stages": {
+    "success": 14,
+    "align": 20,
+    "no_estimate": 4,
+    "insert": 2
+   },
+   "steps": 211
+  },
+  "eval3_ra_boxmove": {
+   "success": 0.6,
+   "lo": 0.45,
+   "hi": 0.75,
+   "stages": {
+    "success": 24,
+    "no_estimate": 4,
+    "align": 8,
+    "insert": 4
+   },
+   "steps": 288
+  }
+ },
+ "diffs": {
+  "eval3_ra_boxmove-eval3_best_boxmove": {
+   "mean": 0.25,
+   "lo": 0.125,
+   "hi": 0.4,
+   "wins": 10,
+   "losses": 0
+  },
+  "eval3_ra_plain-eval3_best_plain": {
+   "mean": 0.025,
+   "lo": -0.05,
+   "hi": 0.125,
+   "wins": 2,
+   "losses": 1
+  },
+  "eval3_gt_boxmove-eval3_ra_boxmove": {
+   "mean": 0.375,
+   "lo": 0.225,
+   "hi": 0.525,
+   "wins": 15,
+   "losses": 0
+  },
+  "eval3_gt-eval3_ra_plain": {
+   "mean": 0.225,
+   "lo": 0.1,
+   "hi": 0.35,
+   "wins": 9,
+   "losses": 0
+  }
+ }
+}

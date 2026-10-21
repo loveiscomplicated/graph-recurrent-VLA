@@ -1,0 +1,3955 @@
+{
+ "args": {
+  "cond": "vision",
+  "pos_mm": 0,
+  "rot_deg": 0,
+  "vcfg": "none",
+  "box_move": true,
+  "box_track": false,
+  "inhand": "temporal",
+  "fast_pose": true,
+  "tracker": "sam2",
+  "look": true,
+  "hand_init": false,
+  "reobserve": true,
+  "peg_tcp": false,
+  "seeds": [
+   200,
+   201,
+   202,
+   203,
+   204,
+   205,
+   206,
+   207,
+   208,
+   209,
+   210,
+   211,
+   212,
+   213,
+   214,
+   215,
+   216,
+   217,
+   218,
+   219,
+   220,
+   221,
+   222,
+   223,
+   224,
+   225,
+   226,
+   227,
+   228,
+   229,
+   230,
+   231,
+   232,
+   233,
+   234,
+   235,
+   236,
+   237,
+   238,
+   239
+  ],
+  "name": "look_temporal_boxmove",
+  "out": "results/v1/E5"
+ },
+ "episodes": {
+  "200": {
+   "seed": 200,
+   "success": true,
+   "stage": "success",
+   "steps": 224,
+   "align_err_mm": 4.7,
+   "seconds": 42.2,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 99,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 14,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.8,
+     "peg_deg": 0.1,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 26,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 177,
+     "peg_mm": 2.0,
+     "peg_deg": 0.5,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 188,
+     "peg_mm": 1.7,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 194,
+     "peg_mm": 2.7,
+     "peg_deg": 0.7,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.51,
+    "base_ok": false,
+    "agree": true,
+    "err_mm": 1.3
+   },
+   "box_move_offset_cm": 4.99,
+   "reobserve": 1,
+   "vision_ms_p50": 149.9,
+   "vision_ms_p95": 185.2
+  },
+  "201": {
+   "seed": 201,
+   "success": false,
+   "stage": "align",
+   "steps": 226,
+   "align_err_mm": 27.52,
+   "seconds": 62.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 153,
+     "peg_mm": 1.4,
+     "peg_deg": 1.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 113
+    },
+    {
+     "tag": "refine",
+     "step": 161,
+     "peg_mm": 1.5,
+     "peg_deg": 2.6,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 121
+    },
+    {
+     "tag": "refine",
+     "step": 169,
+     "peg_mm": 3.9,
+     "peg_deg": 4.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 129
+    },
+    {
+     "tag": "refine",
+     "step": 182,
+     "peg_mm": 0.6,
+     "peg_deg": 0.4,
+     "hole_mm": 26.5,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 142
+    },
+    {
+     "tag": "refine",
+     "step": 193,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 26.5,
+     "hole_deg": 0.0,
+     "n_hist": 21,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 199,
+     "peg_mm": 1.6,
+     "peg_deg": 0.1,
+     "hole_mm": 26.5,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 0.94,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.6
+   },
+   "reobserve": 1,
+   "box_move_offset_cm": 2.72,
+   "vision_ms_p50": 159.5,
+   "vision_ms_p95": 415.1
+  },
+  "202": {
+   "seed": 202,
+   "success": true,
+   "stage": "success",
+   "steps": 200,
+   "align_err_mm": 1.78,
+   "seconds": 31.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 80,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 86,
+     "peg_mm": 0.7,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 158,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 0.8,
+     "peg_deg": 0.0,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 173,
+     "peg_mm": 1.0,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.84,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.4
+   },
+   "box_move_offset_cm": 3.73,
+   "reobserve": 1,
+   "vision_ms_p50": 109.6,
+   "vision_ms_p95": 173.2
+  },
+  "203": {
+   "seed": 203,
+   "success": true,
+   "stage": "success",
+   "steps": 268,
+   "align_err_mm": 0.72,
+   "seconds": 46.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 147,
+     "peg_mm": 0.8,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 153,
+     "peg_mm": 1.8,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 159,
+     "peg_mm": 0.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 4
+    },
+    {
+     "tag": "refine",
+     "step": 225,
+     "peg_mm": 0.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 5
+    },
+    {
+     "tag": "refine",
+     "step": 233,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 239,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.56,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.9
+   },
+   "reobserve": 2,
+   "box_move_offset_cm": 3.18,
+   "vision_ms_p50": 138.5,
+   "vision_ms_p95": 194.7
+  },
+  "204": {
+   "seed": 204,
+   "success": false,
+   "stage": "align",
+   "steps": 218,
+   "align_err_mm": 3.41,
+   "seconds": 41.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 7
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.9,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 13
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 4.1,
+     "peg_deg": 0.6,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 19
+    },
+    {
+     "tag": "refine",
+     "step": 173,
+     "peg_mm": 2.1,
+     "peg_deg": 0.7,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 86
+    },
+    {
+     "tag": "refine",
+     "step": 182,
+     "peg_mm": 2.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 95
+    },
+    {
+     "tag": "refine",
+     "step": 188,
+     "peg_mm": 3.0,
+     "peg_deg": 0.4,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 101
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.51,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.0
+   },
+   "box_move_offset_cm": 2.74,
+   "reobserve": 1,
+   "vision_ms_p50": 132.9,
+   "vision_ms_p95": 252.0
+  },
+  "205": {
+   "seed": 205,
+   "success": false,
+   "stage": "align",
+   "steps": 279,
+   "align_err_mm": 8.86,
+   "seconds": 89.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.7,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 148,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 3
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 5.9,
+     "peg_deg": 1.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 9
+    },
+    {
+     "tag": "refine",
+     "step": 163,
+     "peg_mm": 1.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 232,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 4
+    },
+    {
+     "tag": "refine",
+     "step": 240,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 12
+    },
+    {
+     "tag": "refine",
+     "step": 246,
+     "peg_mm": 5.3,
+     "peg_deg": 1.6,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 18
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.53,
+    "base_ok": false,
+    "agree": false
+   },
+   "reobserve": 2,
+   "box_move_offset_cm": 2.77,
+   "vision_ms_p50": 182.8,
+   "vision_ms_p95": 574.3
+  },
+  "206": {
+   "seed": 206,
+   "success": true,
+   "stage": "success",
+   "steps": 218,
+   "align_err_mm": 0.39,
+   "seconds": 37.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.4,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 8
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 1.0,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 14
+    },
+    {
+     "tag": "refine",
+     "step": 109,
+     "peg_mm": 0.9,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 20
+    },
+    {
+     "tag": "refine",
+     "step": 175,
+     "peg_mm": 1.1,
+     "peg_deg": 0.4,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 86
+    },
+    {
+     "tag": "refine",
+     "step": 184,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 95
+    },
+    {
+     "tag": "refine",
+     "step": 190,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 101
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.71,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.9
+   },
+   "box_move_offset_cm": 3.33,
+   "reobserve": 1,
+   "vision_ms_p50": 106.8,
+   "vision_ms_p95": 434.2
+  },
+  "207": {
+   "seed": 207,
+   "success": false,
+   "stage": "align",
+   "steps": 940,
+   "align_err_mm": 268.08,
+   "seconds": 153.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 108.3,
+     "peg_deg": 89.9,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 0,
+     "n_rel2": 0,
+     "hist_age": null
+    },
+    {
+     "tag": "refine",
+     "step": 125,
+     "peg_mm": 356.9,
+     "peg_deg": 4.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 48
+    },
+    {
+     "tag": "refine",
+     "step": 166,
+     "peg_mm": 353.9,
+     "peg_deg": 5.9,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 89
+    },
+    {
+     "tag": "refine",
+     "step": 233,
+     "peg_mm": 412.4,
+     "peg_deg": 28.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 156
+    },
+    {
+     "tag": "refine",
+     "step": 344,
+     "peg_mm": 819.7,
+     "peg_deg": 25.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 267
+    },
+    {
+     "tag": "refine",
+     "step": 456,
+     "peg_mm": 819.7,
+     "peg_deg": 25.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 379
+    },
+    {
+     "tag": "refine",
+     "step": 592,
+     "peg_mm": 819.7,
+     "peg_deg": 25.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 4,
+     "n_rel2": 0,
+     "hist_age": 515
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.35,
+    "base_ok": false,
+    "agree": false,
+    "err_mm": 0.8
+   },
+   "box_move_offset_cm": 4.73,
+   "vision_ms_p50": 120.5,
+   "vision_ms_p95": 177.7
+  },
+  "208": {
+   "seed": 208,
+   "success": true,
+   "stage": "success",
+   "steps": 1225,
+   "align_err_mm": 8.01,
+   "seconds": 168.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 4.1,
+     "peg_deg": 0.4,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 115,
+     "peg_mm": 366.8,
+     "peg_deg": 13.7,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 82
+    },
+    {
+     "tag": "refine",
+     "step": 157,
+     "peg_mm": 491.5,
+     "peg_deg": 10.8,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 124
+    },
+    {
+     "tag": "refine",
+     "step": 220,
+     "peg_mm": 491.5,
+     "peg_deg": 10.8,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 187
+    },
+    {
+     "tag": "refine",
+     "step": 515,
+     "peg_mm": 491.5,
+     "peg_deg": 10.8,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 482
+    },
+    {
+     "tag": "refine",
+     "step": 647,
+     "peg_mm": 491.5,
+     "peg_deg": 10.8,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 614
+    },
+    {
+     "tag": "refine",
+     "step": 814,
+     "peg_mm": 491.5,
+     "peg_deg": 10.8,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 781
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 0.94,
+    "base_ok": false,
+    "agree": true,
+    "err_mm": 2.1
+   },
+   "box_move_offset_cm": 3.13,
+   "reobserve": 1,
+   "vision_ms_p50": 94.2,
+   "vision_ms_p95": 173.8
+  },
+  "209": {
+   "seed": 209,
+   "success": true,
+   "stage": "success",
+   "steps": 311,
+   "align_err_mm": 1.81,
+   "seconds": 136.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 155,
+     "peg_mm": 0.7,
+     "peg_deg": 0.4,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 90
+    },
+    {
+     "tag": "refine",
+     "step": 161,
+     "peg_mm": 0.7,
+     "peg_deg": 0.5,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 96
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 0.9,
+     "peg_deg": 0.5,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 102
+    },
+    {
+     "tag": "refine",
+     "step": 233,
+     "peg_mm": 61.8,
+     "peg_deg": 35.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 168
+    },
+    {
+     "tag": "refine",
+     "step": 255,
+     "peg_mm": 2.6,
+     "peg_deg": 1.5,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 20,
+     "n_rel2": 0,
+     "hist_age": 190
+    },
+    {
+     "tag": "refine",
+     "step": 278,
+     "peg_mm": 1.8,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.53,
+    "base_ok": false,
+    "agree": true,
+    "err_mm": 0.9
+   },
+   "reobserve": 2,
+   "box_move_offset_cm": 2.23,
+   "vision_ms_p50": 441.1,
+   "vision_ms_p95": 596.6
+  },
+  "210": {
+   "seed": 210,
+   "success": true,
+   "stage": "success",
+   "steps": 193,
+   "align_err_mm": 0.33,
+   "seconds": 39.2,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 2.0,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 73,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 79,
+     "peg_mm": 0.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 85,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 151,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 161,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.81,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 4.59,
+   "reobserve": 1,
+   "vision_ms_p50": 168.3,
+   "vision_ms_p95": 239.7
+  },
+  "211": {
+   "seed": 211,
+   "success": false,
+   "stage": "align",
+   "steps": 285,
+   "align_err_mm": 53.56,
+   "seconds": 74.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 0.8,
+     "peg_deg": 0.3,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 14
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 20
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 26
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 201,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 232,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.54,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.8
+   },
+   "box_move_offset_cm": 4.98,
+   "reobserve": 1,
+   "vision_ms_p50": 214.4,
+   "vision_ms_p95": 315.8
+  },
+  "212": {
+   "seed": 212,
+   "success": false,
+   "stage": "align",
+   "steps": 216,
+   "align_err_mm": 90.92,
+   "seconds": 86.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 4.0,
+     "peg_deg": 1.4,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 66
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 2.1,
+     "peg_deg": 2.4,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 78
+    },
+    {
+     "tag": "refine",
+     "step": 121,
+     "peg_mm": 2.0,
+     "peg_deg": 0.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 89
+    },
+    {
+     "tag": "refine",
+     "step": 194,
+     "peg_mm": 4.7,
+     "peg_deg": 0.8,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 162
+    },
+    {
+     "tag": "refine",
+     "step": 194,
+     "peg_mm": 4.7,
+     "peg_deg": 0.8,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 162
+    },
+    {
+     "tag": "refine",
+     "step": 194,
+     "peg_mm": 4.7,
+     "peg_deg": 0.8,
+     "n_hist": 9,
+     "n_rel2": 0,
+     "hist_age": 162
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.77,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.4
+   },
+   "box_move_offset_cm": 4.21,
+   "reobserve": 1,
+   "vision_ms_p50": 413.0,
+   "vision_ms_p95": 583.0
+  },
+  "213": {
+   "seed": 213,
+   "success": false,
+   "stage": "insert",
+   "steps": 297,
+   "align_err_mm": 1.31,
+   "seconds": 113.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 174,
+     "peg_mm": 1.5,
+     "peg_deg": 1.0,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 48
+    },
+    {
+     "tag": "refine",
+     "step": 181,
+     "peg_mm": 2.0,
+     "peg_deg": 0.6,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 55
+    },
+    {
+     "tag": "refine",
+     "step": 187,
+     "peg_mm": 1.5,
+     "peg_deg": 0.2,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 61
+    },
+    {
+     "tag": "refine",
+     "step": 254,
+     "peg_mm": 1.5,
+     "peg_deg": 0.8,
+     "hole_mm": 1.4,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 60
+    },
+    {
+     "tag": "refine",
+     "step": 263,
+     "peg_mm": 1.8,
+     "peg_deg": 1.0,
+     "hole_mm": 1.4,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 69
+    },
+    {
+     "tag": "refine",
+     "step": 269,
+     "peg_mm": 1.7,
+     "peg_deg": 1.5,
+     "hole_mm": 1.4,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 75
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.78,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.8
+   },
+   "reobserve": 2,
+   "box_move_offset_cm": 3.08,
+   "vision_ms_p50": 349.1,
+   "vision_ms_p95": 553.0
+  },
+  "214": {
+   "seed": 214,
+   "success": false,
+   "stage": "no_estimate",
+   "steps": 0,
+   "align_err_mm": -1,
+   "seconds": 1.0,
+   "error": null,
+   "policy": "expert"
+  },
+  "215": {
+   "seed": 215,
+   "success": false,
+   "stage": "align",
+   "steps": 1040,
+   "align_err_mm": 155.49,
+   "seconds": 226.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 40.2,
+     "peg_deg": 2.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 1.9,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 132,
+     "peg_mm": 2.1,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 184,
+     "peg_mm": 1.9,
+     "peg_deg": 0.3,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 430,
+     "peg_mm": 1.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 540,
+     "peg_mm": 0.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 681,
+     "peg_mm": 1.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.77,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 2.96,
+   "reobserve": 1,
+   "vision_ms_p50": 182.8,
+   "vision_ms_p95": 264.5
+  },
+  "216": {
+   "seed": 216,
+   "success": false,
+   "stage": "align",
+   "steps": 284,
+   "align_err_mm": 49.1,
+   "seconds": 68.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 91,
+     "peg_mm": 2.5,
+     "peg_deg": 0.3,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 54
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 1.8,
+     "peg_deg": 0.2,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 61
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 3.3,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 11,
+     "n_rel2": 0,
+     "hist_age": 67
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 200,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 232,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.89,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.1
+   },
+   "box_move_offset_cm": 4.23,
+   "reobserve": 1,
+   "vision_ms_p50": 173.4,
+   "vision_ms_p95": 421.8
+  },
+  "217": {
+   "seed": 217,
+   "success": false,
+   "stage": "align",
+   "steps": 1148,
+   "align_err_mm": 124.66,
+   "seconds": 152.4,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 84.9,
+     "peg_deg": 84.6,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 0,
+     "n_rel2": 0,
+     "hist_age": null
+    },
+    {
+     "tag": "refine",
+     "step": 131,
+     "peg_mm": 429.7,
+     "peg_deg": 13.9,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 97
+    },
+    {
+     "tag": "refine",
+     "step": 180,
+     "peg_mm": 476.2,
+     "peg_deg": 27.9,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 146
+    },
+    {
+     "tag": "refine",
+     "step": 269,
+     "peg_mm": 539.2,
+     "peg_deg": 50.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 235
+    },
+    {
+     "tag": "refine",
+     "step": 396,
+     "peg_mm": 527.7,
+     "peg_deg": 54.3,
+     "hole_mm": 45.2,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 362
+    },
+    {
+     "tag": "refine",
+     "step": 560,
+     "peg_mm": 562.2,
+     "peg_deg": 11.4,
+     "hole_mm": 45.2,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 526
+    },
+    {
+     "tag": "refine",
+     "step": 756,
+     "peg_mm": 562.2,
+     "peg_deg": 11.4,
+     "hole_mm": 45.2,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 722
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 0.93,
+    "base_ok": false,
+    "agree": false,
+    "err_mm": 1.8
+   },
+   "box_move_offset_cm": 4.48,
+   "vision_ms_p50": 98.2,
+   "vision_ms_p95": 153.9
+  },
+  "218": {
+   "seed": 218,
+   "success": true,
+   "stage": "success",
+   "steps": 207,
+   "align_err_mm": 1.07,
+   "seconds": 36.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 86,
+     "peg_mm": 1.8,
+     "peg_deg": 0.2,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 25,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 2.0,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 1.1,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 164,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 174,
+     "peg_mm": 2.2,
+     "peg_deg": 0.0,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 180,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.8,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.2
+   },
+   "box_move_offset_cm": 3.91,
+   "reobserve": 1,
+   "vision_ms_p50": 125.1,
+   "vision_ms_p95": 419.8
+  },
+  "219": {
+   "seed": 219,
+   "success": false,
+   "stage": "align",
+   "steps": 284,
+   "align_err_mm": 57.87,
+   "seconds": 52.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 99,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 176,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 205,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 234,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.87,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.8
+   },
+   "box_move_offset_cm": 3.98,
+   "reobserve": 1,
+   "vision_ms_p50": 112.5,
+   "vision_ms_p95": 408.9
+  },
+  "220": {
+   "seed": 220,
+   "success": true,
+   "stage": "success",
+   "steps": 222,
+   "align_err_mm": 0.82,
+   "seconds": 46.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 96,
+     "peg_mm": 3.3,
+     "peg_deg": 0.7,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 14
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 1.0,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 22
+    },
+    {
+     "tag": "refine",
+     "step": 110,
+     "peg_mm": 2.3,
+     "peg_deg": 1.3,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 28
+    },
+    {
+     "tag": "refine",
+     "step": 179,
+     "peg_mm": 0.6,
+     "peg_deg": 0.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 189,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 195,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.77,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.9
+   },
+   "box_move_offset_cm": 4.29,
+   "reobserve": 1,
+   "vision_ms_p50": 133.7,
+   "vision_ms_p95": 399.1
+  },
+  "221": {
+   "seed": 221,
+   "success": false,
+   "stage": "align",
+   "steps": 182,
+   "align_err_mm": 20.54,
+   "seconds": 55.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.8,
+     "peg_deg": 0.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 80,
+     "peg_mm": 4.3,
+     "peg_deg": 0.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 51
+    },
+    {
+     "tag": "refine",
+     "step": 88,
+     "peg_mm": 3.1,
+     "peg_deg": 0.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 59
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 3.8,
+     "peg_deg": 0.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 65
+    },
+    {
+     "tag": "refine",
+     "step": 160,
+     "peg_mm": 3.6,
+     "peg_deg": 0.7,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 131
+    },
+    {
+     "tag": "refine",
+     "step": 160,
+     "peg_mm": 3.6,
+     "peg_deg": 0.7,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 131
+    },
+    {
+     "tag": "refine",
+     "step": 160,
+     "peg_mm": 3.6,
+     "peg_deg": 0.7,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 131
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.12,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 2.92,
+   "reobserve": 1,
+   "vision_ms_p50": 340.2,
+   "vision_ms_p95": 438.1
+  },
+  "222": {
+   "seed": 222,
+   "success": false,
+   "stage": "align",
+   "steps": 265,
+   "align_err_mm": 133.95,
+   "seconds": 56.6,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 103,
+     "peg_mm": 2.2,
+     "peg_deg": 1.6,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 20
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 1.5,
+     "peg_deg": 0.6,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 28
+    },
+    {
+     "tag": "refine",
+     "step": 118,
+     "peg_mm": 1.2,
+     "peg_deg": 0.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 35
+    },
+    {
+     "tag": "refine",
+     "step": 184,
+     "peg_mm": 3.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 203,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 223,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.66,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.0
+   },
+   "box_move_offset_cm": 2.29,
+   "reobserve": 1,
+   "vision_ms_p50": 138.3,
+   "vision_ms_p95": 390.1
+  },
+  "223": {
+   "seed": 223,
+   "success": false,
+   "stage": "align",
+   "steps": 246,
+   "align_err_mm": 118.68,
+   "seconds": 68.2,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 1.4,
+     "peg_deg": 0.4,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 22
+    },
+    {
+     "tag": "refine",
+     "step": 95,
+     "peg_mm": 1.6,
+     "peg_deg": 0.4,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 28
+    },
+    {
+     "tag": "refine",
+     "step": 101,
+     "peg_mm": 1.1,
+     "peg_deg": 0.2,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 34
+    },
+    {
+     "tag": "refine",
+     "step": 167,
+     "peg_mm": 1.0,
+     "peg_deg": 0.4,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 100
+    },
+    {
+     "tag": "refine",
+     "step": 186,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 205,
+     "peg_mm": 2.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.53,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.2
+   },
+   "box_move_offset_cm": 3.05,
+   "reobserve": 1,
+   "vision_ms_p50": 168.5,
+   "vision_ms_p95": 458.0
+  },
+  "224": {
+   "seed": 224,
+   "success": false,
+   "stage": "align",
+   "steps": 565,
+   "align_err_mm": 113.76,
+   "seconds": 93.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 154,
+     "peg_mm": 146.6,
+     "peg_deg": 90.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 94
+    },
+    {
+     "tag": "refine",
+     "step": 191,
+     "peg_mm": 1.0,
+     "peg_deg": 1.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 228,
+     "peg_mm": 109.1,
+     "peg_deg": 176.8,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 5
+    },
+    {
+     "tag": "refine",
+     "step": 362,
+     "peg_mm": 131.0,
+     "peg_deg": 7.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 139
+    },
+    {
+     "tag": "refine",
+     "step": 426,
+     "peg_mm": 218.5,
+     "peg_deg": 57.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 203
+    },
+    {
+     "tag": "refine",
+     "step": 457,
+     "peg_mm": 120.3,
+     "peg_deg": 4.8,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 234
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.33,
+    "base_ok": true,
+    "agree": false
+   },
+   "reobserve": 2,
+   "box_move_offset_cm": 4.0,
+   "vision_ms_p50": 102.9,
+   "vision_ms_p95": 411.6
+  },
+  "225": {
+   "seed": 225,
+   "success": false,
+   "stage": "align",
+   "steps": 607,
+   "align_err_mm": 83.93,
+   "seconds": 82.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 3.1,
+     "peg_deg": 0.2,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 53.6,
+     "peg_deg": 162.2,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 34
+    },
+    {
+     "tag": "refine",
+     "step": 189,
+     "peg_mm": 105.3,
+     "peg_deg": 14.2,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 101
+    },
+    {
+     "tag": "refine",
+     "step": 255,
+     "peg_mm": 88.9,
+     "peg_deg": 161.1,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 167
+    },
+    {
+     "tag": "refine",
+     "step": 386,
+     "peg_mm": 120.3,
+     "peg_deg": 38.7,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 298
+    },
+    {
+     "tag": "refine",
+     "step": 452,
+     "peg_mm": 138.2,
+     "peg_deg": 65.3,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 364
+    },
+    {
+     "tag": "refine",
+     "step": 473,
+     "peg_mm": 153.4,
+     "peg_deg": 40.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 385
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.76,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.1
+   },
+   "box_move_offset_cm": 3.11,
+   "reobserve": 1,
+   "vision_ms_p50": 94.8,
+   "vision_ms_p95": 162.6
+  },
+  "226": {
+   "seed": 226,
+   "success": false,
+   "stage": "insert",
+   "steps": 245,
+   "align_err_mm": 2.04,
+   "seconds": 91.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 1.9,
+     "peg_deg": 1.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 8
+    },
+    {
+     "tag": "refine",
+     "step": 122,
+     "peg_mm": 7.6,
+     "peg_deg": 0.8,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 19
+    },
+    {
+     "tag": "refine",
+     "step": 130,
+     "peg_mm": 2.0,
+     "peg_deg": 0.3,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 27
+    },
+    {
+     "tag": "refine",
+     "step": 199,
+     "peg_mm": 1.5,
+     "peg_deg": 1.7,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 96
+    },
+    {
+     "tag": "refine",
+     "step": 209,
+     "peg_mm": 2.2,
+     "peg_deg": 1.7,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 106
+    },
+    {
+     "tag": "refine",
+     "step": 215,
+     "peg_mm": 1.9,
+     "peg_deg": 1.5,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 2,
+     "n_rel2": 0,
+     "hist_age": 112
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.53,
+    "base_ok": false,
+    "agree": true,
+    "err_mm": 1.3
+   },
+   "box_move_offset_cm": 4.45,
+   "reobserve": 1,
+   "vision_ms_p50": 414.3,
+   "vision_ms_p95": 512.6
+  },
+  "227": {
+   "seed": 227,
+   "success": false,
+   "stage": "align",
+   "steps": 219,
+   "align_err_mm": 6.79,
+   "seconds": 69.0,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 1.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 96,
+     "peg_mm": 1.3,
+     "peg_deg": 0.8,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 5
+    },
+    {
+     "tag": "refine",
+     "step": 102,
+     "peg_mm": 2.4,
+     "peg_deg": 1.8,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 11
+    },
+    {
+     "tag": "refine",
+     "step": 108,
+     "peg_mm": 2.4,
+     "peg_deg": 0.5,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 17
+    },
+    {
+     "tag": "refine",
+     "step": 175,
+     "peg_mm": 1.4,
+     "peg_deg": 2.5,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 84
+    },
+    {
+     "tag": "refine",
+     "step": 183,
+     "peg_mm": 6.8,
+     "peg_deg": 2.0,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 92
+    },
+    {
+     "tag": "refine",
+     "step": 191,
+     "peg_mm": 5.3,
+     "peg_deg": 1.2,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 100
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.87,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.9
+   },
+   "box_move_offset_cm": 2.2,
+   "reobserve": 1,
+   "vision_ms_p50": 362.6,
+   "vision_ms_p95": 480.6
+  },
+  "228": {
+   "seed": 228,
+   "success": false,
+   "stage": "align",
+   "steps": 233,
+   "align_err_mm": 8.94,
+   "seconds": 55.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 92,
+     "peg_mm": 3.1,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 23,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 98,
+     "peg_mm": 1.9,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 104,
+     "peg_mm": 2.1,
+     "peg_deg": 0.1,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 1.3,
+     "peg_deg": 1.2,
+     "hole_mm": 1.3,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 4
+    },
+    {
+     "tag": "refine",
+     "step": 186,
+     "peg_mm": 2.2,
+     "peg_deg": 4.5,
+     "hole_mm": 1.3,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 20
+    },
+    {
+     "tag": "refine",
+     "step": 202,
+     "peg_mm": 1.1,
+     "peg_deg": 3.6,
+     "hole_mm": 1.3,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 36
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.71,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.1
+   },
+   "box_move_offset_cm": 2.02,
+   "reobserve": 1,
+   "vision_ms_p50": 123.1,
+   "vision_ms_p95": 417.1
+  },
+  "229": {
+   "seed": 229,
+   "success": true,
+   "stage": "success",
+   "steps": 196,
+   "align_err_mm": 1.16,
+   "seconds": 40.9,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 77,
+     "peg_mm": 1.0,
+     "peg_deg": 0.5,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 83,
+     "peg_mm": 0.3,
+     "peg_deg": 0.3,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 89,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 155,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 164,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 1
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 0.8,
+     "peg_deg": 0.1,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.75,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 3.33,
+   "reobserve": 1,
+   "vision_ms_p50": 130.6,
+   "vision_ms_p95": 401.8
+  },
+  "230": {
+   "seed": 230,
+   "success": false,
+   "stage": "align",
+   "steps": 222,
+   "align_err_mm": 4.81,
+   "seconds": 60.3,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 90,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 10
+    },
+    {
+     "tag": "refine",
+     "step": 96,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 16
+    },
+    {
+     "tag": "refine",
+     "step": 102,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 22
+    },
+    {
+     "tag": "refine",
+     "step": 168,
+     "peg_mm": 1.4,
+     "peg_deg": 1.3,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 88
+    },
+    {
+     "tag": "refine",
+     "step": 183,
+     "peg_mm": 1.7,
+     "peg_deg": 0.6,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 103
+    },
+    {
+     "tag": "refine",
+     "step": 192,
+     "peg_mm": 2.7,
+     "peg_deg": 0.7,
+     "hole_mm": 0.7,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 112
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.31,
+    "base_ok": false,
+    "agree": false
+   },
+   "box_move_offset_cm": 2.23,
+   "reobserve": 1,
+   "vision_ms_p50": 161.4,
+   "vision_ms_p95": 435.6
+  },
+  "231": {
+   "seed": 231,
+   "success": false,
+   "stage": "align",
+   "steps": 384,
+   "align_err_mm": 177.61,
+   "seconds": 63.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 132.5,
+     "peg_deg": 89.7,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 0,
+     "n_rel2": 0,
+     "hist_age": null
+    },
+    {
+     "tag": "refine",
+     "step": 141,
+     "peg_mm": 6.7,
+     "peg_deg": 0.6,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 171,
+     "peg_mm": 5.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 196,
+     "peg_mm": 98.3,
+     "peg_deg": 6.8,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 13
+    },
+    {
+     "tag": "refine",
+     "step": 270,
+     "peg_mm": 181.4,
+     "peg_deg": 8.3,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 87
+    },
+    {
+     "tag": "refine",
+     "step": 287,
+     "peg_mm": 224.6,
+     "peg_deg": 10.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 104
+    },
+    {
+     "tag": "refine",
+     "step": 313,
+     "peg_mm": 270.4,
+     "peg_deg": 9.4,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 130
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.01,
+    "base_ok": false,
+    "agree": false
+   },
+   "box_move_offset_cm": 3.32,
+   "reobserve": 1,
+   "vision_ms_p50": 111.5,
+   "vision_ms_p95": 189.3
+  },
+  "232": {
+   "seed": 232,
+   "success": false,
+   "stage": "align",
+   "steps": 232,
+   "align_err_mm": 4.58,
+   "seconds": 71.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.8,
+     "peg_deg": 0.2,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 13,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 1.3,
+     "peg_deg": 0.6,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 14,
+     "n_rel2": 0,
+     "hist_age": 5
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 1.4,
+     "peg_deg": 0.6,
+     "hole_mm": 1.2,
+     "hole_deg": 0.0,
+     "n_hist": 14,
+     "n_rel2": 0,
+     "hist_age": 11
+    },
+    {
+     "tag": "refine",
+     "step": 172,
+     "peg_mm": 9.3,
+     "peg_deg": 2.6,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 19,
+     "n_rel2": 0,
+     "hist_age": 55
+    },
+    {
+     "tag": "refine",
+     "step": 187,
+     "peg_mm": 8.1,
+     "peg_deg": 13.6,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 19,
+     "n_rel2": 0,
+     "hist_age": 70
+    },
+    {
+     "tag": "refine",
+     "step": 197,
+     "peg_mm": 0.4,
+     "peg_deg": 3.6,
+     "hole_mm": 0.5,
+     "hole_deg": 0.0,
+     "n_hist": 19,
+     "n_rel2": 0,
+     "hist_age": 80
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.78,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.1
+   },
+   "box_move_offset_cm": 3.72,
+   "reobserve": 1,
+   "vision_ms_p50": 373.0,
+   "vision_ms_p95": 475.2
+  },
+  "233": {
+   "seed": 233,
+   "success": false,
+   "stage": "align",
+   "steps": 490,
+   "align_err_mm": 93.98,
+   "seconds": 70.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 91.9,
+     "peg_deg": 89.2,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 0,
+     "n_rel2": 0,
+     "hist_age": null
+    },
+    {
+     "tag": "refine",
+     "step": 132,
+     "peg_mm": 371.9,
+     "peg_deg": 43.9,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 45
+    },
+    {
+     "tag": "refine",
+     "step": 176,
+     "peg_mm": 442.8,
+     "peg_deg": 89.3,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 89
+    },
+    {
+     "tag": "refine",
+     "step": 243,
+     "peg_mm": 403.9,
+     "peg_deg": 71.2,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 156
+    },
+    {
+     "tag": "refine",
+     "step": 335,
+     "peg_mm": 403.9,
+     "peg_deg": 71.2,
+     "hole_mm": 48.9,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 248
+    },
+    {
+     "tag": "refine",
+     "step": 379,
+     "peg_mm": 403.9,
+     "peg_deg": 71.2,
+     "hole_mm": 48.9,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 292
+    },
+    {
+     "tag": "refine",
+     "step": 424,
+     "peg_mm": 403.9,
+     "peg_deg": 71.2,
+     "hole_mm": 48.9,
+     "hole_deg": 0.0,
+     "n_hist": 7,
+     "n_rel2": 0,
+     "hist_age": 337
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.36,
+    "base_ok": false,
+    "agree": false,
+    "err_mm": 0.7
+   },
+   "box_move_offset_cm": 4.87,
+   "vision_ms_p50": 104.8,
+   "vision_ms_p95": 147.4
+  },
+  "234": {
+   "seed": 234,
+   "success": false,
+   "stage": "align",
+   "steps": 432,
+   "align_err_mm": 78.4,
+   "seconds": 87.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.2,
+     "hole_mm": 1.3,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 92.1,
+     "peg_deg": 82.7,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 59
+    },
+    {
+     "tag": "refine",
+     "step": 135,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 170,
+     "peg_mm": 0.6,
+     "peg_deg": 0.1,
+     "hole_mm": 0.8,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 308,
+     "peg_mm": 132.6,
+     "peg_deg": 158.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 27
+    },
+    {
+     "tag": "refine",
+     "step": 362,
+     "peg_mm": 0.7,
+     "peg_deg": 0.3,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 389,
+     "peg_mm": 3.8,
+     "peg_deg": 0.6,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.81,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 3.06,
+   "reobserve": 1,
+   "vision_ms_p50": 105.3,
+   "vision_ms_p95": 443.1
+  },
+  "235": {
+   "seed": 235,
+   "success": false,
+   "stage": "align",
+   "steps": 241,
+   "align_err_mm": 44.71,
+   "seconds": 52.5,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 2.7,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 105,
+     "peg_mm": 0.6,
+     "peg_deg": 0.3,
+     "hole_mm": 1.4,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 111,
+     "peg_mm": 2.4,
+     "peg_deg": 0.1,
+     "hole_mm": 1.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 1.9,
+     "peg_deg": 0.1,
+     "hole_mm": 1.5,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 184,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 198,
+     "peg_mm": 1.7,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 9
+    },
+    {
+     "tag": "refine",
+     "step": 206,
+     "peg_mm": 2.1,
+     "peg_deg": 0.1,
+     "hole_mm": 1.0,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 3
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.11,
+    "base_ok": false,
+    "agree": false
+   },
+   "box_move_offset_cm": 2.65,
+   "reobserve": 1,
+   "vision_ms_p50": 138.6,
+   "vision_ms_p95": 428.0
+  },
+  "236": {
+   "seed": 236,
+   "success": false,
+   "stage": "align",
+   "steps": 291,
+   "align_err_mm": 131.35,
+   "seconds": 76.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 80,
+     "peg_mm": 5.1,
+     "peg_deg": 0.9,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 48
+    },
+    {
+     "tag": "refine",
+     "step": 90,
+     "peg_mm": 5.2,
+     "peg_deg": 0.8,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 58
+    },
+    {
+     "tag": "refine",
+     "step": 97,
+     "peg_mm": 5.8,
+     "peg_deg": 0.5,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 65
+    },
+    {
+     "tag": "refine",
+     "step": 168,
+     "peg_mm": 80.6,
+     "peg_deg": 155.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 136
+    },
+    {
+     "tag": "refine",
+     "step": 220,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 244,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": false,
+    "ext": 0.39,
+    "base_ok": true,
+    "agree": false
+   },
+   "box_move_offset_cm": 3.0,
+   "reobserve": 1,
+   "vision_ms_p50": 121.7,
+   "vision_ms_p95": 470.7
+  },
+  "237": {
+   "seed": 237,
+   "success": false,
+   "stage": "align",
+   "steps": 394,
+   "align_err_mm": 53.19,
+   "seconds": 66.7,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 3.5,
+     "peg_deg": 0.2,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 111.3,
+     "peg_deg": 179.8,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 185,
+     "peg_mm": 3.0,
+     "peg_deg": 1.1,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 230,
+     "peg_mm": 2.2,
+     "peg_deg": 0.1,
+     "hole_mm": 1.1,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 320,
+     "peg_mm": 68.1,
+     "peg_deg": 2.4,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 15
+    },
+    {
+     "tag": "refine",
+     "step": 333,
+     "peg_mm": 94.4,
+     "peg_deg": 13.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 28
+    },
+    {
+     "tag": "refine",
+     "step": 346,
+     "peg_mm": 95.7,
+     "peg_deg": 14.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 41
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.48,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 1.6
+   },
+   "box_move_offset_cm": 3.3,
+   "reobserve": 1,
+   "vision_ms_p50": 127.4,
+   "vision_ms_p95": 417.1
+  },
+  "238": {
+   "seed": 238,
+   "success": false,
+   "stage": "align",
+   "steps": 155,
+   "align_err_mm": 32.62,
+   "seconds": 19.8,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 94,
+     "peg_mm": 0.5,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 27,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 100,
+     "peg_mm": 0.4,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 106,
+     "peg_mm": 0.7,
+     "peg_deg": 0.1,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 117,
+     "peg_mm": 1.5,
+     "peg_deg": 0.2,
+     "hole_mm": 32.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 123,
+     "peg_mm": 0.9,
+     "peg_deg": 0.2,
+     "hole_mm": 32.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 129,
+     "peg_mm": 0.5,
+     "peg_deg": 0.1,
+     "hole_mm": 32.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.89,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.8
+   },
+   "box_move_offset_cm": 3.28,
+   "vision_ms_p50": 103.8,
+   "vision_ms_p95": 140.5
+  },
+  "239": {
+   "seed": 239,
+   "success": true,
+   "stage": "success",
+   "steps": 199,
+   "align_err_mm": 1.3,
+   "seconds": 27.1,
+   "error": null,
+   "policy": "expert",
+   "queries": [
+    {
+     "tag": "grasp",
+     "step": 0,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 1,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 78,
+     "peg_mm": 0.5,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 29,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 84,
+     "peg_mm": 0.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 90,
+     "peg_mm": 0.7,
+     "peg_deg": 0.0,
+     "hole_mm": 0.6,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 156,
+     "peg_mm": 0.6,
+     "peg_deg": 0.0,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 166,
+     "peg_mm": 2.4,
+     "peg_deg": 0.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    },
+    {
+     "tag": "refine",
+     "step": 172,
+     "peg_mm": 2.1,
+     "peg_deg": 0.2,
+     "hole_mm": 0.9,
+     "hole_deg": 0.0,
+     "n_hist": 30,
+     "n_rel2": 0,
+     "hist_age": 0
+    }
+   ],
+   "look": {
+    "ok": true,
+    "ext": 1.81,
+    "base_ok": true,
+    "agree": true,
+    "err_mm": 0.2
+   },
+   "box_move_offset_cm": 4.79,
+   "reobserve": 1,
+   "vision_ms_p50": 106.4,
+   "vision_ms_p95": 123.1
+  }
+ },
+ "summary": {
+  "n": 40,
+  "success": 0.275,
+  "stages": {
+   "insert": 2,
+   "success": 11,
+   "align": 26,
+   "no_estimate": 1
+  },
+  "align_err_mm_median": 20.54
+ }
+}

@@ -1,0 +1,189 @@
+{
+ "conditions": {
+  "gt": {
+   "success": 1.0,
+   "lo": 1.0,
+   "hi": 1.0,
+   "stages": {
+    "success": 40
+   },
+   "align_med": 0.02
+  },
+  "vision_none_r2": {
+   "success": 0.525,
+   "lo": 0.375,
+   "hi": 0.675,
+   "stages": {
+    "success": 21,
+    "insert": 6,
+    "align": 11,
+    "no_estimate": 2
+   },
+   "align_med": 1.99
+  },
+  "final_temporal": {
+   "success": 0.55,
+   "lo": 0.4,
+   "hi": 0.7,
+   "stages": {
+    "success": 22,
+    "insert": 6,
+    "align": 10,
+    "no_estimate": 2
+   },
+   "align_med": 1.44
+  },
+  "final_tcp2": {
+   "success": 0.675,
+   "lo": 0.525,
+   "hi": 0.8,
+   "stages": {
+    "success": 27,
+    "align": 6,
+    "insert": 5,
+    "no_estimate": 2
+   },
+   "align_med": 0.96
+  },
+  "final2_temporal": {
+   "success": 0.525,
+   "lo": 0.375,
+   "hi": 0.675,
+   "stages": {
+    "success": 21,
+    "insert": 5,
+    "align": 13,
+    "no_estimate": 1
+   },
+   "align_med": 2.16
+  },
+  "final2_tcp2": {
+   "success": 0.75,
+   "lo": 0.625,
+   "hi": 0.875,
+   "stages": {
+    "success": 30,
+    "align": 5,
+    "insert": 4,
+    "no_estimate": 1
+   },
+   "align_med": 0.93
+  },
+  "gt_boxmove": {
+   "success": 0.95,
+   "lo": 0.875,
+   "hi": 1.0,
+   "stages": {
+    "success": 38,
+    "insert": 2
+   },
+   "align_med": 0.09
+  },
+  "final_temporal_boxmove": {
+   "success": 0.35,
+   "lo": 0.2,
+   "hi": 0.5,
+   "stages": {
+    "success": 14,
+    "align": 21,
+    "insert": 3,
+    "no_estimate": 2
+   },
+   "align_med": 7.51
+  },
+  "final_tcp2_boxmove": {
+   "success": 0.375,
+   "lo": 0.225,
+   "hi": 0.525,
+   "stages": {
+    "success": 15,
+    "insert": 3,
+    "align": 20,
+    "no_estimate": 2
+   },
+   "align_med": 9.09
+  },
+  "final2_temporal_boxmove": {
+   "success": 0.35,
+   "lo": 0.2,
+   "hi": 0.5,
+   "stages": {
+    "success": 14,
+    "align": 23,
+    "insert": 2,
+    "no_estimate": 1
+   },
+   "align_med": 20.54
+  },
+  "final2_tcp2_boxmove": {
+   "success": 0.45,
+   "lo": 0.3,
+   "hi": 0.6,
+   "stages": {
+    "success": 18,
+    "align": 20,
+    "no_estimate": 1,
+    "insert": 1
+   },
+   "align_med": 7.19
+  }
+ },
+ "diffs": {
+  "final2_tcp2-vision_none_r2": {
+   "mean": 0.225,
+   "lo": 0.075,
+   "hi": 0.375,
+   "wins": 10,
+   "losses": 1
+  },
+  "final2_temporal-vision_none_r2": {
+   "mean": 0.0,
+   "lo": -0.125,
+   "hi": 0.125,
+   "wins": 3,
+   "losses": 3
+  },
+  "final2_tcp2-final_tcp2": {
+   "mean": 0.075,
+   "lo": -0.025,
+   "hi": 0.2,
+   "wins": 4,
+   "losses": 1
+  },
+  "final2_tcp2-final2_temporal": {
+   "mean": 0.225,
+   "lo": 0.075,
+   "hi": 0.375,
+   "wins": 10,
+   "losses": 1
+  },
+  "final2_tcp2_boxmove-final_tcp2_boxmove": {
+   "mean": 0.075,
+   "lo": 0.0,
+   "hi": 0.175,
+   "wins": 3,
+   "losses": 0
+  },
+  "final2_tcp2_boxmove-final2_temporal_boxmove": {
+   "mean": 0.1,
+   "lo": 0.0,
+   "hi": 0.225,
+   "wins": 5,
+   "losses": 1
+  },
+  "gt-final2_tcp2": {
+   "mean": 0.25,
+   "lo": 0.125,
+   "hi": 0.375,
+   "wins": 10,
+   "losses": 0
+  },
+  "gt_boxmove-final2_tcp2_boxmove": {
+   "mean": 0.5,
+   "lo": 0.35,
+   "hi": 0.65,
+   "wins": 20,
+   "losses": 0
+  }
+ }
+}

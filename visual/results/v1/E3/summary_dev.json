@@ -1,0 +1,704 @@
+{
+ "none": {
+  "peg": {
+   "iou": {
+    "mean": 0.7775,
+    "lo": 0.5596,
+    "hi": 0.9172,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7552,
+    "lo": 0.5115,
+    "hi": 0.9158,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8747,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2781,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.006
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.931,
+    "lo": 0.7673,
+    "hi": 0.9938,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7544,
+    "lo": 0.5075,
+    "hi": 0.9082,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6783,
+    "lo": 0.4226,
+    "hi": 0.8602,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 245.1,
+   "ms_p50": 238.88,
+   "ms_p95": 354.5,
+   "ms_max": 415.5,
+   "gpu_peak_gb": 0.767
+  },
+  "reanchor": {
+   "gdino_calls": 0,
+   "accepted": 0
+  },
+  "n_ep": 10
+ },
+ "v0conf": {
+  "peg": {
+   "iou": {
+    "mean": 0.7731,
+    "lo": 0.5552,
+    "hi": 0.9128,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7507,
+    "lo": 0.5083,
+    "hi": 0.9116,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8297,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2781,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.006
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.931,
+    "lo": 0.7673,
+    "hi": 0.9938,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7494,
+    "lo": 0.5065,
+    "hi": 0.9024,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6683,
+    "lo": 0.4165,
+    "hi": 0.8502,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 184.91,
+   "ms_p50": 133.61,
+   "ms_p95": 572.02,
+   "ms_max": 1371.2,
+   "gpu_peak_gb": 2.102
+  },
+  "reanchor": {
+   "gdino_calls": 360,
+   "accepted": 1
+  },
+  "n_ep": 10,
+  "diff_vs_base": {
+   "peg": {
+    "mean": -0.0045,
+    "lo": -0.0135,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 1
+   },
+   "box": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   }
+  }
+ },
+ "v1": {
+  "peg": {
+   "iou": {
+    "mean": 0.7775,
+    "lo": 0.5596,
+    "hi": 0.9172,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7552,
+    "lo": 0.5115,
+    "hi": 0.9158,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8747,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2782,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.1084
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.9311,
+    "lo": 0.7673,
+    "hi": 0.9939,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7544,
+    "lo": 0.5075,
+    "hi": 0.9082,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6783,
+    "lo": 0.4226,
+    "hi": 0.8602,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 372.75,
+   "ms_p50": 233.35,
+   "ms_p95": 1043.42,
+   "ms_max": 1733.4,
+   "gpu_peak_gb": 2.244
+  },
+  "reanchor": {
+   "gdino_calls": 343,
+   "accepted": 1
+  },
+  "n_ep": 10,
+  "diff_vs_base": {
+   "peg": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   },
+   "box": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   }
+  }
+ },
+ "v1c": {
+  "peg": {
+   "iou": {
+    "mean": 0.7775,
+    "lo": 0.5596,
+    "hi": 0.9172,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7552,
+    "lo": 0.5114,
+    "hi": 0.9158,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8747,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2781,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.0964
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.931,
+    "lo": 0.7672,
+    "hi": 0.9938,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7544,
+    "lo": 0.5075,
+    "hi": 0.9082,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6783,
+    "lo": 0.4226,
+    "hi": 0.8602,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 337.37,
+   "ms_p50": 227.06,
+   "ms_p95": 921.39,
+   "ms_max": 1646.2,
+   "gpu_peak_gb": 2.244
+  },
+  "reanchor": {
+   "gdino_calls": 344,
+   "accepted": 1
+  },
+  "n_ep": 10,
+  "diff_vs_base": {
+   "peg": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   },
+   "box": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   }
+  }
+ },
+ "v1_tcp": {
+  "peg": {
+   "iou": {
+    "mean": 0.7775,
+    "lo": 0.5596,
+    "hi": 0.9172,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7552,
+    "lo": 0.5115,
+    "hi": 0.9158,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8747,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2781,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.006
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.931,
+    "lo": 0.7673,
+    "hi": 0.9938,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7544,
+    "lo": 0.5075,
+    "hi": 0.9082,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6783,
+    "lo": 0.4226,
+    "hi": 0.8602,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 345.19,
+   "ms_p50": 216.07,
+   "ms_p95": 988.78,
+   "ms_max": 2185.3,
+   "gpu_peak_gb": 2.243
+  },
+  "reanchor": {
+   "gdino_calls": 359,
+   "accepted": 0
+  },
+  "n_ep": 10,
+  "diff_vs_base": {
+   "peg": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   },
+   "box": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   }
+  }
+ },
+ "v1c_tcp": {
+  "peg": {
+   "iou": {
+    "mean": 0.7775,
+    "lo": 0.5596,
+    "hi": 0.9172,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.7552,
+    "lo": 0.5115,
+    "hi": 0.9158,
+    "n_ep": 10
+   },
+   "hit50": 0.843,
+   "ep_min": 0.0,
+   "n_frames": 1232,
+   "ep_means": {
+    "ep100": 0.9126,
+    "ep101": 0.8747,
+    "ep102": 0.92,
+    "ep103": 0.8654,
+    "ep104": 0.8826,
+    "ep105": 0.0,
+    "ep106": 0.9071,
+    "ep107": 0.9591,
+    "ep108": 0.2781,
+    "ep109": 0.9522
+   },
+   "occ_events": 8,
+   "reacq_rate": 0.75,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.33,
+   "fp_hidden_rate": 0.006
+  },
+  "box": {
+   "iou": {
+    "mean": 0.9659,
+    "lo": 0.9579,
+    "hi": 0.9741,
+    "n_ep": 10
+   },
+   "iou_epmean": {
+    "mean": 0.9659,
+    "lo": 0.9576,
+    "hi": 0.9745,
+    "n_ep": 10
+   },
+   "hit50": 1.0,
+   "ep_min": 0.943,
+   "n_frames": 1163,
+   "ep_means": {
+    "ep100": 0.9819,
+    "ep101": 0.9595,
+    "ep102": 0.9833,
+    "ep103": 0.9526,
+    "ep104": 0.9702,
+    "ep105": 0.9846,
+    "ep106": 0.9733,
+    "ep107": 0.9433,
+    "ep108": 0.9565,
+    "ep109": 0.9543
+   },
+   "occ_events": 13,
+   "reacq_rate": 1.0,
+   "reacq_frames_median": 0.0,
+   "reacq_frames_mean": 0.0,
+   "fp_hidden_rate": 0.0128
+  },
+  "peg_phase": {
+   "clean": {
+    "mean": 0.931,
+    "lo": 0.7673,
+    "hi": 0.9938,
+    "n_ep": 10
+   },
+   "gripper": {
+    "mean": 0.7544,
+    "lo": 0.5075,
+    "hi": 0.9082,
+    "n_ep": 10
+   },
+   "insertion": {
+    "mean": 0.6783,
+    "lo": 0.4226,
+    "hi": 0.8602,
+    "n_ep": 10
+   }
+  },
+  "time": {
+   "ms_mean": 291.1,
+   "ms_p50": 199.98,
+   "ms_p95": 794.07,
+   "ms_max": 1462.0,
+   "gpu_peak_gb": 2.243
+  },
+  "reanchor": {
+   "gdino_calls": 359,
+   "accepted": 0
+  },
+  "n_ep": 10,
+  "diff_vs_base": {
+   "peg": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   },
+   "box": {
+    "mean": 0.0,
+    "lo": 0.0,
+    "hi": 0.0,
+    "n_ep": 10,
+    "wins": 0,
+    "losses": 0
+   }
+  }
+ }
+}
