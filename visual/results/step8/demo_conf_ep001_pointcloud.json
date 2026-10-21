@@ -1,0 +1,82 @@
+{
+ "config": "conf",
+ "ep": "ep001",
+ "pointcloud": {
+  "peg": {
+   "frames": 136,
+   "gt_visible": 92,
+   "empty_when_visible": 2,
+   "nonempty_when_hidden": 1,
+   "n_points": {
+    "n": 91,
+    "mean": 1010.1209,
+    "median": 1024.0,
+    "p95": 1024.0,
+    "max": 1024.0
+   },
+   "err_gtcloud_m": {
+    "n": 90,
+    "mean": 0.0046,
+    "median": 0.0045,
+    "p95": 0.008,
+    "max": 0.0107
+   },
+   "err_pose_m": {
+    "n": 90,
+    "mean": 0.0762,
+    "median": 0.0867,
+    "p95": 0.093,
+    "max": 0.0947
+   },
+   "err_pose_gt_m": {
+    "n": 92,
+    "mean": 0.0756,
+    "median": 0.087,
+    "p95": 0.0913,
+    "max": 0.0919
+   },
+   "peg_inside": {
+    "n": 90,
+    "mean": 0.946,
+    "median": 0.938,
+    "p95": 1.0,
+    "max": 1.0
+   }
+  },
+  "box": {
+   "frames": 136,
+   "gt_visible": 68,
+   "empty_when_visible": 0,
+   "nonempty_when_hidden": 3,
+   "n_points": {
+    "n": 71,
+    "mean": 928.6901,
+    "median": 1024.0,
+    "p95": 1024.0,
+    "max": 1024.0
+   },
+   "err_gtcloud_m": {
+    "n": 68,
+    "mean": 0.0126,
+    "median": 0.0123,
+    "p95": 0.0187,
+    "max": 0.0207
+   },
+   "err_pose_m": {
+    "n": 68,
+    "mean": 0.1265,
+    "median": 0.1333,
+    "p95": 0.1455,
+    "max": 0.1561
+   },
+   "err_pose_gt_m": {
+    "n": 68,
+    "mean": 0.1202,
+    "median": 0.1253,
+    "p95": 0.1404,
+    "max": 0.1455
+   }
+  }
+ },
+ "pointcloud_ms_per_frame": 24.978240527322185
+}

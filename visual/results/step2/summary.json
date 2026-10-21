@@ -1,0 +1,41 @@
+[
+ {
+  "seed": 0,
+  "file": "data/step2/ep000.npz",
+  "frames": 122,
+  "planner_ok": true,
+  "success_final": true,
+  "success_any": true,
+  "first_success_frame": 111,
+  "peg_id": 18,
+  "box_id": 19,
+  "seconds": 9.9,
+  "mb": 73.1
+ },
+ {
+  "seed": 1,
+  "file": "data/step2/ep001.npz",
+  "frames": 136,
+  "planner_ok": true,
+  "success_final": true,
+  "success_any": true,
+  "first_success_frame": 125,
+  "peg_id": 18,
+  "box_id": 19,
+  "seconds": 10.0,
+  "mb": 68.8
+ },
+ {
+  "seed": 2,
+  "file": "data/step2/ep002.npz",
+  "frames": 146,
+  "planner_ok": true,
+  "success_final": true,
+  "success_any": true,
+  "first_success_frame": 135,
+  "peg_id": 18,
+  "box_id": 19,
+  "seconds": 11.2,
+  "mb": 90.5
+ }
+]

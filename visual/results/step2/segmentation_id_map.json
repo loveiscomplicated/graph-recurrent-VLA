@@ -1,0 +1,21 @@
+{
+ "16": "table-workspace",
+ "17": "ground",
+ "18": "peg_0",
+ "19": "box_with_hole_0",
+ "1": "panda_link0",
+ "2": "panda_link1",
+ "3": "panda_link2",
+ "4": "panda_link3",
+ "5": "panda_link4",
+ "6": "panda_link5",
+ "7": "panda_link6",
+ "8": "panda_link7",
+ "9": "panda_link8",
+ "10": "panda_hand",
+ "11": "panda_hand_tcp",
+ "12": "panda_leftfinger",
+ "13": "panda_rightfinger",
+ "14": "camera_base_link",
+ "15": "camera_link"
+}

@@ -1,0 +1,86 @@
+{
+ "ep000": {
+  "camera": "base_camera",
+  "frame": 0,
+  "peg": {
+   "box": [
+    166.8,
+    283.5,
+    302.1,
+    470.2
+   ],
+   "source": "gdino",
+   "prompt": "red and white block",
+   "score": 0.627,
+   "iou_vs_gt": 0.98
+  },
+  "box": {
+   "box": [
+    210.0,
+    160.5,
+    327.2,
+    274.8
+   ],
+   "source": "gdino",
+   "prompt": "cardboard box",
+   "score": 0.689,
+   "iou_vs_gt": 0.983
+  }
+ },
+ "ep001": {
+  "camera": "base_camera",
+  "frame": 0,
+  "peg": {
+   "box": [
+    260.2,
+    379.5,
+    487.9,
+    510.7
+   ],
+   "source": "gdino",
+   "prompt": "red and white block",
+   "score": 0.458,
+   "iou_vs_gt": 0.972
+  },
+  "box": {
+   "box": [
+    212.9,
+    180.7,
+    327.3,
+    276.4
+   ],
+   "source": "gdino",
+   "prompt": "cardboard box",
+   "score": 0.646,
+   "iou_vs_gt": 0.97
+  }
+ },
+ "ep002": {
+  "camera": "base_camera",
+  "frame": 0,
+  "peg": {
+   "box": [
+    216.8,
+    348.3,
+    360.3,
+    510.4
+   ],
+   "source": "gdino",
+   "prompt": "red and white block",
+   "score": 0.483,
+   "iou_vs_gt": 0.956
+  },
+  "box": {
+   "box": [
+    194.5,
+    167.0,
+    315.1,
+    279.4
+   ],
+   "source": "gdino",
+   "prompt": "cardboard box",
+   "score": 0.564,
+   "iou_vs_gt": 0.969
+  }
+ }
+}

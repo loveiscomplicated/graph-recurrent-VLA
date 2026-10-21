@@ -1,0 +1,405 @@
+{
+ "model": "small",
+ "prompts": {
+  "peg": "red and white block",
+  "box": "cardboard box"
+ },
+ "camera": "base_camera",
+ "cluster": false,
+ "model_load_s": 31.2,
+ "episodes": {
+  "ep000": {
+   "frames": 122,
+   "init_boxes": {
+    "peg": {
+     "box": [
+      166.82479858398438,
+      283.45208740234375,
+      302.06781005859375,
+      470.1815185546875
+     ],
+     "score": 0.627,
+     "source": "gdino",
+     "prompt": "red and white block"
+    },
+    "box": {
+     "box": [
+      209.964111328125,
+      160.45265197753906,
+      327.1787109375,
+      274.8273010253906
+     ],
+     "score": 0.689,
+     "source": "gdino",
+     "prompt": "cardboard box"
+    }
+   },
+   "iou": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9437,
+     "min": 0.8142,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9456,
+     "min": 0.6496,
+     "hit50": 1.0
+    }
+   },
+   "pointcloud": {
+    "peg": {
+     "frames": 122,
+     "gt_visible": 122,
+     "empty_when_visible": 0,
+     "nonempty_when_hidden": 0,
+     "n_points": {
+      "n": 122,
+      "mean": 1016.5738,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 122,
+      "mean": 0.0043,
+      "median": 0.003,
+      "p95": 0.0143,
+      "max": 0.0156
+     },
+     "err_pose_m": {
+      "n": 122,
+      "mean": 0.0864,
+      "median": 0.0932,
+      "p95": 0.1013,
+      "max": 0.102
+     },
+     "err_pose_gt_m": {
+      "n": 122,
+      "mean": 0.0842,
+      "median": 0.0889,
+      "p95": 0.0959,
+      "max": 0.096
+     },
+     "peg_inside": {
+      "n": 122,
+      "mean": 0.9915,
+      "median": 1.0,
+      "p95": 1.0,
+      "max": 1.0
+     }
+    },
+    "box": {
+     "frames": 122,
+     "gt_visible": 100,
+     "empty_when_visible": 0,
+     "nonempty_when_hidden": 2,
+     "n_points": {
+      "n": 102,
+      "mean": 935.8235,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 100,
+      "mean": 0.011,
+      "median": 0.0101,
+      "p95": 0.0242,
+      "max": 0.0608
+     },
+     "err_pose_m": {
+      "n": 100,
+      "mean": 0.1281,
+      "median": 0.1319,
+      "p95": 0.1492,
+      "max": 0.1703
+     },
+     "err_pose_gt_m": {
+      "n": 100,
+      "mean": 0.1267,
+      "median": 0.1262,
+      "p95": 0.1456,
+      "max": 0.1665
+     }
+    }
+   },
+   "latency_ms": {
+    "grounding_per_query": 273.1,
+    "grounding_frame0_total": 546.1,
+    "sam2_init_load_frames": 7681.1,
+    "sam2_init_add_boxes": 147.0,
+    "track_per_frame": 46.7,
+    "track_per_frame_p95": 48.2,
+    "pointcloud_per_frame": 36.5,
+    "pointcloud_per_frame_p95": 50.4
+   },
+   "steady_fps": 12.0
+  },
+  "ep001": {
+   "frames": 136,
+   "init_boxes": {
+    "peg": {
+     "box": [
+      260.17315673828125,
+      379.53826904296875,
+      487.87957763671875,
+      510.65106201171875
+     ],
+     "score": 0.458,
+     "source": "gdino",
+     "prompt": "red and white block"
+    },
+    "box": {
+     "box": [
+      212.90318298339844,
+      180.70718383789062,
+      327.30133056640625,
+      276.42901611328125
+     ],
+     "score": 0.646,
+     "source": "gdino",
+     "prompt": "cardboard box"
+    }
+   },
+   "iou": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2472,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9161,
+     "min": 0.8294,
+     "hit50": 1.0
+    }
+   },
+   "pointcloud": {
+    "peg": {
+     "frames": 136,
+     "gt_visible": 92,
+     "empty_when_visible": 69,
+     "nonempty_when_hidden": 1,
+     "n_points": {
+      "n": 24,
+      "mean": 977.875,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 23,
+      "mean": 0.0022,
+      "median": 0.0022,
+      "p95": 0.003,
+      "max": 0.0034
+     },
+     "err_pose_m": {
+      "n": 23,
+      "mean": 0.0408,
+      "median": 0.0428,
+      "p95": 0.0437,
+      "max": 0.044
+     },
+     "err_pose_gt_m": {
+      "n": 92,
+      "mean": 0.0756,
+      "median": 0.087,
+      "p95": 0.0913,
+      "max": 0.0919
+     },
+     "peg_inside": {
+      "n": 23,
+      "mean": 1.0,
+      "median": 1.0,
+      "p95": 1.0,
+      "max": 1.0
+     }
+    },
+    "box": {
+     "frames": 136,
+     "gt_visible": 68,
+     "empty_when_visible": 0,
+     "nonempty_when_hidden": 3,
+     "n_points": {
+      "n": 71,
+      "mean": 928.6901,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 68,
+      "mean": 0.0125,
+      "median": 0.0123,
+      "p95": 0.0187,
+      "max": 0.0209
+     },
+     "err_pose_m": {
+      "n": 68,
+      "mean": 0.1263,
+      "median": 0.1333,
+      "p95": 0.1455,
+      "max": 0.1561
+     },
+     "err_pose_gt_m": {
+      "n": 68,
+      "mean": 0.1202,
+      "median": 0.1253,
+      "p95": 0.1404,
+      "max": 0.1455
+     }
+    }
+   },
+   "latency_ms": {
+    "grounding_per_query": 331.8,
+    "grounding_frame0_total": 663.5,
+    "sam2_init_load_frames": 9685.5,
+    "sam2_init_add_boxes": 15.7,
+    "track_per_frame": 46.6,
+    "track_per_frame_p95": 47.3,
+    "pointcloud_per_frame": 15.3,
+    "pointcloud_per_frame_p95": 43.8
+   },
+   "steady_fps": 16.2
+  },
+  "ep002": {
+   "frames": 146,
+   "init_boxes": {
+    "peg": {
+     "box": [
+      216.76841735839844,
+      348.2667236328125,
+      360.3172607421875,
+      510.4320068359375
+     ],
+     "score": 0.483,
+     "source": "gdino",
+     "prompt": "red and white block"
+    },
+    "box": {
+     "box": [
+      194.5287322998047,
+      167.0175323486328,
+      315.14898681640625,
+      279.3651123046875
+     ],
+     "score": 0.564,
+     "source": "gdino",
+     "prompt": "cardboard box"
+    }
+   },
+   "iou": {
+    "peg": {
+     "n": 128,
+     "mean": 0.8637,
+     "min": 0.0,
+     "hit50": 0.992
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9638,
+     "min": 0.6859,
+     "hit50": 1.0
+    }
+   },
+   "pointcloud": {
+    "peg": {
+     "frames": 146,
+     "gt_visible": 128,
+     "empty_when_visible": 1,
+     "nonempty_when_hidden": 1,
+     "n_points": {
+      "n": 128,
+      "mean": 915.8516,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 127,
+      "mean": 0.0121,
+      "median": 0.0045,
+      "p95": 0.0333,
+      "max": 0.0337
+     },
+     "err_pose_m": {
+      "n": 127,
+      "mean": 0.0728,
+      "median": 0.0842,
+      "p95": 0.0923,
+      "max": 0.0944
+     },
+     "err_pose_gt_m": {
+      "n": 128,
+      "mean": 0.0627,
+      "median": 0.0698,
+      "p95": 0.0885,
+      "max": 0.0949
+     },
+     "peg_inside": {
+      "n": 127,
+      "mean": 0.9863,
+      "median": 1.0,
+      "p95": 1.0,
+      "max": 1.0
+     }
+    },
+    "box": {
+     "frames": 146,
+     "gt_visible": 123,
+     "empty_when_visible": 0,
+     "nonempty_when_hidden": 3,
+     "n_points": {
+      "n": 126,
+      "mean": 958.9524,
+      "median": 1024.0,
+      "p95": 1024.0,
+      "max": 1024.0
+     },
+     "err_gtcloud_m": {
+      "n": 123,
+      "mean": 0.0074,
+      "median": 0.0072,
+      "p95": 0.0142,
+      "max": 0.0394
+     },
+     "err_pose_m": {
+      "n": 123,
+      "mean": 0.1154,
+      "median": 0.111,
+      "p95": 0.1418,
+      "max": 0.1603
+     },
+     "err_pose_gt_m": {
+      "n": 123,
+      "mean": 0.1106,
+      "median": 0.1035,
+      "p95": 0.1351,
+      "max": 0.1591
+     }
+    }
+   },
+   "latency_ms": {
+    "grounding_per_query": 264.5,
+    "grounding_frame0_total": 528.9,
+    "sam2_init_load_frames": 10094.1,
+    "sam2_init_add_boxes": 16.4,
+    "track_per_frame": 46.6,
+    "track_per_frame_p95": 47.2,
+    "pointcloud_per_frame": 30.0,
+    "pointcloud_per_frame_p95": 44.3
+   },
+   "steady_fps": 13.1
+  }
+ },
+ "gpu_peak_gb": 3.46,
+ "all": {
+  "track_per_frame_ms": 46.6,
+  "pointcloud_per_frame_ms": 27.3,
+  "steady_fps": 13.8
+ }
+}

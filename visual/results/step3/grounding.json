@@ -1,0 +1,468 @@
+{
+ "model": "IDEA-Research/grounding-dino-tiny",
+ "camera": "base_camera",
+ "min_px": 200,
+ "stride": 10,
+ "hit_iou": 0.5,
+ "load_s": 25.11,
+ "latency_ms_per_query_512": 122.9,
+ "peak_mem_gb": 1.45,
+ "best_prompt": {
+  "peg": "red and white block",
+  "box": "cardboard box"
+ },
+ "prompt_summary": {
+  "peg": [
+   {
+    "prompt": "peg",
+    "init_iou": [
+     0.989,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.588,
+     0.426,
+     0.487
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.05555555555555555,
+    "mean_iou": 0.10741527027985626,
+    "min_iou": 0.0,
+    "mean_score": 0.5360722682542272,
+    "oracle_mean_iou": 0.7968059862822681
+   },
+   {
+    "prompt": "white peg with red tip",
+    "init_iou": [
+     0.961,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.547,
+     0.418,
+     0.407
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.1388888888888889,
+    "mean_iou": 0.18216494803678235,
+    "min_iou": 0.0,
+    "mean_score": 0.4402305699057049,
+    "oracle_mean_iou": 0.858146322628665
+   },
+   {
+    "prompt": "red and white block",
+    "init_iou": [
+     0.98,
+     0.972,
+     0.956
+    ],
+    "init_score": [
+     0.627,
+     0.458,
+     0.483
+    ],
+    "init_hits": 3,
+    "n": 36,
+    "hit_rate": 0.25,
+    "mean_iou": 0.2900007317648976,
+    "min_iou": 0.005062146896706192,
+    "mean_score": 0.4303036381800969,
+    "oracle_mean_iou": 0.8771034960080553
+   },
+   {
+    "prompt": "white block",
+    "init_iou": [
+     0.989,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.648,
+     0.445,
+     0.415
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.25,
+    "mean_iou": 0.28610649092488477,
+    "min_iou": 0.0,
+    "mean_score": 0.47080212003654903,
+    "oracle_mean_iou": 0.8329321382981769
+   },
+   {
+    "prompt": "white rectangular block",
+    "init_iou": [
+     0.989,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.55,
+     0.541,
+     0.513
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.25,
+    "mean_iou": 0.28517774810812957,
+    "min_iou": 0.0,
+    "mean_score": 0.47386792219347423,
+    "oracle_mean_iou": 0.875137726269884
+   },
+   {
+    "prompt": "white stick",
+    "init_iou": [
+     0.986,
+     0.0,
+     0.965
+    ],
+    "init_score": [
+     0.565,
+     0.38,
+     0.749
+    ],
+    "init_hits": 2,
+    "n": 36,
+    "hit_rate": 0.1388888888888889,
+    "mean_iou": 0.17284360791340067,
+    "min_iou": 0.0,
+    "mean_score": 0.4452376829253303,
+    "oracle_mean_iou": 0.7306301185261442
+   },
+   {
+    "prompt": "white bar",
+    "init_iou": [
+     0.983,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.397,
+     0.449,
+     0.398
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.027777777777777776,
+    "mean_iou": 0.08897025103869377,
+    "min_iou": 0.0,
+    "mean_score": 0.4088667614592446,
+    "oracle_mean_iou": 0.7102040925563914
+   },
+   {
+    "prompt": "cuboid",
+    "init_iou": [
+     0.986,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.539,
+     0.54,
+     0.543
+    ],
+    "init_hits": 1,
+    "n": 36,
+    "hit_rate": 0.027777777777777776,
+    "mean_iou": 0.0678330639233055,
+    "min_iou": 0.0,
+    "mean_score": 0.5114582793580161,
+    "oracle_mean_iou": 0.5950571922740021
+   }
+  ],
+  "box": [
+   {
+    "prompt": "box with hole",
+    "init_iou": [
+     0.967,
+     0.96,
+     0.966
+    ],
+    "init_score": [
+     0.568,
+     0.561,
+     0.479
+    ],
+    "init_hits": 3,
+    "n": 31,
+    "hit_rate": 0.2903225806451613,
+    "mean_iou": 0.3423014096015212,
+    "min_iou": 0.0,
+    "mean_score": 0.47901661357572,
+    "oracle_mean_iou": 0.7005078850000124
+   },
+   {
+    "prompt": "box",
+    "init_iou": [
+     0.984,
+     0.979,
+     0.973
+    ],
+    "init_score": [
+     0.561,
+     0.531,
+     0.468
+    ],
+    "init_hits": 3,
+    "n": 31,
+    "hit_rate": 0.5806451612903226,
+    "mean_iou": 0.6119135665417234,
+    "min_iou": 0.0,
+    "mean_score": 0.3919583760922955,
+    "oracle_mean_iou": 0.9003129317310876
+   },
+   {
+    "prompt": "wooden box",
+    "init_iou": [
+     0.984,
+     0.972,
+     0.97
+    ],
+    "init_score": [
+     0.67,
+     0.672,
+     0.629
+    ],
+    "init_hits": 3,
+    "n": 31,
+    "hit_rate": 0.5806451612903226,
+    "mean_iou": 0.5698427753654702,
+    "min_iou": 0.0,
+    "mean_score": 0.5099710562536793,
+    "oracle_mean_iou": 0.9200560204348341
+   },
+   {
+    "prompt": "brown box",
+    "init_iou": [
+     0.984,
+     0.971,
+     0.969
+    ],
+    "init_score": [
+     0.667,
+     0.652,
+     0.63
+    ],
+    "init_hits": 3,
+    "n": 31,
+    "hit_rate": 0.6129032258064516,
+    "mean_iou": 0.6043804707844972,
+    "min_iou": 0.0,
+    "mean_score": 0.5004207616852175,
+    "oracle_mean_iou": 0.9213185307780619
+   },
+   {
+    "prompt": "cardboard box",
+    "init_iou": [
+     0.983,
+     0.97,
+     0.969
+    ],
+    "init_score": [
+     0.689,
+     0.646,
+     0.564
+    ],
+    "init_hits": 3,
+    "n": 31,
+    "hit_rate": 0.6129032258064516,
+    "mean_iou": 0.6047254355788536,
+    "min_iou": 0.0,
+    "mean_score": 0.5129697726618859,
+    "oracle_mean_iou": 0.9158187345668135
+   },
+   {
+    "prompt": "brown block with a hole",
+    "init_iou": [
+     0.0,
+     0.947,
+     0.964
+    ],
+    "init_score": [
+     0.536,
+     0.61,
+     0.558
+    ],
+    "init_hits": 2,
+    "n": 31,
+    "hit_rate": 0.5161290322580645,
+    "mean_iou": 0.511150285639898,
+    "min_iou": 0.0,
+    "mean_score": 0.4731428267494325,
+    "oracle_mean_iou": 0.8746204727122597
+   },
+   {
+    "prompt": "brown block",
+    "init_iou": [
+     0.0,
+     0.976,
+     0.973
+    ],
+    "init_score": [
+     0.665,
+     0.527,
+     0.508
+    ],
+    "init_hits": 2,
+    "n": 31,
+    "hit_rate": 0.3225806451612903,
+    "mean_iou": 0.33454794254453957,
+    "min_iou": 0.0,
+    "mean_score": 0.5265269539048595,
+    "oracle_mean_iou": 0.895570040707127
+   },
+   {
+    "prompt": "hole",
+    "init_iou": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "init_score": [
+     0.503,
+     0.57,
+     0.544
+    ],
+    "init_hits": 0,
+    "n": 31,
+    "hit_rate": 0.0,
+    "mean_iou": 0.0031189235635166496,
+    "min_iou": 0.0,
+    "mean_score": 0.5010679758364155,
+    "oracle_mean_iou": 0.33243064942965345
+   }
+  ]
+ },
+ "full_frame_stats": {
+  "peg": {
+   "ep000": {
+    "n_visible": 122,
+    "mean_iou": 0.418,
+    "min_iou": 0.009,
+    "hit_rate": 0.377
+   },
+   "ep001": {
+    "n_visible": 92,
+    "mean_iou": 0.359,
+    "min_iou": 0.0,
+    "hit_rate": 0.326
+   },
+   "ep002": {
+    "n_visible": 128,
+    "mean_iou": 0.348,
+    "min_iou": 0.0,
+    "hit_rate": 0.344
+   }
+  },
+  "box": {
+   "ep000": {
+    "n_visible": 100,
+    "mean_iou": 0.389,
+    "min_iou": 0.0,
+    "hit_rate": 0.33
+   },
+   "ep001": {
+    "n_visible": 68,
+    "mean_iou": 0.712,
+    "min_iou": 0.0,
+    "hit_rate": 0.735
+   },
+   "ep002": {
+    "n_visible": 123,
+    "mean_iou": 0.629,
+    "min_iou": 0.0,
+    "hit_rate": 0.65
+   }
+  }
+ },
+ "init_boxes": {
+  "ep000": {
+   "camera": "base_camera",
+   "frame": 0,
+   "peg": {
+    "box": [
+     166.8,
+     283.5,
+     302.1,
+     470.2
+    ],
+    "source": "gdino",
+    "prompt": "red and white block",
+    "score": 0.627,
+    "iou_vs_gt": 0.98
+   },
+   "box": {
+    "box": [
+     210.0,
+     160.5,
+     327.2,
+     274.8
+    ],
+    "source": "gdino",
+    "prompt": "cardboard box",
+    "score": 0.689,
+    "iou_vs_gt": 0.983
+   }
+  },
+  "ep001": {
+   "camera": "base_camera",
+   "frame": 0,
+   "peg": {
+    "box": [
+     260.2,
+     379.5,
+     487.9,
+     510.7
+    ],
+    "source": "gdino",
+    "prompt": "red and white block",
+    "score": 0.458,
+    "iou_vs_gt": 0.972
+   },
+   "box": {
+    "box": [
+     212.9,
+     180.7,
+     327.3,
+     276.4
+    ],
+    "source": "gdino",
+    "prompt": "cardboard box",
+    "score": 0.646,
+    "iou_vs_gt": 0.97
+   }
+  },
+  "ep002": {
+   "camera": "base_camera",
+   "frame": 0,
+   "peg": {
+    "box": [
+     216.8,
+     348.3,
+     360.3,
+     510.4
+    ],
+    "source": "gdino",
+    "prompt": "red and white block",
+    "score": 0.483,
+    "iou_vs_gt": 0.956
+   },
+   "box": {
+    "box": [
+     194.5,
+     167.0,
+     315.1,
+     279.4
+    ],
+    "source": "gdino",
+    "prompt": "cardboard box",
+    "score": 0.564,
+    "iou_vs_gt": 0.969
+   }
+  }
+ }
+}

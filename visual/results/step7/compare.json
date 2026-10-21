@@ -1,0 +1,2641 @@
+[
+ {
+  "tag": "sam2_small_joint",
+  "backend": "sam2",
+  "model": "small",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 46.1,
+  "weights_gb": 0.331,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9437,
+     "min": 0.8142,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9453,
+     "min": 0.6469,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9928,
+      "min": 0.9909,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9373,
+      "min": 0.8142,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8302,
+      "min": 0.8142,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4854.66,
+     "add_box_ms": 14.71,
+     "first_step_ms": 6.25,
+     "per_frame_ms": 46.4,
+     "per_frame_ms_p95": 47.18
+    },
+    "mem": {
+     "peak_alloc_gb": 2.426,
+     "peak_reserved_gb": 2.611
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2472,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9161,
+     "min": 0.8294,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9915,
+      "min": 0.985,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0662,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5643.53,
+     "add_box_ms": 13.88,
+     "first_step_ms": 6.11,
+     "per_frame_ms": 47.14,
+     "per_frame_ms_p95": 47.34
+    },
+    "mem": {
+     "peak_alloc_gb": 2.625,
+     "peak_reserved_gb": 2.81
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.8637,
+     "min": 0.0,
+     "hit50": 0.992
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9636,
+     "min": 0.6859,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.9741,
+      "min": 0.9207,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.8059,
+      "min": 0.0,
+      "hit50": 0.988
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8554,
+      "min": 0.7347,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 2,
+    "timing": {
+     "load_frames_ms": 5884.5,
+     "add_box_ms": 13.79,
+     "first_step_ms": 5.89,
+     "per_frame_ms": 46.48,
+     "per_frame_ms_p95": 47.15
+    },
+    "mem": {
+     "peak_alloc_gb": 2.766,
+     "peak_reserved_gb": 2.951
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7264,
+    "min": 0.0,
+    "hit50": 0.795
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.9817,
+     "min": 0.9207,
+     "hit50": 1.0
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.6535,
+     "min": 0.0,
+     "hit50": 0.737
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.5619,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 46.67,
+   "per_frame_ms_p95": 47.22,
+   "load_frames_ms": 5460.9,
+   "add_box_ms": 14.1,
+   "peak_alloc_gb": 2.77,
+   "peak_reserved_gb": 2.95,
+   "fps": 21.4,
+   "fps_online": 11.5
+  }
+ },
+ {
+  "tag": "sam2_small_single",
+  "backend": "sam2",
+  "model": "small",
+  "mode": "single",
+  "compile": "default",
+  "params_m": 46.1,
+  "weights_gb": 0.331,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9437,
+     "min": 0.8142,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9453,
+     "min": 0.6469,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9928,
+      "min": 0.9909,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9373,
+      "min": 0.8142,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8302,
+      "min": 0.8142,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4234.53,
+     "add_box_ms": 26.34,
+     "first_step_ms": 6.52,
+     "per_frame_ms": 62.13,
+     "per_frame_ms_p95": 63.09
+    },
+    "mem": {
+     "peak_alloc_gb": 2.331,
+     "peak_reserved_gb": 2.517
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2472,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9161,
+     "min": 0.8294,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9915,
+      "min": 0.985,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0662,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5076.07,
+     "add_box_ms": 24.65,
+     "first_step_ms": 6.25,
+     "per_frame_ms": 62.27,
+     "per_frame_ms_p95": 63.16
+    },
+    "mem": {
+     "peak_alloc_gb": 2.518,
+     "peak_reserved_gb": 2.703
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.8637,
+     "min": 0.0,
+     "hit50": 0.992
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9636,
+     "min": 0.6859,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.9741,
+      "min": 0.9207,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.8059,
+      "min": 0.0,
+      "hit50": 0.988
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8554,
+      "min": 0.7347,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 2,
+    "timing": {
+     "load_frames_ms": 5300.23,
+     "add_box_ms": 25.63,
+     "first_step_ms": 6.1,
+     "per_frame_ms": 62.77,
+     "per_frame_ms_p95": 63.14
+    },
+    "mem": {
+     "peak_alloc_gb": 2.652,
+     "peak_reserved_gb": 2.837
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7264,
+    "min": 0.0,
+    "hit50": 0.795
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.9817,
+     "min": 0.9207,
+     "hit50": 1.0
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.6535,
+     "min": 0.0,
+     "hit50": 0.737
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.5619,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 62.39,
+   "per_frame_ms_p95": 63.13,
+   "load_frames_ms": 4870.3,
+   "add_box_ms": 25.5,
+   "peak_alloc_gb": 2.65,
+   "peak_reserved_gb": 2.84,
+   "fps": 16.0,
+   "fps_online": 10.1
+  }
+ },
+ {
+  "tag": "sam2_base_plus_joint",
+  "backend": "sam2",
+  "model": "base_plus",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 80.9,
+  "weights_gb": 0.472,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9524,
+     "min": 0.8146,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.963,
+     "min": 0.6667,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9901,
+      "min": 0.9893,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9475,
+      "min": 0.8146,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8587,
+      "min": 0.8411,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5264.15,
+     "add_box_ms": 15.23,
+     "first_step_ms": 6.03,
+     "per_frame_ms": 58.68,
+     "per_frame_ms_p95": 58.95
+    },
+    "mem": {
+     "peak_alloc_gb": 2.665,
+     "peak_reserved_gb": 2.881
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2479,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.929,
+     "min": 0.8511,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9935,
+      "min": 0.9872,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0665,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 6243.03,
+     "add_box_ms": 15.1,
+     "first_step_ms": 6.48,
+     "per_frame_ms": 58.36,
+     "per_frame_ms_p95": 59.25
+    },
+    "mem": {
+     "peak_alloc_gb": 2.863,
+     "peak_reserved_gb": 3.079
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.8694,
+     "min": 0.0,
+     "hit50": 0.992
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9732,
+     "min": 0.6949,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.9782,
+      "min": 0.9075,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.8123,
+      "min": 0.0,
+      "hit50": 0.988
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8604,
+      "min": 0.7348,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 2,
+    "timing": {
+     "load_frames_ms": 5988.03,
+     "add_box_ms": 13.86,
+     "first_step_ms": 5.83,
+     "per_frame_ms": 58.09,
+     "per_frame_ms_p95": 58.86
+    },
+    "mem": {
+     "peak_alloc_gb": 3.005,
+     "peak_reserved_gb": 3.221
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7318,
+    "min": 0.0,
+    "hit50": 0.795
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9593,
+    "min": 0.6667,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.984,
+     "min": 0.9075,
+     "hit50": 1.0
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.6597,
+     "min": 0.0,
+     "hit50": 0.737
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.573,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 58.38,
+   "per_frame_ms_p95": 59.02,
+   "load_frames_ms": 5831.7,
+   "add_box_ms": 14.7,
+   "peak_alloc_gb": 3.0,
+   "peak_reserved_gb": 3.22,
+   "fps": 17.1,
+   "fps_online": 9.8
+  }
+ },
+ {
+  "tag": "samurai_small_single",
+  "backend": "samurai",
+  "model": "small",
+  "mode": "single",
+  "compile": "default",
+  "params_m": 46.1,
+  "weights_gb": 0.186,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9462,
+     "min": 0.8106,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9457,
+     "min": 0.6469,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9927,
+      "min": 0.9909,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9402,
+      "min": 0.8106,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8303,
+      "min": 0.8106,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4012.97,
+     "add_box_ms": 31.93,
+     "first_step_ms": 6.68,
+     "per_frame_ms": 76.31,
+     "per_frame_ms_p95": 78.6
+    },
+    "mem": {
+     "peak_alloc_gb": 2.308,
+     "peak_reserved_gb": 2.473
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.9552,
+     "min": 0.8626,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9166,
+     "min": 0.8262,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9914,
+      "min": 0.985,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.9464,
+      "min": 0.8626,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.9302,
+      "min": 0.9035,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 1,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 1,
+    "timing": {
+     "load_frames_ms": 4361.05,
+     "add_box_ms": 31.02,
+     "first_step_ms": 7.26,
+     "per_frame_ms": 76.55,
+     "per_frame_ms_p95": 79.1
+    },
+    "mem": {
+     "peak_alloc_gb": 2.495,
+     "peak_reserved_gb": 2.659
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.6847,
+     "min": 0.0,
+     "hit50": 0.797
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9598,
+     "min": 0.6835,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.6116,
+      "min": 0.2273,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.723,
+      "min": 0.0,
+      "hit50": 0.988
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7018,
+      "min": 0.6529,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 2,
+    "timing": {
+     "load_frames_ms": 4763.62,
+     "add_box_ms": 31.67,
+     "first_step_ms": 6.82,
+     "per_frame_ms": 77.08,
+     "per_frame_ms_p95": 80.33
+    },
+    "mem": {
+     "peak_alloc_gb": 2.629,
+     "peak_reserved_gb": 2.793
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.8508,
+    "min": 0.0,
+    "hit50": 0.924
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9449,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7718,
+     "min": 0.2273,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.8733,
+     "min": 0.0,
+     "hit50": 0.996
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.8208,
+     "min": 0.6529,
+     "hit50": 1.0
+    }
+   },
+   "per_frame_ms": 76.65,
+   "per_frame_ms_p95": 79.34,
+   "load_frames_ms": 4379.2,
+   "add_box_ms": 31.5,
+   "peak_alloc_gb": 2.63,
+   "peak_reserved_gb": 2.79,
+   "fps": 13.0,
+   "fps_online": 9.2
+  }
+ },
+ {
+  "tag": "samurai_base_plus_single",
+  "backend": "samurai",
+  "model": "base_plus",
+  "mode": "single",
+  "compile": "default",
+  "params_m": 80.9,
+  "weights_gb": 0.326,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9563,
+     "min": 0.8424,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9626,
+     "min": 0.6595,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9902,
+      "min": 0.9895,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9519,
+      "min": 0.8424,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8585,
+      "min": 0.8424,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5382.9,
+     "add_box_ms": 42.84,
+     "first_step_ms": 6.08,
+     "per_frame_ms": 99.91,
+     "per_frame_ms_p95": 102.37
+    },
+    "mem": {
+     "peak_alloc_gb": 2.544,
+     "peak_reserved_gb": 2.754
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.9058,
+     "min": 0.772,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9283,
+     "min": 0.8531,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9935,
+      "min": 0.9872,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.8845,
+      "min": 0.772,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7989,
+      "min": 0.7817,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 2,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 1,
+    "timing": {
+     "load_frames_ms": 5856.97,
+     "add_box_ms": 42.88,
+     "first_step_ms": 6.65,
+     "per_frame_ms": 99.67,
+     "per_frame_ms_p95": 102.02
+    },
+    "mem": {
+     "peak_alloc_gb": 2.731,
+     "peak_reserved_gb": 2.938
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.5148,
+     "min": 0.0,
+     "hit50": 0.484
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9737,
+     "min": 0.6983,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.9794,
+      "min": 0.9257,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.2714,
+      "min": 0.0,
+      "hit50": 0.214
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0394,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": 6,
+    "timing": {
+     "load_frames_ms": 5842.13,
+     "add_box_ms": 44.74,
+     "first_step_ms": 6.4,
+     "per_frame_ms": 99.0,
+     "per_frame_ms_p95": 101.16
+    },
+    "mem": {
+     "peak_alloc_gb": 2.865,
+     "peak_reserved_gb": 3.074
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7775,
+    "min": 0.0,
+    "hit50": 0.807
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9593,
+    "min": 0.6595,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.9848,
+     "min": 0.9257,
+     "hit50": 1.0
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.7183,
+     "min": 0.0,
+     "hit50": 0.752
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.5656,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 99.53,
+   "per_frame_ms_p95": 101.85,
+   "load_frames_ms": 5694.0,
+   "add_box_ms": 43.5,
+   "peak_alloc_gb": 2.87,
+   "peak_reserved_gb": 3.07,
+   "fps": 10.0,
+   "fps_online": 7.1
+  }
+ },
+ {
+  "tag": "efficienttam_s_joint",
+  "backend": "efficienttam",
+  "model": "s",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 34.1,
+  "weights_gb": 0.283,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9235,
+     "min": 0.7897,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9431,
+     "min": 0.656,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9871,
+      "min": 0.9865,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9153,
+      "min": 0.7897,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.797,
+      "min": 0.7897,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4549.85,
+     "add_box_ms": 13.39,
+     "first_step_ms": 5.67,
+     "per_frame_ms": 39.11,
+     "per_frame_ms_p95": 40.0
+    },
+    "mem": {
+     "peak_alloc_gb": 2.233,
+     "peak_reserved_gb": 2.498
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2477,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9214,
+     "min": 0.7986,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9935,
+      "min": 0.9931,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0663,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4760.16,
+     "add_box_ms": 12.9,
+     "first_step_ms": 6.14,
+     "per_frame_ms": 39.22,
+     "per_frame_ms_p95": 40.01
+    },
+    "mem": {
+     "peak_alloc_gb": 2.431,
+     "peak_reserved_gb": 2.695
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.2961,
+     "min": 0.0,
+     "hit50": 0.242
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5729,
+     "min": 0.0,
+     "hit50": 0.618
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.6413,
+      "min": 0.2981,
+      "hit50": 0.477
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.1153,
+      "min": 0.0,
+      "hit50": 0.119
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5100.84,
+     "add_box_ms": 12.93,
+     "first_step_ms": 5.74,
+     "per_frame_ms": 39.32,
+     "per_frame_ms_p95": 40.14
+    },
+    "mem": {
+     "peak_alloc_gb": 2.573,
+     "peak_reserved_gb": 2.84
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.5069,
+    "min": 0.0,
+    "hit50": 0.515
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7816,
+    "min": 0.0,
+    "hit50": 0.838
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7884,
+     "min": 0.2981,
+     "hit50": 0.697
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.4265,
+     "min": 0.0,
+     "hit50": 0.462
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.2657,
+     "min": 0.0,
+     "hit50": 0.333
+    }
+   },
+   "per_frame_ms": 39.22,
+   "per_frame_ms_p95": 40.05,
+   "load_frames_ms": 4803.6,
+   "add_box_ms": 13.1,
+   "peak_alloc_gb": 2.57,
+   "peak_reserved_gb": 2.84,
+   "fps": 25.5,
+   "fps_online": 13.4
+  }
+ },
+ {
+  "tag": "efficienttam_ti_joint",
+  "backend": "efficienttam",
+  "model": "ti",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 17.9,
+  "weights_gb": 0.216,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9375,
+     "min": 0.7243,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9512,
+     "min": 0.6461,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9899,
+      "min": 0.9884,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9307,
+      "min": 0.7243,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7709,
+      "min": 0.7243,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5244.19,
+     "add_box_ms": 13.54,
+     "first_step_ms": 5.35,
+     "per_frame_ms": 35.12,
+     "per_frame_ms_p95": 35.75
+    },
+    "mem": {
+     "peak_alloc_gb": 2.169,
+     "peak_reserved_gb": 2.391
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.246,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9119,
+     "min": 0.7121,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9874,
+      "min": 0.9862,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0656,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5009.07,
+     "add_box_ms": 13.01,
+     "first_step_ms": 5.36,
+     "per_frame_ms": 35.36,
+     "per_frame_ms_p95": 36.06
+    },
+    "mem": {
+     "peak_alloc_gb": 2.367,
+     "peak_reserved_gb": 2.592
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.6604,
+     "min": 0.0,
+     "hit50": 0.789
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5527,
+     "min": 0.0,
+     "hit50": 0.593
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.6116,
+      "min": 0.1957,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.6859,
+      "min": 0.0,
+      "hit50": 0.976
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.6026,
+      "min": 0.5584,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 10
+    },
+    "peg_reacquire_after_hidden": 3,
+    "timing": {
+     "load_frames_ms": 5835.26,
+     "add_box_ms": 13.22,
+     "first_step_ms": 5.78,
+     "per_frame_ms": 35.37,
+     "per_frame_ms_p95": 36.14
+    },
+    "mem": {
+     "peak_alloc_gb": 2.509,
+     "peak_reserved_gb": 2.733
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.6478,
+    "min": 0.0,
+    "hit50": 0.719
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7736,
+    "min": 0.0,
+    "hit50": 0.828
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7703,
+     "min": 0.1957,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.6128,
+     "min": 0.0,
+     "hit50": 0.733
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.4578,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 35.28,
+   "per_frame_ms_p95": 35.98,
+   "load_frames_ms": 5362.8,
+   "add_box_ms": 13.3,
+   "peak_alloc_gb": 2.51,
+   "peak_reserved_gb": 2.73,
+   "fps": 28.3,
+   "fps_online": 13.3
+  }
+ },
+ {
+  "tag": "efficienttam_s_512x512_joint",
+  "backend": "efficienttam",
+  "model": "s_512x512",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 34.1,
+  "weights_gb": 0.258,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9357,
+     "min": 0.7166,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.946,
+     "min": 0.6278,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9873,
+      "min": 0.9865,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9291,
+      "min": 0.7166,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7377,
+      "min": 0.7166,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1133.86,
+     "add_box_ms": 12.97,
+     "first_step_ms": 5.28,
+     "per_frame_ms": 25.95,
+     "per_frame_ms_p95": 27.49
+    },
+    "mem": {
+     "peak_alloc_gb": 0.771,
+     "peak_reserved_gb": 0.845
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2471,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9191,
+     "min": 0.7065,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9938,
+      "min": 0.9922,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0655,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1377.5,
+     "add_box_ms": 13.91,
+     "first_step_ms": 5.6,
+     "per_frame_ms": 25.89,
+     "per_frame_ms_p95": 27.87
+    },
+    "mem": {
+     "peak_alloc_gb": 0.821,
+     "peak_reserved_gb": 0.895
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.2154,
+     "min": 0.0,
+     "hit50": 0.219
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5625,
+     "min": 0.0,
+     "hit50": 0.602
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.4266,
+      "min": 0.0,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.1048,
+      "min": 0.0,
+      "hit50": 0.107
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 9
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1268.11,
+     "add_box_ms": 13.74,
+     "first_step_ms": 5.63,
+     "per_frame_ms": 25.62,
+     "per_frame_ms_p95": 28.14
+    },
+    "mem": {
+     "peak_alloc_gb": 0.856,
+     "peak_reserved_gb": 0.931
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.4809,
+    "min": 0.0,
+    "hit50": 0.506
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7776,
+    "min": 0.0,
+    "hit50": 0.832
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.6642,
+     "min": 0.0,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.4285,
+     "min": 0.0,
+     "hit50": 0.459
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.2459,
+     "min": 0.0,
+     "hit50": 0.333
+    }
+   },
+   "per_frame_ms": 25.82,
+   "per_frame_ms_p95": 27.83,
+   "load_frames_ms": 1259.8,
+   "add_box_ms": 13.5,
+   "peak_alloc_gb": 0.86,
+   "peak_reserved_gb": 0.93,
+   "fps": 38.7,
+   "fps_online": 28.4
+  }
+ },
+ {
+  "tag": "efficienttam_ti_512x512_joint",
+  "backend": "efficienttam",
+  "model": "ti_512x512",
+  "mode": "joint",
+  "compile": "default",
+  "params_m": 17.9,
+  "weights_gb": 0.191,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.8944,
+     "min": 0.7037,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9367,
+     "min": 0.6386,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9843,
+      "min": 0.9754,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.8827,
+      "min": 0.7037,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7125,
+      "min": 0.7037,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1445.68,
+     "add_box_ms": 13.72,
+     "first_step_ms": 5.44,
+     "per_frame_ms": 25.8,
+     "per_frame_ms_p95": 26.49
+    },
+    "mem": {
+     "peak_alloc_gb": 0.704,
+     "peak_reserved_gb": 0.765
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2466,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.8925,
+     "min": 0.688,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9906,
+      "min": 0.9748,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0656,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1492.05,
+     "add_box_ms": 15.62,
+     "first_step_ms": 7.52,
+     "per_frame_ms": 26.27,
+     "per_frame_ms_p95": 27.47
+    },
+    "mem": {
+     "peak_alloc_gb": 0.754,
+     "peak_reserved_gb": 0.816
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.2149,
+     "min": 0.0,
+     "hit50": 0.219
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5409,
+     "min": 0.0,
+     "hit50": 0.577
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.4257,
+      "min": 0.0,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.1044,
+      "min": 0.0,
+      "hit50": 0.107
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 8
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 1470.75,
+     "add_box_ms": 14.12,
+     "first_step_ms": 5.81,
+     "per_frame_ms": 26.17,
+     "per_frame_ms_p95": 27.06
+    },
+    "mem": {
+     "peak_alloc_gb": 0.789,
+     "peak_reserved_gb": 0.851
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.4658,
+    "min": 0.0,
+    "hit50": 0.506
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7591,
+    "min": 0.0,
+    "hit50": 0.821
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.6624,
+     "min": 0.0,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.4096,
+     "min": 0.0,
+     "hit50": 0.459
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.2375,
+     "min": 0.0,
+     "hit50": 0.333
+    }
+   },
+   "per_frame_ms": 26.08,
+   "per_frame_ms_p95": 27.01,
+   "load_frames_ms": 1469.5,
+   "add_box_ms": 14.5,
+   "peak_alloc_gb": 0.79,
+   "peak_reserved_gb": 0.85,
+   "fps": 38.3,
+   "fps_online": 27.0
+  }
+ },
+ {
+  "tag": "efficienttam_s_single",
+  "backend": "efficienttam",
+  "model": "s",
+  "mode": "single",
+  "compile": "default",
+  "params_m": 34.1,
+  "weights_gb": 0.283,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.928,
+     "min": 0.7898,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9422,
+     "min": 0.6578,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9871,
+      "min": 0.9866,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9203,
+      "min": 0.7898,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7975,
+      "min": 0.7898,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4821.06,
+     "add_box_ms": 16.99,
+     "first_step_ms": 6.07,
+     "per_frame_ms": 46.57,
+     "per_frame_ms_p95": 47.36
+    },
+    "mem": {
+     "peak_alloc_gb": 2.136,
+     "peak_reserved_gb": 2.382
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2477,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9215,
+     "min": 0.8023,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9935,
+      "min": 0.9931,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0663,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5666.67,
+     "add_box_ms": 18.26,
+     "first_step_ms": 6.33,
+     "per_frame_ms": 46.98,
+     "per_frame_ms_p95": 48.07
+    },
+    "mem": {
+     "peak_alloc_gb": 2.323,
+     "peak_reserved_gb": 2.569
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.2854,
+     "min": 0.0,
+     "hit50": 0.227
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5723,
+     "min": 0.0,
+     "hit50": 0.618
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.6101,
+      "min": 0.1934,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.1154,
+      "min": 0.0,
+      "hit50": 0.119
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 6415.8,
+     "add_box_ms": 17.04,
+     "first_step_ms": 6.26,
+     "per_frame_ms": 46.63,
+     "per_frame_ms_p95": 47.37
+    },
+    "mem": {
+     "peak_alloc_gb": 2.457,
+     "peak_reserved_gb": 2.703
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.5045,
+    "min": 0.0,
+    "hit50": 0.509
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.781,
+    "min": 0.0,
+    "hit50": 0.838
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7703,
+     "min": 0.1934,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.4285,
+     "min": 0.0,
+     "hit50": 0.462
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.2658,
+     "min": 0.0,
+     "hit50": 0.333
+    }
+   },
+   "per_frame_ms": 46.73,
+   "per_frame_ms_p95": 47.6,
+   "load_frames_ms": 5634.5,
+   "add_box_ms": 17.4,
+   "peak_alloc_gb": 2.46,
+   "peak_reserved_gb": 2.7,
+   "fps": 21.4,
+   "fps_online": 11.3
+  }
+ },
+ {
+  "tag": "efficienttam_s_joint_compileoff",
+  "backend": "efficienttam",
+  "model": "s",
+  "mode": "joint",
+  "compile": "off",
+  "params_m": 34.1,
+  "weights_gb": 0.283,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9461,
+     "min": 0.7751,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.926,
+     "min": 0.1741,
+     "hit50": 0.99
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9871,
+      "min": 0.9866,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9408,
+      "min": 0.7751,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8029,
+      "min": 0.7751,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 11
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4334.07,
+     "add_box_ms": 13.88,
+     "first_step_ms": 5.39,
+     "per_frame_ms": 43.12,
+     "per_frame_ms_p95": 43.84
+    },
+    "mem": {
+     "peak_alloc_gb": 2.291,
+     "peak_reserved_gb": 2.447
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2477,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9224,
+     "min": 0.808,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9935,
+      "min": 0.9931,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.0663,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4928.25,
+     "add_box_ms": 13.02,
+     "first_step_ms": 5.7,
+     "per_frame_ms": 43.07,
+     "per_frame_ms_p95": 43.79
+    },
+    "mem": {
+     "peak_alloc_gb": 2.489,
+     "peak_reserved_gb": 2.649
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.2854,
+     "min": 0.0,
+     "hit50": 0.227
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5761,
+     "min": 0.0,
+     "hit50": 0.618
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.61,
+      "min": 0.1935,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.1154,
+      "min": 0.0,
+      "hit50": 0.119
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 5041.32,
+     "add_box_ms": 15.5,
+     "first_step_ms": 6.24,
+     "per_frame_ms": 43.16,
+     "per_frame_ms_p95": 43.9
+    },
+    "mem": {
+     "peak_alloc_gb": 2.631,
+     "peak_reserved_gb": 2.789
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.5109,
+    "min": 0.0,
+    "hit50": 0.509
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7773,
+    "min": 0.0,
+    "hit50": 0.835
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7703,
+     "min": 0.1935,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.4368,
+     "min": 0.0,
+     "hit50": 0.462
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.2676,
+     "min": 0.0,
+     "hit50": 0.333
+    }
+   },
+   "per_frame_ms": 43.12,
+   "per_frame_ms_p95": 43.84,
+   "load_frames_ms": 4767.9,
+   "add_box_ms": 14.1,
+   "peak_alloc_gb": 2.63,
+   "peak_reserved_gb": 2.79,
+   "fps": 23.2,
+   "fps_online": 12.7
+  }
+ },
+ {
+  "tag": "efficienttam_ti_joint_compileoff",
+  "backend": "efficienttam",
+  "model": "ti",
+  "mode": "joint",
+  "compile": "off",
+  "params_m": 17.9,
+  "weights_gb": 0.216,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.937,
+     "min": 0.7057,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.951,
+     "min": 0.6446,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.99,
+      "min": 0.9885,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9302,
+      "min": 0.7057,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.7658,
+      "min": 0.7057,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4232.95,
+     "add_box_ms": 13.93,
+     "first_step_ms": 5.56,
+     "per_frame_ms": 39.2,
+     "per_frame_ms_p95": 41.22
+    },
+    "mem": {
+     "peak_alloc_gb": 2.188,
+     "peak_reserved_gb": 2.328
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.2474,
+     "min": 0.0,
+     "hit50": 0.25
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9161,
+     "min": 0.7121,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.993,
+      "min": 0.988,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.066,
+      "min": 0.0,
+      "hit50": 0.068
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.0,
+      "min": 0.0,
+      "hit50": 0.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4837.72,
+     "add_box_ms": 12.23,
+     "first_step_ms": 5.66,
+     "per_frame_ms": 39.68,
+     "per_frame_ms_p95": 40.57
+    },
+    "mem": {
+     "peak_alloc_gb": 2.386,
+     "peak_reserved_gb": 2.525
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.6616,
+     "min": 0.0,
+     "hit50": 0.789
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.5521,
+     "min": 0.0,
+     "hit50": 0.593
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.6115,
+      "min": 0.1954,
+      "hit50": 0.432
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.6878,
+      "min": 0.0,
+      "hit50": 0.976
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.6021,
+      "min": 0.5583,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 10
+    },
+    "peg_reacquire_after_hidden": 3,
+    "timing": {
+     "load_frames_ms": 5711.9,
+     "add_box_ms": 15.17,
+     "first_step_ms": 6.68,
+     "per_frame_ms": 39.17,
+     "per_frame_ms_p95": 40.36
+    },
+    "mem": {
+     "peak_alloc_gb": 2.528,
+     "peak_reserved_gb": 2.668
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.6484,
+    "min": 0.0,
+    "hit50": 0.719
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.7742,
+    "min": 0.0,
+    "hit50": 0.828
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.7716,
+     "min": 0.1954,
+     "hit50": 0.671
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.6132,
+     "min": 0.0,
+     "hit50": 0.733
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.4559,
+     "min": 0.0,
+     "hit50": 0.667
+    }
+   },
+   "per_frame_ms": 39.35,
+   "per_frame_ms_p95": 40.72,
+   "load_frames_ms": 4927.5,
+   "add_box_ms": 13.8,
+   "peak_alloc_gb": 2.53,
+   "peak_reserved_gb": 2.67,
+   "fps": 25.4,
+   "fps_online": 13.2
+  }
+ },
+ {
+  "tag": "sam2_small_joint_compileon",
+  "backend": "sam2",
+  "model": "small",
+  "mode": "joint",
+  "compile": "on",
+  "params_m": 46.1,
+  "weights_gb": 0.331,
+  "episodes": {
+   "ep000": {
+    "peg": {
+     "n": 122,
+     "mean": 0.9438,
+     "min": 0.8165,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 100,
+     "mean": 0.9458,
+     "min": 0.6469,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 14,
+      "mean": 0.9928,
+      "min": 0.9911,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 108,
+      "mean": 0.9374,
+      "min": 0.8165,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8308,
+      "min": 0.8165,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 1
+    },
+    "peg_reacquire_after_hidden": null,
+    "timing": {
+     "load_frames_ms": 4667.35,
+     "add_box_ms": 17.2,
+     "first_step_ms": 7.59,
+     "per_frame_ms": 41.29,
+     "per_frame_ms_p95": 42.2
+    },
+    "mem": {
+     "peak_alloc_gb": 2.287,
+     "peak_reserved_gb": 2.907
+    }
+   },
+   "ep001": {
+    "peg": {
+     "n": 92,
+     "mean": 0.9506,
+     "min": 0.8727,
+     "hit50": 1.0
+    },
+    "box": {
+     "n": 68,
+     "mean": 0.9167,
+     "min": 0.8314,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 18,
+      "mean": 0.9913,
+      "min": 0.9841,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 74,
+      "mean": 0.9406,
+      "min": 0.8727,
+      "hit50": 1.0
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.9129,
+      "min": 0.8909,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 1,
+    "timing": {
+     "load_frames_ms": 5334.25,
+     "add_box_ms": 19.11,
+     "first_step_ms": 8.4,
+     "per_frame_ms": 41.58,
+     "per_frame_ms_p95": 42.43
+    },
+    "mem": {
+     "peak_alloc_gb": 2.486,
+     "peak_reserved_gb": 3.104
+    }
+   },
+   "ep002": {
+    "peg": {
+     "n": 128,
+     "mean": 0.8637,
+     "min": 0.0,
+     "hit50": 0.992
+    },
+    "box": {
+     "n": 123,
+     "mean": 0.9645,
+     "min": 0.6859,
+     "hit50": 1.0
+    },
+    "peg_by_phase": {
+     "clean": {
+      "n": 44,
+      "mean": 0.9743,
+      "min": 0.9206,
+      "hit50": 1.0
+     },
+     "gripper": {
+      "n": 84,
+      "mean": 0.8057,
+      "min": 0.0,
+      "hit50": 0.988
+     },
+     "insertion": {
+      "n": 14,
+      "mean": 0.8547,
+      "min": 0.7334,
+      "hit50": 1.0
+     }
+    },
+    "false_positive_when_hidden": {
+     "peg": 0,
+     "box": 0
+    },
+    "peg_reacquire_after_hidden": 2,
+    "timing": {
+     "load_frames_ms": 6098.58,
+     "add_box_ms": 16.64,
+     "first_step_ms": 7.05,
+     "per_frame_ms": 41.38,
+     "per_frame_ms_p95": 42.43
+    },
+    "mem": {
+     "peak_alloc_gb": 2.627,
+     "peak_reserved_gb": 3.246
+    }
+   }
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.9156,
+    "min": 0.0,
+    "hit50": 0.997
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9469,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 76,
+     "mean": 0.9817,
+     "min": 0.9206,
+     "hit50": 1.0
+    },
+    "gripper": {
+     "n": 266,
+     "mean": 0.8967,
+     "min": 0.0,
+     "hit50": 0.996
+    },
+    "insertion": {
+     "n": 42,
+     "mean": 0.8662,
+     "min": 0.7334,
+     "hit50": 1.0
+    }
+   },
+   "per_frame_ms": 41.42,
+   "per_frame_ms_p95": 42.35,
+   "load_frames_ms": 5366.7,
+   "add_box_ms": 17.7,
+   "peak_alloc_gb": 2.63,
+   "peak_reserved_gb": 3.25,
+   "fps": 24.1,
+   "fps_online": 12.3
+  }
+ }
+]
