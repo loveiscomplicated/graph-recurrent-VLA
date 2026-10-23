@@ -14,3 +14,10 @@ results/v1/**/runs/
 
 # Project-local Python environment
 .venv/
+
+# Full runtime artifacts are published to HF; selected previews remain in Git.
+/results/runtime_grounding/
+/results/runtime_tracking/
+/results/runtime_rgbd/
+/results/runtime_geometry/
+/results/normal_diagnostics/

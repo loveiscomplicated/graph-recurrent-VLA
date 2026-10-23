@@ -1,0 +1,63 @@
+{
+  "entrypoint": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.html",
+  "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+  "description": "Task 01 unchanged organized geometry baseline: all scalar metrics and six dense visualized frames. Reproduction inputs are in the RGB-D bundle.",
+  "files": {
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.html": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.html",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.json": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.json",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0000.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0000.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0000.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0000.npz",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0015.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0015.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0015.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0015.npz",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0018.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0018.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0018.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0018.npz",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0045.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0045.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0045.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0045.npz",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0080.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0080.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0080.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0080.npz",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0120.png": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0120.png",
+      "role": "result"
+    },
+    "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0120.npz": {
+      "source": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/f0120.npz",
+      "role": "result"
+    }
+  }
+}

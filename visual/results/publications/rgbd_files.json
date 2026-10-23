@@ -1,0 +1,79 @@
+{
+  "entrypoint": "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/gt_report.html",
+  "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+  "description": "Completed RGB-D evaluation plus original ep000 input, tracker masks and prior Grounding DINO/SAM2 videos. Dependency files were produced before this evaluation; they do not claim a new producer run ID.",
+  "files": {
+    "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/gt_report.html": {
+      "source": "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/gt_report.html",
+      "role": "result"
+    },
+    "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/depth.mp4": {
+      "source": "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/depth.mp4",
+      "role": "result"
+    },
+    "visual/data/step2/ep000.npz": {
+      "source": "visual/data/step2/ep000.npz",
+      "role": "input"
+    },
+    "visual/results/runtime_tracking/ep000/masks.npz": {
+      "source": "visual/results/runtime_tracking/ep000/masks.npz",
+      "role": "input"
+    },
+    "visual/results/runtime_tracking/ep000/tracking.json": {
+      "source": "visual/results/runtime_tracking/ep000/tracking.json",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/tracking.mp4": {
+      "source": "visual/results/runtime_tracking/ep000/tracking.mp4",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/detections.json": {
+      "source": "visual/results/runtime_grounding/ep000_full/detections.json",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/grounding.mp4": {
+      "source": "visual/results/runtime_grounding/ep000_full/grounding.mp4",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/frames/frame_00000.png": {
+      "source": "visual/results/runtime_tracking/ep000/frames/frame_00000.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/frames/frame_00015.png": {
+      "source": "visual/results/runtime_tracking/ep000/frames/frame_00015.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/frames/frame_00045.png": {
+      "source": "visual/results/runtime_tracking/ep000/frames/frame_00045.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/frames/frame_00080.png": {
+      "source": "visual/results/runtime_tracking/ep000/frames/frame_00080.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_tracking/ep000/frames/frame_00120.png": {
+      "source": "visual/results/runtime_tracking/ep000/frames/frame_00120.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/frames/frame_00000.png": {
+      "source": "visual/results/runtime_grounding/ep000_full/frames/frame_00000.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/frames/frame_00015.png": {
+      "source": "visual/results/runtime_grounding/ep000_full/frames/frame_00015.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/frames/frame_00045.png": {
+      "source": "visual/results/runtime_grounding/ep000_full/frames/frame_00045.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/frames/frame_00080.png": {
+      "source": "visual/results/runtime_grounding/ep000_full/frames/frame_00080.png",
+      "role": "dependency"
+    },
+    "visual/results/runtime_grounding/ep000_full/frames/frame_00120.png": {
+      "source": "visual/results/runtime_grounding/ep000_full/frames/frame_00120.png",
+      "role": "dependency"
+    }
+  }
+}

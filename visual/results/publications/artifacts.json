@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "repository": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+    "repo_type": "dataset",
+    "private": true
+  },
+  "published_at": "2026-10-23T18:19:47.040976+00:00",
+  "scope": "Visual runtime through Task 02-A only",
+  "verification": "All uploaded objects matched remote hashes; downloaded report ZIPs passed SHA-256 and ZIP integrity checks.",
+  "artifacts": [
+    {
+      "key": "rgbd",
+      "title": "RGB-D·초기 검출·추적·영상",
+      "run_id": "996f629b211147f18deeb6736c51c3e9",
+      "execution_git_commit": "ae5239bb5a0d5ed418ce8e22c434cce5e5893ef4",
+      "execution_git_dirty": true,
+      "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+      "hf_revision": "b27cf33a98d48c396a53c779f5707602679af99f",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/b27cf33a98d48c396a53c779f5707602679af99f/visual/996f629b211147f18deeb6736c51c3e9",
+      "remote_manifest_path": "visual/996f629b211147f18deeb6736c51c3e9/manifests/cf8cff092414deeb03650603b2d4ace99519c3102df38e8d2df4f34d2ec4e376/manifest.json",
+      "bundle_path": "visual/996f629b211147f18deeb6736c51c3e9/artifacts/reports/ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5/report-ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5.zip",
+      "bundle_sha256": "ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5",
+      "bundle_bytes": 40447943,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/b27cf33a98d48c396a53c779f5707602679af99f/visual/996f629b211147f18deeb6736c51c3e9/artifacts/reports/ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5/report-ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5.zip?download=true",
+      "entrypoint": "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/gt_report.html",
+      "selected_files": 18,
+      "selection_file": "rgbd_files.json",
+      "videos": [
+        {
+          "title": "Grounding DINO",
+          "archive_path": "visual/results/runtime_grounding/ep000_full/grounding.mp4"
+        },
+        {
+          "title": "SAM2 tracking",
+          "archive_path": "visual/results/runtime_tracking/ep000/tracking.mp4"
+        },
+        {
+          "title": "RGB-D / depth / GT",
+          "archive_path": "visual/results/runtime_rgbd/996f629b211147f18deeb6736c51c3e9/depth.mp4",
+          "hf_path": "visual/996f629b211147f18deeb6736c51c3e9/artifacts/rollouts/a86cdaa55bc39896e551171bf04871e3d9ca2444aa2845277a457ea85bab8941/depth.mp4",
+          "url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/b27cf33a98d48c396a53c779f5707602679af99f/visual/996f629b211147f18deeb6736c51c3e9/artifacts/rollouts/a86cdaa55bc39896e551171bf04871e3d9ca2444aa2845277a457ea85bab8941/depth.mp4"
+        }
+      ]
+    },
+    {
+      "key": "geometry",
+      "title": "Task 01 — Organized Geometry",
+      "run_id": "f9b0da8588734a28996a38f3724da16a",
+      "execution_git_commit": "ae5239bb5a0d5ed418ce8e22c434cce5e5893ef4",
+      "execution_git_dirty": true,
+      "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+      "hf_revision": "92cacaff34a0e1c760e96f298243d27343f483e5",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/92cacaff34a0e1c760e96f298243d27343f483e5/visual/f9b0da8588734a28996a38f3724da16a",
+      "remote_manifest_path": "visual/f9b0da8588734a28996a38f3724da16a/manifests/a1f76ee5c98d61cafde61b299f08c86195aa7ebe85d653b436bb9c7cabd53dc3/manifest.json",
+      "bundle_path": "visual/f9b0da8588734a28996a38f3724da16a/artifacts/reports/a707c07253e91a0a57e840c74c82a70d4b826bc488d3d48329ec0a058ce40f49/report-a707c07253e91a0a57e840c74c82a70d4b826bc488d3d48329ec0a058ce40f49.zip",
+      "bundle_sha256": "a707c07253e91a0a57e840c74c82a70d4b826bc488d3d48329ec0a058ce40f49",
+      "bundle_bytes": 9248786,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/92cacaff34a0e1c760e96f298243d27343f483e5/visual/f9b0da8588734a28996a38f3724da16a/artifacts/reports/a707c07253e91a0a57e840c74c82a70d4b826bc488d3d48329ec0a058ce40f49/report-a707c07253e91a0a57e840c74c82a70d4b826bc488d3d48329ec0a058ce40f49.zip?download=true",
+      "entrypoint": "visual/results/runtime_geometry/f9b0da8588734a28996a38f3724da16a/geometry.html",
+      "selected_files": 14,
+      "selection_file": "geometry_files.json"
+    },
+    {
+      "key": "normal",
+      "title": "Task 02-A — Normal Reliability",
+      "run_id": "3640b9bbe403409ba1429e0143e5e049",
+      "execution_git_commit": "ae5239bb5a0d5ed418ce8e22c434cce5e5893ef4",
+      "execution_git_dirty": true,
+      "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+      "hf_revision": "3c9bcb9d7f11b7433f0c432d945ce71add0825ee",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/3c9bcb9d7f11b7433f0c432d945ce71add0825ee/visual/3640b9bbe403409ba1429e0143e5e049",
+      "remote_manifest_path": "visual/3640b9bbe403409ba1429e0143e5e049/manifests/3ce576f1d5652a472f8ed13775f25439b9d8de4df6029ecb049a2a72e83f9111/manifest.json",
+      "bundle_path": "visual/3640b9bbe403409ba1429e0143e5e049/artifacts/reports/d156c000f8588b509c07811475472a8ec818f06fe88a1c12c612603a75ea06c2/report-d156c000f8588b509c07811475472a8ec818f06fe88a1c12c612603a75ea06c2.zip",
+      "bundle_sha256": "d156c000f8588b509c07811475472a8ec818f06fe88a1c12c612603a75ea06c2",
+      "bundle_bytes": 8647407,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/3c9bcb9d7f11b7433f0c432d945ce71add0825ee/visual/3640b9bbe403409ba1429e0143e5e049/artifacts/reports/d156c000f8588b509c07811475472a8ec818f06fe88a1c12c612603a75ea06c2/report-d156c000f8588b509c07811475472a8ec818f06fe88a1c12c612603a75ea06c2.zip?download=true",
+      "entrypoint": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.html",
+      "selected_files": 25,
+      "selection_file": "normal_files.json"
+    }
+  ]
+}

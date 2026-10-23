@@ -1,5 +1,10 @@
 # Task 02-A — Normal Variation 신뢰성 및 Depth Quantization 영향
 
+전체 HTML·수치·dense NPZ는 [HF 게시 결과 인덱스](../../visual/results/publications/README.md)에서
+받을 수 있다. 아래 로컬 결과 링크는 ZIP을 새 checkout의 repository root에 풀면 열린다.
+[대표 그림](../../visual/results/diagnostic_previews/README.md)은 Git에서도 바로 볼 수 있다.
+이 문서의 테스트·Git 상태 기록은 Task 02-A 종료 시점 기준이며, 이후 커밋/보관 내역은 게시 인덱스를 따른다.
+
 **완료 범위: Task 02-A만 수행.** 기존 Vision–Graph 설계와 Task 01 extractor를 보존했다.
 넓은 Peg 평면의 높은 variation은 **1mm depth 양자화와 작은 normal stencil의 결합**으로
 대부분 설명된다. Normal이 유효하다는 사실은 각도가 정확하다는 뜻이 아니다.

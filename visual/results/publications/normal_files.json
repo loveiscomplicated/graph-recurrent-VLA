@@ -1,0 +1,107 @@
+{
+  "entrypoint": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.html",
+  "publication_commit": "20b906c6d13d592ef94addcdf6297c31a68c1fb4",
+  "description": "Task 02-A final quantization and normal reliability diagnostics: paired synthetic conditions, all 121-frame statistics and five dense visualized frames. Reproduction inputs are in the RGB-D bundle.",
+  "files": {
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.html": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.html",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.json": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.json",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/synthetic.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/synthetic.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/distributions.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/distributions.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/scale_probe.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/scale_probe.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000_boundaries.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000_boundaries.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000_profile.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000.npz": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0000.npz",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015_boundaries.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015_boundaries.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015_profile.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015.npz": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0015.npz",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045_boundaries.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045_boundaries.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045_profile.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045.npz": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0045.npz",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080_boundaries.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080_boundaries.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080_profile.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080.npz": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0080.npz",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120_boundaries.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120_boundaries.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120_profile.png": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120.npz": {
+      "source": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/f0120.npz",
+      "role": "result"
+    }
+  }
+}

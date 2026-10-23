@@ -1,5 +1,10 @@
 # Task 01 — Organized Geometry 및 Geometric Feature 후보 추출 완료 보고
 
+전체 HTML·수치·dense NPZ는 [HF 게시 결과 인덱스](../../visual/results/publications/README.md)에서
+받을 수 있다. 아래 로컬 결과 링크는 ZIP을 새 checkout의 repository root에 풀면 열린다.
+[대표 frame 0 그림](../../visual/results/diagnostic_previews/geometry_f0000.png)은 Git에도 보관한다.
+이 문서의 테스트·Git 상태 기록은 Task 01 종료 시점 기준이며, 이후 커밋/보관 내역은 게시 인덱스를 따른다.
+
 `00_interface.md`를 기준으로 Task 01 범위만 구현했다. CPU NumPy로 원본 pixel에
 정렬된 geometry·normal·관측 경계·normal variation을 계산한다. 최종 feature 분류,
 sampling, Graph edge/Tensor, cache, GNN/GRU는 구현하지 않았다.
