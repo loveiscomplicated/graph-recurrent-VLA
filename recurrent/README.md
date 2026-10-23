@@ -1,6 +1,6 @@
 # Recurrent 팀 prototype: 관측 손상 조건에서 controller 7종 비교
 
-Recurrent 팀 코드입니다. 공용 simulator는 환경 생성과 raw GT만 제공하며, 모델·손상·평가는 이 디렉터리에서 관리합니다.
+Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)와 다른 팀 코드는 수정하지 않았습니다.
 
 ## 무엇을 확인하는가
 
@@ -50,9 +50,24 @@ W&B 인증 파일(`/root/.secrets/wandb.env`)이 있으면 공용 `ExperimentLog
 
 ### GPU 여러 장에 본 실험 나누기
 
-서버 설정은 기존 `bash recurrent/setup_server.sh`로 한 번 실행합니다. 그다음 GPU 분할 경로를 확인하려면 `bash recurrent/smoke_multi_gpu.sh`를 실행합니다. smoke 스크립트는 새 데모 수집, GPU별 shard 동시 실행, CUDA 학습·평가 결과 확인, 리포트 생성을 수행하며 서버 설정을 다시 실행하지 않습니다. 결과 경로는 마지막에 출력됩니다.
+서버 설정은 기존 `bash recurrent/setup_server.sh`로 한 번 실행합니다. 그다음
+`bash recurrent/smoke_multi_gpu.sh`로 여러 GPU에서 학습 분산과 GPU 배치 평가를 확인합니다.
+smoke는 새 데모 12개와 CPU 초기 상태 fixture를 만들고, 7개 모델 × 2개 손상 단계의
+14개 학습을 GPU별 shard로 나눠 실행합니다. 학습이 모두 끝나면 같은 `gru_none_s0`
+checkpoint와 seed로 GPU마다 평가 프로세스 하나를 동시에 실행합니다. 기본값은
+GPU당 30개 환경·30 episode이며 8장에서는 총 240 episode입니다.
 
-7개 모델 × 4개 손상 단계 × 3개 seed = **84개 학습·평가 조합**입니다. 서버 설정과 smoke 확인 후 본 실험은 저장소 루트에서 `bash recurrent/run_main_multi_gpu.sh`로 실행합니다. 이 스크립트는 데모를 한 번 수집하고(기존 파일은 재사용), GPU마다 shard 하나를 실행하며, 84개 학습·평가와 expert 평가가 모두 끝난 뒤 리포트를 만듭니다. 중단 후 같은 명령을 다시 실행하면 완료된 작업을 건너뜁니다. 평가 CPU 프로세스 수는 기본 GPU당 1개이며 `EVAL_WORKERS=2 bash recurrent/run_main_multi_gpu.sh`처럼 조절할 수 있습니다.
+`EVAL_NUM_ENVS=16 bash recurrent/smoke_multi_gpu.sh`처럼 환경 수와 episode 수를
+함께 줄일 수 있습니다. 사용할 GPU는 `CUDA_VISIBLE_DEVICES=0,2,4,6`처럼 선택하며
+최소 2장이 필요합니다. 새 출력 디렉터리를 매번 생성하고 GPU별 JSONL·로그를 분리합니다.
+모든 학습의 CUDA 사용, 평가의 실제 `physx_cuda`/`render=none`, episode key와 중복,
+새 배치 실행 완료를 검사한 뒤 `Multi-GPU smoke PASS`를 출력합니다. 결과 경로와
+`smoke_summary.json`에 GPU 배정과 평가 처리량이 남습니다. W&B는 기본 `disabled`이며
+기존 공용 logger의 로컬 기록을 유지합니다. 설정된 `WANDB_MODE`는 그대로 따릅니다.
+이 smoke는 normal/none 조건의 GRU GPU 평가를 확인하며 expert 평가와 비교 리포트는
+생성하지 않습니다. 서버 설정을 다시 실행하거나 84개 본 실험을 시작하지 않습니다.
+
+7개 모델 × 4개 손상 단계 × 3개 seed = **84개 학습·평가 조합**입니다. 기존 본 실험 명령은 저장소 루트의 `bash recurrent/run_main_multi_gpu.sh`이며, 이 launcher의 평가는 아직 CPU입니다. 위 GPU 평가 smoke의 변경은 본 실험 launcher에 자동 적용되지 않습니다. 이 스크립트는 데모를 한 번 수집하고(기존 파일은 재사용), GPU마다 shard 하나를 실행하며, 84개 학습·평가와 expert 평가가 모두 끝난 뒤 리포트를 만듭니다. 중단 후 같은 명령을 다시 실행하면 완료된 작업을 건너뜁니다. 평가 CPU 프로세스 수는 기본 GPU당 1개이며 `EVAL_WORKERS=2 bash recurrent/run_main_multi_gpu.sh`처럼 조절할 수 있습니다.
 
 직접 shard별 명령을 실행하려면 아래 예시를 사용합니다. GPU 4장에서는 21개씩 배정됩니다.
 
