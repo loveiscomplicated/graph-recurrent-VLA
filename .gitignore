@@ -195,11 +195,8 @@ cython_debug/
 .abstra/
 
 # Visual Studio Code
-#   Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#   that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#   and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#   you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+# Local editor environment settings
+.vscode/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
@@ -225,3 +222,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local audit artifacts
+/audit_outputs/
+
+# Experiment tracking artifacts and local credentials
+/experiments/
+*.tracking.json
+.env.*
+!.env.example
+
+# Local experiment credentials
+.secrets/
+wandb.env
+hf.env

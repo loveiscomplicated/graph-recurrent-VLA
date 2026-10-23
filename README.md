@@ -32,7 +32,7 @@ available in the factory but has not been run on this host.
 
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,
-`graph/`, and `recurrent/` directories are deliberately empty. Each team chooses
+`graph/`, and `recurrent/` directories are team-owned. Each team chooses
 its own files, features, data, models, training, evaluation, and configuration.
 
 ```python
@@ -54,3 +54,34 @@ The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
 see [project context](docs/PROJECT_CONTEXT.md) for scope.
+
+The Graph team's independent surface-geometry comparison prototype is documented
+in [graph/prototype/README.md](graph/prototype/README.md), with its measured
+results in [docs/graph_prototype.md](docs/graph_prototype.md).
+
+The Graph team's PegInsertionSide subtask conditions and expert segmentation
+pipeline are documented in [graph/subtasks/README.md](graph/subtasks/README.md).
+See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measured
+91-episode validation, boundary limitations, and Reach baseline data readiness.
+
+The Recurrent team's controller comparison (MLP, stacked-history MLP, GRU, LSTM,
+CfC, RKN and Mamba on GT state under four observation-corruption levels) is
+documented in [recurrent/README.md](recurrent/README.md). On a GPU server run
+`bash recurrent/setup_server.sh` and then `sh recurrent/run_all.sh`.
+
+## Experiment tracking
+
+Existing Graph training and evaluation entrypoints now record scalar experiments
+to `experiments/<run_id>/`. W&B is optional; missing authentication selects offline
+mode, and missing SDK keeps local JSON logging. Vessl optionally loads
+`/root/.secrets/wandb.env`; see the setup guide. See
+[experiment tracking setup and integration scope](docs/experiment_tracking.md).
+
+To publish selected checkpoints, rollout videos, and metrics after an experiment,
+see [Hugging Face artifacts](docs/huggingface_artifacts.md). Repository initialization
+and publishing are explicit commands; training only records a local manifest.
+
+To forward a tmux session and selected train/eval log files to Discord, run the
+standalone [Discord notifier](docs/discord_notifications.md) with
+`DISCORD_WEBHOOK_URL` in its environment. It batches output, respects rate-limit
+responses, and keeps local pane capture while delivery is unavailable.

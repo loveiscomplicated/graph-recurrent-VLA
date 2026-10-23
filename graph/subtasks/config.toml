@@ -1,0 +1,23 @@
+# v0 candidates retained: Reach 2 cm / 15 deg; Transport 5 cm / 20 deg.
+version = "peg-subtasks-v0.1"
+reach_position = 0.02
+reach_rotation_deg = 15.0
+open_finger = 0.035
+peg_motion = 0.03
+on_table_tolerance = 0.005
+transport_position = 0.05
+transport_rotation_deg = 20.0
+waiting_depth = -0.01
+align_lateral = 0.003
+align_rotation_deg = 3.0
+align_axial = 0.01
+align_surface_margin = 0.0
+grasp_steps = 3
+grasp_relative_position = 0.003
+grasp_relative_rotation_deg = 3.0
+align_steps = 2
+drop_steps = 3
+timeout_steps = 250
+workspace_radius = 1.0
+workspace_z_min = -0.02
+workspace_z_max = 0.6

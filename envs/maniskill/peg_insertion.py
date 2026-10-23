@@ -64,6 +64,12 @@ def make_peg_insertion_env(
         render_mode=render_mode,
         sim_backend=backend,
     )
+    # CPU simulation uses host image readback even when Torch can see CUDA.
+    # Otherwise ManiSkill's default GPU renderer asks SAPIEN for cuda:0,
+    # which may have no matching Vulkan physical device (e.g. lavapipe).
+    # SAPIEN 3.0 cannot switch render devices within a process.
+    if device == "cpu":
+        kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode
     original_cwd = Path.cwd()
