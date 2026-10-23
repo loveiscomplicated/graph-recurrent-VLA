@@ -20,6 +20,9 @@ Frame 0 = reset 직후 관측, 이후 env.step 마다 1 frame.
 Usage:
   source env.sh
   python scripts/collect.py --seeds 0 1 2 --out data/step2 --res 512
+  # CPU simulation/rendering, e.g. on macOS with MoltenVK configured:
+  python scripts/collect.py --seeds 0 --out data/step2 --res 512 --cams base_camera \
+      --sim-backend physx_cpu --render-backend cpu
 """
 import argparse
 import json
@@ -200,7 +203,11 @@ def main():
     ap.add_argument("--res", type=int, default=512, help="sensor camera width=height")
     ap.add_argument("--cams", nargs="+", default=["base_camera", "hand_camera"])
     ap.add_argument("--max-steps", type=int, default=1000)
+    ap.add_argument("--sim-backend", default="auto")
+    ap.add_argument("--render-backend", default="gpu")
     args = ap.parse_args()
+    # SAPIEN may change cwd on macOS while creating the Vulkan renderer.
+    args.out = os.path.abspath(args.out)
     os.makedirs(args.out, exist_ok=True)
 
     t0 = time.time()
@@ -211,6 +218,8 @@ def main():
         sensor_configs=dict(width=args.res, height=args.res),
         max_episode_steps=args.max_steps,
         num_envs=1,
+        sim_backend=args.sim_backend,
+        render_backend=args.render_backend,
     )
     env = Recorder(env, args.cams)
     print(f"env make {time.time() - t0:.1f}s")
