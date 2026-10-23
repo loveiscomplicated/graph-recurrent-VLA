@@ -48,6 +48,34 @@ W&B 인증 파일(`/root/.secrets/wandb.env`)이 있으면 공용 `ExperimentLog
 
 `run_experiments`는 학습이 끝난 checkpoint부터 바로 평가를 시작합니다. 학습은 GPU에서 여러 개를 동시에 돌리고(`train_workers`), 평가 rollout은 CPU 프로세스 여러 개로 나눠 돌립니다(`eval_workers`). 둘 다 기본값은 CPU 코어 수에서 자동으로 정하며 `--train-workers`, `--eval-workers`로 바꿀 수 있습니다. 끝나면 리포트를 자동으로 만듭니다.
 
+### GPU 여러 장에 본 실험 나누기
+
+서버 설정은 기존 `bash recurrent/setup_server.sh`로 한 번 실행합니다. 그다음 GPU 분할 경로를 확인하려면 `bash recurrent/smoke_multi_gpu.sh`를 실행합니다. smoke 스크립트는 새 데모 수집, GPU별 shard 동시 실행, CUDA 학습·평가 결과 확인, 리포트 생성을 수행하며 서버 설정을 다시 실행하지 않습니다. 결과 경로는 마지막에 출력됩니다.
+
+7개 모델 × 4개 손상 단계 × 3개 seed = **84개 학습·평가 조합**입니다. 서버 설정과 smoke 확인 후 본 실험은 저장소 루트에서 `bash recurrent/run_main_multi_gpu.sh`로 실행합니다. 이 스크립트는 데모를 한 번 수집하고(기존 파일은 재사용), GPU마다 shard 하나를 실행하며, 84개 학습·평가와 expert 평가가 모두 끝난 뒤 리포트를 만듭니다. 중단 후 같은 명령을 다시 실행하면 완료된 작업을 건너뜁니다. 평가 CPU 프로세스 수는 기본 GPU당 1개이며 `EVAL_WORKERS=2 bash recurrent/run_main_multi_gpu.sh`처럼 조절할 수 있습니다.
+
+직접 shard별 명령을 실행하려면 아래 예시를 사용합니다. GPU 4장에서는 21개씩 배정됩니다.
+
+```bash
+.venv/bin/python -m recurrent.collect --num-demos 100
+.venv/bin/python -m recurrent.count_params
+.venv/bin/python -m recurrent.latency
+CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m recurrent.run_experiments --shard-count 4 --shard-index 0 --train-workers 1 --eval-workers 2
+CUDA_VISIBLE_DEVICES=1 .venv/bin/python -m recurrent.run_experiments --shard-count 4 --shard-index 1 --train-workers 1 --eval-workers 2
+CUDA_VISIBLE_DEVICES=2 .venv/bin/python -m recurrent.run_experiments --shard-count 4 --shard-index 2 --train-workers 1 --eval-workers 2
+CUDA_VISIBLE_DEVICES=3 .venv/bin/python -m recurrent.run_experiments --shard-count 4 --shard-index 3 --train-workers 1 --eval-workers 2
+```
+
+네 명령은 각각 다른 tmux 창이나 터미널에서 동시에 실행합니다. GPU가 `N`장이면 `--shard-count N`, `--shard-index 0`부터 `N-1`까지 사용합니다. 같은 설정과 데모 파일, 공유 출력 디렉터리(`outputs/recurrent/exp/main`)가 필요합니다. 서로 다른 서버에서 실행한다면 데모 파일과 결과 디렉터리를 같은 공유 스토리지에 두거나, 완료 후 결과를 합쳐야 합니다. shard별 작업 목록은 `plan.shard-<index>-of-<count>.json`에 기록됩니다.
+
+shard 0만 공통 expert 평가를 실행하며, 분할 실행에서는 리포트 생성을 건너뜁니다. 모든 shard가 성공적으로 끝난 뒤 한 번 실행합니다.
+
+```bash
+.venv/bin/python -m recurrent.report --config experiment.yaml
+```
+
+중단된 shard는 같은 index/count 명령으로 다시 실행하면 완료된 학습과 평가는 건너뜁니다. 실행 중인 동일 shard를 중복으로 띄우지 마세요. `run_all.sh`는 데모 수집을 포함한 단일 실행 경로이므로 분할 실행에는 위 명령을 사용합니다. 평가 worker는 GPU가 아니라 CPU를 사용하므로 `--eval-workers` 합계를 서버 CPU 용량에 맞추세요.
+
 리포트 폴더에는 `report.md`와 그림, 표 파일이 생깁니다.
 
 | 파일 | 내용 |

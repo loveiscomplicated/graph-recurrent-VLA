@@ -28,6 +28,12 @@ def run_name(model, level, seed):
     return f"{model}_{level}_s{seed}"
 
 
+def experiment_jobs(cfg, shard_index=0, shard_count=1):
+    jobs = ((run_name(model, level, seed), model, level, seed)
+            for level in cfg["levels"] for model in cfg["models"] for seed in cfg["seeds"])
+    return [job for index, job in enumerate(jobs) if index % shard_count == shard_index]
+
+
 def train_cmd(cfg, model, level, seed, out_dir):
     tr = cfg["train"]
     cmd = [sys.executable, "-m", "recurrent.train", "--model", model, "--level", level, "--seed", str(seed),
@@ -88,7 +94,11 @@ def main():
     p.add_argument("--eval-workers", type=int, default=None)
     p.add_argument("--train-only", action="store_true")
     p.add_argument("--no-report", action="store_true")
+    p.add_argument("--shard-index", type=int, default=0, help="zero-based shard assigned to this process")
+    p.add_argument("--shard-count", type=int, default=1, help="number of disjoint job shards")
     args = p.parse_args()
+    if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
+        p.error("require --shard-count >= 1 and 0 <= --shard-index < --shard-count")
 
     cfg = load_config(args.config)
     if args.models:
@@ -108,27 +118,29 @@ def main():
     tw, ew = auto_workers(cfg.get("parallel", {}), cuda)
     tw = args.train_workers or tw
     ew = args.eval_workers or ew
-    (exp / "plan.json").write_text(json.dumps({"config": cfg, "train_workers": tw, "eval_workers": ew, "gpus": gpus}, indent=2))
-    print(f"exp {exp} train_workers {tw} eval_workers {ew} gpus {gpus}")
+    jobs = experiment_jobs(cfg, args.shard_index, args.shard_count)
+    plan_name = "plan.json" if args.shard_count == 1 else f"plan.shard-{args.shard_index}-of-{args.shard_count}.json"
+    (exp / plan_name).write_text(json.dumps({"config": cfg, "train_workers": tw, "eval_workers": ew,
+                                            "gpus": gpus, "shard_index": args.shard_index,
+                                            "shard_count": args.shard_count,
+                                            "jobs": [name for name, _, _, _ in jobs]}, indent=2))
+    print(f"exp {exp} shard {args.shard_index}/{args.shard_count} jobs {len(jobs)} train_workers {tw} eval_workers {ew} gpus {gpus}")
 
     which = cfg["eval"].get("checkpoint", "best")
     train_q, eval_q = deque(), deque()
-    if cfg["eval"].get("with_expert", True) and not args.train_only:
+    if cfg["eval"].get("with_expert", True) and not args.train_only and args.shard_index == 0:
         out = exp / "eval" / "expert.jsonl"
         if not eval_done(out, expected_rows(cfg, "none", expert=True)):
             eval_q.append(("expert", "expert", "none", out))
-    for level in cfg["levels"]:
-        for model in cfg["models"]:
-            for seed in cfg["seeds"]:
-                name = run_name(model, level, seed)
-                run_dir = exp / "runs" / name
-                trained = (run_dir / "last.pt").exists() and (run_dir / "history.json").exists()
-                if not trained:
-                    train_q.append((name, model, level, seed, run_dir))
-                elif not args.train_only:
-                    out = exp / "eval" / f"{name}.jsonl"
-                    if not eval_done(out, expected_rows(cfg, level)):
-                        eval_q.append((name, run_dir / f"{which}.pt", level, out))
+    for name, model, level, seed in jobs:
+        run_dir = exp / "runs" / name
+        trained = (run_dir / "last.pt").exists() and (run_dir / "history.json").exists()
+        if not trained:
+            train_q.append((name, model, level, seed, run_dir))
+        elif not args.train_only:
+            out = exp / "eval" / f"{name}.jsonl"
+            if not eval_done(out, expected_rows(cfg, level)):
+                eval_q.append((name, run_dir / f"{which}.pt", level, out))
     n_train, n_eval = len(train_q), len(eval_q) + (0 if args.train_only else len(train_q))
     print(f"train jobs {n_train} eval jobs {n_eval}")
 
@@ -178,7 +190,7 @@ def main():
     if failures:
         print("FAILED " + ", ".join(failures))
         print(f"logs {exp / 'logs'}")
-    if not args.no_report and not args.train_only:
+    if not args.no_report and not args.train_only and args.shard_count == 1:
         subprocess.run([sys.executable, "-m", "recurrent.report", "--config", str(args.config)], cwd=ROOT, check=False)
     sys.exit(1 if failures else 0)
 

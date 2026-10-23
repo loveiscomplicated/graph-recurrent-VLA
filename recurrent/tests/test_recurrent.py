@@ -10,6 +10,7 @@ from recurrent.common import RAW_KEYS
 from recurrent.corruption import Corruptor, level_config
 from recurrent.features import AGE_IDX, FRESH_IDX, OBS_DIM, build_features
 from recurrent.models import REGISTRY, build, num_params
+from recurrent.run_experiments import experiment_jobs
 from recurrent.train import make_stats, normalize_obs
 
 
@@ -51,6 +52,19 @@ class ModelTest(unittest.TestCase):
     def test_parameter_counts_are_matched(self):
         counts = [num_params(build(k, OBS_DIM, 7)) for k in REGISTRY]
         self.assertLess(max(counts) / min(counts), 1.15)
+
+
+class ShardTest(unittest.TestCase):
+    def test_main_grid_is_split_without_overlap(self):
+        cfg = {"levels": ["none", "low", "mid", "high"],
+               "models": ["mlp", "stack_mlp", "gru", "lstm", "cfc", "rkn", "mamba"],
+               "seeds": [0, 1, 2]}
+        whole = experiment_jobs(cfg)
+        shards = [experiment_jobs(cfg, i, 4) for i in range(4)]
+        self.assertEqual(len(whole), 84)
+        self.assertEqual([len(shard) for shard in shards], [21] * 4)
+        self.assertEqual(set(whole), set().union(*(set(shard) for shard in shards)))
+        self.assertEqual(sum(map(len, shards)), len(set(whole)))
 
 
 class CorruptionTest(unittest.TestCase):
