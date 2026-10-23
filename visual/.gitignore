@@ -22,3 +22,5 @@ results/v1/**/runs/
 /results/runtime_geometry/
 /results/normal_diagnostics/
 /results/normal_comparison/
+/results/pca_optimization/
+/results/structural_edges/

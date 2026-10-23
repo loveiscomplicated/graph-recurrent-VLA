@@ -1,0 +1,423 @@
+{
+  "entrypoint": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.html",
+  "publication_commit": "5d59b749c9fbd3da4fa1c5f3a47fd15d5cd17cbd",
+  "description": "PCA5 CPU/CUDA optimization and causal streaming records. Includes all preserved local profiling, CPU, GPU, compile-quality and streaming runs with original identities and executed-source snapshots. CUDA results are historical RTX 3090 records, not executed on the publishing Mac. Original inputs are in the RGB-D bundle.",
+  "files": {
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0000.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0000.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0015.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0015.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0045.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0045.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0080.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0080.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0120.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/f0120.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/implementation.patch": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/implementation.patch",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.html": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.html",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.json": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.json",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/performance.html": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/performance.html",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/performance.png": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/performance.png",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/preservation_before.json": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/preservation_before.json",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/normal_estimators.py": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/normal_estimators.py",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/pca_optimized.py": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/pca_optimized.py",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/pca_torch.py": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/pca_torch.py",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/run_pca_optimization.py": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/source/run_pca_optimization.py",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/verification.json": {
+      "source": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/verification.json",
+      "role": "result"
+    },
+    "visual/results/pca_optimization/0d3bd2a6cc6445c489ba821bc252156d/streaming.json": {
+      "source": "visual/results/pca_optimization/0d3bd2a6cc6445c489ba821bc252156d/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/0d3bd2a6cc6445c489ba821bc252156d/tracked_masks.npz": {
+      "source": "visual/results/pca_optimization/0d3bd2a6cc6445c489ba821bc252156d/tracked_masks.npz",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/39d1f12d47544671a7fb9d9621be484c/streaming.json": {
+      "source": "visual/results/pca_optimization/39d1f12d47544671a7fb9d9621be484c/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/39d1f12d47544671a7fb9d9621be484c/tracked_masks.npz": {
+      "source": "visual/results/pca_optimization/39d1f12d47544671a7fb9d9621be484c/tracked_masks.npz",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/4236d33efb5b453895dbf9048467acca/profile.txt": {
+      "source": "visual/results/pca_optimization/4236d33efb5b453895dbf9048467acca/profile.txt",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/4236d33efb5b453895dbf9048467acca/reference.pstats": {
+      "source": "visual/results/pca_optimization/4236d33efb5b453895dbf9048467acca/reference.pstats",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/70a194604bd04ef1b975df5d90ade61d/compile_quality.json": {
+      "source": "visual/results/pca_optimization/70a194604bd04ef1b975df5d90ade61d/compile_quality.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/70a194604bd04ef1b975df5d90ade61d/source.py": {
+      "source": "visual/results/pca_optimization/70a194604bd04ef1b975df5d90ade61d/source.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/9de26edb2e774ffcbed16d00eb89439e/streaming.json": {
+      "source": "visual/results/pca_optimization/9de26edb2e774ffcbed16d00eb89439e/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/9de26edb2e774ffcbed16d00eb89439e/tracked_masks.npz": {
+      "source": "visual/results/pca_optimization/9de26edb2e774ffcbed16d00eb89439e/tracked_masks.npz",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/a34de8fa4976434e9be4356eb8db198a/streaming.json": {
+      "source": "visual/results/pca_optimization/a34de8fa4976434e9be4356eb8db198a/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/a34de8fa4976434e9be4356eb8db198a/tracked_masks.npz": {
+      "source": "visual/results/pca_optimization/a34de8fa4976434e9be4356eb8db198a/tracked_masks.npz",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/aa996b8c135d40b09116f5389125580f/cuda.json": {
+      "source": "visual/results/pca_optimization/aa996b8c135d40b09116f5389125580f/cuda.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/c79e64c8f37a4412a0fbaa1bb382d67f/streaming.json": {
+      "source": "visual/results/pca_optimization/c79e64c8f37a4412a0fbaa1bb382d67f/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/d78e9574a02946108484e471385e5c03/streaming.json": {
+      "source": "visual/results/pca_optimization/d78e9574a02946108484e471385e5c03/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/de43c422d08b4e35ac1a361113aa6202/streaming.json": {
+      "source": "visual/results/pca_optimization/de43c422d08b4e35ac1a361113aa6202/streaming.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/de43c422d08b4e35ac1a361113aa6202/tracked_masks.npz": {
+      "source": "visual/results/pca_optimization/de43c422d08b4e35ac1a361113aa6202/tracked_masks.npz",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/eaa2d61078b841a396e63f7868a6b90c/cuda.json": {
+      "source": "visual/results/pca_optimization/eaa2d61078b841a396e63f7868a6b90c/cuda.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source/benchmark_pca_cuda.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source/benchmark_pca_cuda.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source/benchmark_pca_streaming.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source/benchmark_pca_streaming.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source/pca_optimized.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source/pca_optimized.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source/pca_torch.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source/pca_torch.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source/pca_triton.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source/pca_triton.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v2/benchmark_pca_cuda.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v2/benchmark_pca_cuda.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v2/benchmark_pca_streaming.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v2/benchmark_pca_streaming.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v2/pca_torch.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v2/pca_torch.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v2/pca_triton.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v2/pca_triton.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v3/benchmark_pca_cuda.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v3/benchmark_pca_cuda.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v3/benchmark_pca_streaming.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v3/benchmark_pca_streaming.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v3/pca_torch.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v3/pca_torch.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v3/pca_triton.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v3/pca_triton.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v4/benchmark_pca_cuda.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v4/benchmark_pca_cuda.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v4/benchmark_pca_streaming.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v4/benchmark_pca_streaming.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v4/pca_optimized.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v4/pca_optimized.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v4/pca_torch.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v4/pca_torch.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/executed_gpu_source_v4/pca_triton.py": {
+      "source": "visual/results/pca_optimization/executed_gpu_source_v4/pca_triton.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/f53cd6b2edcf414ba31bb41fe114f70c/cuda.json": {
+      "source": "visual/results/pca_optimization/f53cd6b2edcf414ba31bb41fe114f70c/cuda.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0000.png": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0000.png",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0015.png": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0015.png",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0045.png": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0045.png",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0080.png": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0080.png",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0120.png": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/f0120.png",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/optimization.html": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/optimization.html",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/optimization.json": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/optimization.json",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/normal_estimators.py": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/normal_estimators.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/pca_optimized.py": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/pca_optimized.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/pca_torch.py": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/pca_torch.py",
+      "role": "dependency"
+    },
+    "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/run_pca_optimization.py": {
+      "source": "visual/results/pca_optimization/fd4dff38bc534c6ebc828718a635aac9/source/run_pca_optimization.py",
+      "role": "dependency"
+    },
+    "experiments/0d3bd2a6cc6445c489ba821bc252156d/metadata.json": {
+      "source": "experiments/0d3bd2a6cc6445c489ba821bc252156d/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/0d3bd2a6cc6445c489ba821bc252156d/metrics.json": {
+      "source": "experiments/0d3bd2a6cc6445c489ba821bc252156d/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/0d3bd2a6cc6445c489ba821bc252156d/config.yaml": {
+      "source": "experiments/0d3bd2a6cc6445c489ba821bc252156d/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/39d1f12d47544671a7fb9d9621be484c/metadata.json": {
+      "source": "experiments/39d1f12d47544671a7fb9d9621be484c/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/39d1f12d47544671a7fb9d9621be484c/metrics.json": {
+      "source": "experiments/39d1f12d47544671a7fb9d9621be484c/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/39d1f12d47544671a7fb9d9621be484c/config.yaml": {
+      "source": "experiments/39d1f12d47544671a7fb9d9621be484c/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/4236d33efb5b453895dbf9048467acca/metadata.json": {
+      "source": "experiments/4236d33efb5b453895dbf9048467acca/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/4236d33efb5b453895dbf9048467acca/metrics.json": {
+      "source": "experiments/4236d33efb5b453895dbf9048467acca/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/4236d33efb5b453895dbf9048467acca/config.yaml": {
+      "source": "experiments/4236d33efb5b453895dbf9048467acca/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/70a194604bd04ef1b975df5d90ade61d/metadata.json": {
+      "source": "experiments/70a194604bd04ef1b975df5d90ade61d/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/70a194604bd04ef1b975df5d90ade61d/metrics.json": {
+      "source": "experiments/70a194604bd04ef1b975df5d90ade61d/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/70a194604bd04ef1b975df5d90ade61d/config.yaml": {
+      "source": "experiments/70a194604bd04ef1b975df5d90ade61d/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/9de26edb2e774ffcbed16d00eb89439e/metadata.json": {
+      "source": "experiments/9de26edb2e774ffcbed16d00eb89439e/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/9de26edb2e774ffcbed16d00eb89439e/metrics.json": {
+      "source": "experiments/9de26edb2e774ffcbed16d00eb89439e/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/9de26edb2e774ffcbed16d00eb89439e/config.yaml": {
+      "source": "experiments/9de26edb2e774ffcbed16d00eb89439e/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/a34de8fa4976434e9be4356eb8db198a/metadata.json": {
+      "source": "experiments/a34de8fa4976434e9be4356eb8db198a/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/a34de8fa4976434e9be4356eb8db198a/metrics.json": {
+      "source": "experiments/a34de8fa4976434e9be4356eb8db198a/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/a34de8fa4976434e9be4356eb8db198a/config.yaml": {
+      "source": "experiments/a34de8fa4976434e9be4356eb8db198a/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/aa996b8c135d40b09116f5389125580f/metadata.json": {
+      "source": "experiments/aa996b8c135d40b09116f5389125580f/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/aa996b8c135d40b09116f5389125580f/metrics.json": {
+      "source": "experiments/aa996b8c135d40b09116f5389125580f/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/aa996b8c135d40b09116f5389125580f/config.yaml": {
+      "source": "experiments/aa996b8c135d40b09116f5389125580f/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/metadata.json": {
+      "source": "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/metrics.json": {
+      "source": "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/config.yaml": {
+      "source": "experiments/c79e64c8f37a4412a0fbaa1bb382d67f/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/d78e9574a02946108484e471385e5c03/metadata.json": {
+      "source": "experiments/d78e9574a02946108484e471385e5c03/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/d78e9574a02946108484e471385e5c03/metrics.json": {
+      "source": "experiments/d78e9574a02946108484e471385e5c03/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/d78e9574a02946108484e471385e5c03/config.yaml": {
+      "source": "experiments/d78e9574a02946108484e471385e5c03/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/de43c422d08b4e35ac1a361113aa6202/metadata.json": {
+      "source": "experiments/de43c422d08b4e35ac1a361113aa6202/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/de43c422d08b4e35ac1a361113aa6202/metrics.json": {
+      "source": "experiments/de43c422d08b4e35ac1a361113aa6202/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/de43c422d08b4e35ac1a361113aa6202/config.yaml": {
+      "source": "experiments/de43c422d08b4e35ac1a361113aa6202/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/eaa2d61078b841a396e63f7868a6b90c/metadata.json": {
+      "source": "experiments/eaa2d61078b841a396e63f7868a6b90c/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/eaa2d61078b841a396e63f7868a6b90c/metrics.json": {
+      "source": "experiments/eaa2d61078b841a396e63f7868a6b90c/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/eaa2d61078b841a396e63f7868a6b90c/config.yaml": {
+      "source": "experiments/eaa2d61078b841a396e63f7868a6b90c/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/f53cd6b2edcf414ba31bb41fe114f70c/metadata.json": {
+      "source": "experiments/f53cd6b2edcf414ba31bb41fe114f70c/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/f53cd6b2edcf414ba31bb41fe114f70c/metrics.json": {
+      "source": "experiments/f53cd6b2edcf414ba31bb41fe114f70c/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/f53cd6b2edcf414ba31bb41fe114f70c/config.yaml": {
+      "source": "experiments/f53cd6b2edcf414ba31bb41fe114f70c/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/fd4dff38bc534c6ebc828718a635aac9/metadata.json": {
+      "source": "experiments/fd4dff38bc534c6ebc828718a635aac9/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/fd4dff38bc534c6ebc828718a635aac9/metrics.json": {
+      "source": "experiments/fd4dff38bc534c6ebc828718a635aac9/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/fd4dff38bc534c6ebc828718a635aac9/config.yaml": {
+      "source": "experiments/fd4dff38bc534c6ebc828718a635aac9/config.yaml",
+      "role": "dependency"
+    },
+    "docs/visual-graph-integration/pca5_optimization.md": {
+      "source": "docs/visual-graph-integration/pca5_optimization.md",
+      "role": "dependency"
+    }
+  }
+}

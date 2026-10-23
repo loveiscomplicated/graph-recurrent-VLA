@@ -15,3 +15,9 @@
 | [Task 02-B frame 0](comparison_f0000.png) | 동일 관측의 variation·면 접합선·hole rim |
 | [Task 02-B normal validity](comparison_f0000_validity.png) | 유효 normal과 관측/계산 불가 영역 구분 |
 | [Task 02-B profile](comparison_f0000_profile.png) | 같은 단면에서 경계 반응의 위치와 폭 |
+| [PCA CPU 성능](pca_performance.png) | 원래 PCA5와 최적화 후보의 시간·정확도 보존 |
+| [PCA frame 0](pca_f0000.png) | 같은 관측의 normal·variation·구조 보존 비교 |
+| [Task 02-C trade-off](structural_tradeoffs.png) | Threshold별 precision·recall·일대일 점수와 경계 보존 |
+| [Task 02-C 공간 분포](structural_density.png) | 원본 raster에서 후보가 집중되는 영역 |
+| [Task 02-C frame 0](structural_f0000.png) | 방향 변화·depth jump·mask·가림 증거와 GT 비교 |
+| [Task 02-C frame 120](structural_f0120.png) | 가림·tracker 지원 손실로 rim coverage가 낮은 사례 |

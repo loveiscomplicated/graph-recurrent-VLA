@@ -6,7 +6,7 @@
     "private": true
   },
   "published_at": "2026-10-23T18:19:47.040976+00:00",
-  "scope": "Visual runtime through Task 02-B",
+  "scope": "Visual runtime through Task 02-C, including PCA5 optimization and streaming diagnostics",
   "verification": "All uploaded objects matched remote hashes; downloaded report ZIPs passed SHA-256 and ZIP integrity checks.",
   "artifacts": [
     {
@@ -106,7 +106,96 @@
         "baseline_array_assertions": 260,
         "gt_region_assertions": 120
       }
+    },
+    {
+      "key": "pca",
+      "title": "PCA5 Optimization · CPU/CUDA/20Hz",
+      "run_id": "03d9777a004349e3a794147e4e55a2f0",
+      "execution_git_commit": "42e30e4c2d9904e0e16453998a2da5e7c9344494",
+      "execution_git_dirty": true,
+      "publication_commit": "5d59b749c9fbd3da4fa1c5f3a47fd15d5cd17cbd",
+      "hf_revision": "a0ab713874a7f6ae2026d05138e7902d218201a6",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/a0ab713874a7f6ae2026d05138e7902d218201a6/visual/03d9777a004349e3a794147e4e55a2f0",
+      "remote_manifest_path": "visual/03d9777a004349e3a794147e4e55a2f0/manifests/f54073bf1ef0edb22b0e5cc0c681421162eb105a2b9f83474f23c7302f8935cc/manifest.json",
+      "bundle_path": "visual/03d9777a004349e3a794147e4e55a2f0/artifacts/reports/61405e026c1886e9765ae0307f084a5348ef7a5546daad1fab34f6aa31ca3e95/report-61405e026c1886e9765ae0307f084a5348ef7a5546daad1fab34f6aa31ca3e95.zip",
+      "bundle_sha256": "61405e026c1886e9765ae0307f084a5348ef7a5546daad1fab34f6aa31ca3e95",
+      "bundle_bytes": 12901059,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/a0ab713874a7f6ae2026d05138e7902d218201a6/visual/03d9777a004349e3a794147e4e55a2f0/artifacts/reports/61405e026c1886e9765ae0307f084a5348ef7a5546daad1fab34f6aa31ca3e95/report-61405e026c1886e9765ae0307f084a5348ef7a5546daad1fab34f6aa31ca3e95.zip?download=true",
+      "entrypoint": "visual/results/pca_optimization/03d9777a004349e3a794147e4e55a2f0/optimization.html",
+      "selected_files": 104,
+      "selection_file": "pca_files.json",
+      "dependency_artifact_keys": [
+        "rgbd"
+      ],
+      "included_run_ids": [
+        "03d9777a004349e3a794147e4e55a2f0",
+        "0d3bd2a6cc6445c489ba821bc252156d",
+        "39d1f12d47544671a7fb9d9621be484c",
+        "4236d33efb5b453895dbf9048467acca",
+        "70a194604bd04ef1b975df5d90ade61d",
+        "9de26edb2e774ffcbed16d00eb89439e",
+        "a34de8fa4976434e9be4356eb8db198a",
+        "aa996b8c135d40b09116f5389125580f",
+        "c79e64c8f37a4412a0fbaa1bb382d67f",
+        "d78e9574a02946108484e471385e5c03",
+        "de43c422d08b4e35ac1a361113aa6202",
+        "eaa2d61078b841a396e63f7868a6b90c",
+        "f53cd6b2edcf414ba31bb41fe114f70c",
+        "fd4dff38bc534c6ebc828718a635aac9"
+      ],
+      "report_document": "docs/visual-graph-integration/pca5_optimization.md",
+      "validation": {
+        "runtime_tests_run": 77,
+        "runtime_tests_passed": 74,
+        "runtime_tests_skipped_cuda": 3,
+        "common_infrastructure_tests_passed": 42,
+        "remote_object_hashes_verified": true,
+        "download_sha256_verified": true,
+        "download_zip_integrity_verified": true
+      },
+      "evaluated_source_note": "Executed-source snapshots and original metadata are retained for all 14 runs. Remote CUDA runs without Git checkout have git_commit=null; no Git provenance is inferred. This publishing session ran CPU tests, not CUDA benchmarks."
+    },
+    {
+      "key": "structural",
+      "title": "Task 02-C — Structural Edge Candidates",
+      "run_id": "b622e76deceb419ab9c5aa80a8f8280c",
+      "execution_git_commit": "366e9ce4b1510926449fc7c51765ac72849b16c4",
+      "execution_git_dirty": true,
+      "publication_commit": "d26c1fc86c192dead1ac06e6a55505ef4bbfe627",
+      "hf_revision": "d247f2c36d6ee76b9f6e2ad991909a153384be9a",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/d247f2c36d6ee76b9f6e2ad991909a153384be9a/visual/b622e76deceb419ab9c5aa80a8f8280c",
+      "remote_manifest_path": "visual/b622e76deceb419ab9c5aa80a8f8280c/manifests/e509ce52bf751eaefd5a6f1ec66b0f688d5fff244fee580732f92a3fff546ccd/manifest.json",
+      "bundle_path": "visual/b622e76deceb419ab9c5aa80a8f8280c/artifacts/reports/b482be23e8cf3fd90d91296db55d060539ded17c044af4c925483cd7bc0938f3/report-b482be23e8cf3fd90d91296db55d060539ded17c044af4c925483cd7bc0938f3.zip",
+      "bundle_sha256": "b482be23e8cf3fd90d91296db55d060539ded17c044af4c925483cd7bc0938f3",
+      "bundle_bytes": 116434894,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/d247f2c36d6ee76b9f6e2ad991909a153384be9a/visual/b622e76deceb419ab9c5aa80a8f8280c/artifacts/reports/b482be23e8cf3fd90d91296db55d060539ded17c044af4c925483cd7bc0938f3/report-b482be23e8cf3fd90d91296db55d060539ded17c044af4c925483cd7bc0938f3.zip?download=true",
+      "entrypoint": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.html",
+      "selected_files": 409,
+      "selection_file": "structural_files.json",
+      "dependency_artifact_keys": [
+        "rgbd"
+      ],
+      "included_run_ids": [
+        "6eed92be53c64472be8b536f3806ce2d",
+        "935a867a2da04ec9972da572af4f6a10",
+        "b622e76deceb419ab9c5aa80a8f8280c"
+      ],
+      "report_document": "docs/visual-graph-integration/02c_structural_edges.md",
+      "validation": {
+        "runtime_tests_run": 77,
+        "runtime_tests_passed": 74,
+        "runtime_tests_skipped_cuda": 3,
+        "common_infrastructure_tests_passed": 42,
+        "remote_object_hashes_verified": true,
+        "download_sha256_verified": true,
+        "download_zip_integrity_verified": true
+      },
+      "superseded_run_ids": [
+        "6eed92be53c64472be8b536f3806ce2d",
+        "935a867a2da04ec9972da572af4f6a10"
+      ],
+      "evaluated_source_note": "Final evaluated snapshots match current detector/evaluator source. Earlier runs retain superseded.json pointing to the final run. PCL NOT RUN."
     }
   ],
-  "updated_at": "2026-10-23T19:27:54.614241+00:00"
+  "updated_at": "2026-10-23T19:51:51.919625+00:00"
 }

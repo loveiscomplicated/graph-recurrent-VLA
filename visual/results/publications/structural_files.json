@@ -1,0 +1,1643 @@
+{
+  "entrypoint": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.html",
+  "publication_commit": "d26c1fc86c192dead1ac06e6a55505ef4bbfe627",
+  "description": "Task 02-C final 121-frame structural candidate comparison, all 121 pair NPZ files, figures, verification and evaluated-source snapshots. Also retains both superseded runs as dependencies with their original IDs and superseded notices. PCL NOT RUN. Original inputs are in the RGB-D bundle.",
+  "files": {
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/comparison.html": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/comparison.html",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/comparison.json": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/comparison.json",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0000_comparison.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0000_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0000_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0000_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0001_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0001_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0002_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0002_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0003_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0003_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0004_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0004_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0005_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0005_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0006_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0006_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0007_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0007_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0008_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0008_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0009_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0009_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0010_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0010_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0011_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0011_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0012_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0012_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0013_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0013_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0014_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0014_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0015_comparison.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0015_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0015_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0015_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0016_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0016_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0017_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0017_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0018_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0018_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0019_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0019_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0020_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0020_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0021_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0021_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0022_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0022_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0023_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0023_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0024_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0024_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0025_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0025_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0026_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0026_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0027_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0027_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0028_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0028_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0029_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0029_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0030_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0030_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0031_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0031_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0032_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0032_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0033_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0033_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0034_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0034_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0035_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0035_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0036_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0036_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0037_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0037_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0038_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0038_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0039_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0039_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0040_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0040_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0041_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0041_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0042_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0042_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0043_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0043_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0044_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0044_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0045_comparison.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0045_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0045_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0045_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0046_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0046_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0047_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0047_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0048_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0048_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0049_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0049_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0050_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0050_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0051_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0051_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0052_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0052_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0053_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0053_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0054_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0054_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0055_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0055_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0056_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0056_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0057_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0057_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0058_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0058_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0059_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0059_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0060_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0060_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0061_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0061_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0062_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0062_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0063_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0063_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0064_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0064_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0065_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0065_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0066_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0066_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0067_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0067_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0068_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0068_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0069_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0069_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0070_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0070_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0071_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0071_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0072_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0072_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0073_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0073_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0074_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0074_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0075_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0075_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0076_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0076_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0077_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0077_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0078_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0078_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0079_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0079_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0080_comparison.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0080_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0080_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0080_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0081_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0081_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0082_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0082_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0083_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0083_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0084_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0084_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0085_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0085_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0086_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0086_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0087_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0087_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0088_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0088_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0089_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0089_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0090_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0090_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0091_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0091_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0092_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0092_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0093_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0093_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0094_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0094_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0095_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0095_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0096_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0096_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0097_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0097_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0098_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0098_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0099_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0099_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0100_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0100_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0101_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0101_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0102_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0102_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0103_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0103_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0104_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0104_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0105_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0105_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0106_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0106_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0107_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0107_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0108_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0108_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0109_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0109_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0110_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0110_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0111_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0111_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0112_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0112_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0113_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0113_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0114_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0114_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0115_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0115_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0116_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0116_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0117_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0117_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0118_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0118_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0119_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0119_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0120_comparison.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0120_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0120_pairs.npz": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/f0120_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/superseded.json": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/superseded.json",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/tradeoffs.png": {
+      "source": "visual/results/structural_edges/6eed92be53c64472be8b536f3806ce2d/tradeoffs.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/comparison.html": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/comparison.html",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/comparison.json": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/comparison.json",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/density.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/density.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0000_comparison.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0000_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0000_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0000_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0001_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0001_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0002_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0002_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0003_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0003_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0004_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0004_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0005_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0005_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0006_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0006_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0007_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0007_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0008_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0008_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0009_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0009_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0010_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0010_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0011_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0011_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0012_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0012_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0013_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0013_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0014_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0014_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0015_comparison.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0015_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0015_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0015_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0016_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0016_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0017_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0017_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0018_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0018_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0019_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0019_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0020_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0020_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0021_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0021_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0022_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0022_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0023_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0023_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0024_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0024_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0025_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0025_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0026_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0026_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0027_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0027_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0028_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0028_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0029_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0029_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0030_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0030_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0031_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0031_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0032_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0032_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0033_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0033_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0034_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0034_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0035_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0035_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0036_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0036_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0037_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0037_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0038_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0038_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0039_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0039_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0040_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0040_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0041_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0041_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0042_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0042_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0043_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0043_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0044_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0044_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0045_comparison.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0045_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0045_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0045_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0046_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0046_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0047_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0047_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0048_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0048_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0049_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0049_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0050_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0050_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0051_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0051_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0052_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0052_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0053_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0053_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0054_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0054_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0055_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0055_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0056_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0056_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0057_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0057_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0058_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0058_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0059_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0059_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0060_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0060_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0061_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0061_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0062_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0062_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0063_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0063_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0064_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0064_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0065_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0065_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0066_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0066_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0067_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0067_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0068_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0068_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0069_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0069_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0070_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0070_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0071_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0071_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0072_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0072_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0073_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0073_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0074_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0074_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0075_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0075_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0076_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0076_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0077_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0077_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0078_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0078_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0079_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0079_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0080_comparison.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0080_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0080_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0080_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0081_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0081_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0082_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0082_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0083_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0083_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0084_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0084_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0085_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0085_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0086_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0086_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0087_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0087_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0088_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0088_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0089_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0089_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0090_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0090_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0091_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0091_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0092_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0092_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0093_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0093_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0094_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0094_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0095_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0095_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0096_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0096_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0097_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0097_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0098_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0098_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0099_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0099_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0100_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0100_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0101_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0101_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0102_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0102_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0103_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0103_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0104_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0104_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0105_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0105_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0106_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0106_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0107_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0107_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0108_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0108_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0109_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0109_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0110_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0110_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0111_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0111_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0112_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0112_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0113_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0113_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0114_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0114_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0115_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0115_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0116_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0116_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0117_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0117_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0118_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0118_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0119_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0119_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0120_comparison.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0120_comparison.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0120_pairs.npz": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/f0120_pairs.npz",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/superseded.json": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/superseded.json",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/tradeoffs.png": {
+      "source": "visual/results/structural_edges/935a867a2da04ec9972da572af4f6a10/tradeoffs.png",
+      "role": "dependency"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/baseline_document_before_task02c.md": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/baseline_document_before_task02c.md",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.html": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.html",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.json": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/comparison.json",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/density.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/density.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/geometry.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/normal_diagnostics.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/normal_estimators.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/normal_estimators.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/run_normal_comparison.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/run_structural_edges.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/structural_edges.py": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/evaluated_source/visual/runtime/test/structural_edges.py",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0000_comparison.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0000_comparison.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0000_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0000_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0001_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0001_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0002_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0002_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0003_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0003_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0004_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0004_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0005_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0005_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0006_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0006_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0007_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0007_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0008_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0008_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0009_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0009_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0010_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0010_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0011_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0011_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0012_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0012_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0013_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0013_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0014_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0014_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0015_comparison.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0015_comparison.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0015_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0015_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0016_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0016_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0017_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0017_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0018_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0018_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0019_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0019_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0020_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0020_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0021_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0021_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0022_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0022_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0023_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0023_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0024_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0024_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0025_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0025_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0026_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0026_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0027_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0027_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0028_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0028_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0029_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0029_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0030_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0030_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0031_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0031_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0032_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0032_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0033_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0033_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0034_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0034_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0035_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0035_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0036_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0036_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0037_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0037_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0038_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0038_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0039_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0039_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0040_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0040_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0041_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0041_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0042_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0042_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0043_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0043_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0044_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0044_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0045_comparison.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0045_comparison.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0045_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0045_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0046_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0046_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0047_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0047_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0048_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0048_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0049_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0049_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0050_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0050_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0051_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0051_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0052_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0052_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0053_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0053_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0054_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0054_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0055_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0055_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0056_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0056_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0057_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0057_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0058_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0058_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0059_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0059_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0060_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0060_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0061_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0061_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0062_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0062_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0063_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0063_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0064_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0064_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0065_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0065_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0066_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0066_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0067_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0067_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0068_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0068_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0069_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0069_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0070_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0070_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0071_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0071_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0072_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0072_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0073_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0073_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0074_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0074_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0075_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0075_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0076_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0076_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0077_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0077_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0078_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0078_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0079_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0079_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0080_comparison.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0080_comparison.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0080_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0080_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0081_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0081_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0082_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0082_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0083_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0083_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0084_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0084_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0085_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0085_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0086_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0086_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0087_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0087_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0088_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0088_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0089_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0089_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0090_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0090_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0091_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0091_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0092_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0092_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0093_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0093_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0094_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0094_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0095_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0095_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0096_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0096_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0097_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0097_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0098_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0098_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0099_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0099_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0100_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0100_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0101_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0101_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0102_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0102_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0103_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0103_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0104_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0104_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0105_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0105_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0106_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0106_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0107_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0107_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0108_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0108_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0109_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0109_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0110_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0110_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0111_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0111_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0112_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0112_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0113_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0113_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0114_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0114_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0115_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0115_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0116_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0116_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0117_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0117_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0118_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0118_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0119_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0119_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0120_comparison.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0120_comparison.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0120_pairs.npz": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/f0120_pairs.npz",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/implementation.patch": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/implementation.patch",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/preservation_before.json": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/preservation_before.json",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/tradeoffs.png": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/tradeoffs.png",
+      "role": "result"
+    },
+    "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/verification.json": {
+      "source": "visual/results/structural_edges/b622e76deceb419ab9c5aa80a8f8280c/verification.json",
+      "role": "result"
+    },
+    "visual/results/structural_edges/preservation_before.json": {
+      "source": "visual/results/structural_edges/preservation_before.json",
+      "role": "dependency"
+    },
+    "experiments/6eed92be53c64472be8b536f3806ce2d/metadata.json": {
+      "source": "experiments/6eed92be53c64472be8b536f3806ce2d/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/6eed92be53c64472be8b536f3806ce2d/metrics.json": {
+      "source": "experiments/6eed92be53c64472be8b536f3806ce2d/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/6eed92be53c64472be8b536f3806ce2d/config.yaml": {
+      "source": "experiments/6eed92be53c64472be8b536f3806ce2d/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/935a867a2da04ec9972da572af4f6a10/metadata.json": {
+      "source": "experiments/935a867a2da04ec9972da572af4f6a10/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/935a867a2da04ec9972da572af4f6a10/metrics.json": {
+      "source": "experiments/935a867a2da04ec9972da572af4f6a10/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/935a867a2da04ec9972da572af4f6a10/config.yaml": {
+      "source": "experiments/935a867a2da04ec9972da572af4f6a10/config.yaml",
+      "role": "dependency"
+    },
+    "docs/visual-graph-integration/02c_structural_edges.md": {
+      "source": "docs/visual-graph-integration/02c_structural_edges.md",
+      "role": "result"
+    }
+  }
+}
