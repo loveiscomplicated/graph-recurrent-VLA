@@ -204,6 +204,7 @@ tempCodeRunnerFile.py
 .ruff_cache/
 
 # Prototype outputs
+# Includes recurrent fixtures, datasets, smoke checkpoints, evaluation and timing artifacts.
 outputs/
 videos/
 *.mp4

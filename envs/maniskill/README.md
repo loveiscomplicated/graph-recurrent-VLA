@@ -1,6 +1,6 @@
 # ManiSkill `PegInsertionSide-v1`
 
-## Runtime checked on this host
+## Earlier CPU runtime records
 
 Python 3.11, ManiSkill 3.0.1, SAPIEN 3.0.3, Gymnasium 1.3.0, PyTorch 2.14.1,
 Pinocchio package `pin` 4.1.0. CUDA is unavailable. With `device="cpu"`, the
@@ -34,7 +34,7 @@ finally:
 ```
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
-`render_mode`, and `sim_backend`. `seed` resets one episode during creation;
+`render_mode`, `sim_backend`, and optional `render_backend`. `seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to
 `physx_cuda`. Explicit `sim_backend` must agree with `device`. On this installed
@@ -178,3 +178,12 @@ team work.
 Reference: [ManiSkill observation modes](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/observation.html),
 [controllers](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/controllers.html),
 and [camera sensors](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/sensors.html).
+
+## Explicit render backend
+
+`make_peg_insertion_env(..., render_backend="none")` forwards ManiSkill's
+render backend selection for state-only simulation. Omitting this argument
+preserves the CPU `render_backend="cpu"` default and ManiSkill's CUDA default.
+Rendering images requires a rendering backend. The RTX 3090 validation uses
+`physx_cuda`, `render_backend="none"`, and batched raw GT; CPU and GPU renderer
+checks run in separate processes because SAPIEN selects its render device globally.

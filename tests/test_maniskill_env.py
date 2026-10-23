@@ -17,6 +17,12 @@ class FactoryBackendTest(unittest.TestCase):
         self.assertEqual(make.call_args.kwargs["render_backend"], "cpu")
 
 
+    def test_explicit_no_renderer(self):
+        with patch("envs.maniskill.peg_insertion.gym.make") as make:
+            make_peg_insertion_env(render_backend="none")
+        self.assertEqual(make.call_args.kwargs["render_backend"], "none")
+
+
 class ManiSkillEnvironmentTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

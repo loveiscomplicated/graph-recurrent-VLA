@@ -187,5 +187,25 @@ class SimulatorTest(unittest.TestCase):
             self.assertEqual(len(kept[0]["obs"]["tcp_pose"]), len(actions))
 
 
+class TensorStageReferenceTest(unittest.TestCase):
+    def test_tensor_snapshot_matches_legacy_cpu_geometry(self):
+        from recurrent.stages import snapshot
+        from recurrent.gpu_eval import raw_tensor, stage_snapshots
+        env = env_or_skip()
+        try:
+            env.reset(seed=2000)
+            for _ in range(8):
+                reference = snapshot(env)
+                actual = stage_snapshots(env, raw_tensor(env))[0]
+                for key in reference:
+                    if isinstance(reference[key], bool):
+                        self.assertEqual(actual[key], reference[key], key)
+                    else:
+                        self.assertAlmostEqual(actual[key], reference[key], places=5, msg=key)
+                env.step(torch.zeros(1, 7))
+        finally:
+            env.close()
+
+
 if __name__ == "__main__":
     unittest.main()

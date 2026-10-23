@@ -58,7 +58,9 @@ class StageTracker:
         self.t = 0
 
     def update(self, env, info=None) -> dict:
-        s = snapshot(env)
+        return self.update_snapshot(snapshot(env), is_success(info) if info is not None else False)
+
+    def update_snapshot(self, s, success=False):
         self.run = self.run + 1 if s["grasped"] else 0
         self.acquisition |= self.run >= THRESHOLDS["retention_steps"]
         moved = self.run >= THRESHOLDS["retention_steps"] and s["lifted"]
@@ -72,8 +74,7 @@ class StageTracker:
         self.last_grasped = s["grasped"]
         self.min_transverse = min(self.min_transverse, s["transverse"])
         self.max_progress = max(self.max_progress, s["progress"])
-        if info is not None:
-            self.success |= is_success(info)
+        self.success |= bool(success)
         self.t += 1
         return s
 

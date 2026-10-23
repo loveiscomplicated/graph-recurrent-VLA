@@ -38,6 +38,7 @@ def make_peg_insertion_env(
     control_mode: str | None = None,
     render_mode: str | None = None,
     sim_backend: str | None = None,
+    render_backend: str | None = None,
 ):
     """Make the task; ``seed`` also resets its first user episode.
 
@@ -68,7 +69,9 @@ def make_peg_insertion_env(
     # Otherwise ManiSkill's default GPU renderer asks SAPIEN for cuda:0,
     # which may have no matching Vulkan physical device (e.g. lavapipe).
     # SAPIEN 3.0 cannot switch render devices within a process.
-    if device == "cpu":
+    if render_backend is not None:
+        kwargs["render_backend"] = render_backend
+    elif device == "cpu":
         kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode

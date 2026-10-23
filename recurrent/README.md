@@ -1,6 +1,6 @@
 # Recurrent 팀 prototype: 관측 손상 조건에서 controller 7종 비교
 
-Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)와 다른 팀 코드는 수정하지 않았습니다.
+Recurrent 팀 코드입니다. 공용 simulator는 환경 생성과 raw GT만 제공하며, 모델·손상·평가는 이 디렉터리에서 관리합니다.
 
 ## 무엇을 확인하는가
 
@@ -76,7 +76,7 @@ shard 0만 공통 expert 평가를 실행하며, 분할 실행에서는 리포�
 
 중단된 shard는 같은 index/count 명령으로 다시 실행하면 완료된 학습과 평가는 건너뜁니다. 실행 중인 동일 shard를 중복으로 띄우지 마세요. `run_all.sh`는 데모 수집을 포함한 단일 실행 경로이므로 분할 실행에는 위 명령을 사용합니다. 평가 worker는 GPU가 아니라 CPU를 사용하므로 `--eval-workers` 합계를 서버 CPU 용량에 맞추세요.
 
-현재 Recurrent 수집·평가의 물리 연산은 `physx_cpu`입니다. ManiSkill의 GPU 물리 연산 가능 여부를 서버에서 별도 확인하려면 `CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m recurrent.probe_gpu_sim --num-envs 16`을 실행합니다. 이 probe는 영상 렌더링 없이 16개 상태 관측 환경의 reset, GT, step을 확인합니다. 성공해도 현재 단일 환경용 expert, 관측 손상, 실패 단계 계산, 정책 상태를 배치 방식으로 바꾸고 결과를 비교 검증하기 전에는 본 평가가 GPU로 전환되지 않습니다. 이 호스트에서는 CUDA가 없어 GPU probe를 실행하지 못했습니다.
+기본 Recurrent 수집·평가의 물리 연산은 `physx_cpu`입니다. 학습된 정책의 GPU 배치 평가는 아래 별도 절을 따릅니다. ManiSkill의 GPU 물리 연산 가능 여부를 서버에서 별도 확인하려면 `CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m recurrent.probe_gpu_sim --num-envs 16`을 실행합니다. 이 probe는 영상 렌더링 없이 16개 상태 관측 환경의 reset, GT, step을 확인합니다. 성공해도 현재 단일 환경용 expert, 관측 손상, 실패 단계 계산, 정책 상태를 배치 방식으로 바꾸고 결과를 비교 검증하기 전에는 본 평가가 GPU로 전환되지 않습니다. RTX 3090의 실제 정책 평가 검증은 아래 GPU 배치 평가 절과 검증 보고서를 따릅니다.
 
 리포트 폴더에는 `report.md`와 그림, 표 파일이 생깁니다.
 
@@ -127,8 +127,63 @@ sh recurrent/run_all.sh official
 
 공식 데모를 내려받고, 공식 replay 도구로 `pd_ee_delta_pose`로 변환한 뒤, 매 step 상태를 복원해 같은 형식으로 저장합니다. 변환 설정은 Graph 팀 `graph/prototype/replay_demos.py`와 같습니다. ManiSkill 3.0.1 replay가 첫 상태를 잘못 저장하는 문제는 원본 H5의 첫 상태로 바로잡습니다. Graph 팀이 이미 변환한 파일이 있으면 `python -m recurrent.official_demos --converted <변환된 h5> --source <원본 h5>`로 같은 파일을 쓸 수 있습니다. Graph v2~v4에서는 공식 데모로 학습한 BC가 full-task 성공을 내지 못했으므로, 이 실험은 직접 만든 expert 데모의 결과와 비교하는 용도입니다.
 
-## 실행 확인 범위
+## 기존 CPU 실행 확인 기록
 
 - Linux CPU(2코어), Python 3.11, ManiSkill 3.0.1, SAPIEN 3.0.3, torch 2.14.1, Vulkan은 lavapipe에서 `setup_server.sh`, 단위 테스트 9개, `run_all.sh smoke` 전체를 실행했습니다.
 - 공식 데모 변환 경로는 직접 녹화한 같은 형식의 H5로 확인했습니다(공식 replay 후 상태 복원 오차 1.2e-7). 실제 공식 데모 다운로드는 이 환경에서 막혀 있어 실행하지 못했습니다.
 - CUDA 학습, NVIDIA Vulkan, Vessl과 Vast.ai 환경, W&B online 기록은 실행하지 않았습니다.
+
+## GPU 배치 평가 검증
+
+학습된 정책만 `--sim-backend physx_cuda --num-envs N`으로 평가할 수 있습니다.
+기본값은 기존 CPU·단일 환경이며, expert GPU 평가와 CPU 복수 환경은 오류입니다.
+GPU 경로는 horizon 250, state 관측, `pd_ee_delta_pose`, 렌더링 비활성화를
+사용하며 CUDA 실패를 CPU로 대체하지 않습니다. 모델·학습·정규화는 그대로입니다.
+
+먼저 **별도 CPU 프로세스**에서 기존 reset 결과를 저장합니다. 단일 환경은
+reset마다 형상을 재생성하지만 다중 환경의 기본값은 그렇지 않으므로 GPU는
+slot별 seed와 `reconfigure=True`로 형상을 생성하고 simulator state dict를 복원합니다.
+매 reset에서 형상, hole offset, 관절·actor·TCP·hole GT를 atol 1e-5로 검사합니다.
+Quaternion은 부호 동치를 적용합니다. 아래 명령은 각각 별도 프로세스입니다.
+
+```bash
+.venv/bin/python -m recurrent.initial_states --out outputs/recurrent/gpu_validation/initial.pt
+.venv/bin/python -m recurrent.evaluate --ckpt outputs/recurrent/gpu_validation/gru_none_s0/best.pt --sim-backend physx_cuda --num-envs 16 --initial-states outputs/recurrent/gpu_validation/initial.pt --conditions normal
+```
+
+GPU 기본 출력은 `outputs/recurrent/eval_gpu/`입니다. 동기식 배치이며 완료된
+slot의 정책·손상·통계 상태는 고정하고 다음 배치까지 slot을 재사용하지 않습니다.
+마지막 배치는 남은 episode 수로 생성합니다. GT·관측 기하·정규화·action은
+GPU tensor로 유지합니다. 기존 episode별 NumPy RNG draw 순서를 보존하기 위해
+작은 noise 계수와 이벤트 정보만 CPU에서 전달합니다.
+
+완료 키는 condition·level·seed입니다. `.identity.json`이 checkpoint 내용,
+backend, 조건·손상 설정, horizon, seed 범위, fixture hash를 검증합니다.
+배치 크기는 identity에 포함하지 않아 재개 시 변경할 수 있습니다. identity 없는
+기존 JSONL에는 이어 쓰지 않고 새 출력 경로를 요구합니다. 동시 프로세스가
+같은 출력 경로에 쓰는 것은 지원하지 않습니다.
+
+GPU episode의 `mean_infer_ms`와 해당 summary는 null이며, 배치 추론 시간은
+summary의 `performance.batches[].batch_infer_ms`에 따로 기록합니다. 이를
+배치 크기로 나눈 값을 단일 추론 지연으로 해석하지 마세요. `active_env_steps`는
+완료 전 유효 step 합계, `physical_env_steps`는 완료 slot을 포함한 물리 step 수입니다.
+Torch peak VRAM은 PhysX의 메모리를 포함하지 않습니다. 검증 runner는 별도로
+NVML 장치 전체 peak VRAM을 0.1초 간격으로 측정합니다.
+
+`python -m recurrent.validate_gpu`는 준비된 검증용 MLP·GRU checkpoint와 fixture를
+사용해 요청된 CPU/GPU 16/GPU 30 비교 및 GRU clean/normal 3회 측정을 실행합니다.
+CPU 정확성 작업은 독립 프로세스 6개로 실행하며 성능 측정은 순차 실행합니다.
+원격 게시와 84개 본 실험은 실행하지 않습니다. 12개 데모·20 update smoke checkpoint의
+성공률은 과학적 성능 비교가 아니라 구현 검증용입니다.
+
+검사도 CPU/GPU 프로세스를 분리합니다.
+
+```bash
+.venv/bin/python -m unittest recurrent.tests.test_recurrent -v
+.venv/bin/python -m unittest tests.test_experiment_logger tests.test_experiment_artifacts -v
+.venv/bin/python -m unittest tests.test_maniskill_env tests.test_graph_gt_nodes -v
+.venv/bin/python -m unittest recurrent.tests.test_gpu_eval -v
+.venv/bin/python -m unittest recurrent.tests.test_gpu_sim -v
+```
+
+실측 비교 보고서: [RTX 3090 GPU 평가 검증](../docs/recurrent_gpu_evaluation.md).
