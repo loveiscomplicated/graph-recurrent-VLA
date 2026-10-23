@@ -81,6 +81,10 @@ def collect(num_demos, start_seed, noise, frac, workers, horizon, log=print):
         _init(horizon)
         pool = None
     else:
+        # Fail in the caller before Pool repeatedly respawns workers whose
+        # initializer cannot create the simulator.
+        probe = make_env(horizon)
+        probe.close()
         pool = mp.get_context("spawn").Pool(workers, initializer=_init, initargs=(horizon,))
     try:
         while len(kept) < num_demos:

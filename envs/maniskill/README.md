@@ -9,10 +9,12 @@ live `task.backend` reported `sim_backend="physx_cpu"`,
 SAPIEN + PhysX, not MuJoCo. The registered task has a 100-step time limit.
 
 Linux Reach BC validation also executed this shared factory with Torch 2.8.0+cpu
-on Vast.ai 55512455. CPU-only Torch now consistently selects `sapien_cpu` host
-image readback, including for state-only factory environments, so later RGB
-environments do not attempt ATen CUDA readback. Vulkan still uses the available
-graphics device. Shared CPU/RGB tests passed (8 tests including GT nodes).
+on Vast.ai 55512455. CPU simulation now always selects `sapien_cpu` host image
+readback, including when Torch can see CUDA; this avoids requesting a Vulkan
+`cuda:0` renderer when only a CPU Vulkan device such as lavapipe is available.
+Vulkan still needs a supported physical device. Shared CPU/RGB tests passed
+on the CPU-only host (8 tests including GT nodes). The CUDA-visible Linux path
+still needs verification on the target server.
 The Graph subtask source wrapper separately preserves its recorded environment
 configuration; SAPIEN 3.0.3 source-render and host-readback regression suites must
 run in separate processes because render-device selection is process-global.

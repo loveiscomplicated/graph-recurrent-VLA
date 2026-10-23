@@ -47,11 +47,15 @@ EOF
 fi
 
 try_vk() {
-  env ${1:+VK_ICD_FILENAMES="$1"} CUDA_VISIBLE_DEVICES="" "$VPY" -c "from recurrent.common import make_env; e = make_env(); e.reset(seed=0); e.close()" >/dev/null 2>&1
+  if [ -n "$1" ]; then
+    VK_ICD_FILENAMES="$1" "$VPY" -c "from recurrent.common import make_env; e = make_env(); e.reset(seed=0); e.close()" >/dev/null 2>&1
+  else
+    "$VPY" -c "from recurrent.common import make_env; e = make_env(); e.reset(seed=0); e.close()" >/dev/null 2>&1
+  fi
 }
 
 FOUND=""
-for c in "${VK_ICD_FILENAMES:-}" /etc/vulkan/icd.d/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json /usr/share/vulkan/icd.d/lvp_icd.json; do
+for c in "${VK_ICD_FILENAMES:-}" /usr/share/vulkan/icd.d/lvp_icd.json /etc/vulkan/icd.d/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json; do
   if [ -n "$c" ] && [ -f "$c" ] && try_vk "$c"; then FOUND="$c"; break; fi
 done
 if [ -z "$FOUND" ] && try_vk ""; then FOUND="default"; fi
@@ -82,5 +86,14 @@ else
   echo "wandb credentials missing, runs are recorded offline under experiments/"
 fi
 . outputs/recurrent/env.sh
-"$VPY" -m unittest discover -s recurrent/tests -t . 2>&1 | tail -3
+"$VPY" - <<'EOF'
+import unittest
+
+suite = unittest.defaultTestLoader.discover("recurrent/tests", top_level_dir=".")
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+if not result.wasSuccessful() or result.skipped:
+    for test, reason in result.skipped:
+        print(f"SKIPPED {test}: {reason}")
+    raise SystemExit(1)
+EOF
 echo "setup PASS"

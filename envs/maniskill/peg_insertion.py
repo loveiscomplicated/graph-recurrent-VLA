@@ -64,11 +64,11 @@ def make_peg_insertion_env(
         render_mode=render_mode,
         sim_backend=backend,
     )
-    # SAPIEN's GPU readback calls ATen CUDA even with CPU physics. CPU-only
-    # Torch needs host readback for camera observations and render() images.
-    # Use one readback backend for all environments in the process: SAPIEN 3.0
-    # cannot switch render devices after a state-only renderer was initialized.
-    if not torch.cuda.is_available():
+    # CPU simulation uses host image readback even when Torch can see CUDA.
+    # Otherwise ManiSkill's default GPU renderer asks SAPIEN for cuda:0,
+    # which may have no matching Vulkan physical device (e.g. lavapipe).
+    # SAPIEN 3.0 cannot switch render devices within a process.
+    if device == "cpu":
         kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode

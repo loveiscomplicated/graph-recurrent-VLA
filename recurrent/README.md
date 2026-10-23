@@ -29,8 +29,8 @@ sh recurrent/run_all.sh
 1. `.venv`가 없으면 Python 3.11 venv를 만듭니다 (`python3.11`이 없으면 `uv`로 받습니다).
 2. `requirements.txt`, `requirements-tracking.txt`, `recurrent/requirements.txt`를 설치합니다.
 3. GPU가 있는데 torch가 CUDA를 못 쓰면, `nvidia-smi`의 CUDA 버전에 맞는 torch를 다시 설치합니다.
-4. 시뮬레이터가 뜨는 Vulkan 드라이버를 찾아 `outputs/recurrent/env.sh`에 적습니다. NVIDIA 드라이버(`/etc/vulkan/icd.d/nvidia_icd.json` 등)를 먼저 시도하고, 안 되면 CPU용 `mesa-vulkan-drivers`(lavapipe)를 설치해 씁니다. 상태 관측만 쓰므로 lavapipe로도 충분합니다.
-5. 단위 테스트를 돌리고 `setup PASS`를 출력합니다.
+4. CUDA가 보이는 상태에서 CPU 시뮬레이터가 뜨는 Vulkan 드라이버를 찾아 `outputs/recurrent/env.sh`에 적습니다. 설치된 lavapipe를 먼저 시도하고, 없거나 실패하면 NVIDIA 드라이버를 시도한 뒤 필요하면 `mesa-vulkan-drivers`를 설치합니다. 상태 관측만 쓰므로 lavapipe로도 충분합니다.
+5. 단위 테스트를 자세히 출력합니다. 테스트가 실패하거나 건너뛰어지면 설정을 실패로 처리하고, 모두 실행되면 `setup PASS`를 출력합니다.
 
 `run_all.sh smoke`는 작은 규모(데모 12개, 학습 20 step, 평가 1 episode)로 전체 과정이 오류 없이 도는지만 봅니다. 성공률은 의미가 없습니다. `run_all.sh`(main)가 본 실험입니다. 중간에 끊겨도 같은 명령을 다시 실행하면 끝난 학습과 평가는 건너뛰고 이어서 합니다.
 

@@ -2,11 +2,13 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import torch
 
 from recurrent.common import RAW_KEYS
+from recurrent.collect import collect as collect_demos
 from recurrent.corruption import Corruptor, level_config
 from recurrent.features import AGE_IDX, FRESH_IDX, OBS_DIM, build_features
 from recurrent.models import REGISTRY, build, num_params
@@ -65,6 +67,15 @@ class ShardTest(unittest.TestCase):
         self.assertEqual([len(shard) for shard in shards], [21] * 4)
         self.assertEqual(set(whole), set().union(*(set(shard) for shard in shards)))
         self.assertEqual(sum(map(len, shards)), len(set(whole)))
+
+
+class CollectionTest(unittest.TestCase):
+    def test_simulator_failure_stops_before_spawning_workers(self):
+        with patch("recurrent.collect.make_env", side_effect=RuntimeError("renderer unavailable")), \
+             patch("recurrent.collect.mp.get_context") as context:
+            with self.assertRaisesRegex(RuntimeError, "renderer unavailable"):
+                collect_demos(12, 0, 0.02, 0.5, 8, 250)
+        context.assert_not_called()
 
 
 class CorruptionTest(unittest.TestCase):
