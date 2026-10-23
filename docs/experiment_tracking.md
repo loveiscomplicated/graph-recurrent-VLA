@@ -21,6 +21,7 @@
 | `graph.subtasks.reach_bc.train` | v2 TOML, 고정 seed, CLI 경로 | training JSON, `checkpoints/best.pt` | 정식 train + 최종 test summary |
 | `graph.prototype.evaluate` | checkpoint config + CLI | offline/latency/선택 rollout JSON | 평가 summary |
 | `graph.prototype.v2.analyze`의 `offline()` | checkpoint config | offline/phase/latency 결과 | 모델별 평가 run |
+| `graph.prototype.low_data` | 고정된 10-episode subset, 3 seeds, parameter matching | v2 train/offline 재사용, 비교 Markdown/JSON | 기존 모델별 run + 공통 Logger의 compare run |
 | `graph.prototype.v2.diagnostics` | CLI, checkpoint config | rollout stages JSON | stage별 평가 summary |
 | `graph.prototype.v3.compare` | candidate/baseline checkpoint + CLI | paired comparison JSON | 비교 평가 run |
 | `graph.prototype.v4.evaluate` | checkpoint config + CLI | offline/cache latency/rollout JSON | 평가 summary |
@@ -36,6 +37,9 @@ Logger가 구현·연결되어 있으며 팀의 기존 JSON writer도 유지된�
 report/figure/video 도구, 기존 JSON을 합치는 v2/v4 compare 등은 자동 run 생성 대상이 아니다.
 v2 analyze의 summary/probes는 모델별 offline 평가와 다른 경로이며 추가 연결 대상이다.
 `run_matrix` 등 launcher가 통합된 train/evaluate 모듈을 실행하면 자식 실행에서 기록된다.
+`v2.analyze --dataset PATH --checkpoint PATH`는 사용자 dataset hash/split을 검사한다.
+Offline 기록은 checkpoint의 실제 seed를 사용하며, low-data 호출은 episode별 지표와
+checkpoint hash도 저장한다. `low_data`의 `plan.json`은 학습 전에 subset과 예산을 고정한다.
 Visual/Recurrent의 미래 entrypoint는 아래 예제로 연결해야 한다. 없는 학습 시스템을
 새로 만들거나 다른 branch의 코드를 통합한 것으로 간주하지 않는다.
 
