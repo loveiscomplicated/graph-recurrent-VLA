@@ -205,7 +205,8 @@ class BatchLifecycleTest(unittest.TestCase):
                 },
                 path,
             )
-            torch.save({}, fixture)
+            from recurrent.tests.test_main_execution import fixture as make_fixture
+            make_fixture(fixture, range(2000, 2005))
             job = [("normal", "none", {})]
             row = {
                 "condition": "normal",
@@ -224,9 +225,13 @@ class BatchLifecycleTest(unittest.TestCase):
                 "alignment": False,
                 "failure_stage": "acquisition",
             }
-            verify_resume(
+            identity = verify_resume(
                 out, path, job, 5, 2000, 250, "corruption.yaml", "physx_cuda", fixture
             )
+            from recurrent.integrity import identity_hash
+            row.update(ckpt=path.parent.name, model="mlp", train_level=None, train_seed=None,
+                       evaluation_identity=identity_hash(identity), sim_backend="physx_cuda",
+                       initial_state_source=identity["initial_states"])
             out.write_text(json.dumps(row) + "\n")
             env = SimpleNamespace(
                 device="cuda",

@@ -11,10 +11,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from matplotlib.colors import LinearSegmentedColormap, to_rgb
 from matplotlib.ticker import FuncFormatter, NullFormatter
 
 from recurrent.common import OUTPUT_ROOT, load_config, resolve
+from recurrent.run_experiments import experiment_jobs, validate_results
 from recurrent.evaluate import wilson
 from recurrent.stages import FAILURE_ORDER
 
@@ -77,20 +79,29 @@ def style():
     })
 
 
-def load_rows(exp: Path):
-    rows = []
-    for f in sorted((exp / "eval").glob("*.jsonl")):
-        rows += [json.loads(l) for l in f.read_text().splitlines() if l.strip()]
-    return rows
+def load_rows(exp: Path, cfg):
+    names = [n for n, _, _, _ in experiment_jobs(cfg)]
+    if cfg["eval"].get("with_expert", True):
+        names.append("expert")
+    return [json.loads(line) for name in names
+            for line in (exp / "eval" / f"{name}.jsonl").read_text().splitlines()]
 
 
-def load_histories(exp: Path):
+def load_histories(exp: Path, cfg):
     out = []
-    for f in sorted((exp / "runs").glob("*/history.json")):
-        h = json.loads(f.read_text())
+    which = cfg["eval"].get("checkpoint", "best")
+    for name, _, _, _ in experiment_jobs(cfg):
+        run = exp / "runs" / name
+        h = json.loads((run / "history.json").read_text())
         c = h["config"]
-        out.append({"name": f.parent.name, "model": c["model"], "level": c["train_level"], "seed": c["seed"],
-                    "history": h["history"], **h["summary"]})
+        checkpoint = torch.load(run / f"{which}.pt", map_location="cpu", weights_only=False)
+        # last.pt stores the history row; best.pt stores unprefixed validation metrics.
+        metrics = checkpoint["val"]
+        mse = metrics.get("action_mse_z", metrics.get("val_action_mse_z"))
+        out.append({"name": name, "model": c["model"], "level": c["train_level"], "seed": c["seed"],
+                    "history": h["history"], **h["summary"], "evaluated_checkpoint": which,
+                    "evaluated_step": checkpoint["step"], "evaluated_val_action_mse_z": mse,
+                    "training_device": c["device"]})
     return out
 
 
@@ -382,7 +393,7 @@ def fig_offline_online(hist, idx, path):
         rs = idx.get((h["model"], h["level"], h["level"], "normal"), [])
         rs = [r for r in rs if r.get("train_seed") == h["seed"]]
         if rs:
-            xs.append(h["final_val_action_mse_z"])
+            xs.append(h["evaluated_val_action_mse_z"])
             ys.append(np.mean([r["success"] for r in rs]))
     if len(xs) < 2:
         return None
@@ -448,15 +459,24 @@ def fmt(v, p=2):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="experiment.yaml")
+    p.add_argument("--sim-backend", choices=["physx_cpu", "physx_cuda"], default=None)
+    p.add_argument("--initial-states", default=None)
     p.add_argument("--latency", default=str(OUTPUT_ROOT / "latency.json"))
     args = p.parse_args()
     cfg = load_config(args.config)
     exp = resolve(cfg["out_dir"])
+    names = experiment_jobs(cfg)
+    first = exp / "eval" / f"{names[0][0]}.identity.json"
+    backend = args.sim_backend or json.loads(first.read_text())["backend"]
+    initial = str(resolve(args.initial_states)) if args.initial_states else None
+    if initial is None and (exp / "initial_states.pt").exists():
+        initial = str(exp / "initial_states.pt")
+    validate_results(cfg, backend, initial)
     out = exp / "report"
     out.mkdir(parents=True, exist_ok=True)
     style()
-    rows = load_rows(exp)
-    hist = load_histories(exp)
+    rows = load_rows(exp, cfg)
+    hist = load_histories(exp, cfg)
     lat_path = resolve(args.latency)
     latency = json.loads(lat_path.read_text()) if lat_path.exists() else None
     present = {r["model"] for r in rows} | {h["model"] for h in hist}
@@ -535,6 +555,11 @@ def render_md(cfg, models, levels, conditions, idx, hist, latency, expert, paire
               f"- 모델: {', '.join(models)}",
               f"- 관측 손상 단계: {', '.join(levels)} (학습과 평가에 같은 단계를 적용)",
               f"- 학습 seed: {', '.join(map(str, seeds))}",
+              f"- 실제 학습 device: {', '.join(sorted({h['training_device'] for h in hist}))}",
+              f"- 정책 평가 physics backend: {', '.join(sorted({r['sim_backend'] for rs in idx.values() for r in rs if r['model'] != 'expert'}))}",
+              f"- Expert 평가 physics backend: {', '.join(sorted({r['sim_backend'] for rs in idx.values() for r in rs if r['model'] == 'expert'})) or '미실행'} (GPU 정책과 CPU expert는 물리 backend가 다를 수 있음)",
+              f"- 초기 상태 출처 (CPU reset fixture의 SHA-256 또는 legacy reset): {', '.join(sorted({r['initial_state_source'] for rs in idx.values() for r in rs}))} (fixture SHA-256 또는 reset 출처)",
+              f"- Offline 오차: 평가에 사용한 `{ev.get('checkpoint', 'best')}.pt`의 validation action MSE",
               f"- 평가: seed {ev['start_seed']}부터 {ev['episodes']}개 배치, horizon {ev.get('horizon', 250)} step, 조건 {', '.join(conditions)}",
               "- 성공 판정: rollout 중 `info['success']`가 한 번이라도 참이면 성공 (Graph 팀 v2 이후 평가와 같은 기준)",
               ""]

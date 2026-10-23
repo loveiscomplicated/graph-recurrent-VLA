@@ -24,6 +24,8 @@ from recurrent.common import (
     versions,
 )
 from recurrent.expert import ScriptedExpert
+from recurrent.execution import writer_lock
+from recurrent.integrity import validate_demos
 
 _ENV = None
 
@@ -135,8 +137,15 @@ def main():
     args = p.parse_args()
 
     out = resolve(args.out)
+    with writer_lock(out.with_name(out.name + ".lock")):
+        collect_output(args, out)
+
+
+def collect_output(args, out):
     if out.exists() and not args.force:
-        print(f"skip {out} exists")
+        validate_demos(out, num_demos=args.num_demos, start_seed=args.start_seed,
+                       noise=args.noise, frac=args.perturb_frac, horizon=args.horizon)
+        print(f"validated existing demos {out}")
         return
     t0 = time.time()
     kept, tried = collect(args.num_demos, args.start_seed, args.noise, args.perturb_frac, args.workers, args.horizon)
@@ -149,6 +158,8 @@ def main():
         "shift_plans": {str(r["seed"]): r["plan"] for r in kept},
     }
     save(out, kept, meta)
+    validate_demos(out, num_demos=args.num_demos, start_seed=args.start_seed,
+                   noise=args.noise, frac=args.perturb_frac, horizon=args.horizon)
     print(f"expert success {len(kept)}/{tried}")
     print(f"saved {out} frames {sum(len(r['act']) for r in kept)} time {time.time() - t0:.0f}s")
 

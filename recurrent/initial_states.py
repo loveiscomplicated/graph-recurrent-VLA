@@ -8,7 +8,9 @@ from pathlib import Path
 import torch
 
 from envs.maniskill import get_gt_state
-from recurrent.common import make_env, versions
+from recurrent.common import make_env, versions, environment_record, HORIZON
+from recurrent.execution import writer_lock
+from recurrent.integrity import package_versions
 
 
 def tree_map(fn, obj):
@@ -19,11 +21,56 @@ def tree_map(fn, obj):
     )
 
 
-def collect(path, seeds):
+def validate(path, seeds, horizon=HORIZON):
+    seeds = list(seeds)
+    fixtures = torch.load(path, map_location="cpu", weights_only=False)
+    if (fixtures.get("source") != "legacy physx_cpu reset(seed)"
+            or fixtures.get("environment") != environment_record(horizon)
+            or fixtures.get("seeds") != list(seeds)
+            or set(fixtures.get("episodes", {})) != set(seeds)
+            or any(fixtures.get("versions", {}).get(k) != v for k, v in package_versions().items())):
+        raise ValueError(f"CPU fixture seed/environment/package identity mismatch: {path}")
+    required = {"qpos": 9, "qvel": 9, "ee_pose": 7, "left_finger_pose": 7,
+                "right_finger_pose": 7, "left_fingertip_pos": 3, "right_fingertip_pos": 3,
+                "peg_pose": 7, "box_pose": 7, "hole_pose": 7, "gripper_qpos": 2,
+                "peg_half_sizes": 3, "hole_radius": None, "success": None}
+    for entry in fixtures["episodes"].values():
+        if set(entry) != {"gt", "state", "hole_offset"} or not entry["state"]:
+            raise ValueError("Invalid fixture state")
+        for key, dim in required.items():
+            tensor = entry["gt"][key]
+            shape = (1, dim) if dim is not None else (1,)
+            if tensor.shape != shape or not torch.isfinite(tensor).all():
+                raise ValueError(f"Invalid fixture GT {key}")
+        if entry["hole_offset"].shape != (1, 7):
+            raise ValueError("Invalid fixture hole offset")
+        def check(tensor):
+            if not isinstance(tensor, torch.Tensor) or tensor.shape[0] != 1 or not torch.isfinite(tensor).all():
+                raise ValueError("Invalid fixture tensor")
+            return tensor
+        tree_map(check, entry["state"])
+        check(entry["hole_offset"])
+    return fixtures
+
+
+def collect(path, seeds, horizon=HORIZON):
+    seeds = list(seeds)
+    path = Path(path)
+    with writer_lock(path.with_name(path.name + ".lock")):
+        if path.exists():
+            validate(path, seeds, horizon)
+            return
+        _collect(path, seeds, horizon)
+        validate(path, seeds, horizon)
+
+
+def _collect(path, seeds, horizon):
     start = time.perf_counter()
-    env = make_env()
+    env = make_env(horizon)
     states = {}
     try:
+        if env.unwrapped.backend.sim_backend != "physx_cpu" or str(env.unwrapped.device) != "cpu":
+            raise RuntimeError("Fixture collection requires actual CPU physics")
         for seed in seeds:
             env.reset(seed=seed)
             task = env.unwrapped
@@ -40,15 +87,19 @@ def collect(path, seeds):
     finally:
         env.close()
     Path(path).parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(path).with_suffix(".tmp.pt")
     torch.save(
         {
             "versions": versions(),
+            "environment": environment_record(horizon),
+            "seeds": seeds,
             "source": "legacy physx_cpu reset(seed)",
             "collection_s": time.perf_counter() - start,
             "episodes": states,
         },
-        path,
+        temporary,
     )
+    temporary.replace(path)
 
 
 def restore(env, fixtures, seeds):
@@ -112,5 +163,6 @@ if __name__ == "__main__":
     p.add_argument("--out", required=True)
     p.add_argument("--start-seed", type=int, default=2000)
     p.add_argument("--episodes", type=int, default=30)
+    p.add_argument("--horizon", type=int, default=HORIZON)
     a = p.parse_args()
-    collect(a.out, range(a.start_seed, a.start_seed + a.episodes))
+    collect(a.out, range(a.start_seed, a.start_seed + a.episodes), a.horizon)

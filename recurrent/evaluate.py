@@ -29,6 +29,9 @@ from recurrent.features import build_features
 from recurrent.models import build
 from recurrent.stages import FAILURE_ORDER, THRESHOLDS, StageTracker
 from recurrent.train import normalize_obs
+from recurrent.execution import writer_lock
+from recurrent.integrity import (bind_identity, canonical, identity_hash, read_eval_rows,
+                                 evaluation_complete, finish_evaluation, package_versions)
 
 LEVEL_INDEX = {"none": 0, "low": 1, "mid": 2, "high": 3}
 
@@ -252,6 +255,14 @@ def evaluate(
             num_envs,
             initial_states,
         )
+    with writer_lock(out_path.with_suffix(".writer.lock")):
+        return evaluate_cpu(ckpt, jobs, episodes, start_seed, horizon, out_path, name,
+                            corruption, log, initial_states)
+
+
+def evaluate_cpu(ckpt, jobs, episodes, start_seed, horizon, out_path, name,
+                 corruption, log, initial_states):
+    sim_backend = "physx_cpu"
     torch.set_num_threads(1)
     policy = ExpertPolicy() if ckpt == "expert" else LearnedPolicy(ckpt)
     meta = policy.ckpt or {}
@@ -263,6 +274,7 @@ def evaluate(
         "train_seed": meta.get("seed"),
         "params": meta.get("params"),
         "data_source": meta.get("data_source"),
+        "training_device": meta.get("config", {}).get("device"),
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     identity = verify_resume(
@@ -276,6 +288,10 @@ def evaluate(
         sim_backend,
         initial_states,
     )
+    if evaluation_complete(out_path, identity):
+        return json.loads(out_path.with_suffix(".summary.json").read_text())["summary"]
+    base.update(evaluation_identity=identity_hash(identity), sim_backend=sim_backend,
+                initial_state_source=identity["initial_states"])
     fixtures = (
         torch.load(initial_states, weights_only=False) if initial_states else None
     )
@@ -293,6 +309,9 @@ def evaluate(
     creation_start = time.perf_counter()
     env = make_env(horizon)
     creation_s = time.perf_counter() - creation_start
+    if env.unwrapped.backend.sim_backend != sim_backend:
+        env.close()
+        raise RuntimeError("Actual CPU physics backend differs from requested backend")
     t_start = time.time()
     save_s = 0.0
     with experiment_logger(
@@ -344,8 +363,7 @@ def evaluate(
         rows = [json.loads(l) for l in out_path.read_text().splitlines() if l.strip()]
         summary = summarize(rows)
         summary_path = out_path.with_suffix(".summary.json")
-        summary_path.write_text(
-            json.dumps(
+        finish_evaluation(out_path, identity,
                 {
                     **base,
                     "summary": summary,
@@ -361,50 +379,55 @@ def evaluate(
                         / (time.time() - t_start + creation_s),
                     },
                 },
-                indent=2,
-            )
         )
         logger.log({"eval": {k.replace("/", "_"): s for k, s in summary.items()}})
         logger.link_output(out_path, kind="metrics")
         logger.link_output(summary_path, kind="metrics")
+        logger.link_output(out_path.with_suffix(".identity.json"), kind="metrics")
+        logger.link_output(out_path.with_suffix(".complete.json"), kind="metrics")
     return summary
 
 
-def verify_resume(
-    path, ckpt, jobs, episodes, seed, horizon, corruption, backend, fixtures
-):
+def evaluation_identity(ckpt, jobs, episodes, seed, horizon, corruption, backend, fixtures):
     from recurrent.common import sha256
-
-    identity = {
+    if episodes < 1 or not jobs:
+        raise ValueError("Evaluation requires positive episodes and nonempty jobs")
+    if len({(n, l) for n, l, _ in jobs}) != len(jobs):
+        raise ValueError("Duplicate evaluation jobs")
+    if fixtures:
+        from recurrent.initial_states import validate
+        validate(fixtures, range(seed, seed + episodes), horizon)
+    return canonical({
+        "schema": 2,
         "checkpoint": "expert" if ckpt == "expert" else sha256(ckpt),
-        "jobs": jobs,
-        "episodes": episodes,
-        "start_seed": seed,
-        "horizon": horizon,
+        "jobs": jobs, "episodes": episodes, "start_seed": seed, "horizon": horizon,
         "corruption": level_config("none", corruption),
         "corruption_levels": {l: level_config(l, corruption) for _, l, _ in jobs},
         "backend": backend,
         "initial_states": sha256(fixtures) if fixtures else "legacy reset(seed)",
-        "settings": {
-            "stage_thresholds": THRESHOLDS,
-            "control_mode": "pd_ee_delta_pose",
-            "obs_mode": "state",
-            "render_backend": "none" if backend == "physx_cuda" else "sapien_cpu",
-        },
-    }
-    identity = json.loads(json.dumps(identity))
-    target = path.with_suffix(".identity.json")
-    if path.exists() and path.stat().st_size and not target.exists():
-        raise ValueError(
-            "Existing evaluation has no resume identity; choose a new output"
-        )
-    if target.exists() and json.loads(target.read_text()) != identity:
-        raise ValueError("Evaluation resume identity mismatch")
-    target.write_text(json.dumps(identity, indent=2))
+        "versions": package_versions(),
+        "settings": {"stage_thresholds": THRESHOLDS, "control_mode": "pd_ee_delta_pose",
+                     "obs_mode": "state", "render_backend": "none" if backend == "physx_cuda" else "sapien_cpu"},
+    })
+
+
+def verify_resume(path, ckpt, jobs, episodes, seed, horizon, corruption, backend, fixtures):
+    identity = evaluation_identity(ckpt, jobs, episodes, seed, horizon, corruption, backend, fixtures)
+    bind_identity(path.with_suffix(".identity.json"), identity,
+                  existing=(path, path.with_suffix(".summary.json"), path.with_suffix(".complete.json")))
+    # Validate all records before the caller opens its append stream.
+    evaluation_complete(path, identity, repair=True)
     return identity
 
 
-def evaluate_gpu(
+def evaluate_gpu(ckpt, jobs, episodes, start_seed, horizon, out_path, name, corruption,
+                 log, num_envs, initial_states):
+    with writer_lock(out_path.with_suffix(".writer.lock")):
+        return _evaluate_gpu(ckpt, jobs, episodes, start_seed, horizon, out_path, name,
+                             corruption, log, num_envs, initial_states)
+
+
+def _evaluate_gpu(
     ckpt,
     jobs,
     episodes,
@@ -438,6 +461,8 @@ def evaluate_gpu(
         "physx_cuda",
         initial_states,
     )
+    if evaluation_complete(out_path, identity):
+        return json.loads(out_path.with_suffix(".summary.json").read_text())["summary"]
     fixtures = torch.load(initial_states, weights_only=False)
     learned = LearnedPolicy(ckpt)
     policy = TensorPolicy(learned, "cuda")
@@ -446,10 +471,14 @@ def evaluate_gpu(
     base = {
         "ckpt": name,
         "model": learned.name,
+        "evaluation_identity": identity_hash(identity),
+        "sim_backend": "physx_cuda",
+        "initial_state_source": identity["initial_states"],
         "train_level": meta.get("train_level"),
         "train_seed": meta.get("seed"),
         "params": meta.get("params"),
         "data_source": meta.get("data_source"),
+        "training_device": meta.get("config", {}).get("device"),
     }
     done = done_keys(out_path)
     timings = []
@@ -491,6 +520,8 @@ def evaluate_gpu(
                                 horizon,
                             )
                             creation_s += time.perf_counter() - tick
+                            if env.unwrapped.backend.sim_backend != "physx_cuda":
+                                raise RuntimeError("Actual GPU physics backend differs from requested backend")
                             size = len(seeds)
                             logger.record(
                                 environment={
@@ -549,12 +580,12 @@ def evaluate_gpu(
         target = out_path.with_suffix(".summary.json")
         if not timings and target.exists():
             perf = json.loads(target.read_text()).get("performance", perf)
-        target.write_text(
-            json.dumps({**base, "summary": summary, "performance": perf}, indent=2)
-        )
+        finish_evaluation(out_path, identity, {**base, "summary": summary, "performance": perf})
         logger.log({"eval": {k.replace("/", "_"): v for k, v in summary.items()}})
         logger.link_output(out_path, kind="metrics")
         logger.link_output(target, kind="metrics")
+        logger.link_output(out_path.with_suffix(".identity.json"), kind="metrics")
+        logger.link_output(out_path.with_suffix(".complete.json"), kind="metrics")
     return summary
 
 

@@ -23,6 +23,8 @@ from recurrent.corruption import corrupt_sequence, level_config
 from recurrent.features import AGE_IDX, FEATURE_LAYOUT, FRESH_IDX, build_features
 from recurrent.models import build, model_config, num_params
 from recurrent.overrides import parse_overrides
+from recurrent.execution import atomic_json, writer_lock
+from recurrent.integrity import training_identity, training_complete, bind_identity, archive_incomplete
 
 STD_FLOOR = 0.01
 CONST_STD = 1e-5
@@ -137,6 +139,18 @@ def pick_device(name):
 
 
 def train(args):
+    out_dir = resolve(args.out_dir or OUTPUT_ROOT / "runs" / f"{args.model}_{args.level}_s{args.seed}")
+    with writer_lock(out_dir / ".writer.lock"):
+        identity = training_identity(args)
+        if training_complete(out_dir, identity):
+            print(f"validated completed training {out_dir}")
+            return out_dir
+        bind_identity(out_dir / "identity.json", identity)
+        archive_incomplete(out_dir)
+        return _train(args, identity)
+
+
+def _train(args, identity):
     torch.manual_seed(args.seed)
     torch.set_num_threads(args.threads)
     rng = np.random.default_rng(args.seed)
@@ -179,6 +193,7 @@ def train(args):
     print(f"model {args.model} level {args.level} seed {args.seed} device {device} train_eps {len(train_eps)} val_eps {len(val_eps)} params {n_params}")
     with experiment_logger(config=config, seed=args.seed, model=args.model, job_type="train") as logger:
         logger.record(
+            training_identity=identity, training_device=str(device),
             dataset=str(data_path),
             dataset_sha256=sha256(data_path),
             environment=environment_record(),
@@ -194,6 +209,7 @@ def train(args):
 
         def payload(step, metrics):
             return {
+                "identity": identity,
                 "kind": args.model,
                 "cfg": model_cfg,
                 "obs_dim": obs_dim,
@@ -229,20 +245,27 @@ def train(args):
                             "val": v, "time": {"elapsed_s": elapsed, "steps_per_s": step / max(elapsed, 1e-9)}}, step=step)
                 if v["optimization_loss"] < best[0]:
                     best = (v["optimization_loss"], step)
-                    torch.save(payload(step, v), best_path)
+                    atomic_checkpoint(payload(step, v), best_path)
                 print(f"step {step} loss {loss.item():.4f} val_mse {v['action_mse_z']:.4f} val_bce {v['gripper_bce']:.4f} {elapsed:.0f}s")
         train_time = time.time() - t0
-        torch.save(payload(args.steps, history[-1]), last_path)
+        atomic_checkpoint(payload(args.steps, history[-1]), last_path)
         summary = {"params": n_params, "train_time_s": train_time, "best_step": best[1], "best_val_loss": best[0],
                    "final_val_action_mse_z": history[-1]["val_action_mse_z"], "final_val_command_mse_6d": history[-1]["val_command_mse_6d"]}
         history_path = out_dir / "history.json"
-        history_path.write_text(json.dumps({"config": config, "summary": summary, "history": history}, indent=2))
+        atomic_json(history_path, {"identity": identity, "config": config, "summary": summary, "history": history})
         logger.log({"final": summary}, step=args.steps)
         for path in (best_path, last_path):
             logger.link_output(path, kind="checkpoint")
         logger.link_output(history_path, kind="metrics")
+        logger.link_output(out_dir / "identity.json", kind="metrics")
     print(f"saved {out_dir} best_step {best[1]} time {train_time:.0f}s")
     return out_dir
+
+
+def atomic_checkpoint(payload, path):
+    temporary = path.with_suffix(".tmp.pt")
+    torch.save(payload, temporary)
+    temporary.replace(path)
 
 
 def get_parser():
