@@ -53,7 +53,7 @@ W&B 인증 파일(`/root/.secrets/wandb.env`)이 있으면 공용 `ExperimentLog
 서버 설정은 기존 `bash recurrent/setup_server.sh`로 한 번 실행합니다. 그다음
 `bash recurrent/smoke_multi_gpu.sh`로 여러 GPU에서 학습 분산과 GPU 배치 평가를 확인합니다.
 smoke는 새 데모 12개와 CPU 초기 상태 fixture를 만들고, 7개 모델 × 2개 손상 단계의
-14개 학습을 GPU별 shard로 나눠 실행합니다. 학습이 모두 끝나면 같은 `gru_none_s0`
+14개 학습을 GPU별 shard로 나눠 실행합니다. CPU 수집·초기 상태 저장도 NVIDIA Vulkan 초기화에 필요한 첫 번째 선택 GPU를 보이게 유지하며, 물리 연산은 `physx_cpu`를 사용합니다. 학습이 모두 끝나면 같은 `gru_none_s0`
 checkpoint와 seed로 GPU마다 평가 프로세스 하나를 동시에 실행합니다. 기본값은
 GPU당 30개 환경·30 episode이며 8장에서는 총 240 episode입니다.
 

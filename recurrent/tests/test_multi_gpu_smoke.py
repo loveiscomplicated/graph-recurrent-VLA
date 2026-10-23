@@ -116,7 +116,7 @@ class MultiGPUSmokeTest(unittest.TestCase):
         self.assertIn("Multi-GPU smoke PASS", result.stdout)
         cpu = [c for c in calls if c["module"] in ("recurrent.collect", "recurrent.initial_states")]
         self.assertEqual(len(cpu), 2)
-        self.assertTrue(all(c["device"] == "" for c in cpu))
+        self.assertTrue(all(c["device"] == "5" for c in cpu))
         evaluations = [c for c in calls if c["module"] == "recurrent.evaluate"]
         self.assertEqual({c["device"] for c in evaluations}, {"5", "2"})
         outputs = [c["args"][c["args"].index("--out") + 1] for c in evaluations]

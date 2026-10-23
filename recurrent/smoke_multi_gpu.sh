@@ -42,8 +42,9 @@ sed -e "s#^data: .*#data: $DEMO#" \
     recurrent/configs/smoke.yaml > "$CONFIG"
 
 echo "Smoke output: $RUN_ROOT"
-CUDA_VISIBLE_DEVICES="" $PY -m recurrent.collect --num-demos 12 --workers 2 --out "$DEMO"
-CUDA_VISIBLE_DEVICES="" $PY -m recurrent.initial_states \
+# CPU physics still needs a Vulkan device; NVIDIA Vulkan needs CUDA visibility.
+CUDA_VISIBLE_DEVICES="${GPU_IDS[0]}" $PY -m recurrent.collect --num-demos 12 --workers 2 --out "$DEMO"
+CUDA_VISIBLE_DEVICES="${GPU_IDS[0]}" $PY -m recurrent.initial_states \
   --episodes "$EVAL_NUM_ENVS" --start-seed 2000 --out "$INITIAL"
 
 # Keep the 14-job training shard check, without the launcher's CPU evaluation.
