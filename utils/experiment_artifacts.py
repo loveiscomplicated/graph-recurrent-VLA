@@ -252,6 +252,23 @@ def failure_details(exc):
     return dict(error_type=type(exc).__name__, http_status=status, reason=reason)
 
 
+def immutable_additions(items, existing, operation):
+    """Validate immutable local/remote bytes and prepare only missing files.
+
+    Shared by selected-artifact publishing and disaster-recovery snapshots.
+    """
+    additions = []
+    for item in items:
+        if digests(item.source)[1] != item.sha256:
+            raise ValueError('artifact changed during publishing; stop writers and rerun')
+        if item.path in existing:
+            if not remote_matches(item, existing[item.path]):
+                raise ValueError('remote immutable artifact differs; refusing overwrite')
+        else:
+            additions.append(operation(path_in_repo=item.path, path_or_fileobj=item.source))
+    return additions
+
+
 def publish(directory, include, *, repositories=None, dry_run=False, private=False, retries=2):
     """Post-run, per-repository atomic commits. Return errors without transport exceptions."""
     if not 0 <= retries <= 5:
@@ -287,15 +304,7 @@ def publish(directory, include, *, repositories=None, dry_run=False, private=Fal
                     if getattr(getattr(exc, 'response', None), 'status_code', None) != 404:
                         raise
                     existing = {}
-                additions = []
-                for item in plan['files']:
-                    if digests(item.source)[1] != item.sha256:
-                        raise ValueError('artifact changed during publishing; stop writers and rerun')
-                    if item.path in existing:
-                        if not remote_matches(item, existing[item.path]):
-                            raise ValueError('remote immutable artifact differs; refusing overwrite')
-                    else:
-                        additions.append(operation(path_in_repo=item.path, path_or_fileobj=item.source))
+                additions = immutable_additions(plan['files'], existing, operation)
                 revision = info.sha
                 if additions:
                     commit = api.create_commit(repo.repo_id, repo_type=repo.repo_type, operations=additions,

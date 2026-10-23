@@ -325,3 +325,103 @@ HF 인증값을 사용하지 않는 테스트이며 simulator나 GPU를 요구�
 
 이번 Agent 지침 정비의 재검증 결과와 미실행 범위는
 [tracking 검증 기록](experiment_tracking.md#agent-지침-정비-시-재검증-2026-10-15)을 참고한다.
+
+## 장애 복구용 백업과 복원
+
+선택한 모델/영상 게시와 별도로 `python -m tools.backup_experiment`를 사용한다.
+공통 인증, 파일 hash, 원격 동일성 검사와 immutable 게시 helper를 재사용한다.
+기존 `publish_experiment --init-repos`는 계속 기존 두 저장소만 초기화한다.
+백업 전용 기본 목적지는 **private Dataset**
+`Graph-Recurrent-VLA/experiment-backups`이며 명시적 `init-repo`로만 생성한다.
+공개 저장소는 거부하며 공개 범위를 자동 변경하지 않는다.
+
+백업은 중단·실패한 실행도 원본 bytes 그대로 보존한다. JSONL을 JSON으로 해석하거나
+수정하지 않으며 `running` metadata도 바꾸지 않는다. 학습·평가 writer를 먼저 종료한다.
+백업 자체는 실행 상태를 판정하거나 학습 재개를 보장하지 않는다.
+
+### 명시적 선택과 로컬 snapshot
+
+JSON spec 예시(실제 존재하는 run ID로 바꿀 것):
+
+```json
+{
+  "root": "/workspace/graph-recurrent-VLA",
+  "team": "recurrent",
+  "experiment": "main",
+  "include": [
+    "outputs/recurrent/exp/main",
+    "outputs/recurrent/data/expert_demos.npz"
+  ],
+  "run_ids": ["EXISTING_RUN_ID"],
+  "code_snapshot": true
+}
+```
+
+`include`와 `experiments/<run_id>`를 재귀적으로 수집한다. 선택적인 `exclude` 배열은
+루트 기준 정확한 파일·디렉터리 경로를 제외한다. W&B의 `latest-run`과 debug 바로가기는
+명시적으로 제외하고 실제 run 디렉터리의 파일을 보존한다. 경로는 저장소 루트 기준이다.
+`code_snapshot=true`는 현재 존재하는 Git tracked 파일을 추가한다. 필요한 미추적 소스는
+`include`에 명시한다. `.git`, 가상환경, 캐시, 비밀 디렉터리와 `.env`/`*.env`, 잠금·임시 파일은
+제외한다. 심볼릭 링크, 루트 밖 경로, 특수 파일은 거부한다. 알려진 토큰 패턴이 발견되면
+내용을 출력하지 않고 중단한다. 이 검사는 모든 형태의 비밀 탐지를 보장하지 않으므로
+목록을 검토하고 비밀을 포함한 임의 파일·출력 디렉터리를 선택하지 않는다.
+
+```bash
+python -m tools.backup_experiment create --spec backup-spec.json --dry-run
+python -m tools.backup_experiment create --spec backup-spec.json --out outputs/backups/main-snapshot
+python -m tools.backup_experiment verify --directory outputs/backups/main-snapshot --snapshot
+python -m tools.backup_experiment publish --snapshot outputs/backups/main-snapshot --dry-run
+python -m tools.backup_experiment init-repo
+python -m tools.backup_experiment publish --snapshot outputs/backups/main-snapshot
+```
+
+`create --dry-run`는 파일·제외 목록과 원본 파일 용량을 출력하며 쓰기/네트워크 작업을 하지 않는다.
+실제 create는 새 staging 디렉터리에 복사 후 원본·복사본 hash를 검증한다. 환경 및 Git 정보도
+수집하므로 최종 파일 수와 용량은 dry-run보다 늘어난다. 실패한 staging은 완성된 백업으로
+사용하지 않는다. snapshot 완성 후에는 원본 파일 대신 snapshot을 게시한다.
+
+Snapshot에는 원본 상대 경로, 크기, SHA-256, mode, run ID·상태, Git commit과 제외 목록을 담은
+`manifest.json`, `files/` 원본, `provenance/` Git status·binary diff·선택 spec·환경 명세가 있다.
+환경 명세는 현재 **백업 호스트**의 Python·패키지·OS·GPU/driver 정보다. 원본 실행 환경은
+동반 metadata/identity에서 따로 확인한다. 설치된 Torch가 제공하는 CUDA build 정보도 기록한다.
+코드 snapshot도 백업 호스트의 현재 상태이며, 실행 당시 dirty 코드와 동일하다고 보장하지 않는다.
+Git history와 컨테이너 이미지는 포함하지 않는다.
+
+### 원격 구조와 복원
+
+```text
+<team>/<experiment>/<backup_id>/
+  manifest.json
+  files/<original-relative-path>
+  files/__backup_provenance__/<provenance-file>
+```
+
+`backup_id`는 snapshot UUID이며 원래 Logger run ID를 대체하지 않는다. 개별 파일을 한 commit으로
+게시하고 `receipt.json`에 repository, revision, prefix, URL을 보관한다. 게시 중 변경·원격 충돌은
+거부하며 재시도 시 같은 파일을 건너뛴다. `--retries`는 0..5, 기본 2다. 인증/검증/게시 실패는
+exit 1이고 원본 실험과 기존 산출물 게시에는 영향을 주지 않는다.
+
+Receipt의 전체 commit hash와 prefix로 새 디렉터리에 복원한다:
+
+```bash
+python -m tools.backup_experiment restore \
+  --revision FULL_COMMIT_HASH --prefix recurrent/main/BACKUP_ID \
+  --out /tmp/recovered-main
+python -m tools.backup_experiment verify --directory /tmp/recovered-main
+```
+
+복원 대상은 없거나 비어 있어야 한다. 파일은 최대 8개를 병렬 다운로드한다.
+다운로드 파일의 크기·SHA-256을 모두 검증하며
+실패 시 남은 부분 복원은 완료로 취급하지 않는다. 자동 재개/덮어쓰기 대신 새 디렉터리에 재시도한다.
+복원된 `manifest.json`과 `__backup_provenance__/restore-receipt.json`을 검증 기록으로 보관한다.
+검증은 파일 bytes와 존재 여부를 검사하며 실행 성능·모델 품질·환경 재설치를 검증하지 않는다.
+원본 metadata의 절대 경로와 파일 내부 경로는 수정하지 않는다. 다른 루트에서 실행하거나
+공통 publisher를 다시 사용할 때에는 경로를 따로 조정해야 한다. 원본 백업은 유지한다.
+`last.pt`가 optimizer/RNG 상태를 포함하는지는 팀 저장 코드에 달려 있으며 파일 복원이
+학습의 정확한 재개를 의미하지 않는다. 백업 전송만으로 W&B sync나 평가를 실행하지 않는다.
+
+검증:
+
+```bash
+python -m unittest tests.test_experiment_backup tests.test_experiment_artifacts tests.test_experiment_logger -v
+```
