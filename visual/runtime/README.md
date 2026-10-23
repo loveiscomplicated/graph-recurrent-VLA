@@ -47,7 +47,22 @@ with shape `(frames, height, width)` plus `source_frame` indices. Frames before
 initialization and objects never detected have empty masks.
 
 To attach the original RGB-D, intrinsic, CV camera-to-world transform, and TCP
-pose to each mask frame, use the integration prototype's
-[`iter_saved_rgbd` or `attach_rgbd`](../../integration/visual_graph/README.md).
-They align observations through `source_frame` and explicitly convert tracker
-IDs `1/2` to Graph object membership IDs `PEG=0` / `BOX=1`.
+pose to each mask frame, use Visual runtime's
+[`iter_saved_rgbd` or `attach_rgbd`](rgbd.md) in `rgbd.py`.
+The Visual output aligns observations through `source_frame` and explicitly
+converts tracker IDs `1/2` to object membership IDs `PEG=0` / `BOX=1` for Graph.
+
+To evaluate those masks against GT and generate a depth visualization video:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python visual/runtime/test/run_rgbd.py \
+  --input visual/data/step2/ep000.npz \
+  --masks visual/results/runtime_tracking/ep000/masks.npz \
+  --camera base_camera --out visual/results/runtime_rgbd
+```
+
+Each run writes `gt_report.html` and `depth.mp4` under `--out/<run_id>/`.
+The report includes mask IoU/precision/recall, visible-surface distances in mm,
+per-frame values, and explicit missing-observation counts. The video shows RGB,
+depth overlay, object depth, a fixed metre scale, and per-frame error metrics.
+See [metric definitions and limitations](rgbd.md#gt-비교-리포트와-depth-영상).

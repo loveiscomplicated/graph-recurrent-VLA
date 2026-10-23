@@ -11,7 +11,7 @@
 
 | 팀/진입점 (모듈 또는 함수) | 설정 | 기존 기록/체크포인트 | 통합 |
 | --- | --- | --- | --- |
-| Visual (`visual/`) | 구현 없음 | 구현 없음 | 향후 연결 예제 제공 |
+| `visual.runtime.test.run_rgbd` | CLI, 저장 RGB-D episode + tracker masks | GT 비교 HTML, depth MP4 | mask/가시 표면 거리 scalar summary, 입력 hash, 산출물 sidecar |
 | `recurrent.train` | `recurrent/configs/*.yaml` + CLI | `history.json`, `best.pt`, `last.pt` | 학습 step별 train/validation + 최종 summary |
 | `recurrent.evaluate` | checkpoint + CLI (`run_experiments`가 실행) | episode JSONL, summary JSON | 조건·손상 단계별 평가 summary, `source_run_id` 연결 |
 | `graph.prototype.train` | TOML + CLI override | stdout, history/training JSON, `best.pt` | epoch train/validation |

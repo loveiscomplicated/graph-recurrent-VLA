@@ -11,9 +11,9 @@ Example::
 ``video_path`` is a directory of RGB frames accepted by SAM2. Boxes use pixel
 coordinates in ``[x1, y1, x2, y2]`` format and integer object IDs. Returned
 masks are keyed by tracker ID; each value is a boolean Torch tensor with shape
-``[height, width]``. The integration prototype's
-``integration.visual_graph.adapters.attach_rgbd`` joins this iterator to recorded
-RGB-D, camera calibration, and TCP poses, with an explicit tracker-to-Graph ID map.
+``[height, width]``. ``visual.runtime.rgbd.attach_rgbd`` joins this iterator to
+recorded RGB-D, camera calibration, and TCP poses. The Visual output includes
+explicit conversion from tracker IDs to the object IDs consumed by Graph.
 """
 
 from __future__ import annotations
