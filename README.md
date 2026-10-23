@@ -80,3 +80,8 @@ mode, and missing SDK keeps local JSON logging. Vessl optionally loads
 To publish selected checkpoints, rollout videos, and metrics after an experiment,
 see [Hugging Face artifacts](docs/huggingface_artifacts.md). Repository initialization
 and publishing are explicit commands; training only records a local manifest.
+
+To forward a tmux session and selected train/eval log files to Discord, run the
+standalone [Discord notifier](docs/discord_notifications.md) with
+`DISCORD_WEBHOOK_URL` in its environment. It batches output, respects rate-limit
+responses, and keeps local pane capture while delivery is unavailable.
