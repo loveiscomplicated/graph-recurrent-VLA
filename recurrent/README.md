@@ -2,6 +2,10 @@
 
 Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)와 다른 팀 코드는 수정하지 않았습니다.
 
+**완료된 본 실험:** [84개 학습 실행·11,400 episode 재평가 공유 리포트](../docs/reports/recurrent_main_20261023/README.md).
+PNG 그림 12개와 CSV 표 8개, 원본 HF archive와 검증 hash를 포함합니다.
+학습 seed별 편차, clean 교차평가, blackout 실제 발생 수를 함께 확인할 수 있습니다.
+
 ## 무엇을 확인하는가
 
 Graph embedding이 들어오기 전 단계라서, 입력은 simulator GT state로 만든 38차원 vector를 씁니다. 이 입력으로 아래 세 질문에 답하는 실험을 한 번에 돌립니다.
@@ -115,6 +119,14 @@ MAIN_CONFIG=/path/to/main.yaml bash recurrent/run_main_multi_gpu.sh
 일반 실행의 기본 CPU 경로와 GPU 평가의 수치가 같다고 가정하지 않습니다.
 
 ### 중단 후 재실행과 불일치 복구
+
+복원한 학습 결과를 **다른 패키지 환경에서 평가만** 할 때는
+`python -m recurrent.reevaluate --source-root /workspace/recovered-main
+--out-dir outputs/recurrent/reevaluation_main_20261023`으로 검증과 명령 계획만
+생성할 수 있습니다. `--execute`를 추가해야 실제 평가를 시작합니다.
+원본 학습 완료·데이터·설정 검증을 유지하며 새 경로에 현재 환경의 평가 identity를
+기록합니다. 학습이나 원격 게시는 실행하지 않습니다. 정확한 실행·재개 명령과
+서버 smoke 근거는 [복원 checkpoint 재평가](../docs/recurrent_restored_evaluation.md)를 따릅니다.
 
 같은 명령을 다시 실행하면 완료된 결과도 identity를 검사한 뒤 재사용합니다.
 `out_dir/identity.json`, `applied_config.json`에 적용 설정과 데이터 SHA-256을 기록하며,
