@@ -21,3 +21,4 @@ results/v1/**/runs/
 /results/runtime_rgbd/
 /results/runtime_geometry/
 /results/normal_diagnostics/
+/results/normal_comparison/

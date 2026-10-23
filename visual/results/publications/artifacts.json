@@ -6,7 +6,7 @@
     "private": true
   },
   "published_at": "2026-10-23T18:19:47.040976+00:00",
-  "scope": "Visual runtime through Task 02-A only",
+  "scope": "Visual runtime through Task 02-B",
   "verification": "All uploaded objects matched remote hashes; downloaded report ZIPs passed SHA-256 and ZIP integrity checks.",
   "artifacts": [
     {
@@ -78,6 +78,35 @@
       "entrypoint": "visual/results/normal_diagnostics/3640b9bbe403409ba1429e0143e5e049/diagnostics.html",
       "selected_files": 25,
       "selection_file": "normal_files.json"
+    },
+    {
+      "key": "comparison",
+      "title": "Task 02-B — Normal Estimator Comparison",
+      "run_id": "4b1c377ae2044344a4f596b249627d89",
+      "execution_git_commit": "ae5239bb5a0d5ed418ce8e22c434cce5e5893ef4",
+      "execution_git_dirty": true,
+      "publication_commit": "366e9ce4b1510926449fc7c51765ac72849b16c4",
+      "hf_revision": "72cec859c6c3002c7b9953894ad8139203eb3475",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/72cec859c6c3002c7b9953894ad8139203eb3475/visual/4b1c377ae2044344a4f596b249627d89",
+      "remote_manifest_path": "visual/4b1c377ae2044344a4f596b249627d89/manifests/148d9bddc5c4c4d951cd07f985a0fbaca7cdc3be96eb0a7416beaa1dd8f8e2c5/manifest.json",
+      "bundle_path": "visual/4b1c377ae2044344a4f596b249627d89/artifacts/reports/f4591dc0c533ee913b543e6f502d641b581e1d941bf9ddd940c6a656153b33b5/report-f4591dc0c533ee913b543e6f502d641b581e1d941bf9ddd940c6a656153b33b5.zip",
+      "bundle_sha256": "f4591dc0c533ee913b543e6f502d641b581e1d941bf9ddd940c6a656153b33b5",
+      "bundle_bytes": 16198658,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/72cec859c6c3002c7b9953894ad8139203eb3475/visual/4b1c377ae2044344a4f596b249627d89/artifacts/reports/f4591dc0c533ee913b543e6f502d641b581e1d941bf9ddd940c6a656153b33b5/report-f4591dc0c533ee913b543e6f502d641b581e1d941bf9ddd940c6a656153b33b5.zip?download=true",
+      "entrypoint": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.html",
+      "selected_files": 31,
+      "selection_file": "comparison_files.json",
+      "dependency_artifact_keys": [
+        "rgbd"
+      ],
+      "evaluated_source_note": "The evaluated_source/ snapshots match the original evaluation config hashes; the current runner has a plotting-only NaN color change.",
+      "validation": {
+        "runtime_tests_passed": 53,
+        "common_infrastructure_tests_passed": 42,
+        "baseline_array_assertions": 260,
+        "gt_region_assertions": 120
+      }
     }
-  ]
+  ],
+  "updated_at": "2026-10-23T19:27:54.614241+00:00"
 }

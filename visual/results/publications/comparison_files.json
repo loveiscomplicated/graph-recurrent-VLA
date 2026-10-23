@@ -1,0 +1,131 @@
+{
+  "entrypoint": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.html",
+  "publication_commit": "366e9ce4b1510926449fc7c51765ac72849b16c4",
+  "description": "Task 02-B completed Baseline/FD2/FD4/PCA5/PCA7 comparison. Includes all 121-frame metrics, synthetic conditions, five dense visualized frames, verification and evaluated-source snapshots. Current Git source differs from evaluated source only in NaN plotting colors. Original ep000 and masks are in the published RGB-D bundle.",
+  "files": {
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.html": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.html",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.json": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/comparison.json",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/synthetic.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/synthetic.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/tradeoffs.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/tradeoffs.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/verification.json": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/verification.json",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/episode_inventory.json": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/episode_inventory.json",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/preservation_before.json": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/preservation_before.json",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/implementation.patch": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/implementation.patch",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000.npz": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000.npz",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_comparison.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_comparison.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_validity.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_validity.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_profile.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0000_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015.npz": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015.npz",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_comparison.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_comparison.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_validity.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_validity.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_profile.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0015_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045.npz": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045.npz",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_comparison.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_comparison.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_validity.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_validity.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_profile.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0045_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080.npz": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080.npz",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_comparison.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_comparison.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_validity.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_validity.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_profile.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0080_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120.npz": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120.npz",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_comparison.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_comparison.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_validity.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_validity.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_profile.png": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/f0120_profile.png",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/normal_estimators.py": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/normal_estimators.py",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/run_normal_comparison.py": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/run_normal_comparison.py",
+      "role": "result"
+    },
+    "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/normal_diagnostics.py": {
+      "source": "visual/results/normal_comparison/4b1c377ae2044344a4f596b249627d89/evaluated_source/normal_diagnostics.py",
+      "role": "result"
+    }
+  }
+}
