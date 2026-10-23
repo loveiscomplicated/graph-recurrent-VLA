@@ -76,6 +76,8 @@ shard 0만 공통 expert 평가를 실행하며, 분할 실행에서는 리포�
 
 중단된 shard는 같은 index/count 명령으로 다시 실행하면 완료된 학습과 평가는 건너뜁니다. 실행 중인 동일 shard를 중복으로 띄우지 마세요. `run_all.sh`는 데모 수집을 포함한 단일 실행 경로이므로 분할 실행에는 위 명령을 사용합니다. 평가 worker는 GPU가 아니라 CPU를 사용하므로 `--eval-workers` 합계를 서버 CPU 용량에 맞추세요.
 
+현재 Recurrent 수집·평가의 물리 연산은 `physx_cpu`입니다. ManiSkill의 GPU 물리 연산 가능 여부를 서버에서 별도 확인하려면 `CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m recurrent.probe_gpu_sim --num-envs 16`을 실행합니다. 이 probe는 영상 렌더링 없이 16개 상태 관측 환경의 reset, GT, step을 확인합니다. 성공해도 현재 단일 환경용 expert, 관측 손상, 실패 단계 계산, 정책 상태를 배치 방식으로 바꾸고 결과를 비교 검증하기 전에는 본 평가가 GPU로 전환되지 않습니다. 이 호스트에서는 CUDA가 없어 GPU probe를 실행하지 못했습니다.
+
 리포트 폴더에는 `report.md`와 그림, 표 파일이 생깁니다.
 
 | 파일 | 내용 |
