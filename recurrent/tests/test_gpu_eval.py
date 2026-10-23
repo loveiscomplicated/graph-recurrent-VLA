@@ -89,34 +89,46 @@ class TensorEvaluationTest(unittest.TestCase):
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         seq = fake_raw(10, np.random.default_rng(31))
-        for kind in ("mlp", "gru"):
-            path = Path(f"outputs/recurrent/gpu_validation/{kind}_none_s0/best.pt")
-            if not path.exists():
-                self.skipTest("validation checkpoint missing")
-            cpu = LearnedPolicy(path)
-            gpu = TensorPolicy(LearnedPolicy(path), device)
-            for t in range(10):
-                r = {k: v[t] for k, v in seq.items()}
-                fresh = np.float32(t % 2)
-                age = np.float32(t)
-                x = normalize_obs(build_features(r, fresh, age), cpu.stats)
-                rg = {k: torch.tensor(v[None], device=device) for k, v in r.items()}
-                fg = torch.tensor([fresh], device=device)
-                ag = torch.tensor([age], device=device)
-                z = (
-                    (features(rg, fg, ag) - gpu.stats["obs_mean"])
-                    / gpu.stats["obs_std"]
-                    * gpu.stats["obs_keep"]
-                )
-                np.testing.assert_allclose(z.cpu().numpy()[0], x, atol=1e-4, rtol=1e-4)
-                action = (
-                    gpu.act(rg, fg, ag, torch.tensor([True], device=device))
-                    .cpu()
-                    .numpy()[0]
-                )
-                np.testing.assert_allclose(
-                    action, cpu.act(None, r, fresh, age), atol=1e-4, rtol=1e-4
-                )
+        with tempfile.TemporaryDirectory() as tmp:
+            for kind in ("mlp", "gru"):
+                path = Path(tmp) / f"{kind}.pt"
+                cfg = {"hidden": 8}
+                torch.manual_seed(31)
+                model = build(kind, OBS_DIM, 7, cfg)
+                rng = np.random.default_rng(31)
+                stats = {
+                    "obs_mean": rng.normal(0, 0.1, OBS_DIM).astype(np.float32),
+                    "obs_std": rng.uniform(0.1, 2, OBS_DIM).astype(np.float32),
+                    "obs_keep": (np.arange(OBS_DIM) % 3 != 0).astype(np.float32),
+                    "act_mean": rng.normal(0, 0.1, 6).astype(np.float32),
+                    "act_std": rng.uniform(0.1, 2, 6).astype(np.float32),
+                }
+                torch.save({"kind": kind, "obs_dim": OBS_DIM, "cfg": cfg,
+                            "state_dict": model.state_dict(), "stats": stats}, path)
+                cpu = LearnedPolicy(path)
+                gpu = TensorPolicy(LearnedPolicy(path), device)
+                for t in range(10):
+                    r = {k: v[t] for k, v in seq.items()}
+                    fresh = np.float32(t % 2)
+                    age = np.float32(t)
+                    x = normalize_obs(build_features(r, fresh, age), cpu.stats)
+                    rg = {k: torch.tensor(v[None], device=device) for k, v in r.items()}
+                    fg = torch.tensor([fresh], device=device)
+                    ag = torch.tensor([age], device=device)
+                    z = (
+                        (features(rg, fg, ag) - gpu.stats["obs_mean"])
+                        / gpu.stats["obs_std"]
+                        * gpu.stats["obs_keep"]
+                    )
+                    np.testing.assert_allclose(z.cpu().numpy()[0], x, atol=1e-4, rtol=1e-4)
+                    action = (
+                        gpu.act(rg, fg, ag, torch.tensor([True], device=device))
+                        .cpu()
+                        .numpy()[0]
+                    )
+                    np.testing.assert_allclose(
+                        action, cpu.act(None, r, fresh, age), atol=1e-4, rtol=1e-4
+                    )
 
     def test_invalid_backend_requests_fail_before_checkpoint_load(self):
         from recurrent.evaluate import evaluate

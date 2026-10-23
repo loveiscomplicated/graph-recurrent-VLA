@@ -1,6 +1,10 @@
 """Run in a fresh process, separately from CPU renderer tests."""
 
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 
 import torch
 from mani_skill.utils.structs.pose import Pose
@@ -11,10 +15,20 @@ from recurrent.initial_states import restore
 
 @unittest.skipUnless(torch.cuda.is_available(), "CUDA unavailable")
 class GPUEnvironmentTest(unittest.TestCase):
-    def test_restore_and_slot_pose(self):
-        fixtures = torch.load(
-            "outputs/recurrent/gpu_validation/initial.pt", weights_only=False
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.tmp.cleanup)
+        path = Path(cls.tmp.name) / "initial.pt"
+        # CPU renderer selection must stay outside the GPU test process.
+        subprocess.run(
+            [sys.executable, "-m", "recurrent.initial_states", "--out", str(path)],
+            check=True,
         )
+        cls.fixtures = torch.load(path, weights_only=False)
+
+    def test_restore_and_slot_pose(self):
+        fixtures = self.fixtures
         for b in (1, 14, 16, 30):
             env = make_peg_insertion_env(
                 device="cuda",

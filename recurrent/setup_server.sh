@@ -86,14 +86,9 @@ else
   echo "wandb credentials missing, runs are recorded offline under experiments/"
 fi
 . outputs/recurrent/env.sh
-"$VPY" - <<'EOF'
-import unittest
-
-suite = unittest.defaultTestLoader.discover("recurrent/tests", top_level_dir=".")
-result = unittest.TextTestRunner(verbosity=2).run(suite)
-if not result.wasSuccessful() or result.skipped:
-    for test, reason in result.skipped:
-        print(f"SKIPPED {test}: {reason}")
-    raise SystemExit(1)
-EOF
-echo "setup PASS"
+# SAPIEN renderer selection is process-global: isolate CPU and GPU tests.
+for test_file in recurrent/tests/test_*.py; do
+  test_module="${test_file%.py}"
+  "$VPY" -m unittest "${test_module//\//.}" -v
+done
+echo "setup PASS (see test output for unavailable-device skips)"

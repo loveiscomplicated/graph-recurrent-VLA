@@ -30,7 +30,7 @@ sh recurrent/run_all.sh
 2. `requirements.txt`, `requirements-tracking.txt`, `recurrent/requirements.txt`를 설치합니다.
 3. GPU가 있는데 torch가 CUDA를 못 쓰면, `nvidia-smi`의 CUDA 버전에 맞는 torch를 다시 설치합니다.
 4. CUDA가 보이는 상태에서 CPU 시뮬레이터가 뜨는 Vulkan 드라이버를 찾아 `outputs/recurrent/env.sh`에 적습니다. 설치된 lavapipe를 먼저 시도하고, 없거나 실패하면 NVIDIA 드라이버를 시도한 뒤 필요하면 `mesa-vulkan-drivers`를 설치합니다. 상태 관측만 쓰므로 lavapipe로도 충분합니다.
-5. 단위 테스트를 자세히 출력합니다. 테스트가 실패하거나 건너뛰어지면 설정을 실패로 처리하고, 모두 실행되면 `setup PASS`를 출력합니다.
+5. CPU 시뮬레이터·tensor 평가·GPU 시뮬레이터 테스트를 별도 프로세스에서 실행합니다. 테스트용 checkpoint는 임시 생성하고, GPU 복원 검사용 CPU 초기 상태도 별도 프로세스에서 임시 수집하므로 기존 검증 산출물이 필요하지 않습니다. 테스트 오류·실패는 설정 실패로 처리합니다. CUDA 등 실행 조건이 없는 검사는 사유와 함께 건너뛰며, 나머지 검사가 통과하면 `setup PASS`를 출력합니다. 건너뛴 backend/device는 검증된 것이 아닙니다.
 
 `run_all.sh smoke`는 작은 규모(데모 12개, 학습 20 step, 평가 1 episode)로 전체 과정이 오류 없이 도는지만 봅니다. 성공률은 의미가 없습니다. `run_all.sh`(main)가 본 실험입니다. 중간에 끊겨도 같은 명령을 다시 실행하면 끝난 학습과 평가는 건너뛰고 이어서 합니다.
 
