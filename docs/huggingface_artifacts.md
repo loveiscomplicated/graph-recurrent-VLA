@@ -114,7 +114,7 @@ Token이 없거나 읽기 전용이거나 Organization의 쓰기 역할을 확�
 | 종류 | 기본 Repository | 코드에서 지원하는 용도 |
 | --- | --- | --- |
 | Model | `Graph-Recurrent-VLA/graph-recurrent-models` | checkpoint, 재현성 정보, 선택한 metrics |
-| Dataset | `Graph-Recurrent-VLA/graph-recurrent-rollouts` | 영상, episode metadata, 재현성 정보, 선택한 metrics |
+| Dataset | `Graph-Recurrent-VLA/graph-recurrent-rollouts` | 영상, 보고서/ZIP, episode metadata, 재현성 정보, 선택한 metrics |
 
 `graph-recurrent-trajectories`와 `graph-recurrent-evaluations`는 이번 단계에서 생성하거나
 업로드하지 않는다. Repository 설정은 `Repository`와 `DEFAULT_REPOSITORIES`에 분리되어 있다.
@@ -168,6 +168,7 @@ experiments/<run_id>/
   "rollout_video_paths": [],
   "episode_metadata_paths": [],
   "trajectory_paths": [],
+  "report_paths": [],
   "additional_metrics_paths": []
 }
 ```
@@ -186,11 +187,13 @@ with ExperimentLogger(team="graph", config=config, seed=seed, model=model_name) 
     logger.link_output(video_path, kind="rollouts")
     logger.link_output(episode_json_path, kind="episode_metadata")
     logger.link_output(trajectory_path, kind="trajectory")  # inventory에만 기록
+    logger.link_output(html_path, kind="reports")
 ```
 
 명시적 `kind`가 우선한다. 기존 등록 파일은 `.pt/.pth/.ckpt/.safetensors/.bin`을 checkpoint,
 영상 확장자를 rollouts, `.h5/.hdf5/.npz/.parquet`을 trajectory, `.json`을 metrics로 분류한다.
 형식만으로 의미를 구분할 수 없는 파일은 `kind`를 명시한다. 디렉터리 재귀 탐색은 하지 않는다.
+`metrics`는 JSON 전용이다. HTML/PNG/ZIP 등은 `kind="reports"`로 명시한다.
 평가의 `link_output(checkpoint, checkpoint=True)`는 기존처럼 원본 sidecar를 유지하고
 `source_run_id`를 연결한다. 다른 run이 sidecar 소유권을 바꾼 파일은 게시를 거부한다.
 과거 영상이 등록되지 않았다면 원본 run의 실제 산출물인지 확인한 후 metadata의 `outputs`와
@@ -203,6 +206,7 @@ python -m tools.publish_experiment --run-id RUN_ID --include checkpoint rollouts
 python -m tools.publish_experiment --run-id RUN_ID --include checkpoint --private
 python -m tools.publish_experiment --run-id RUN_ID --include rollouts metrics --retries 2
 python -m tools.publish_experiment --run-id RUN_ID --include metrics
+python -m tools.publish_experiment --run-id RUN_ID --include reports metrics --private
 ```
 
 `--include`는 필수다. 선택한 종류의 **등록된** 파일만 대상으로 하며 로컬 checkpoint 폴더 전체를
@@ -210,6 +214,58 @@ python -m tools.publish_experiment --run-id RUN_ID --include metrics
 Logger metrics와 추가 등록 metrics JSON을 포함한다. Metrics만 선택하면 현재 Model Repository에
 게시한다. Checkpoint와 rollouts를 모두 선택하면 선택한 metrics/config를 양쪽에 연결한다.
 Rollouts는 명시적으로 등록한 episode JSON도 동반한다. Trajectory는 전송하지 않는다.
+`reports`는 영상 등록 없이도 기존 Dataset Repository로 게시한다. `reports metrics`는
+보고서와 수치를 Dataset Repository에 함께 게시하며, 기존 `metrics` 단독의 Model routing은 유지한다.
+NPZ 자체의 직접 게시 선택은 없지만 아래 보고서 ZIP에 입력/분석 자료로 명시적으로 넣을 수 있다.
+
+## 상대경로를 유지하는 보고서 ZIP
+
+HTML과 PNG/영상/NPZ를 함께 내려받아 보려면 명시적 파일 목록으로 ZIP을 만든다.
+`--report-files`는 기존 run을 재사용하며 새 Logger/UUID를 만들지 않는다.
+예를 들어 repository root에 다음 selection JSON을 작성한다. Source 경로는 현재 작업
+디렉터리 기준이고, `files`의 key는 ZIP 내부 상대경로다. 폴더 자동 수집은 하지 않는다.
+
+```json
+{
+  "entrypoint": "report/index.html",
+  "publication_commit": "CODE_COMMIT_SHA",
+  "description": "Selected completed diagnostic results",
+  "files": {
+    "report/index.html": "visual/results/example/index.html",
+    "report/frame.png": "visual/results/example/frame.png",
+    "report/depth.mp4": "visual/results/example/depth.mp4",
+    "inputs/masks.npz": {"source": "visual/results/example/masks.npz", "role": "input"}
+  }
+}
+```
+
+```bash
+python -m tools.publish_experiment --run-id RUN_ID \
+  --include reports metrics --report-files selection.json --dry-run
+python -m tools.publish_experiment --run-id RUN_ID \
+  --include reports metrics --report-files selection.json --private
+```
+
+ZIP은 `experiments/<run_id>/reports/report-<sha256>.zip`에 생성하고 기존 run에 등록한다.
+동일 파일·설정은 동일 ZIP을 만들며, 기존 원본 결과를 수정하지 않는다. ZIP에는 relative
+assets 외에 `bundle_manifest.json`과 sanitized config/metrics가 포함된다. Manifest는 각 파일의
+역할(`result`/`input`/`dependency`), 알려진 원본 run ID, 원본·게시본 SHA-256, entrypoint를 기록한다.
+JSON은 공통 비밀 키 마스킹을 적용한다. HTML/영상/NPZ 같은 불투명 파일의 내용은 원본 그대로다.
+다른 run의 자료는 `input`/`dependency`로 명시해야 하며 원본 sidecar를 변경하지 않는다.
+실험 시점의 Git commit/dirty와 나중의 `publication_commit`은 별도 필드로 보존한다.
+
+`--dry-run --report-files`는 네트워크 없이 ZIP과 로컬 metadata/manifest/sidecar를 생성한다.
+파일 누락, unsafe archive 경로, symlink, 다른 run의 결과 소유권, 손상된 기존 ZIP은 거부한다.
+다운로드 후 새 디렉터리에 압축을 풀고 `entrypoint` HTML을 연다. 원래 repository 상대경로로
+묶었다면 새 checkout root에 풀어 문서의 로컬 링크와 재현 입력 경로를 복원할 수 있다.
+
+종료된 기존 run의 HTML이 과거에 `metrics`로 잘못 등록됐다면, 내용을 바꾸거나 run을 새로
+만들지 않고 공통 사후 등록 함수로 분류만 수정한다.
+
+```python
+from utils.experiment_artifacts import register_existing_output
+register_existing_output("experiments/RUN_ID", "visual/results/example/report.html", kind="reports")
+```
 
 선택 종류에 등록된 파일이 없거나, 선택 파일 누락·빈 바이너리·잘못된 JSON·심볼릭 링크가 있으면
 전체 전송 전에 검증 오류를 반환한다. 선택하지 않은 파일의 누락은 게시를 막지 않는다.
@@ -246,6 +302,7 @@ Token/SDK 누락은 원인을 출력하고 `skipped`로 종료한다(exit 0).
     rollouts/<sha256>/episode.mp4        # Dataset Repository
     episode_metadata/<sha256>/episode.json
     metrics/<sha256>/metrics.json        # 선택 시
+    reports/<sha256>/report-<sha256>.zip  # 명시적으로 선택한 보고서/ZIP
   manifests/<manifest_sha256>/manifest.json
 ```
 
@@ -303,7 +360,7 @@ task/environment와 run ID는 현재 manifest/동반 config로 보존한다.
 `source_run_id`, W&B URL, dataset hash를 안전하게 추가하고 계약 테스트를 보완하는 것을
 제안한다. 이 지침 작업에서는 코드를 변경하지 않는다.
 
-현재 trajectory는 로컬 inventory만 지원한다. Dataset Viewer/VideoFolder,
+현재 trajectory의 직접 게시 선택은 없으며 보고서 ZIP의 명시적 member로는 포함할 수 있다. Dataset Viewer/VideoFolder,
 두 Repository 사이의 원자적 게시, 원격 버전 삭제/GC도 미구현이다.
 `publish()`는 파일 검증/로컬 receipt 쓰기 단계에서 예외가 날 수 있으므로 향후 workflow도
 별도 게시 job에서 실패를 처리하고, 성공한 로컬 checkpoint/학습 결과를 삭제하거나

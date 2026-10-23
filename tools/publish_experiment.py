@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 from utils.experiment_artifacts import (DEFAULT_REPOSITORIES, Repository, initialize_repositories,
-                                       publish, sync_wandb_links, validate_repositories)
+                                       create_report_bundle, publish, sync_wandb_links, validate_repositories)
 from utils.experiment_logger import REPO
 
 
@@ -17,7 +17,9 @@ def main(argv=None):
     mode.add_argument('--sync-wandb', metavar='RUN_ID', help='retry W&B link sync independently of HF')
     parser.add_argument('--experiments-dir', type=Path,
                         default=Path(os.getenv('EXPERIMENTS_DIR', REPO / 'experiments')))
-    parser.add_argument('--include', nargs='+', choices=['checkpoint', 'rollouts', 'metrics'])
+    parser.add_argument('--include', nargs='+', choices=['checkpoint', 'rollouts', 'metrics', 'reports'])
+    parser.add_argument('--report-files', type=Path,
+                        help='explicit JSON bundle selection; prepares a local ZIP before publishing reports')
     parser.add_argument('--dry-run', action='store_true', help='validate files and show bytes without network calls')
     parser.add_argument('--private', action='store_true', help='require private upload targets (initialization is always private)')
     parser.add_argument('--repo-id', action='append', default=[], metavar='KIND=ORG/REPO',
@@ -28,6 +30,8 @@ def main(argv=None):
         parser.error('--run-id requires an explicit --include selection')
     if not args.run_id and args.include:
         parser.error('--include requires --run-id')
+    if args.report_files and (not args.run_id or 'reports' not in (args.include or [])):
+        parser.error('--report-files requires --run-id and --include reports')
     repositories = dict(DEFAULT_REPOSITORIES)
     try:
         for value in args.repo_id:
@@ -46,6 +50,8 @@ def main(argv=None):
             if args.sync_wandb:
                 report = {'status': 'dry-run'} if args.dry_run else sync_wandb_links(directory)
             else:
+                if args.report_files:
+                    create_report_bundle(directory, json.loads(args.report_files.read_text()))
                 report = publish(directory, args.include, repositories=repositories,
                                  dry_run=args.dry_run, private=args.private, retries=args.retries)
     except Exception as exc:

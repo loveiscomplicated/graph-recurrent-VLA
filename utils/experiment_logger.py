@@ -194,7 +194,7 @@ class ExperimentLogger:
 
     def link_output(self, path, *, checkpoint=False, kind=None):
         """A sidecar associates unchanged existing artifacts with this run."""
-        if kind not in (None, 'checkpoint', 'rollouts', 'episode_metadata', 'trajectory', 'metrics'):
+        if kind not in (None, 'checkpoint', 'rollouts', 'episode_metadata', 'trajectory', 'metrics', 'reports'):
             raise ValueError('unknown artifact kind')
         path = Path(path).resolve()
         if kind is not None:

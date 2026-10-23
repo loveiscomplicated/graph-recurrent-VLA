@@ -413,7 +413,7 @@ def evaluate(episode_path: Path, masks_path: Path, *, camera="base_camera",
                     git_dirty=experiment.metadata.get("git_dirty"),
                     **config, summary=summary, frames=records)
         write_report(report_path, data)
-        experiment.link_output(report_path, kind="metrics")
+        experiment.link_output(report_path, kind="reports")
         experiment.log(summary, prefix="eval/rgbd")
         experiment.record(dataset_sha256=config["input_sha256"],
                           masks_sha256=config["masks_sha256"], evaluated_frames=len(records),

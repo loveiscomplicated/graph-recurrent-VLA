@@ -5,11 +5,13 @@ No network calls occur in the experiment logger. Team formats remain opaque.
 from dataclasses import dataclass
 import hashlib
 import importlib
+import io
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import time
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from .experiment_logger import REPO, clean, load_env_file, write
 
@@ -18,7 +20,7 @@ DEFAULT_HF_ENV_FILE = Path('/root/.secrets/hf.env')
 TEAMS = ('visual', 'graph', 'recurrent', 'integration')
 CATEGORIES = {'checkpoint': 'checkpoint_paths', 'rollouts': 'rollout_video_paths',
               'episode_metadata': 'episode_metadata_paths', 'trajectory': 'trajectory_paths',
-              'metrics': 'additional_metrics_paths'}
+              'metrics': 'additional_metrics_paths', 'reports': 'report_paths'}
 
 
 @dataclass(frozen=True)
@@ -110,14 +112,130 @@ def upload_file(prefix, category, name, source):
     return UploadFile(f'{prefix}/artifacts/{category}/{sha256}/{name}', source, size, sha256, git_sha1)
 
 
+def register_existing_output(directory, path, *, kind):
+    """Attach an explicitly selected artifact to a completed run, without a new ID.
+
+    This is also the migration path for a legacy HTML registered as metrics.
+    Existing run identity, status and artifact bytes are retained.
+    """
+    if kind not in CATEGORIES:
+        raise ValueError('unknown artifact kind')
+    directory, path = Path(directory).resolve(), Path(path).absolute()
+    metadata = json.loads((directory / 'metadata.json').read_text())
+    if metadata.get('status') == 'running':
+        raise ValueError('finish the experiment before registering post-run artifacts')
+    if directory.name != metadata['run_id']:
+        raise ValueError('experiment directory and run_id do not match')
+    owner = _check_artifact(path, metadata)
+    path = path.resolve()
+    metadata.setdefault('artifact_kinds', {})[str(path)] = kind
+    if str(path) not in metadata.setdefault('outputs', []):
+        metadata['outputs'].append(str(path))
+    write(directory / 'metadata.json', metadata)
+    if owner in (None, metadata['run_id']):
+        write(path.with_name(path.name + '.tracking.json'),
+              dict(run_id=metadata['run_id'], experiment_directory=str(directory), artifact=str(path)))
+    save_manifest(directory, metadata)
+    return path
+
+
+def _check_artifact(path, metadata):
+    if path.is_symlink():
+        raise ValueError('selected files must not be symlinks')
+    if not path.is_file():
+        raise ValueError(f'missing selected artifact file: {path.name}')
+    sidecar = path.with_name(path.name + '.tracking.json')
+    owner = json.loads(sidecar.read_text()).get('run_id') if sidecar.exists() else None
+    if owner not in (None, metadata['run_id'], metadata.get('source_run_id')):
+        raise ValueError('artifact belongs to another run; refusing stale output link')
+    return owner
+
+
+def create_report_bundle(directory, selection):
+    """Build a deterministic ZIP from explicit archive-name -> source selections.
+
+    No directory scan or new ExperimentLogger is used. Values are paths or
+    {"source": path, "role": "result" | "input" | "dependency"}. JSON members
+    use the shared credential redaction policy. Original files are read only.
+    The content-addressed archive retains relative HTML/image/video paths.
+    """
+    directory = Path(directory).resolve()
+    metadata = json.loads((directory / 'metadata.json').read_text())
+    if metadata.get('status') == 'running':
+        raise ValueError('finish the experiment before bundling reports')
+    if directory.name != metadata['run_id']:
+        raise ValueError('experiment directory and run_id do not match')
+    files = selection.get('files', {})
+    if not isinstance(files, dict) or not files:
+        raise ValueError('report selection requires an explicit nonempty files mapping')
+    members, inventory = {}, []
+    for name, item in sorted(files.items()):
+        archive = PurePosixPath(name)
+        if (not name or not archive.parts or archive.is_absolute() or '..' in archive.parts or '\\' in name
+                or name != archive.as_posix() or name == 'bundle_manifest.json'
+                or archive.parts[0] == 'experiment'):
+            raise ValueError('report member names must be safe, unique relative paths')
+        spec = item if isinstance(item, dict) else {'source': item}
+        role = spec.get('role', 'result')
+        if role not in ('result', 'input', 'dependency'):
+            raise ValueError('report member role must be result, input or dependency')
+        source = Path(spec['source']).expanduser().absolute()
+        # Inputs/dependencies may come from another run; preserve its known owner.
+        owner_metadata = metadata
+        if role != 'result':
+            sidecar = source.with_name(source.name + '.tracking.json')
+            owner = json.loads(sidecar.read_text()).get('run_id') if sidecar.exists() else None
+            owner_metadata = dict(metadata, source_run_id=owner)
+        owner = _check_artifact(source, owner_metadata)
+        original = source.read_bytes()
+        if not original:
+            raise ValueError('report members must not be empty')
+        body = encoded(json.loads(original)) if source.suffix.lower() == '.json' else original
+        members[name] = body
+        inventory.append(dict(path=name, role=role, source_run_id=owner,
+                              source_sha256=hashlib.sha256(original).hexdigest(),
+                              sha256=hashlib.sha256(body).hexdigest(), size=len(body)))
+    entrypoint = selection.get('entrypoint')
+    if entrypoint is not None and entrypoint not in members:
+        raise ValueError('report entrypoint must be one of the selected files')
+    # Keep execution identity separate from the later publication/source commit.
+    provenance = {key: metadata.get(key) for key in
+                  ('run_id', 'team', 'git_commit', 'git_dirty', 'seed', 'source_run_id',
+                   'dataset_sha256', 'masks_sha256', 'evaluation_device')}
+    manifest = dict(schema_version=1, **provenance, entrypoint=entrypoint,
+                    description=selection.get('description'),
+                    publication_commit=selection.get('publication_commit'), files=inventory)
+    members['bundle_manifest.json'] = encoded(manifest)
+    for name in ('config.yaml', 'metrics.json'):
+        members[f'experiment/{name}'] = encoded(json.loads((directory / name).read_text()))
+    output = io.BytesIO()
+    with ZipFile(output, 'w', compression=ZIP_DEFLATED, compresslevel=6) as archive:
+        for name, body in sorted(members.items()):
+            info = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = ZIP_DEFLATED
+            info.external_attr = 0o100644 << 16
+            archive.writestr(info, body, compresslevel=6)
+    body = output.getvalue()
+    digest = hashlib.sha256(body).hexdigest()
+    path = directory / 'reports' / f'report-{digest}.zip'
+    if path.exists():
+        if digests(path)[1] != digest:
+            raise ValueError('existing content-addressed report archive differs')
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(body)
+    register_existing_output(directory, path, kind='reports')
+    return path
+
+
 def plan_upload(directory, include, repositories=None):
     """Validate only explicit selections; metadata/config accompany each target."""
     directory = Path(directory).resolve()
     repositories = repositories or DEFAULT_REPOSITORIES
     validate_repositories(repositories)
     include = set(include)
-    if not include or include - {'checkpoint', 'rollouts', 'metrics'}:
-        raise ValueError('select checkpoint, rollouts and/or metrics explicitly')
+    if not include or include - {'checkpoint', 'rollouts', 'metrics', 'reports'}:
+        raise ValueError('select checkpoint, rollouts, metrics and/or reports explicitly')
     metadata = json.loads((directory / 'metadata.json').read_text())
     run_id = metadata['run_id']
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,127}', run_id) or metadata['team'] not in TEAMS:
@@ -131,6 +249,8 @@ def plan_upload(directory, include, repositories=None):
     config = clean(json.loads((directory / 'config.yaml').read_text()))
     plans = {}
     targets = include & {'checkpoint', 'rollouts'}
+    if 'reports' in include:
+        targets.add('rollouts')  # Reports use the existing dataset repository.
     if not targets:  # metrics-only uses the current model repository, not a future evaluation repo.
         targets = {'checkpoint'}
     for target in sorted(targets):
@@ -168,6 +288,8 @@ def plan_upload(directory, include, repositories=None):
         if 'metrics' in include:
             remote['metrics_path'] = add(directory / manifest['metrics_path'], 'metrics', snapshot=True)
             for value in manifest['additional_metrics_paths']:
+                if Path(value).suffix.lower() != '.json':
+                    raise ValueError('metrics artifacts must be JSON; register HTML as reports')
                 add(directory / value, 'metrics', snapshot=True)
         if target in include:
             field = CATEGORIES[target]
@@ -177,6 +299,11 @@ def plan_upload(directory, include, repositories=None):
         if target == 'rollouts':
             remote['episode_metadata_paths'] = [add(directory / value, 'episode_metadata', snapshot=True)
                                                 for value in manifest['episode_metadata_paths']]
+            if 'reports' in include:
+                if not manifest['report_paths']:
+                    raise ValueError('no registered reports files; register a report or prepare a bundle')
+                remote['report_paths'] = [add(directory / value, 'reports')
+                                          for value in manifest['report_paths']]
         # Immutable per-selection manifest: separate invocations cannot overwrite inventory.
         body = encoded(remote)
         digest = hashlib.sha256(body).hexdigest()

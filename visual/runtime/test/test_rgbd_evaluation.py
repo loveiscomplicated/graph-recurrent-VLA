@@ -13,6 +13,7 @@ import numpy as np
 
 from visual.runtime.rgbd import BOX, PEG, TrackedRGBDFrame
 from visual.runtime.test.run_rgbd import compare_object, depth_colors, evaluate, summarize
+from utils.experiment_artifacts import plan_upload
 
 
 def frame(predicted, depth=None):
@@ -150,6 +151,9 @@ class RGBDEvaluationTest(unittest.TestCase):
             self.assertEqual(metadata["team"], "visual")
             self.assertEqual(metadata["status"], "finished")
             self.assertEqual(metadata["evaluated_frames"], 2)
+            plans = plan_upload(root / "experiments" / output.name, ["reports", "rollouts", "metrics"])
+            self.assertEqual(set(plans), {"rollouts"})
+            self.assertTrue(any(item.path.endswith("gt_report.html") for item in plans["rollouts"]["files"]))
 
 
 if __name__ == "__main__":

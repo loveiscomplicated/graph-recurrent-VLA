@@ -123,3 +123,7 @@ Timestamp가 없거나 1프레임뿐이면 `--fps`를 명시한다.
 실행 identity를 기록하고 두 산출물의 tracking sidecar를 연결한다. 위 명령은
 W&B를 비활성화한 로컬 실행이다. HF publishing은 수행하지 않는다.
 Simulator·SAM2 추론·CUDA 실행 없이 저장 데이터만 CPU에서 평가한다.
+
+HTML은 `kind="reports"`, 영상은 `kind="rollouts"`로 등록한다. `metrics`는 JSON
+전용이다. HTML·영상의 상대경로를 유지해 사후 게시할 때는 공통
+[보고서 ZIP workflow](../../docs/huggingface_artifacts.md#상대경로를-유지하는-보고서-zip)를 사용한다.

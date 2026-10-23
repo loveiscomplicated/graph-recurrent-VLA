@@ -8,10 +8,12 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
+from zipfile import ZipFile
 
 from utils.experiment_logger import ExperimentLogger, write
 from utils.experiment_artifacts import (DEFAULT_REPOSITORIES, Repository, connect, digests,
-    initialize_repositories, load_hf_env, plan_upload, publish, remote_matches, save_manifest, sync_wandb_links)
+    create_report_bundle, initialize_repositories, load_hf_env, plan_upload, publish,
+    register_existing_output, remote_matches, save_manifest, sync_wandb_links)
 from tools.publish_experiment import main
 
 
@@ -74,6 +76,124 @@ class ArtifactTests(unittest.TestCase):
 
     def transport(self):
         return patch('utils.experiment_artifacts.connect', return_value=(self.hub, SimpleNamespace, None))
+
+    def test_report_bundle_keeps_relative_assets_identity_and_redacts_json(self):
+        log = self.experiment('visual')
+        report = self.root / 'report.html'
+        report.write_text('<img src="assets/frame.png"><a href="depth.mp4">video</a>')
+        image = self.root / 'frame.png'; image.write_bytes(b'PNG')
+        video = self.root / 'depth.mp4'; video.write_bytes(b'VIDEO')
+        data = self.root / 'data.json'; data.write_text('{"score": 1, "HF_TOKEN": "bundle-secret"}')
+        selection = dict(entrypoint='report.html', publication_commit='committed-source', files={
+            'report.html': str(report), 'assets/frame.png': str(image),
+            'depth.mp4': str(video), 'data.json': {'source': str(data), 'role': 'input'}})
+        original = json.loads((log.directory / 'metadata.json').read_text())
+        with patch('utils.experiment_artifacts.connect') as connect_mock:
+            archive = create_report_bundle(log.directory, selection)
+            repeated = create_report_bundle(log.directory, dict(selection, files=dict(reversed(list(selection['files'].items())))))
+            connect_mock.assert_not_called()
+        self.assertEqual(archive, repeated)
+        with ZipFile(archive) as bundle:
+            self.assertEqual(bundle.read('report.html'), report.read_bytes())
+            self.assertEqual(bundle.read('assets/frame.png'), b'PNG')
+            self.assertEqual(bundle.read('depth.mp4'), b'VIDEO')
+            self.assertNotIn(b'bundle-secret', bundle.read('data.json'))
+            self.assertEqual(json.loads(bundle.read('data.json'))['HF_TOKEN'], '[REDACTED]')
+            manifest = json.loads(bundle.read('bundle_manifest.json'))
+            self.assertEqual(manifest['run_id'], log.run_id)
+            self.assertEqual(manifest['entrypoint'], 'report.html')
+            self.assertEqual(manifest['publication_commit'], 'committed-source')
+            record = next(r for r in manifest['files'] if r['path'] == 'data.json')
+            self.assertEqual(record['source_sha256'], digests(data)[1])
+            self.assertEqual(record['sha256'], digests(bundle.read('data.json'))[1])
+            self.assertNotIn(b'hf_SECRET', bundle.read('experiment/config.yaml'))
+        current = json.loads((log.directory / 'metadata.json').read_text())
+        for field in ('run_id', 'team', 'seed', 'git_commit', 'git_dirty', 'status'):
+            self.assertEqual(current[field], original[field])
+        self.assertEqual(data.read_text(), '{"score": 1, "HF_TOKEN": "bundle-secret"}')
+        sidecar = json.loads(archive.with_name(archive.name + '.tracking.json').read_text())
+        self.assertEqual(sidecar['run_id'], log.run_id)
+
+    def test_reports_and_metrics_use_dataset_without_requiring_rollout_video(self):
+        log = self.experiment('visual')
+        report = self.root / 'report.html'; report.write_text('<p>diagnostic</p>')
+        register_existing_output(log.directory, report, kind='reports')
+        archive = create_report_bundle(log.directory, {'files': {'report.html': str(report)}})
+        with self.transport():
+            result = publish(log.directory, ['reports', 'metrics'])
+        self.assertEqual(result['status'], 'complete')
+        self.assertEqual(set(result['repositories']), {'rollouts'})
+        paths = [path for repo, path in self.hub.files]
+        self.assertTrue(any(path.endswith(archive.name) for path in paths))
+        self.assertTrue(any(path.endswith('report.html') for path in paths))
+        self.assertFalse(any(path.endswith(('.mp4', '.pt', '.h5')) for path in paths))
+        self.assertEqual(set(plan_upload(log.directory, ['metrics'])), {'checkpoint'})
+
+    def test_legacy_html_metrics_migrates_without_changing_original_run(self):
+        log = self.experiment('visual')
+        report = self.root / 'report.html'; report.write_text('<p>HTML</p>')
+        register_existing_output(log.directory, report, kind='metrics')
+        with self.assertRaisesRegex(ValueError, 'metrics artifacts must be JSON'):
+            plan_upload(log.directory, ['metrics'])
+        register_existing_output(log.directory, report, kind='reports')
+        plan = plan_upload(log.directory, ['reports', 'metrics'])
+        manifest = json.loads((log.directory / 'manifest.json').read_text())
+        self.assertEqual(manifest['run_id'], log.run_id)
+        self.assertEqual(len(manifest['report_paths']), 1)
+        self.assertNotIn(str(report), manifest['additional_metrics_paths'])
+        self.assertEqual(set(plan), {'rollouts'})
+
+    def test_bundle_rejects_unsafe_members_missing_files_and_foreign_results(self):
+        log = self.experiment()
+        source = self.root / 'data.json'; source.write_text('{"value": 1}')
+        for name in ('../escape', '/absolute', '.', './alias', 'dir/../alias', 'a\\b', 'bundle_manifest.json', 'experiment/config.yaml'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                create_report_bundle(log.directory, {'files': {name: str(source)}})
+        with self.assertRaisesRegex(ValueError, 'missing'):
+            create_report_bundle(log.directory, {'files': {'missing': str(self.root / 'missing')}})
+        with self.assertRaisesRegex(ValueError, 'entrypoint'):
+            create_report_bundle(log.directory, {'entrypoint': 'missing', 'files': {'data.json': str(source)}})
+        write(source.with_name(source.name + '.tracking.json'), {'run_id': 'foreign-run'})
+        with self.assertRaisesRegex(ValueError, 'belongs to another run'):
+            create_report_bundle(log.directory, {'files': {'data.json': str(source)}})
+        self.assertFalse((log.directory / 'reports').exists())
+        archive = create_report_bundle(log.directory, {'files': {'data.json': {'source': str(source), 'role': 'dependency'}}})
+        with ZipFile(archive) as bundle:
+            self.assertEqual(json.loads(bundle.read('bundle_manifest.json'))['files'][0]['source_run_id'], 'foreign-run')
+
+    def test_bundle_rejects_symlink_and_corrupted_content_addressed_archive(self):
+        log = self.experiment()
+        source = self.root / 'source.bin'; source.write_bytes(b'input')
+        symlink = self.root / 'symlink.bin'; symlink.symlink_to(source)
+        with self.assertRaisesRegex(ValueError, 'symlinks'):
+            create_report_bundle(log.directory, {'files': {'source.bin': str(symlink)}})
+        selection = {'files': {'source.bin': str(source)}}
+        archive = create_report_bundle(log.directory, selection)
+        archive.write_bytes(b'corrupted')
+        with self.assertRaisesRegex(ValueError, 'archive differs'):
+            create_report_bundle(log.directory, selection)
+        self.assertEqual(archive.read_bytes(), b'corrupted')
+
+    def test_cli_report_bundle_dry_run_is_network_free(self):
+        log = self.experiment('visual')
+        source = self.root / 'report.html'; source.write_text('<p>report</p>')
+        selection = self.root / 'selection.json'
+        selection.write_text(json.dumps({'files': {'report.html': str(source)}}))
+        with patch('utils.experiment_artifacts.connect') as connect_mock, redirect_stdout(io.StringIO()) as output:
+            code = main(['--experiments-dir', str(log.directory.parent), '--run-id', log.run_id,
+                         '--include', 'reports', 'metrics', '--report-files', str(selection), '--dry-run'])
+        connect_mock.assert_not_called()
+        self.assertEqual(code, 0)
+        self.assertEqual(set(json.loads(output.getvalue())['repositories']), {'rollouts'})
+
+    def test_register_source_artifact_preserves_original_sidecar_owner(self):
+        log = self.experiment()
+        source = Path(next(p for p in log.metadata['outputs'] if p.endswith('.pt')))
+        original = source.with_name(source.name + '.tracking.json').read_bytes()
+        with ExperimentLogger(team='graph', root=log.directory.parent) as evaluation:
+            evaluation.record(source_run_id=log.run_id)
+        register_existing_output(evaluation.directory, source, kind='checkpoint')
+        self.assertEqual(source.with_name(source.name + '.tracking.json').read_bytes(), original)
 
     def test_manifest_generated_by_existing_logger_and_legacy_regeneration(self):
         log = self.experiment()
