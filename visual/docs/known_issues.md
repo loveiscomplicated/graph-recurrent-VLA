@@ -1,3 +1,5 @@
+> Environment migration: use `../setup.sh` and `../env.sh` for the supported SAM2.1 Small pipeline. Separate venv / system-site-packages instructions below record historical experiments only. See [uv migration](uv_migration.md).
+
 # 환경 문제와 우회법
 
 RTX 3090 컨테이너(CUDA 12.8, torch 2.8.0+cu128, Python 3.12.3)에서 겪은 문제다.

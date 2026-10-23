@@ -11,3 +11,6 @@ results/**/*.npy
 results/**/*.h5
 results/**/frames/
 results/v1/**/runs/
+
+# Project-local Python environment
+.venv/

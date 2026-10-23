@@ -50,21 +50,96 @@ git에 넣지 않는 것(다시 만들 수 있음): `data/`(수집 데이터, E9
 | `track_dam4sam.py`, `track_sam2long.py`, `stream_sam2long.py` | 추가 tracker 비교 |
 | `collect.py`, `grounding.py`, `track_sam2.py`, `pointcloud.py`, `run_pipeline.py`, `track_compare.py`, `reanchor.py` | v0 |
 
-## 실행
+## Installation (single supported environment)
 
-RTX 3090, CUDA 12.8, torch 2.8.0+cu128, Python 3.12에서 돌렸다. venv는 모두 `--system-site-packages`로 시스템 torch를 공유하고 `-c constraints.txt`로 설치한다.
+The default environment supports **Linux x86_64, Python 3.12, PyTorch
+2.8.0+cu128 / torchvision 0.23.0+cu128, ManiSkill 3.0.1, SAPIEN 3.0.3,
+and SAM2.1 Small**. Dependencies are resolved in `pyproject.toml` and `uv.lock`;
+the old requirements files are historical snapshots, not installation inputs.
 
-| venv | 용도 |
-|---|---|
-| `vision` | 기본 (ManiSkill 3.0.1, GDINO, SAM2, DINOv2) |
-| `samurai`, `efficienttam`, `dam4sam`, `sam2long` | 패키지 이름 `sam2`가 겹치는 tracker |
-| `yolo` | Ultralytics YOLO26 depth (E7) |
+Prerequisites:
+
+- Install [uv](https://docs.astral.sh/uv/getting-started/installation/) >=0.9
+  and Git. Validation used uv 0.13.4.
+- An NVIDIA driver compatible with CUDA 12.8 and GPU passthrough in the
+  container (`nvidia-smi` must work). PyTorch supplies CUDA runtime wheels;
+  installing a system CUDA toolkit or nvcc is not required for this setup.
+- System Vulkan loader, NVIDIA Vulkan/EGL driver libraries, and OpenGL runtime
+  (`libGL.so.1`, used by OpenCV). On Debian/Ubuntu the loader packages are
+  typically `libvulkan1`, `libegl1`, `libgl1`; NVIDIA libraries come from the
+  driver/container runtime. Enable graphics capabilities when launching the
+  GPU container. Python package installation cannot fix missing driver libraries.
+- Network access to PyPI, download.pytorch.org, GitHub, and (for models)
+  Hugging Face / Meta checkpoint hosting, plus sufficient disk for CUDA wheels.
 
 ```bash
 cd visual
-export VISION_ENVS=~/envs        # venv 위치 (기본 $HOME/envs)
-source env.sh                    # VISION_ROOT=visual/, 캐시는 visual/cache/
+bash setup.sh
+source env.sh
 python scripts/smoke_test.py --out results/step1
 ```
 
-실험별 실행 명령은 [`REPORT.md`의 재현 절](REPORT.md#재현)에 있다.
+`setup.sh` uses `uv sync --locked` and the local `.venv`, with no system site
+packages. uv finds or downloads Python 3.12; no global Python packages or drivers
+are changed. Repeat runs synchronize the existing environment. Exit code 1
+indicates setup/sync failure, 2 indicates import failure, and 3 indicates installed
+packages but unavailable/failing CUDA. Setup validates imports and GPU execution;
+it does not download checkpoints or prove renderer/model inference works.
+
+Activation always selects `visual/.venv`, even from another venv or Conda shell.
+It clears inherited `PYTHONHOME` / `PYTHONPATH`, disables user site packages,
+and preserves `VISION_ROOT`, `VISION_CACHE`, `HF_HOME`, `PIP_CACHE_DIR`,
+`TORCH_HOME` and Vulkan ICD behavior. Set `VISION_CACHE` before sourcing to move
+caches; model/data paths use `VISION_ROOT` (default: this directory). An explicit
+`VK_ICD_FILENAMES` wins over the bundled NVIDIA EGL workaround.
+
+### Model assets
+
+First check `checkpoints/sam2.1_hiera_small.pt`. If absent, obtain the
+[SAM2.1 Small checkpoint](https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt)
+and place it there. Do not substitute SAM2.0 weights. The pinned upstream SAM2
+source supplies `configs/sam2.1/sam2.1_hiera_s.yaml`; no `third_party/sam2`
+checkout or editable install is needed. The optional connected-components CUDA
+extension is disabled as in the original environment. Its isolated build uses
+the same torch version as runtime.
+
+Grounding DINO uses `IDEA-Research/grounding-dino-tiny` through Transformers;
+re-anchor v1 also uses `facebook/dinov2-small`. Their existing loaders download
+missing assets into `HF_HOME` on first use. For offline operation populate that
+cache first, then set `HF_HUB_OFFLINE=1`. Setup itself does not fetch model assets.
+
+### Validation and troubleshooting
+
+Run `uv lock --check`, `uv sync --locked`, and
+`python scripts/check_install.py` from `visual/` to check packaging separately
+from the full smoke test. The smoke test initializes Grounding DINO, SAM2 Small
+image/video predictors, and the simulator, writes JSON/images under `--out`,
+and exits nonzero if a stage fails. It may download missing HF assets.
+
+- Resolution/download failures: check Git and network/TLS access to the indexes;
+  do not install the old requirements with pip or inherit parent torch.
+- CUDA unavailable: check driver compatibility and container GPU passthrough.
+  `nvidia-smi` reports driver capability, not the installed PyTorch runtime.
+- Vulkan/EGL failure: inspect `VK_ICD_FILENAMES` and the driver libraries;
+  see [known issues](docs/known_issues.md). The bundled ICD requires
+  `libEGL_nvidia.so.0`; it is not a portable replacement for a driver.
+- Existing `.venv` with system packages: move it aside manually and rerun setup.
+- Missing checkpoints/data: install the assets above and collect episodes using
+  the existing collection scripts before offline tracking/export.
+
+See [migration validation](docs/uv_migration.md) for checks actually executed on
+this host. Historical experiment results in REPORT.md are unchanged and are not
+validation results for this environment.
+
+### Legacy experiments
+
+SAMURAI, EfficientTAM, DAM4SAM, SAM2Long and YOLO/depth comparisons are
+**legacy and unsupported by this environment**. Their scripts, results, and old
+requirements remain for reference. In particular `run_step7.sh` and `run_e1.sh`
+still orchestrate old separate environments; they are not default setup or smoke
+commands. Use `track_v1.py --backend sam2 --model small` for the supported tracker.
+The supported streaming and re-anchor implementations are unchanged. Historical
+base+/tiny options are retained for reference; only Small is validated/supported.
+
+Experiment commands in [REPORT.md](REPORT.md#재현) describe the original environment;
+comparison/depth commands need their historical dependencies and assets.

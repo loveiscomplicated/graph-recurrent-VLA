@@ -18,7 +18,6 @@ ROOT = os.environ.get("VISION_ROOT", os.path.dirname(os.path.dirname(os.path.abs
 CKPT = f"{ROOT}/checkpoints"
 SAM2_CFGS = {
     "small": ("configs/sam2.1/sam2.1_hiera_s.yaml", f"{CKPT}/sam2.1_hiera_small.pt"),
-    "base_plus": ("configs/sam2.1/sam2.1_hiera_b+.yaml", f"{CKPT}/sam2.1_hiera_base_plus.pt"),
 }
 GDINO_ID = "IDEA-Research/grounding-dino-tiny"
 
@@ -33,9 +32,11 @@ def test_env(results, out):
         "version": torch.__version__,
         "cuda": torch.version.cuda,
         "available": torch.cuda.is_available(),
-        "device": torch.cuda.get_device_name(0),
+        "device": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
     }
     print(results["torch"])
+    if not results["torch"]["available"]:
+        raise RuntimeError("CUDA unavailable; check NVIDIA driver and container GPU passthrough")
 
 
 def test_maniskill(results, out):
@@ -191,6 +192,8 @@ def main():
     with open(f"{args.out}/smoke_test.json", "w") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
     print("saved", f"{args.out}/smoke_test.json")
+    if any(v.get("ok") is False for v in results.values()):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
