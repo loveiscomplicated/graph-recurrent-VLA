@@ -27,6 +27,7 @@ from recurrent.corruption import Corruptor, level_config
 from recurrent.expert import ScriptedExpert
 from recurrent.features import build_features
 from recurrent.models import build
+from recurrent.numerics import numerics_context, require_finite, require_state
 from recurrent.stages import FAILURE_ORDER, THRESHOLDS, StageTracker
 from recurrent.train import normalize_obs
 from recurrent.execution import writer_lock
@@ -51,16 +52,23 @@ class LearnedPolicy:
         self.state = None
 
     def act(self, env, raw, fresh, age):
+        require_finite(raw, "observation")
         obs = normalize_obs(
             build_features(raw, np.float32(fresh), np.float32(age)), self.stats
         )
         x = torch.from_numpy(obs).view(1, 1, -1)
+        require_finite(x, "normalized_input")
+        require_state(self.state, self.name)
         with torch.no_grad():
             out, self.state = self.model(x, self.state)
+        require_finite(out, "model_output")
+        require_state(self.state, self.name)
         out = out[0, 0].numpy()
         move = out[:6] * self.stats["act_std"] + self.stats["act_mean"]
         move = np.clip(move, -1.0, 1.0)
-        return np.concatenate([move, [1.0 if out[6] > 0 else -1.0]]).astype(np.float32)
+        action = np.concatenate([move, [1.0 if out[6] > 0 else -1.0]]).astype(np.float32)
+        require_finite(action, "action")
+        return action
 
 
 class ExpertPolicy:
@@ -125,7 +133,10 @@ def run_episode(env, policy, seed, level_cfg, cond, horizon, fixtures=None):
             blackout_t = t
         craw, fresh, age = corruptor.step(raw)
         t0 = time.perf_counter()
-        a = policy.act(env, craw, fresh, age)
+        with numerics_context(episode_seed=seed, step=t + 1):
+            require_finite(raw, "simulator_observation")
+            a = policy.act(env, craw, fresh, age)
+            require_finite(a, "action")
         infer.append((time.perf_counter() - t0) * 1000)
         if prev is not None:
             deltas.append(float(np.linalg.norm(a[:6] - prev[:6])))
@@ -341,17 +352,17 @@ def evaluate_cpu(ckpt, jobs, episodes, start_seed, horizon, out_path, name,
                         seed = start_seed + i
                         if (cond_name, level, seed) in done:
                             continue
+                        with numerics_context(checkpoint=str(ckpt), condition=cond_name, level=level):
+                            metrics = run_episode(env, policy, seed, level_cfg, cond, horizon, fixtures)
                         row = {
                             **base,
                             "condition": cond_name,
                             "eval_level": level,
-                            **run_episode(
-                                env, policy, seed, level_cfg, cond, horizon, fixtures
-                            ),
+                            **metrics,
                         }
                         ok += row["success"]
                         save_start = time.perf_counter()
-                        f.write(json.dumps(row) + "\n")
+                        f.write(json.dumps(row, allow_nan=False) + "\n")
                         f.flush()
                         save_s += time.perf_counter() - save_start
                         done.add((cond_name, level, seed))
@@ -397,6 +408,10 @@ def evaluation_identity(ckpt, jobs, episodes, seed, horizon, corruption, backend
     if fixtures:
         from recurrent.initial_states import validate
         validate(fixtures, range(seed, seed + episodes), horizon)
+    settings = {"stage_thresholds": THRESHOLDS, "control_mode": "pd_ee_delta_pose",
+                "obs_mode": "state", "render_backend": "none" if backend == "physx_cuda" else "sapien_cpu"}
+    if ckpt != "expert" and torch.load(ckpt, map_location="cpu", weights_only=False).get("kind") == "rkn":
+        settings["rkn_covariance_update"] = "stable_v1"
     return canonical({
         "schema": 2,
         "checkpoint": "expert" if ckpt == "expert" else sha256(ckpt),
@@ -406,8 +421,7 @@ def evaluation_identity(ckpt, jobs, episodes, seed, horizon, corruption, backend
         "backend": backend,
         "initial_states": sha256(fixtures) if fixtures else "legacy reset(seed)",
         "versions": package_versions(),
-        "settings": {"stage_thresholds": THRESHOLDS, "control_mode": "pd_ee_delta_pose",
-                     "obs_mode": "state", "render_backend": "none" if backend == "physx_cuda" else "sapien_cpu"},
+        "settings": settings,
     })
 
 
@@ -532,15 +546,11 @@ def _evaluate_gpu(
                                     "num_envs": size,
                                 }
                             )
-                        rows, timing = run_batch(
-                            env,
-                            policy,
-                            seeds,
-                            level_config(level, corruption),
-                            cond,
-                            horizon,
-                            fixtures,
-                        )
+                        with numerics_context(checkpoint=str(ckpt), condition=cond_name, level=level):
+                            rows, timing = run_batch(
+                                env, policy, seeds, level_config(level, corruption),
+                                cond, horizon, fixtures,
+                            )
                         timings.append(
                             dict(
                                 condition=cond_name, level=level, seeds=seeds, **timing
@@ -555,7 +565,8 @@ def _evaluate_gpu(
                                         "condition": cond_name,
                                         "eval_level": level,
                                         **row,
-                                    }
+                                    },
+                                    allow_nan=False,
                                 )
                                 + "\n"
                             )

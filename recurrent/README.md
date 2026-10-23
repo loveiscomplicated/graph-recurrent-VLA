@@ -275,5 +275,70 @@ bash -n recurrent/run_main_multi_gpu.sh
 barrier, CUDA 정책/CPU expert 인자와 GPU 가시성, identity 거부·재사용,
 미완료 학습 보존·재실행, JSONL 복구·중복 거부, 배치 크기 변경 후 재개,
 중복 실행 잠금·종료 신호·자손 회수, `best.pt` 기준 리포트와 정확한 집계를 확인합니다.
-이 테스트는 본 실험이나 GPU smoke를 실행하지 않습니다. 이 변경의 검증에서는 실제
+이 테스트는 본 실험이나 GPU smoke를 실행하지 않습니다. 이전 launcher 변경 검증에서는 실제
 CPU/GPU simulator, CUDA 학습·평가, NVIDIA Vulkan, 원격 게시를 실행하지 않았습니다.
+
+## RKN NaN 수정과 작은 GPU smoke
+
+RKN의 관측 분산 갱신은 `K=P/(P+R)`에 대해 `(1-K)*P` 대신 동치식 `K*R`을
+사용합니다. float32에서 `K`가 1로 반올림되어 분산이 0이 되고 `log(0)`이 모델
+출력을 깨뜨리던 문제를 방지합니다. 구조·파라미터·checkpoint 형식은 유지하므로
+기존 checkpoint를 그대로 읽습니다. 향후 학습도 같은 안정한 forward 계산을 사용합니다.
+
+CPU/GPU 평가는 simulator 관측·정규화 입력·모델 출력·recurrent state·action의
+유한값을 확인하며 RKN 분산은 양수인지도 검사합니다. GPU는 활성 slot만 검사합니다.
+잘못된 값은 simulator step 전에 checkpoint, condition, level, episode seed와
+1부터 시작하는 step, tensor 이름을 포함한 오류로 중단합니다. JSONL에도 NaN/Inf를
+기록하지 않습니다. 기존 손상된 행은 자동 수정하지 않고 파일·행·값·seed를 보고합니다.
+
+RKN 평가 identity에는 `settings.rkn_covariance_update="stable_v1"`이 추가됩니다.
+이 필드가 없는 이전 RKN 결과에 이어 쓰기는 거부합니다. 이전 JSONL·summary·완료
+파일과 identity는 함께 보존하고 새 평가 출력 경로를 사용하세요. 다른 모델과 expert의
+identity는 유지됩니다. 이 수정이 기존 RKN 학습을 재실행하거나 결과를 자동 변환하지는
+않습니다. 유한값 검사의 실행 시간도 평가의 추론 시간에 포함됩니다.
+
+다음은 **본 평가를 재개하지 않고** 기존 checkpoint로 작은 smoke만 실행합니다.
+설치된 환경의 Python을 `PY`로 지정하고, CPU fixture 생성과 GPU 평가는 별도
+프로세스에서 실행합니다. fixture는 현재 패키지 환경에서 새로 생성하므로 원본
+실험의 초기 상태·수치와 같다고 간주하지 않습니다. GPU batch 1·2에서 각각
+2 seed × 2 condition × 2 level, 합계 16 episode를 최대 250 step 실행합니다.
+
+```bash
+PY=.venv/bin/python
+"$PY" -m unittest recurrent.tests.test_numerics -v
+mkdir -p outputs/recurrent/troubleshooting
+SMOKE_DIR=$(mktemp -d outputs/recurrent/troubleshooting/rkn-XXXXXX)
+"$PY" -m recurrent.initial_states --out "$SMOKE_DIR/initial_states.pt" \
+  --episodes 2 --start-seed 2010 --horizon 250
+for BATCH_SIZE in 1 2; do
+  WANDB_MODE=disabled EXPERIMENTS_DIR="$SMOKE_DIR/tracking" \
+    "$PY" -m recurrent.evaluate \
+    --ckpt outputs/recurrent/exp/main/runs/rkn_none_s0/best.pt \
+    --conditions normal hole_shift --levels none high \
+    --episodes 2 --start-seed 2010 --horizon 250 \
+    --sim-backend physx_cuda --num-envs "$BATCH_SIZE" \
+    --initial-states "$SMOKE_DIR/initial_states.pt" \
+    --out "$SMOKE_DIR/smoke_batch${BATCH_SIZE}.jsonl" || exit 1
+done
+```
+
+두 프로세스 모두 JSONL의 유효성·episode 집합·summary·완료 metadata 저장까지
+성공해야 smoke 통과입니다. 성공률 자체는 통과 기준이 아닙니다. 모델 수치 회귀와
+기존 평가·완료 검증 테스트는 다음처럼 별도 프로세스에서 실행합니다.
+
+```bash
+"$PY" -m unittest recurrent.tests.test_recurrent -v
+"$PY" -m unittest recurrent.tests.test_gpu_eval -v
+"$PY" -m unittest recurrent.tests.test_main_execution -v
+```
+
+2026-10-23 검증: GTX 1650 4GB, Python 3.12.15, torch 2.14.1+cu132,
+NumPy 2.5.4와 위 simulator 버전에서 관련 테스트 52개가 통과했습니다. 수정 전의
+결정적 수치 회귀는 CPU·CUDA 모두 실패했고 수정 후 통과했습니다. 저장된 RKN
+12개 checkpoint는 CPU·CUDA 각각 고정 입력 500 step 동안 유한한 출력·state와
+양수 분산을 유지했습니다. 실제 `physx_cuda`/`render=none` smoke 16 episode도
+각각 250 step 후 결과 검증을 통과했고, 원본 산출물·기존 백업 관련 파일 1,082개의
+SHA-256이 일치했습니다. smoke의 과제 성공은 0/16이며 제어 성능 개선을 입증하지
+않습니다. 원본 RTX 3090 8장 환경과 본 평가 재개·재학습·원격 게시는 실행하지
+않았습니다. 실행 기록은 `outputs/recurrent/troubleshooting/rkn_stable_20261023T111605Z/`
+아래 `verification.json`, 테스트 로그와 smoke JSONL에 보존했습니다.

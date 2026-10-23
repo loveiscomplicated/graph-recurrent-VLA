@@ -10,6 +10,7 @@ import torch
 from envs.maniskill import get_gt_state
 from recurrent.corruption import Corruptor
 from recurrent.features import AGE_SCALE
+from recurrent.numerics import numerics_context, require_finite, require_state
 from recurrent.stages import THRESHOLDS
 
 
@@ -119,18 +120,25 @@ class TensorPolicy:
     @torch.inference_mode()
     def act(self, raw, fresh, age, active):
         s = self.stats
+        require_finite(raw, "observation", active=active)
         x = (features(raw, fresh, age) - s["obs_mean"]) / s["obs_std"]
         x *= s.get("obs_keep", torch.ones_like(s["obs_mean"]))
+        require_finite(x, "normalized_input", active=active)
+        require_state(self.state, self.kind, active=active)
         out, state = self.model(x[:, None], self.state)
+        require_finite(out, "model_output", active=active)
+        require_state(state, self.kind, active=active)
         self.state = freeze_state(state, self.state, active, self.kind)
         out = out[:, 0]
-        return torch.cat(
+        action = torch.cat(
             (
                 (out[:, :6] * s["act_std"] + s["act_mean"]).clamp(-1, 1),
                 torch.where(out[:, 6:] > 0, 1.0, -1.0),
             ),
             -1,
         )
+        require_finite(action, "action", active=active)
+        return action
 
 
 def stage_snapshots(env, raw):
@@ -224,6 +232,8 @@ def run_batch(env, policy, seeds, cfg, cond, horizon, fixtures):
             env.unwrapped.scene._gpu_apply_all()
             env.unwrapped.scene._gpu_fetch_all()
         raw = raw_tensor(env)
+        with numerics_context(episode_seeds=seeds, step=t + 1):
+            require_finite(raw, "simulator_observation", active=active)
         observed = {k: v.clone() for k, v in raw.items()}
         fresh = torch.ones(b, device=device)
         age = torch.zeros(b, device=device)
@@ -237,7 +247,9 @@ def run_batch(env, policy, seeds, cfg, cond, horizon, fixtures):
             age[i] = a
         torch.cuda.synchronize()
         tick = time.perf_counter()
-        action = policy.act(observed, fresh, age, active)
+        with numerics_context(episode_seeds=seeds, step=t + 1):
+            action = policy.act(observed, fresh, age, active)
+            require_finite(action, "action", active=active)
         torch.cuda.synchronize()
         inference.append((time.perf_counter() - tick) * 1000)
         if previous is not None:

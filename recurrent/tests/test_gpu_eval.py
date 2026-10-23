@@ -153,7 +153,7 @@ class TensorEvaluationTest(unittest.TestCase):
     def test_resume_identity(self):
         with tempfile.TemporaryDirectory() as d:
             ckpt = Path(d) / "best.pt"
-            ckpt.write_bytes(b"test")
+            torch.save({"kind": "mlp", "version": 1}, ckpt)
             out = Path(d) / "eval.jsonl"
             args = (
                 out,
@@ -168,7 +168,7 @@ class TensorEvaluationTest(unittest.TestCase):
             )
             verify_resume(*args)
             verify_resume(*args)
-            ckpt.write_bytes(b"changed")
+            torch.save({"kind": "mlp", "version": 2}, ckpt)
             with self.assertRaisesRegex(ValueError, "mismatch"):
                 verify_resume(*args)
 

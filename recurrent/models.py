@@ -127,7 +127,8 @@ class RKNPolicy(nn.Module):
             var = torch.einsum("bij,bj->bi", a * a, var) + q
             gain = var[:, :m] / (var[:, :m] + s[:, i])
             mu = torch.cat([mu[:, :m] + gain * (w[:, i] - mu[:, :m]), mu[:, m:]], -1)
-            var = torch.cat([(1 - gain) * var[:, :m], var[:, m:]], -1)
+            # K * R == (1 - K) * P, without subtracting a gain rounded to 1.
+            var = torch.cat([gain * s[:, i], var[:, m:]], -1)
             outs.append(torch.cat([mu, torch.log(var)], -1))
         return self.head(torch.stack(outs, 1)), (mu, var)
 

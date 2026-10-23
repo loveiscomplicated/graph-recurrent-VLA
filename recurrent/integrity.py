@@ -244,7 +244,8 @@ def read_eval_rows(path, identity, *, repair=False):
             if row[k] is None and k == "mean_infer_ms" and identity["backend"] == "physx_cuda":
                 continue
             if type(row[k]) not in (int, float) or not math.isfinite(row[k]) or row[k] < 0:
-                raise ValueError(f"Invalid evaluation metric {k}")
+                raise ValueError(f"Invalid evaluation metric {k}={row[k]!r}: {path}:{i + 1} "
+                                 f"condition={key[0]} level={key[1]} episode_seed={key[2]}")
         if row["failure_stage"] not in (None, "acquisition", "retention", "transport", "alignment", "insertion"):
             raise ValueError("Invalid failure stage")
         keys.add(key)
