@@ -1,0 +1,1 @@
+[{"run_id": "495a67210c5c4cbfab91d013239f7ce9", "step": 0, "metrics": {"eval/task03g_saved_selection/peg/candidate_p95_mm": 5.663919174070641, "eval/task03g_saved_selection/peg/final_refs": 149, "eval/task03g_saved_selection/box/candidate_p95_mm": 30.71006532944713, "eval/task03g_saved_selection/box/final_refs": 9}}]

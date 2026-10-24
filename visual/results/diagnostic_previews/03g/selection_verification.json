@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "compatibility": {
+    "peg": {
+      "status": "PASS",
+      "pairs": 23876,
+      "right": 11964,
+      "down": 11912,
+      "source_object_support_pixel_exact": true,
+      "depth_jump_strict_gt": true,
+      "reference_angles_exact_from_saved_reference_normals": true,
+      "candidate_threshold_membership_exact": true,
+      "saved_row_validity_membership_exact": true,
+      "optimized_pair_numeric_identity": "N/A: full optimized PCA5 pair angles not stored",
+      "optimized_connection_gate_identity": "N/A: endpoint candidate equality does not prove low-angle pair gate equality"
+    },
+    "box": {
+      "status": "PASS",
+      "pairs": 23645,
+      "right": 11835,
+      "down": 11810,
+      "source_object_support_pixel_exact": true,
+      "depth_jump_strict_gt": true,
+      "reference_angles_exact_from_saved_reference_normals": true,
+      "candidate_threshold_membership_exact": true,
+      "saved_row_validity_membership_exact": true,
+      "optimized_pair_numeric_identity": "N/A: full optimized PCA5 pair angles not stored",
+      "optimized_connection_gate_identity": "N/A: endpoint candidate equality does not prove low-angle pair gate equality"
+    }
+  },
+  "original_preservation": {
+    "status": "PASS",
+    "files": 4325,
+    "all_sha256_unchanged": true
+  },
+  "required_tests": {
+    "summary": "Ran 93 tests in 0.704s; OK",
+    "modules": [
+      "visual.runtime.test.test_geometry_aware_sampling",
+      "visual.runtime.test.test_local_structural_sampling",
+      "visual.runtime.test.test_priority_fps_metric_control",
+      "visual.runtime.test.test_sampling",
+      "visual.runtime.test.test_sampling_geometry",
+      "visual.runtime.test.test_sampling_evaluation",
+      "visual.runtime.test.test_priority_fps_trace",
+      "visual.runtime.test.test_priority_fps_seed_control"
+    ],
+    "failed": 0
+  },
+  "all_C_exactly_one_patch": true,
+  "quota_capacity_and_sum": true,
+  "fixed_P_F_budgets": true,
+  "P_subset_C_subset_X_F_subset_X": true,
+  "source_pixel_xyz_object_role_alignment": true,
+  "P_S_no_overlap": true,
+  "npz_exact_readback": true,
+  "pre_GT_archive_sha256_unchanged": true,
+  "GT_independence": "full-rule synthetic annotation perturbation + annotation-free actual helpers; actual selection rerun=0",
+  "joint_matching_and_reference_denominators": true,
+  "baseline_and_UV_saved_metric_exact": true,
+  "optimized_pair_identity": "N/A",
+  "synthetic_performance": "N/A",
+  "source_input_hashes_unchanged": true,
+  "feature_unavailable_explicit": true,
+  "preregistered_config_sha256": "ba1494d8a23de338afb4b2b8746275ce2e38b8a2c9e0a36b0c2ea9ad0b8bb2c9",
+  "actual_fps_calls": {
+    "global_baseline": 0,
+    "priority_patch": 10,
+    "global_fallback": 0,
+    "surface": 2
+  },
+  "no_generalization_or_adoption_claim": true,
+  "skipped": [
+    "simulator",
+    "renderer",
+    "GPU/CUDA/MPS/PCL",
+    "normal/candidate extraction",
+    "sweep",
+    "other frames/episodes",
+    "full-rule synthetic performance",
+    "feature reconstruction",
+    "production",
+    "external upload",
+    "install",
+    "commit"
+  ],
+  "document_checks": {
+    "status": "PASS",
+    "html_links": 23,
+    "markdown_links": 22,
+    "png_decoded": {
+      "patch_and_selection.png": [
+        1400,
+        2380,
+        4
+      ],
+      "peg_GT_auxiliary.png": [
+        1540,
+        1960,
+        4
+      ],
+      "candidate_3d_ecdf_tail.png": [
+        1400,
+        1960,
+        4
+      ],
+      "surface_depth_tradeoff.png": [
+        1400,
+        2520,
+        4
+      ],
+      "candidate_XZ_coverage.png": [
+        1400,
+        1960,
+        4
+      ],
+      "patch_quota.png": [
+        1400,
+        2240,
+        4
+      ],
+      "independent_regions.png": [
+        1400,
+        2100,
+        4
+      ],
+      "box_GT_auxiliary.png": [
+        1540,
+        1960,
+        4
+      ]
+    }
+  }
+}

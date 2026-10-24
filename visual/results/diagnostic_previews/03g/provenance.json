@@ -1,0 +1,9 @@
+{
+  "run_id": "495a67210c5c4cbfab91d013239f7ce9",
+  "source_run_id": "7f657cf88baf4f1f89e594252e243e1c",
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.json",
+  "summary_source_sha256": "b98bd0028aff9aabf1338a006f768ca7e655ac4b1743adb262bd62d69c057e03",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}
