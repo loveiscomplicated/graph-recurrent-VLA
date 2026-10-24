@@ -66,3 +66,11 @@ The report includes mask IoU/precision/recall, visible-surface distances in mm,
 per-frame values, and explicit missing-observation counts. The video shows RGB,
 depth overlay, object depth, a fixed metre scale, and per-frame error metrics.
 See [metric definitions and limitations](rgbd.md#gt-비교-리포트와-depth-영상).
+
+### Current-observation Structural / Surface sampling
+
+Task03's opt-in [sampling API](sampling.md) selects actual observed Peg/Box
+points under one combined budget, preserving source pixels and geometric
+evidence. The [measured report](../../docs/visual-graph-integration/03_sampling.md)
+compares general FPS and four candidate-priority conditions. This internal
+NumPy result does not implement final Graph packaging, stale cache or edges.
