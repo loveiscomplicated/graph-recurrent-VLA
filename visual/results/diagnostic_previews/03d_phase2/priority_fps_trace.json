@@ -1,0 +1,4692 @@
+{
+  "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+  "frame": 0,
+  "config": {
+    "task": "03-D",
+    "phase": 2,
+    "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+    "source_directory": "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f",
+    "frame": 0,
+    "methods": [
+      "S2",
+      "S3"
+    ],
+    "priority_count": 32,
+    "fps_seed": 3964924996,
+    "tolerance_px_m": [
+      2.0,
+      0.003
+    ],
+    "input_sha256": {
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.json": "a88035aa821b879f1e6b87cf5b477af13f0d5858568ca0efa7c26c364894e94c",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/data/step2/ep000.npz": "22ad72d776057da9ed5f85014cba47b4603e421623f29763c88edb159a5087ba",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/runtime_tracking/ep000/masks.npz": "6bf9555a9c97c83a09d9733e582e9c4b9509f95e9dd06854ba05d3ac25fb7042",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/data/step2/segmentation_id_map.json": "ffd4cf9c568b4d3ef2cec161e22c9a49b78212ae0b43c43d763d1fa4bb1f0027",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/runtime_tracking/ep000/tracking.json": "b78ba6064a610b77d8761e4d81fcff4660f1b5120854ec224c88b1e01017f40f",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_samples.npz": "9f6d46356212bc43bd29ceb6df34c1a96ea70b3879f0bb4da2c6ccae535dd058",
+      "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_metrics.json": "6df34b94fa8e513d8872c3259bfe5a3d60b5718875b80d1715e5f8b6522ebbe8"
+    },
+    "source_sha256": {
+      "visual/runtime/test/run_priority_fps_trace.py": "f41905efd42b375f74da5baaac770ade914df21f192bda3a6182792edae68f3b",
+      "visual/runtime/test/run_rim_bottleneck.py": "8323bd3048438be9c90b663f1bc03ef6fdfd67d10eb123c1fd4930538428fda3",
+      "visual/runtime/test/sampling_evaluation.py": "daebf8834d2c0d4ca7f95e927c87ed3d6c7fc3777909a49504e265443585d60b",
+      "visual/runtime/sampling.py": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed"
+    },
+    "device": "cpu",
+    "gpu_executed": false,
+    "simulator_executed": false,
+    "sample_points_executed": false,
+    "candidate_extraction_executed": false,
+    "feature_extraction_executed": false,
+    "surface_fps_executed": false,
+    "python": "3.11.13",
+    "numpy": "2.4.6"
+  },
+  "source_contract": {
+    "visual/runtime/rgbd.py": {
+      "original_sha256": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+      "current_sha256": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+      "status": "byte identical"
+    },
+    "visual/runtime/geometry.py": {
+      "original_sha256": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+      "current_sha256": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+      "status": "byte identical"
+    },
+    "visual/runtime/normal_estimators.py": {
+      "original_sha256": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+      "current_sha256": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+      "status": "byte identical"
+    },
+    "visual/runtime/pca.py": {
+      "original_sha256": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+      "current_sha256": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+      "status": "byte identical"
+    },
+    "visual/runtime/edge_evidence.py": {
+      "original_sha256": "14ab164cd98a0be16c7f12e2e6679b932b697028e567975b0dc31a939bf903b4",
+      "current_sha256": "2c896cc60e50f50f2b55ea377d34a6e15bffab875df2a8653dfe1b9830d30f2d",
+      "status": "AST identical (formatting only)"
+    },
+    "visual/runtime/sampling.py": {
+      "original_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+      "current_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_sampling.py": {
+      "original_sha256": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+      "current_sha256": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/sampling_evaluation.py": {
+      "original_sha256": "a99654f398d1e429601459878ed4080100bc3dc19b42e78471572298c6e05e4a",
+      "current_sha256": "daebf8834d2c0d4ca7f95e927c87ed3d6c7fc3777909a49504e265443585d60b",
+      "status": "original definitions unchanged; additive diagnostics only"
+    },
+    "visual/runtime/test/sampling_plots.py": {
+      "original_sha256": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+      "current_sha256": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/test_sampling.py": {
+      "original_sha256": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+      "current_sha256": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/test_sampling_evaluation.py": {
+      "original_sha256": "1705fd07af7fb611be87f2570d8c4dce3dfd9be8020873018aeeda258924e303",
+      "current_sha256": "8ec490314b6e55b3d4c0bc2b05f37036bf07fa3462039fd8b1676227d0a3b0bd",
+      "status": "diagnostic tests extended; not an evaluation dependency"
+    },
+    "visual/runtime/test/test_sampling_geometry.py": {
+      "original_sha256": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+      "current_sha256": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/normal_diagnostics.py": {
+      "original_sha256": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+      "current_sha256": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_normal_comparison.py": {
+      "original_sha256": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+      "current_sha256": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_structural_edges.py": {
+      "original_sha256": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+      "current_sha256": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_normal_diagnostics.py": {
+      "original_sha256": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+      "current_sha256": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+      "status": "byte identical"
+    }
+  },
+  "fps_source_check": {
+    "saved_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+    "current_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+    "fps_candidate_allocation_ast_exact": true
+  },
+  "input_hashes_unchanged": true,
+  "methods": {
+    "S2": {
+      "estimator": "fd2",
+      "candidate_count": 297,
+      "candidate_flat_indices": [
+        95015,
+        95016,
+        95017,
+        95454,
+        95527,
+        95528,
+        95529,
+        95966,
+        95967,
+        95968,
+        95969,
+        95970,
+        95971,
+        96039,
+        96478,
+        96479,
+        96480,
+        96481,
+        96482,
+        96483,
+        96551,
+        96552,
+        96553,
+        96994,
+        96995,
+        97064,
+        97065,
+        97506,
+        97507,
+        97576,
+        97577,
+        98018,
+        98090,
+        98091,
+        98529,
+        98530,
+        98599,
+        98600,
+        98602,
+        99041,
+        99042,
+        99043,
+        99554,
+        99555,
+        100066,
+        100067,
+        100572,
+        100578,
+        100579,
+        101083,
+        101084,
+        101085,
+        101086,
+        101090,
+        101091,
+        101595,
+        101596,
+        101597,
+        101598,
+        104212,
+        104724,
+        104725,
+        105236,
+        105237,
+        105238,
+        105748,
+        105749,
+        105750,
+        105751,
+        106262,
+        106263,
+        106773,
+        106774,
+        106775,
+        107285,
+        107286,
+        107287,
+        107797,
+        107798,
+        107799,
+        108309,
+        108310,
+        108311,
+        108821,
+        108822,
+        108823,
+        109333,
+        109334,
+        109335,
+        109831,
+        109845,
+        109846,
+        109847,
+        110343,
+        110344,
+        110357,
+        110358,
+        110359,
+        110854,
+        110855,
+        110856,
+        110857,
+        110869,
+        110870,
+        110871,
+        111367,
+        111368,
+        111369,
+        111370,
+        111381,
+        111382,
+        111383,
+        111880,
+        111881,
+        111882,
+        111883,
+        111893,
+        111894,
+        111895,
+        112393,
+        112394,
+        112395,
+        112405,
+        112406,
+        112407,
+        112906,
+        112907,
+        112908,
+        112917,
+        112918,
+        112919,
+        113418,
+        113419,
+        113420,
+        113421,
+        113429,
+        113430,
+        113431,
+        113931,
+        113932,
+        113933,
+        113934,
+        113941,
+        113942,
+        113943,
+        114444,
+        114445,
+        114446,
+        114447,
+        114453,
+        114454,
+        114455,
+        114957,
+        114958,
+        114959,
+        114960,
+        114965,
+        114966,
+        114967,
+        115470,
+        115471,
+        115472,
+        115477,
+        115478,
+        115479,
+        115982,
+        115983,
+        115984,
+        115985,
+        115989,
+        115990,
+        115991,
+        116495,
+        116496,
+        116497,
+        116498,
+        116501,
+        116502,
+        116503,
+        117008,
+        117009,
+        117010,
+        117011,
+        117013,
+        117014,
+        117015,
+        117521,
+        117522,
+        117523,
+        117524,
+        117525,
+        117526,
+        117527,
+        118008,
+        118009,
+        118010,
+        118011,
+        118012,
+        118013,
+        118034,
+        118035,
+        118036,
+        118037,
+        118038,
+        118039,
+        118520,
+        118521,
+        118522,
+        118523,
+        118524,
+        118547,
+        118548,
+        118549,
+        118550,
+        119033,
+        119034,
+        119035,
+        119036,
+        119037,
+        119038,
+        119039,
+        119040,
+        119041,
+        119042,
+        119043,
+        119044,
+        119045,
+        119046,
+        119047,
+        119048,
+        119049,
+        119050,
+        119051,
+        119052,
+        119053,
+        119054,
+        119055,
+        119056,
+        119057,
+        119058,
+        119059,
+        119060,
+        119061,
+        119062,
+        119546,
+        119547,
+        119548,
+        119549,
+        119550,
+        119551,
+        119552,
+        119553,
+        119554,
+        119555,
+        119556,
+        119557,
+        119558,
+        119559,
+        119560,
+        119561,
+        119562,
+        119563,
+        119564,
+        119565,
+        119566,
+        119567,
+        119568,
+        119569,
+        119570,
+        119571,
+        119572,
+        120059,
+        120060,
+        120061,
+        120062,
+        120063,
+        120064,
+        120065,
+        120066,
+        120067,
+        120068,
+        120069,
+        120070,
+        120071,
+        120072,
+        120073,
+        120074,
+        120075,
+        120076,
+        120077,
+        120078,
+        120079,
+        120080,
+        120081,
+        120082,
+        120083,
+        120084
+      ],
+      "candidate_rim_reference_count": 57,
+      "candidate_rim_source_node_count": 101,
+      "stored_priority_flat_indices": [
+        101598,
+        109831,
+        106775,
+        113933,
+        98091,
+        118520,
+        117008,
+        111882,
+        120074,
+        114967,
+        115470,
+        111367,
+        120084,
+        118013,
+        112907,
+        120065,
+        117011,
+        110869,
+        110854,
+        114446,
+        95971,
+        112908,
+        115472,
+        104212,
+        119055,
+        117525,
+        105748,
+        116495,
+        120060,
+        111880,
+        118523,
+        119046
+      ],
+      "replay_priority_flat_indices": [
+        101598,
+        109831,
+        106775,
+        113933,
+        98091,
+        118520,
+        117008,
+        111882,
+        120074,
+        114967,
+        115470,
+        111367,
+        120084,
+        118013,
+        112907,
+        120065,
+        117011,
+        110869,
+        110854,
+        114446,
+        95971,
+        112908,
+        115472,
+        104212,
+        119055,
+        117525,
+        105748,
+        116495,
+        120060,
+        111880,
+        118523,
+        119046
+      ],
+      "exact_saved_order_match": true,
+      "rng_seed": 3964924996,
+      "initial_rng_local_index": 58,
+      "priority_reference_ids": [
+        46,
+        48,
+        50,
+        64,
+        66,
+        68,
+        69,
+        83,
+        84,
+        85,
+        96,
+        97,
+        98
+      ],
+      "priority_reference_count": 13,
+      "source_alignment": {
+        "source_frame": 0,
+        "selected_nodes": 256,
+        "xyz_exact": true,
+        "max_abs_xyz_error_m": 0.0,
+        "raster_and_object_support": true
+      },
+      "saved_feature_rows_aligned": true,
+      "saved_feature_fields": 23,
+      "saved_allocation": {
+        "observed": 11665,
+        "budget": 127,
+        "candidates": 297,
+        "priority": 32,
+        "orientation_priority": 32,
+        "depth_priority": 0,
+        "surface_fps": 95,
+        "selected_candidates": 32,
+        "selected": 127
+      },
+      "trace": [
+        {
+          "step": 1,
+          "initial_rng_choice": true,
+          "candidate_local_index": 58,
+          "flat_index": 101598,
+          "xyz_m": [
+            -0.04030468687415123,
+            -0.06917968392372131,
+            0.30799999833106995
+          ],
+          "depth_m": 0.30799999833106995,
+          "min_squared_distance_m2": null,
+          "argmax_value_m2": null,
+          "exact_tie_count": null,
+          "tied_local_indices": null,
+          "first_tied_local_index": null,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 297,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 2,
+          "initial_rng_choice": false,
+          "candidate_local_index": 89,
+          "flat_index": 109831,
+          "xyz_m": [
+            0.02021484449505806,
+            -0.11185546964406967,
+            0.6899999976158142
+          ],
+          "depth_m": 0.6899999976158142,
+          "min_squared_distance_m2": 0.1514078358175424,
+          "argmax_value_m2": 0.1514078358175424,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            89
+          ],
+          "first_tied_local_index": 89,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 296,
+            "max_min_squared_distance_m2": 0.1514078358175424,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.046167271979104765,
+            "gap_to_winner_m2": 0.10524056383843765,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.046167271979104765,
+            "gap_to_winner_m2": 0.10524056383843765,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 3,
+          "initial_rng_choice": false,
+          "candidate_local_index": 73,
+          "flat_index": 106775,
+          "xyz_m": [
+            0.04498047009110451,
+            -0.09091796725988388,
+            0.49000000953674316
+          ],
+          "depth_m": 0.49000000953674316,
+          "min_squared_distance_m2": 0.04087011503985677,
+          "argmax_value_m2": 0.04087011503985677,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            73
+          ],
+          "first_tied_local_index": 73,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 295,
+            "max_min_squared_distance_m2": 0.04087011503985677,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.04073178322632798,
+            "gap_to_winner_m2": 0.00013833181352879143,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.04073178322632798,
+            "gap_to_winner_m2": 0.00013833181352879143,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 4,
+          "initial_rng_choice": false,
+          "candidate_local_index": 140,
+          "flat_index": 113933,
+          "xyz_m": [
+            0.031166017055511475,
+            -0.07733789086341858,
+            0.5910000205039978
+          ],
+          "depth_m": 0.5910000205039978,
+          "min_squared_distance_m2": 0.010576259802991997,
+          "argmax_value_m2": 0.010576259802991997,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            140
+          ],
+          "first_tied_local_index": 140,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 294,
+            "max_min_squared_distance_m2": 0.010576259802991997,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 0.005177944029591153,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 0.005177944029591153,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 5,
+          "initial_rng_choice": false,
+          "candidate_local_index": 33,
+          "flat_index": 98091,
+          "xyz_m": [
+            0.05216601863503456,
+            -0.07734961062669754,
+            0.3070000112056732
+          ],
+          "depth_m": 0.3070000112056732,
+          "min_squared_distance_m2": 0.008618579053949527,
+          "argmax_value_m2": 0.008618579053949527,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            33
+          ],
+          "first_tied_local_index": 33,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 293,
+            "max_min_squared_distance_m2": 0.008618579053949527,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 0.0032202632805486825,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 0.0032202632805486825,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 6,
+          "initial_rng_choice": false,
+          "candidate_local_index": 205,
+          "flat_index": 118520,
+          "xyz_m": [
+            -0.014589843340218067,
+            -0.04766015708446503,
+            0.49799999594688416
+          ],
+          "depth_m": 0.49799999594688416,
+          "min_squared_distance_m2": 0.005483860166041022,
+          "argmax_value_m2": 0.005483860166041022,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            205
+          ],
+          "first_tied_local_index": 205,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 292,
+            "max_min_squared_distance_m2": 0.005483860166041022,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 8.554439264017808e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.005398315773400844,
+            "gap_to_winner_m2": 8.554439264017808e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 7,
+          "initial_rng_choice": false,
+          "candidate_local_index": 179,
+          "flat_index": 117008,
+          "xyz_m": [
+            0.03435351699590683,
+            -0.057255856692790985,
+            0.5329999923706055
+          ],
+          "depth_m": 0.5329999923706055,
+          "min_squared_distance_m2": 0.0030950683436311716,
+          "argmax_value_m2": 0.0030950683436311716,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            179
+          ],
+          "first_tied_local_index": 179,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 291,
+            "max_min_squared_distance_m2": 0.0030950683436311716,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0022833070469228806,
+            "gap_to_winner_m2": 0.000811761296708291,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0022833070469228806,
+            "gap_to_winner_m2": 0.000811761296708291,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 8,
+          "initial_rng_choice": false,
+          "candidate_local_index": 114,
+          "flat_index": 111882,
+          "xyz_m": [
+            0.026126954704523087,
+            -0.09331054985523224,
+            0.6370000243186951
+          ],
+          "depth_m": 0.6370000243186951,
+          "min_squared_distance_m2": 0.0023965183355980774,
+          "argmax_value_m2": 0.0023965183355980774,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            114
+          ],
+          "first_tied_local_index": 114,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 290,
+            "max_min_squared_distance_m2": 0.0023965183355980774,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0012585304447815422,
+            "gap_to_winner_m2": 0.0011379878908165351,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0012585304447815422,
+            "gap_to_winner_m2": 0.0011379878908165351,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 9,
+          "initial_rng_choice": false,
+          "candidate_local_index": 286,
+          "flat_index": 120074,
+          "xyz_m": [
+            0.020630860701203346,
+            -0.04224414378404617,
+            0.503000020980835
+          ],
+          "depth_m": 0.503000020980835,
+          "min_squared_distance_m2": 0.0012948314435838474,
+          "argmax_value_m2": 0.0012948314435838474,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            286
+          ],
+          "first_tied_local_index": 286,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 289,
+            "max_min_squared_distance_m2": 0.0012948314435838474,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0012585304447815422,
+            "gap_to_winner_m2": 3.630099880230515e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0012585304447815422,
+            "gap_to_winner_m2": 3.630099880230515e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 10,
+          "initial_rng_choice": false,
+          "candidate_local_index": 158,
+          "flat_index": 114967,
+          "xyz_m": [
+            0.0458984375,
+            -0.0615234375,
+            0.5
+          ],
+          "depth_m": 0.5,
+          "min_squared_distance_m2": 0.0009648808532337211,
+          "argmax_value_m2": 0.0009648808532337211,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            158
+          ],
+          "first_tied_local_index": 158,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 288,
+            "max_min_squared_distance_m2": 0.0009648808532337211,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0008504530841835362,
+            "gap_to_winner_m2": 0.00011442776905018492,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0008504530841835362,
+            "gap_to_winner_m2": 0.00011442776905018492,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 11,
+          "initial_rng_choice": false,
+          "candidate_local_index": 159,
+          "flat_index": 115470,
+          "xyz_m": [
+            0.031832028180360794,
+            -0.066957026720047,
+            0.5619999766349792
+          ],
+          "depth_m": 0.5619999766349792,
+          "min_squared_distance_m2": 0.000941469693078581,
+          "argmax_value_m2": 0.000941469693078581,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            159
+          ],
+          "first_tied_local_index": 159,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 287,
+            "max_min_squared_distance_m2": 0.000941469693078581,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 0.0006211446938394671,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 0.0006211446938394671,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 12,
+          "initial_rng_choice": false,
+          "candidate_local_index": 105,
+          "flat_index": 111367,
+          "xyz_m": [
+            0.019306639209389687,
+            -0.09910742193460464,
+            0.6589999794960022
+          ],
+          "depth_m": 0.6589999794960022,
+          "min_squared_distance_m2": 0.0005641184571612869,
+          "argmax_value_m2": 0.0005641184571612869,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            105
+          ],
+          "first_tied_local_index": 105,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 286,
+            "max_min_squared_distance_m2": 0.0005641184571612869,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 0.00024379345792217301,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 0.00024379345792217301,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 13,
+          "initial_rng_choice": false,
+          "candidate_local_index": 296,
+          "flat_index": 120084,
+          "xyz_m": [
+            0.04043945297598839,
+            -0.042412109673023224,
+            0.5049999952316284
+          ],
+          "depth_m": 0.5049999952316284,
+          "min_squared_distance_m2": 0.00039640843745237034,
+          "argmax_value_m2": 0.00039640843745237034,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            296
+          ],
+          "first_tied_local_index": 296,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 285,
+            "max_min_squared_distance_m2": 0.00039640843745237034,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 7.608343821325649e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 7.608343821325649e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 14,
+          "initial_rng_choice": false,
+          "candidate_local_index": 198,
+          "flat_index": 118013,
+          "xyz_m": [
+            -0.00502929650247097,
+            -0.051298826932907104,
+            0.5149999856948853
+          ],
+          "depth_m": 0.5149999856948853,
+          "min_squared_distance_m2": 0.00039364362553485997,
+          "argmax_value_m2": 0.00039364362553485997,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            198
+          ],
+          "first_tied_local_index": 198,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 284,
+            "max_min_squared_distance_m2": 0.00039364362553485997,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 7.331862629574612e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.00032032499923911385,
+            "gap_to_winner_m2": 7.331862629574612e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 15,
+          "initial_rng_choice": false,
+          "candidate_local_index": 126,
+          "flat_index": 112907,
+          "xyz_m": [
+            0.027806641533970833,
+            -0.08583789318799973,
+            0.6190000176429749
+          ],
+          "depth_m": 0.6190000176429749,
+          "min_squared_distance_m2": 0.00038266218583732706,
+          "argmax_value_m2": 0.00038266218583732706,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            126
+          ],
+          "first_tied_local_index": 126,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 283,
+            "max_min_squared_distance_m2": 0.00038266218583732706,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0003140376329681194,
+            "gap_to_winner_m2": 6.862455286920765e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0003140376329681194,
+            "gap_to_winner_m2": 6.862455286920765e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 16,
+          "initial_rng_choice": false,
+          "candidate_local_index": 277,
+          "flat_index": 120065,
+          "xyz_m": [
+            0.0029355469159781933,
+            -0.042076170444488525,
+            0.5009999871253967
+          ],
+          "depth_m": 0.5009999871253967,
+          "min_squared_distance_m2": 0.0003171524804232806,
+          "argmax_value_m2": 0.0003171524804232806,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            277
+          ],
+          "first_tied_local_index": 277,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 282,
+            "max_min_squared_distance_m2": 0.0003171524804232806,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0003140376329681194,
+            "gap_to_winner_m2": 3.114847455161192e-06,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.0003140376329681194,
+            "gap_to_winner_m2": 3.114847455161192e-06,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 17,
+          "initial_rng_choice": false,
+          "candidate_local_index": 182,
+          "flat_index": 117011,
+          "xyz_m": [
+            0.03930468484759331,
+            -0.05542968586087227,
+            0.515999972820282
+          ],
+          "depth_m": 0.515999972820282,
+          "min_squared_distance_m2": 0.00029174449546255643,
+          "argmax_value_m2": 0.00029174449546255643,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            182
+          ],
+          "first_tied_local_index": 182,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 281,
+            "max_min_squared_distance_m2": 0.00029174449546255643,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.000244147556039076,
+            "gap_to_winner_m2": 4.759693942348042e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.000244147556039076,
+            "gap_to_winner_m2": 4.759693942348042e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 18,
+          "initial_rng_choice": false,
+          "candidate_local_index": 102,
+          "flat_index": 110869,
+          "xyz_m": [
+            0.04148827865719795,
+            -0.07622265070676804,
+            0.49399998784065247
+          ],
+          "depth_m": 0.49399998784065247,
+          "min_squared_distance_m2": 0.000244147556039076,
+          "argmax_value_m2": 0.000244147556039076,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            102
+          ],
+          "first_tied_local_index": 102,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 280,
+            "max_min_squared_distance_m2": 0.000244147556039076,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.000244147556039076,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 101,
+            "max_min_squared_distance_m2": 0.000244147556039076,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "matched_rim_reference_ids": [
+            96,
+            97,
+            98
+          ],
+          "rim_reference_matched": true,
+          "new_reference_ids": [
+            96,
+            97,
+            98
+          ],
+          "new_reference_count": 3,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 19,
+          "initial_rng_choice": false,
+          "candidate_local_index": 98,
+          "flat_index": 110854,
+          "xyz_m": [
+            0.017087889835238457,
+            -0.10384179651737213,
+            0.6729999780654907
+          ],
+          "depth_m": 0.6729999780654907,
+          "min_squared_distance_m2": 0.00022333711142093204,
+          "argmax_value_m2": 0.00022333711142093204,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            98
+          ],
+          "first_tied_local_index": 98,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 279,
+            "max_min_squared_distance_m2": 0.00022333711142093204,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.00011137941712385455,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.00011137941712385455,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 20,
+          "initial_rng_choice": false,
+          "candidate_local_index": 147,
+          "flat_index": 114446,
+          "xyz_m": [
+            0.03268164023756981,
+            -0.07325195521116257,
+            0.5770000219345093
+          ],
+          "depth_m": 0.5770000219345093,
+          "min_squared_distance_m2": 0.00021499194373005015,
+          "argmax_value_m2": 0.00021499194373005015,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            147
+          ],
+          "first_tied_local_index": 147,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 278,
+            "max_min_squared_distance_m2": 0.00021499194373005015,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.00010303424943297265,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.00010303424943297265,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 21,
+          "initial_rng_choice": false,
+          "candidate_local_index": 12,
+          "flat_index": 95971,
+          "xyz_m": [
+            -0.033732421696186066,
+            -0.08107617497444153,
+            0.30300000309944153
+          ],
+          "depth_m": 0.30300000309944153,
+          "min_squared_distance_m2": 0.00020972112120566655,
+          "argmax_value_m2": 0.00020972112120566655,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            12
+          ],
+          "first_tied_local_index": 12,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 277,
+            "max_min_squared_distance_m2": 0.00020972112120566655,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 9.776342690858905e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 9.776342690858905e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 22,
+          "initial_rng_choice": false,
+          "candidate_local_index": 127,
+          "flat_index": 112908,
+          "xyz_m": [
+            0.029541015625,
+            -0.08389648795127869,
+            0.6050000190734863
+          ],
+          "depth_m": 0.6050000190734863,
+          "min_squared_distance_m2": 0.00020277706772648188,
+          "argmax_value_m2": 0.00020277706772648188,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            127
+          ],
+          "first_tied_local_index": 127,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 276,
+            "max_min_squared_distance_m2": 0.00020277706772648188,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 9.081937342940438e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 9.081937342940438e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 23,
+          "initial_rng_choice": false,
+          "candidate_local_index": 161,
+          "flat_index": 115472,
+          "xyz_m": [
+            0.03551367297768593,
+            -0.06564648449420929,
+            0.5509999990463257
+          ],
+          "depth_m": 0.5509999990463257,
+          "min_squared_distance_m2": 0.00013627153629025557,
+          "argmax_value_m2": 0.00013627153629025557,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            161
+          ],
+          "first_tied_local_index": 161,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 275,
+            "max_min_squared_distance_m2": 0.00013627153629025557,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 2.431384199317807e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 2.431384199317807e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 24,
+          "initial_rng_choice": false,
+          "candidate_local_index": 59,
+          "flat_index": 104212,
+          "xyz_m": [
+            0.03891796991229057,
+            -0.09966796636581421,
+            0.4860000014305115
+          ],
+          "depth_m": 0.4860000014305115,
+          "min_squared_distance_m2": 0.00012931645762181976,
+          "argmax_value_m2": 0.00012931645762181976,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            59
+          ],
+          "first_tied_local_index": 59,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 274,
+            "max_min_squared_distance_m2": 0.00012931645762181976,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 1.735876332474226e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 1.735876332474226e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 25,
+          "initial_rng_choice": false,
+          "candidate_local_index": 236,
+          "flat_index": 119055,
+          "xyz_m": [
+            0.030455078929662704,
+            -0.0461738295853138,
+            0.503000020980835
+          ],
+          "depth_m": 0.503000020980835,
+          "min_squared_distance_m2": 0.0001119576942970775,
+          "argmax_value_m2": 0.0001119576942970775,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            236
+          ],
+          "first_tied_local_index": 236,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 273,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 100,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 97,
+            "max_min_squared_distance_m2": 0.0001119576942970775,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "matched_rim_reference_ids": [
+            64,
+            66,
+            68,
+            69
+          ],
+          "rim_reference_matched": true,
+          "new_reference_ids": [
+            64,
+            66,
+            68,
+            69
+          ],
+          "new_reference_count": 4,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 7
+        },
+        {
+          "step": 26,
+          "initial_rng_choice": false,
+          "candidate_local_index": 190,
+          "flat_index": 117525,
+          "xyz_m": [
+            0.04216015338897705,
+            -0.05196484178304672,
+            0.5019999742507935
+          ],
+          "depth_m": 0.5019999742507935,
+          "min_squared_distance_m2": 0.00010321562656258332,
+          "argmax_value_m2": 0.00010321562656258332,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            190
+          ],
+          "first_tied_local_index": 190,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 272,
+            "max_min_squared_distance_m2": 0.00010321562656258332,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 99,
+            "max_min_squared_distance_m2": 0.00010321562656258332,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 93,
+            "max_min_squared_distance_m2": 0.00010321562656258332,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "matched_rim_reference_ids": [
+            83,
+            84,
+            85
+          ],
+          "rim_reference_matched": true,
+          "new_reference_ids": [
+            83,
+            84,
+            85
+          ],
+          "new_reference_count": 3,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 27,
+          "initial_rng_choice": false,
+          "candidate_local_index": 65,
+          "flat_index": 105748,
+          "xyz_m": [
+            0.03979882970452309,
+            -0.0960996076464653,
+            0.4970000088214874
+          ],
+          "depth_m": 0.4970000088214874,
+          "min_squared_distance_m2": 0.0001026987841781235,
+          "argmax_value_m2": 0.0001026987841781235,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            65
+          ],
+          "first_tied_local_index": 65,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 271,
+            "max_min_squared_distance_m2": 0.0001026987841781235,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 2.2094876472886736e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 2.2094876472886736e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 28,
+          "initial_rng_choice": false,
+          "candidate_local_index": 172,
+          "flat_index": 116495,
+          "xyz_m": [
+            0.03287695348262787,
+            -0.060451168566942215,
+            0.5429999828338623
+          ],
+          "depth_m": 0.5429999828338623,
+          "min_squared_distance_m2": 9.794385667941108e-05,
+          "argmax_value_m2": 9.794385667941108e-05,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            172
+          ],
+          "first_tied_local_index": 172,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 270,
+            "max_min_squared_distance_m2": 9.794385667941108e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 1.733994897417431e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 1.733994897417431e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 29,
+          "initial_rng_choice": false,
+          "candidate_local_index": 272,
+          "flat_index": 120060,
+          "xyz_m": [
+            -0.0068359375,
+            -0.0419921875,
+            0.5
+          ],
+          "depth_m": 0.5,
+          "min_squared_distance_m2": 9.62489512018683e-05,
+          "argmax_value_m2": 9.62489512018683e-05,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            272
+          ],
+          "first_tied_local_index": 272,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 269,
+            "max_min_squared_distance_m2": 9.62489512018683e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 1.564504349663154e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 1.564504349663154e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 30,
+          "initial_rng_choice": false,
+          "candidate_local_index": 112,
+          "flat_index": 111880,
+          "xyz_m": [
+            0.021416015923023224,
+            -0.094482421875,
+            0.6449999809265137
+          ],
+          "depth_m": 0.6449999809265137,
+          "min_squared_distance_m2": 8.756553396073452e-05,
+          "argmax_value_m2": 8.756553396073452e-05,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            112
+          ],
+          "first_tied_local_index": 112,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 268,
+            "max_min_squared_distance_m2": 8.756553396073452e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 6.9616262554977534e-06,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 6.9616262554977534e-06,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 31,
+          "initial_rng_choice": false,
+          "candidate_local_index": 208,
+          "flat_index": 118523,
+          "xyz_m": [
+            -0.008912109769880772,
+            -0.048521488904953,
+            0.5070000290870667
+          ],
+          "depth_m": 0.5070000290870667,
+          "min_squared_distance_m2": 8.67891511180741e-05,
+          "argmax_value_m2": 8.67891511180741e-05,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            208
+          ],
+          "first_tied_local_index": 208,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 267,
+            "max_min_squared_distance_m2": 8.67891511180741e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 6.185243412837327e-06,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 6.185243412837327e-06,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 10
+        },
+        {
+          "step": 32,
+          "initial_rng_choice": false,
+          "candidate_local_index": 227,
+          "flat_index": 119046,
+          "xyz_m": [
+            0.012720703147351742,
+            -0.0459902323782444,
+            0.5009999871253967
+          ],
+          "depth_m": 0.5009999871253967,
+          "min_squared_distance_m2": 8.060390770523677e-05,
+          "argmax_value_m2": 8.060390770523677e-05,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            227
+          ],
+          "first_tied_local_index": 227,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 266,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 98,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 90,
+            "max_min_squared_distance_m2": 8.060390770523677e-05,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "matched_rim_reference_ids": [
+            46,
+            48,
+            50
+          ],
+          "rim_reference_matched": true,
+          "new_reference_ids": [
+            46,
+            48,
+            50
+          ],
+          "new_reference_count": 3,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 13
+        }
+      ]
+    },
+    "S3": {
+      "estimator": "pca5",
+      "candidate_count": 599,
+      "candidate_flat_indices": [
+        84782,
+        84783,
+        85294,
+        85295,
+        85806,
+        85807,
+        85808,
+        85809,
+        86319,
+        86320,
+        86321,
+        87254,
+        87255,
+        87766,
+        87767,
+        88279,
+        88280,
+        88791,
+        88792,
+        90330,
+        90842,
+        90843,
+        91354,
+        91355,
+        93406,
+        93477,
+        93478,
+        93479,
+        93480,
+        93481,
+        93482,
+        93483,
+        93918,
+        93919,
+        93988,
+        93989,
+        93990,
+        93991,
+        93992,
+        93993,
+        93994,
+        93995,
+        94430,
+        94431,
+        94432,
+        94433,
+        94434,
+        94435,
+        94436,
+        94437,
+        94500,
+        94501,
+        94502,
+        94503,
+        94504,
+        94505,
+        94943,
+        94944,
+        94945,
+        94946,
+        94947,
+        94948,
+        94949,
+        94950,
+        95012,
+        95013,
+        95015,
+        95016,
+        95017,
+        95018,
+        95019,
+        95021,
+        95022,
+        95451,
+        95452,
+        95453,
+        95454,
+        95455,
+        95456,
+        95458,
+        95459,
+        95460,
+        95461,
+        95462,
+        95524,
+        95525,
+        95528,
+        95529,
+        95530,
+        95531,
+        95533,
+        95964,
+        95965,
+        95966,
+        95967,
+        95968,
+        95969,
+        95970,
+        95971,
+        95973,
+        95974,
+        96036,
+        96037,
+        96040,
+        96041,
+        96477,
+        96478,
+        96479,
+        96480,
+        96481,
+        96482,
+        96483,
+        96485,
+        96486,
+        96548,
+        96549,
+        96552,
+        96553,
+        96554,
+        96994,
+        96995,
+        96997,
+        96998,
+        97061,
+        97062,
+        97064,
+        97065,
+        97066,
+        97505,
+        97506,
+        97507,
+        97509,
+        97510,
+        97573,
+        97574,
+        97576,
+        97577,
+        97578,
+        97587,
+        97588,
+        98017,
+        98018,
+        98019,
+        98020,
+        98021,
+        98085,
+        98086,
+        98088,
+        98089,
+        98090,
+        98099,
+        98100,
+        98529,
+        98530,
+        98531,
+        98532,
+        98533,
+        98596,
+        98597,
+        98600,
+        98601,
+        98602,
+        98611,
+        98612,
+        99041,
+        99042,
+        99045,
+        99046,
+        99108,
+        99109,
+        99122,
+        99123,
+        99553,
+        99554,
+        99557,
+        99558,
+        99620,
+        99621,
+        99634,
+        99635,
+        100065,
+        100066,
+        100067,
+        100069,
+        100070,
+        100132,
+        100133,
+        100138,
+        100139,
+        100142,
+        100578,
+        100579,
+        100581,
+        100582,
+        100644,
+        100645,
+        100650,
+        100651,
+        100654,
+        100658,
+        100659,
+        101081,
+        101082,
+        101084,
+        101085,
+        101090,
+        101091,
+        101093,
+        101094,
+        101156,
+        101157,
+        101158,
+        101159,
+        101160,
+        101161,
+        101170,
+        101171,
+        101592,
+        101593,
+        101594,
+        101596,
+        101597,
+        101602,
+        101603,
+        101604,
+        101605,
+        101606,
+        101669,
+        101670,
+        101671,
+        101672,
+        101673,
+        101674,
+        101675,
+        101676,
+        101677,
+        101678,
+        101679,
+        101680,
+        101681,
+        102104,
+        102105,
+        102113,
+        102114,
+        102115,
+        102116,
+        102117,
+        102118,
+        102183,
+        102184,
+        102185,
+        102186,
+        102187,
+        102188,
+        102189,
+        102190,
+        102191,
+        102192,
+        102193,
+        102617,
+        102618,
+        102619,
+        102620,
+        102621,
+        102622,
+        102623,
+        102624,
+        102625,
+        102626,
+        102627,
+        102628,
+        102629,
+        103130,
+        103131,
+        103132,
+        103133,
+        103134,
+        103135,
+        103136,
+        104210,
+        104211,
+        104212,
+        104213,
+        104214,
+        104721,
+        104722,
+        104723,
+        104724,
+        104725,
+        104726,
+        104727,
+        105223,
+        105224,
+        105225,
+        105226,
+        105227,
+        105228,
+        105229,
+        105230,
+        105231,
+        105232,
+        105233,
+        105234,
+        105237,
+        105238,
+        105239,
+        105735,
+        105736,
+        105737,
+        105738,
+        105739,
+        105740,
+        105741,
+        105742,
+        105743,
+        105744,
+        105745,
+        105746,
+        105749,
+        105750,
+        105751,
+        106257,
+        106258,
+        106259,
+        106260,
+        106261,
+        106262,
+        106263,
+        106746,
+        106747,
+        106758,
+        106759,
+        106770,
+        106771,
+        106772,
+        106774,
+        106775,
+        107258,
+        107259,
+        107270,
+        107271,
+        107286,
+        107287,
+        107770,
+        107771,
+        107782,
+        107783,
+        107797,
+        107798,
+        107799,
+        108282,
+        108283,
+        108294,
+        108295,
+        108309,
+        108310,
+        108311,
+        108794,
+        108795,
+        108806,
+        108807,
+        108821,
+        108822,
+        108823,
+        109306,
+        109307,
+        109318,
+        109319,
+        109333,
+        109334,
+        109335,
+        109818,
+        109819,
+        109829,
+        109830,
+        109831,
+        109845,
+        109846,
+        109847,
+        110330,
+        110331,
+        110342,
+        110343,
+        110344,
+        110357,
+        110358,
+        110359,
+        110842,
+        110843,
+        110855,
+        110856,
+        110869,
+        110870,
+        110871,
+        111354,
+        111355,
+        111368,
+        111369,
+        111381,
+        111382,
+        111383,
+        111866,
+        111867,
+        111880,
+        111881,
+        111882,
+        111893,
+        111894,
+        111895,
+        112378,
+        112379,
+        112393,
+        112394,
+        112395,
+        112405,
+        112406,
+        112407,
+        112890,
+        112891,
+        112906,
+        112907,
+        112908,
+        112917,
+        112918,
+        112919,
+        113402,
+        113403,
+        113419,
+        113420,
+        113429,
+        113430,
+        113431,
+        113914,
+        113915,
+        113932,
+        113933,
+        113941,
+        113942,
+        113943,
+        114426,
+        114427,
+        114444,
+        114445,
+        114446,
+        114453,
+        114454,
+        114455,
+        114938,
+        114939,
+        114957,
+        114958,
+        114959,
+        114965,
+        114966,
+        114967,
+        115450,
+        115451,
+        115470,
+        115471,
+        115472,
+        115477,
+        115478,
+        115479,
+        115962,
+        115963,
+        115983,
+        115984,
+        115985,
+        115989,
+        115990,
+        115991,
+        116473,
+        116474,
+        116475,
+        116476,
+        116496,
+        116497,
+        116501,
+        116502,
+        116503,
+        116984,
+        116985,
+        116986,
+        116987,
+        116988,
+        116989,
+        117008,
+        117009,
+        117010,
+        117013,
+        117014,
+        117015,
+        117496,
+        117497,
+        117499,
+        117500,
+        117501,
+        117521,
+        117522,
+        117525,
+        117526,
+        117527,
+        118008,
+        118009,
+        118012,
+        118013,
+        118037,
+        118038,
+        118520,
+        118521,
+        118524,
+        118525,
+        118548,
+        118549,
+        118550,
+        119032,
+        119033,
+        119034,
+        119035,
+        119036,
+        119038,
+        119039,
+        119040,
+        119041,
+        119042,
+        119043,
+        119044,
+        119045,
+        119046,
+        119047,
+        119048,
+        119049,
+        119050,
+        119051,
+        119052,
+        119053,
+        119054,
+        119055,
+        119056,
+        119057,
+        119058,
+        119059,
+        119060,
+        119061,
+        119062,
+        119545,
+        119546,
+        119547,
+        119548,
+        119549,
+        119550,
+        119551,
+        119552,
+        119553,
+        119554,
+        119555,
+        119556,
+        119557,
+        119558,
+        119559,
+        119560,
+        119561,
+        119562,
+        119563,
+        119564,
+        119565,
+        119566,
+        119567,
+        119568,
+        119569,
+        119570,
+        119571,
+        119572,
+        119573,
+        120058,
+        120059,
+        120060,
+        120061,
+        120062,
+        120063,
+        120064,
+        120065,
+        120066,
+        120067,
+        120068,
+        120069,
+        120070,
+        120071,
+        120072,
+        120073,
+        120074,
+        120075,
+        120076,
+        120077,
+        120078,
+        120079,
+        120080,
+        120081,
+        120082
+      ],
+      "candidate_rim_reference_count": 91,
+      "candidate_rim_source_node_count": 127,
+      "stored_priority_flat_indices": [
+        96553,
+        106747,
+        109829,
+        118524,
+        109819,
+        84782,
+        87255,
+        108294,
+        105741,
+        87766,
+        104214,
+        107270,
+        112379,
+        107771,
+        108795,
+        109318,
+        114939,
+        102629,
+        100659,
+        115985,
+        105737,
+        107770,
+        110843,
+        105744,
+        112907,
+        114966,
+        114446,
+        106758,
+        102117,
+        94500,
+        107259,
+        107782
+      ],
+      "replay_priority_flat_indices": [
+        96553,
+        106747,
+        109829,
+        118524,
+        109819,
+        84782,
+        87255,
+        108294,
+        105741,
+        87766,
+        104214,
+        107270,
+        112379,
+        107771,
+        108795,
+        109318,
+        114939,
+        102629,
+        100659,
+        115985,
+        105737,
+        107770,
+        110843,
+        105744,
+        112907,
+        114966,
+        114446,
+        106758,
+        102117,
+        94500,
+        107259,
+        107782
+      ],
+      "exact_saved_order_match": true,
+      "rng_seed": 3964924996,
+      "initial_rng_local_index": 117,
+      "priority_reference_ids": [
+        3,
+        4,
+        5
+      ],
+      "priority_reference_count": 3,
+      "source_alignment": {
+        "source_frame": 0,
+        "selected_nodes": 256,
+        "xyz_exact": true,
+        "max_abs_xyz_error_m": 0.0,
+        "raster_and_object_support": true
+      },
+      "saved_feature_rows_aligned": true,
+      "saved_feature_fields": 23,
+      "saved_allocation": {
+        "observed": 11665,
+        "budget": 127,
+        "candidates": 599,
+        "priority": 32,
+        "orientation_priority": 32,
+        "depth_priority": 0,
+        "surface_fps": 95,
+        "selected_candidates": 35,
+        "selected": 127
+      },
+      "trace": [
+        {
+          "step": 1,
+          "initial_rng_choice": true,
+          "candidate_local_index": 117,
+          "flat_index": 96553,
+          "xyz_m": [
+            0.049605466425418854,
+            -0.08068358898162842,
+            0.3059999942779541
+          ],
+          "depth_m": 0.3059999942779541,
+          "min_squared_distance_m2": null,
+          "argmax_value_m2": null,
+          "exact_tie_count": null,
+          "tied_local_indices": null,
+          "first_tied_local_index": null,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 599,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": null,
+            "gap_to_winner_m2": null,
+            "ties_winner": null
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 2,
+          "initial_rng_choice": false,
+          "candidate_local_index": 329,
+          "flat_index": 106747,
+          "xyz_m": [
+            -0.025066405534744263,
+            -0.2645898461341858,
+            1.4259999990463257
+          ],
+          "depth_m": 1.4259999990463257,
+          "min_squared_distance_m2": 1.2937974105630499,
+          "argmax_value_m2": 1.2937974105630499,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            329
+          ],
+          "first_tied_local_index": 329,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 598,
+            "max_min_squared_distance_m2": 1.2937974105630499,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 1.2515529899818665,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 1.2515529899818665,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 3,
+          "initial_rng_choice": false,
+          "candidate_local_index": 373,
+          "flat_index": 109829,
+          "xyz_m": [
+            0.015124999918043613,
+            -0.11412499845027924,
+            0.7039999961853027
+          ],
+          "depth_m": 0.7039999961853027,
+          "min_squared_distance_m2": 0.1607112319560657,
+          "argmax_value_m2": 0.1607112319560657,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            373
+          ],
+          "first_tied_local_index": 373,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 597,
+            "max_min_squared_distance_m2": 0.1607112319560657,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 0.11846681137488241,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 0.11846681137488241,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 4,
+          "initial_rng_choice": false,
+          "candidate_local_index": 510,
+          "flat_index": 118524,
+          "xyz_m": [
+            -0.006931641139090061,
+            -0.048521488904953,
+            0.5070000290870667
+          ],
+          "depth_m": 0.5070000290870667,
+          "min_squared_distance_m2": 0.04359930291609304,
+          "argmax_value_m2": 0.04359930291609304,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            510
+          ],
+          "first_tied_local_index": 510,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 596,
+            "max_min_squared_distance_m2": 0.04359930291609304,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 0.0013548823349097405,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0422444205811833,
+            "gap_to_winner_m2": 0.0013548823349097405,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 5,
+          "initial_rng_choice": false,
+          "candidate_local_index": 372,
+          "flat_index": 109819,
+          "xyz_m": [
+            -0.021638670936226845,
+            -0.1995566338300705,
+            1.2309999465942383
+          ],
+          "depth_m": 1.2309999465942383,
+          "min_squared_distance_m2": 0.04226608852338684,
+          "argmax_value_m2": 0.04226608852338684,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            372
+          ],
+          "first_tied_local_index": 372,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 595,
+            "max_min_squared_distance_m2": 0.04226608852338684,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.03714332632309044,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.03714332632309044,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 6,
+          "initial_rng_choice": false,
+          "candidate_local_index": 0,
+          "flat_index": 84782,
+          "xyz_m": [
+            0.08518945425748825,
+            -0.1657988280057907,
+            0.4690000116825104
+          ],
+          "depth_m": 0.4690000116825104,
+          "min_squared_distance_m2": 0.023684271806384938,
+          "argmax_value_m2": 0.023684271806384938,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            0
+          ],
+          "first_tied_local_index": 0,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 594,
+            "max_min_squared_distance_m2": 0.023684271806384938,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.018561509606088537,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.018561509606088537,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": true,
+            "occlusion_2px": true,
+            "same_plane_tracker_cut_2px": true,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": true,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 7,
+          "initial_rng_choice": false,
+          "candidate_local_index": 12,
+          "flat_index": 87255,
+          "xyz_m": [
+            -0.07214062660932541,
+            -0.15229687094688416,
+            0.4560000002384186
+          ],
+          "depth_m": 0.4560000002384186,
+          "min_squared_distance_m2": 0.017622544646569066,
+          "argmax_value_m2": 0.017622544646569066,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            12
+          ],
+          "first_tied_local_index": 12,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 593,
+            "max_min_squared_distance_m2": 0.017622544646569066,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.012499782446272666,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.012499782446272666,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": true,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": true,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 8,
+          "initial_rng_choice": false,
+          "candidate_local_index": 352,
+          "flat_index": 108294,
+          "xyz_m": [
+            0.03354101628065109,
+            -0.22962695360183716,
+            1.3209999799728394
+          ],
+          "depth_m": 1.3209999799728394,
+          "min_squared_distance_m2": 0.012049028020678091,
+          "argmax_value_m2": 0.012049028020678091,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            352
+          ],
+          "first_tied_local_index": 352,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 592,
+            "max_min_squared_distance_m2": 0.012049028020678091,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.00692626582038169,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.00692626582038169,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 9,
+          "initial_rng_choice": false,
+          "candidate_local_index": 312,
+          "flat_index": 105741,
+          "xyz_m": [
+            0.030796874314546585,
+            -0.11292187124490738,
+            0.5839999914169312
+          ],
+          "depth_m": 0.5839999914169312,
+          "min_squared_distance_m2": 0.011499844322668158,
+          "argmax_value_m2": 0.011499844322668158,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            312
+          ],
+          "first_tied_local_index": 312,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 591,
+            "max_min_squared_distance_m2": 0.011499844322668158,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.006377082122371757,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.006377082122371757,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 10,
+          "initial_rng_choice": false,
+          "candidate_local_index": 13,
+          "flat_index": 87766,
+          "xyz_m": [
+            -0.05009179562330246,
+            -0.10199413448572159,
+            0.3089999854564667
+          ],
+          "depth_m": 0.3089999854564667,
+          "min_squared_distance_m2": 0.010402683356764586,
+          "argmax_value_m2": 0.010402683356764586,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            13
+          ],
+          "first_tied_local_index": 13,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 590,
+            "max_min_squared_distance_m2": 0.010402683356764586,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.005279921156468185,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.005279921156468185,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 11,
+          "initial_rng_choice": false,
+          "candidate_local_index": 283,
+          "flat_index": 104214,
+          "xyz_m": [
+            0.04271484538912773,
+            -0.09966796636581421,
+            0.4860000014305115
+          ],
+          "depth_m": 0.4860000014305115,
+          "min_squared_distance_m2": 0.005521736942826976,
+          "argmax_value_m2": 0.005521736942826976,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            283
+          ],
+          "first_tied_local_index": 283,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 589,
+            "max_min_squared_distance_m2": 0.005521736942826976,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.0003989747425305751,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.005122762200296401,
+            "gap_to_winner_m2": 0.0003989747425305751,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 12,
+          "initial_rng_choice": false,
+          "candidate_local_index": 339,
+          "flat_index": 107270,
+          "xyz_m": [
+            0.035267580300569534,
+            -0.25229883193969727,
+            1.3890000581741333
+          ],
+          "depth_m": 1.3890000581741333,
+          "min_squared_distance_m2": 0.005141005726063699,
+          "argmax_value_m2": 0.005141005726063699,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            339
+          ],
+          "first_tied_local_index": 339,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 588,
+            "max_min_squared_distance_m2": 0.005141005726063699,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.002694144208668924,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.002694144208668924,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 13,
+          "initial_rng_choice": false,
+          "candidate_local_index": 410,
+          "flat_index": 112379,
+          "xyz_m": [
+            -0.011109375394880772,
+            -0.09010937809944153,
+            0.6320000290870667
+          ],
+          "depth_m": 0.6320000290870667,
+          "min_squared_distance_m2": 0.004580547224555234,
+          "argmax_value_m2": 0.004580547224555234,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            410
+          ],
+          "first_tied_local_index": 410,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 587,
+            "max_min_squared_distance_m2": 0.004580547224555234,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0021336857071604584,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0021336857071604584,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 14,
+          "initial_rng_choice": false,
+          "candidate_local_index": 344,
+          "flat_index": 107771,
+          "xyz_m": [
+            -0.02380078099668026,
+            -0.24065233767032623,
+            1.3539999723434448
+          ],
+          "depth_m": 1.3539999723434448,
+          "min_squared_distance_m2": 0.004498640305312277,
+          "argmax_value_m2": 0.004498640305312277,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            344
+          ],
+          "first_tied_local_index": 344,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 586,
+            "max_min_squared_distance_m2": 0.004498640305312277,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.002051778787917502,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.002051778787917502,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 15,
+          "initial_rng_choice": false,
+          "candidate_local_index": 358,
+          "flat_index": 108795,
+          "xyz_m": [
+            -0.022675780579447746,
+            -0.21919921040534973,
+            1.2899999618530273
+          ],
+          "depth_m": 1.2899999618530273,
+          "min_squared_distance_m2": 0.0038679082114651125,
+          "argmax_value_m2": 0.0038679082114651125,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            358
+          ],
+          "first_tied_local_index": 358,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 585,
+            "max_min_squared_distance_m2": 0.0038679082114651125,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0014210466940703373,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0014210466940703373,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 16,
+          "initial_rng_choice": false,
+          "candidate_local_index": 366,
+          "flat_index": 109318,
+          "xyz_m": [
+            0.03199218586087227,
+            -0.20917968451976776,
+            1.2599999904632568
+          ],
+          "depth_m": 1.2599999904632568,
+          "min_squared_distance_m2": 0.003809874449772436,
+          "argmax_value_m2": 0.003809874449772436,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            366
+          ],
+          "first_tied_local_index": 366,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 584,
+            "max_min_squared_distance_m2": 0.003809874449772436,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0013630129323776606,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0013630129323776606,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 17,
+          "initial_rng_choice": false,
+          "candidate_local_index": 448,
+          "flat_index": 114939,
+          "xyz_m": [
+            -0.01007226575165987,
+            -0.07050585746765137,
+            0.5730000138282776
+          ],
+          "depth_m": 0.5730000138282776,
+          "min_squared_distance_m2": 0.0035904043414544543,
+          "argmax_value_m2": 0.0035904043414544543,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            448
+          ],
+          "first_tied_local_index": 448,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 583,
+            "max_min_squared_distance_m2": 0.0035904043414544543,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.001143542824059679,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.001143542824059679,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 18,
+          "initial_rng_choice": false,
+          "candidate_local_index": 271,
+          "flat_index": 102629,
+          "xyz_m": [
+            -0.04916992038488388,
+            -0.10297851264476776,
+            0.4749999940395355
+          ],
+          "depth_m": 0.4749999940395355,
+          "min_squared_distance_m2": 0.003320953574508012,
+          "argmax_value_m2": 0.003320953574508012,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            271
+          ],
+          "first_tied_local_index": 271,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 582,
+            "max_min_squared_distance_m2": 0.003320953574508012,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0008740920571132368,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0008740920571132368,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": true,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": true,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 19,
+          "initial_rng_choice": false,
+          "candidate_local_index": 200,
+          "flat_index": 100659,
+          "xyz_m": [
+            0.09817187488079071,
+            -0.11342187970876694,
+            0.4880000054836273
+          ],
+          "depth_m": 0.4880000054836273,
+          "min_squared_distance_m2": 0.0032686522684971103,
+          "argmax_value_m2": 0.0032686522684971103,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            200
+          ],
+          "first_tied_local_index": 200,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 581,
+            "max_min_squared_distance_m2": 0.0032686522684971103,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.000821790751102335,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.000821790751102335,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": true,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": true,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 20,
+          "initial_rng_choice": false,
+          "candidate_local_index": 467,
+          "flat_index": 115985,
+          "xyz_m": [
+            0.036845702677965164,
+            -0.062111325562000275,
+            0.5389999747276306
+          ],
+          "depth_m": 0.5389999747276306,
+          "min_squared_distance_m2": 0.003125136013040938,
+          "argmax_value_m2": 0.003125136013040938,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            467
+          ],
+          "first_tied_local_index": 467,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 580,
+            "max_min_squared_distance_m2": 0.003125136013040938,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0006782744956461625,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0024468615173947753,
+            "gap_to_winner_m2": 0.0006782744956461625,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 21,
+          "initial_rng_choice": false,
+          "candidate_local_index": 308,
+          "flat_index": 105737,
+          "xyz_m": [
+            0.024046875536441803,
+            -0.12529687583446503,
+            0.6480000019073486
+          ],
+          "depth_m": 0.6480000019073486,
+          "min_squared_distance_m2": 0.0027301211066481654,
+          "argmax_value_m2": 0.0027301211066481654,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            308
+          ],
+          "first_tied_local_index": 308,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 579,
+            "max_min_squared_distance_m2": 0.0027301211066481654,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0018830418073576861,
+            "gap_to_winner_m2": 0.0008470792992904793,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0018830418073576861,
+            "gap_to_winner_m2": 0.0008470792992904793,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 0
+        },
+        {
+          "step": 22,
+          "initial_rng_choice": false,
+          "candidate_local_index": 343,
+          "flat_index": 107770,
+          "xyz_m": [
+            -0.010419921949505806,
+            -0.08620117604732513,
+            0.48500001430511475
+          ],
+          "depth_m": 0.48500001430511475,
+          "min_squared_distance_m2": 0.0018830418073576861,
+          "argmax_value_m2": 0.0018830418073576861,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            343
+          ],
+          "first_tied_local_index": 343,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 578,
+            "max_min_squared_distance_m2": 0.0018830418073576861,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0018830418073576861,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 127,
+            "max_min_squared_distance_m2": 0.0018830418073576861,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "matched_rim_reference_ids": [
+            3,
+            4,
+            5
+          ],
+          "rim_reference_matched": true,
+          "new_reference_ids": [
+            3,
+            4,
+            5
+          ],
+          "new_reference_count": 3,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 23,
+          "initial_rng_choice": false,
+          "candidate_local_index": 388,
+          "flat_index": 110843,
+          "xyz_m": [
+            -0.01183007750660181,
+            -0.10384179651737213,
+            0.6729999780654907
+          ],
+          "depth_m": 0.6729999780654907,
+          "min_squared_distance_m2": 0.0017933215643902468,
+          "argmax_value_m2": 0.0017933215643902468,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            388
+          ],
+          "first_tied_local_index": 388,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 577,
+            "max_min_squared_distance_m2": 0.0017933215643902468,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 0.0001671902631645468,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 0.0001671902631645468,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 24,
+          "initial_rng_choice": false,
+          "candidate_local_index": 315,
+          "flat_index": 105744,
+          "xyz_m": [
+            0.03499804437160492,
+            -0.10499414056539536,
+            0.5429999828338623
+          ],
+          "depth_m": 0.5429999828338623,
+          "min_squared_distance_m2": 0.0017614994473869189,
+          "argmax_value_m2": 0.0017614994473869189,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            315
+          ],
+          "first_tied_local_index": 315,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 576,
+            "max_min_squared_distance_m2": 0.0017614994473869189,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 0.00013536814616121884,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 0.00013536814616121884,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 25,
+          "initial_rng_choice": false,
+          "candidate_local_index": 420,
+          "flat_index": 112907,
+          "xyz_m": [
+            0.027806641533970833,
+            -0.08583789318799973,
+            0.6190000176429749
+          ],
+          "depth_m": 0.6190000176429749,
+          "min_squared_distance_m2": 0.0017017022545018573,
+          "argmax_value_m2": 0.0017017022545018573,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            420
+          ],
+          "first_tied_local_index": 420,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 575,
+            "max_min_squared_distance_m2": 0.0017017022545018573,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 7.55709532761573e-05,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 7.55709532761573e-05,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 26,
+          "initial_rng_choice": false,
+          "candidate_local_index": 453,
+          "flat_index": 114966,
+          "xyz_m": [
+            0.04385742172598839,
+            -0.0614003911614418,
+            0.49900001287460327
+          ],
+          "depth_m": 0.49900001287460327,
+          "min_squared_distance_m2": 0.0016347130902543694,
+          "argmax_value_m2": 0.0016347130902543694,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            453
+          ],
+          "first_tied_local_index": 453,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 574,
+            "max_min_squared_distance_m2": 0.0016347130902543694,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 8.581789028669351e-06,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0016261313012257,
+            "gap_to_winner_m2": 8.581789028669351e-06,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 27,
+          "initial_rng_choice": false,
+          "candidate_local_index": 443,
+          "flat_index": 114446,
+          "xyz_m": [
+            0.03268164023756981,
+            -0.07325195521116257,
+            0.5770000219345093
+          ],
+          "depth_m": 0.5770000219345093,
+          "min_squared_distance_m2": 0.001585456632712312,
+          "argmax_value_m2": 0.001585456632712312,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            443
+          ],
+          "first_tied_local_index": 443,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 573,
+            "max_min_squared_distance_m2": 0.001585456632712312,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0007911673687010295,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0007911673687010295,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 28,
+          "initial_rng_choice": false,
+          "candidate_local_index": 330,
+          "flat_index": 106758,
+          "xyz_m": [
+            0.03620703145861626,
+            -0.2645898461341858,
+            1.4259999990463257
+          ],
+          "depth_m": 1.4259999990463257,
+          "min_squared_distance_m2": 0.0015209472229532062,
+          "argmax_value_m2": 0.0015209472229532062,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            330
+          ],
+          "first_tied_local_index": 330,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 572,
+            "max_min_squared_distance_m2": 0.0015209472229532062,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0007266579589419236,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0007266579589419236,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 29,
+          "initial_rng_choice": false,
+          "candidate_local_index": 246,
+          "flat_index": 102117,
+          "xyz_m": [
+            -0.03219335898756981,
+            -0.06863866746425629,
+            0.3109999895095825
+          ],
+          "depth_m": 0.3109999895095825,
+          "min_squared_distance_m2": 0.0014369412304358758,
+          "argmax_value_m2": 0.0014369412304358758,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            246
+          ],
+          "first_tied_local_index": 246,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 571,
+            "max_min_squared_distance_m2": 0.0014369412304358758,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0006426519664245933,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0006426519664245933,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 30,
+          "initial_rng_choice": false,
+          "candidate_local_index": 50,
+          "flat_index": 94500,
+          "xyz_m": [
+            0.06815233826637268,
+            -0.13350389897823334,
+            0.4779999852180481
+          ],
+          "depth_m": 0.4779999852180481,
+          "min_squared_distance_m2": 0.0014044604817955997,
+          "argmax_value_m2": 0.0014044604817955997,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            50
+          ],
+          "first_tied_local_index": 50,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 570,
+            "max_min_squared_distance_m2": 0.0014044604817955997,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0006101712177843171,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0006101712177843171,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": true,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": true,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 31,
+          "initial_rng_choice": false,
+          "candidate_local_index": 338,
+          "flat_index": 107259,
+          "xyz_m": [
+            -0.024416016414761543,
+            -0.25229883193969727,
+            1.3890000581741333
+          ],
+          "depth_m": 1.3890000581741333,
+          "min_squared_distance_m2": 0.0013610253515417142,
+          "argmax_value_m2": 0.0013610253515417142,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            338
+          ],
+          "first_tied_local_index": 338,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 569,
+            "max_min_squared_distance_m2": 0.0013610253515417142,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0005667360875304317,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.0005667360875304317,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": false,
+            "plane_interior": false,
+            "known_negative_union": false
+          },
+          "cumulative_reference_count": 3
+        },
+        {
+          "step": 32,
+          "initial_rng_choice": false,
+          "candidate_local_index": 345,
+          "flat_index": 107782,
+          "xyz_m": [
+            0.03437890484929085,
+            -0.24065233767032623,
+            1.3539999723434448
+          ],
+          "depth_m": 1.3539999723434448,
+          "min_squared_distance_m2": 0.001211260647571169,
+          "argmax_value_m2": 0.001211260647571169,
+          "exact_tie_count": 1,
+          "tied_local_indices": [
+            345
+          ],
+          "first_tied_local_index": 345,
+          "rule_satisfied": true,
+          "all_remaining": {
+            "remaining_count": 568,
+            "max_min_squared_distance_m2": 0.001211260647571169,
+            "gap_to_winner_m2": 0.0,
+            "ties_winner": true
+          },
+          "rim_A": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.00041697138355988646,
+            "ties_winner": false
+          },
+          "uncovered_rim_B": {
+            "remaining_count": 126,
+            "max_min_squared_distance_m2": 0.0007942892640112826,
+            "gap_to_winner_m2": 0.00041697138355988646,
+            "ties_winner": false
+          },
+          "matched_rim_reference_ids": [],
+          "rim_reference_matched": false,
+          "new_reference_ids": [],
+          "new_reference_count": 0,
+          "selected_negative_roi": {
+            "silhouette_2px": false,
+            "occlusion_2px": false,
+            "same_plane_tracker_cut_2px": false,
+            "invalid_depth_2px": false,
+            "robot_occlusion_2px": false,
+            "contamination": true,
+            "plane_interior": false,
+            "known_negative_union": true
+          },
+          "cumulative_reference_count": 3
+        }
+      ]
+    }
+  },
+  "pass_all": true,
+  "interpretation": [
+    "Distances are reconstructed from the verified saved prefix, without a second FPS selection algorithm.",
+    "GT rim and negative ROI annotations are added after exact FPS replay.",
+    "Distance competition describes the observed selection; causal contributions remain untested."
+  ],
+  "run_id": "aa5d71078e0841fd886b5026d6030ebc"
+}

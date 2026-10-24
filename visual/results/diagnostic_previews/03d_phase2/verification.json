@@ -1,0 +1,44 @@
+{
+  "run_id": "aa5d71078e0841fd886b5026d6030ebc",
+  "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+  "status": {
+    "source_run_exact": "PASS",
+    "evaluated_fps_candidate_allocation_definitions_exact": "PASS",
+    "source_input_hashes_unchanged": "PASS",
+    "candidate_count_exact": "PASS",
+    "saved_priority_order_exact": "PASS",
+    "argmax_and_first_tie_rule_exact": "PASS",
+    "saved_feature_rows_aligned": "PASS",
+    "phase1_reference_ids_exact": "PASS",
+    "coverage_trace_exact": "PASS",
+    "tests_pass": "PASS",
+    "markdown_local_links_exist": "PASS",
+    "report_snapshot_exact": "PASS",
+    "gpu_experiment": "SKIP (outside scope; not executed on this host)",
+    "simulator_and_surface_fps": "SKIP (outside scope)",
+    "other_frames_and_full_sampling_evaluation": "SKIP (outside scope)",
+    "external_upload": "SKIP (not requested)",
+    "html_local_links_exist": "PASS"
+  },
+  "passed": true,
+  "test_count": 33,
+  "fps_replay_calls_per_method": 1,
+  "source_sha256": {
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.json": "a88035aa821b879f1e6b87cf5b477af13f0d5858568ca0efa7c26c364894e94c",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/data/step2/ep000.npz": "22ad72d776057da9ed5f85014cba47b4603e421623f29763c88edb159a5087ba",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/runtime_tracking/ep000/masks.npz": "6bf9555a9c97c83a09d9733e582e9c4b9509f95e9dd06854ba05d3ac25fb7042",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/data/step2/segmentation_id_map.json": "ffd4cf9c568b4d3ef2cec161e22c9a49b78212ae0b43c43d763d1fa4bb1f0027",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/runtime_tracking/ep000/tracking.json": "b78ba6064a610b77d8761e4d81fcff4660f1b5120854ec224c88b1e01017f40f",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_samples.npz": "9f6d46356212bc43bd29ceb6df34c1a96ea70b3879f0bb4da2c6ccae535dd058",
+    "/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_metrics.json": "6df34b94fa8e513d8872c3259bfe5a3d60b5718875b80d1715e5f8b6522ebbe8"
+  },
+  "report_sha256": "20ae27422f260d39fc8dbab95a001d7b8ef11ddabe00e402f7051b889450ef9e",
+  "artifact_sha256": {
+    "priority_fps_trace.json": "330f451d1424ec05d237070443cd898f5f5b4f6118a1132cfcb06184075577e0",
+    "priority_fps_trace.html": "fc53af22209d6cf65817e7df0e4bef8ba05b44c521b8f0d391fb3aefb87e3085",
+    "priority_overlay.png": "31e3629e12a306f790b0d5ebf533269b166aba893700bd2d6c72dab82ab40fdb",
+    "priority_distances_coverage.png": "9ac52980e67273eb039e2c5ff98a68708f1c3e011ffa16375bb4e5385a7e1bff",
+    "implementation.patch": "9885730968ef2dce24b9e28a1d72896abfebbd2b6d58a20345b1aa213d039631",
+    "tests.log": "c50f2a517608f2860b489426e48cffb6a5460f40c14f7d1d7ec7543ba789dd5a"
+  }
+}
