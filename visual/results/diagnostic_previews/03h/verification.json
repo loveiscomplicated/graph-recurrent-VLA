@@ -1,0 +1,81 @@
+{
+  "status": "PASS",
+  "original_evidence_exact": true,
+  "same_pair_joint_tolerance": true,
+  "draw_count": 32,
+  "all_draws_unique_k297_and_original_membership": true,
+  "selections_saved_before_gt_annotation": true,
+  "gt_blind_selector_signature": [
+    "n",
+    "k",
+    "seed",
+    "stream"
+  ],
+  "original_reference_relation": [
+    56,
+    1,
+    35
+  ],
+  "exact_formula_exhaustive_synthetic_tests": true,
+  "npz_readback_exact": true,
+  "forbidden_actual_data_calls_guarded": true,
+  "preservation": {
+    "status": "PASS",
+    "protected_file_count": 1202,
+    "all_sha256_unchanged": true
+  },
+  "tests": "Ran 24 tests in 0.045s; OK",
+  "simulator_executed": false,
+  "renderer_executed": false,
+  "gpu_executed": false,
+  "links": {
+    "html_relative_targets": 17,
+    "markdown_relative_targets": 14,
+    "png_decodes": 5
+  },
+  "browser": {
+    "status": "PASS",
+    "images": [
+      {
+        "src": "candidate_original.png",
+        "complete": true,
+        "width": 2017,
+        "height": 1851
+      },
+      {
+        "src": "candidate_matched.png",
+        "complete": true,
+        "width": 2760,
+        "height": 1681
+      },
+      {
+        "src": "reference_multiplicity.png",
+        "complete": true,
+        "width": 2734,
+        "height": 1549
+      },
+      {
+        "src": "expected_coverage.png",
+        "complete": true,
+        "width": 2229,
+        "height": 869
+      },
+      {
+        "src": "roi_depth_spatial.png",
+        "complete": true,
+        "width": 3079,
+        "height": 1719
+      }
+    ]
+  },
+  "final_report_review": {
+    "five_pngs_visually_inspected": true,
+    "markdown_and_html_explanation_completed_from_saved_results": true,
+    "diagnostic_source_and_raw_results_unchanged": true,
+    "raw_result_sha256": {
+      "candidate_count_matched.json": "c36ddd01f6567f59398bd5ee2f6bfc914ab88744cb40f2a50d2cbef14aede2c9",
+      "candidate_count_matched.npz": "e2a038873e6798e5b87c8dc3258a76d44e97b4562e82dd45f01e2345d17994eb",
+      "selection_before_annotation.npz": "989f451ee333cb97eb8d0145f8e2c84e7d86cf993d6a82a12e0d67e378808ba5"
+    }
+  }
+}
