@@ -21,3 +21,8 @@
 | [Task 02-C 공간 분포](structural_density.png) | 원본 raster에서 후보가 집중되는 영역 |
 | [Task 02-C frame 0](structural_f0000.png) | 방향 변화·depth jump·mask·가림 증거와 GT 비교 |
 | [Task 02-C frame 120](structural_f0120.png) | 가림·tracker 지원 손실로 rim coverage가 낮은 사례 |
+| [Task 03 trade-off](sampling_tradeoffs.png) | Point budget·priority ratio·오선택·CPU 지연 비교 |
+| [Task 03 민감도](sampling_sensitivity.png) | Threshold와 seed에 따른 구조 보존 변화 |
+| [Task 03 frame 0](sampling_f0000.png) | 같은 관측의 후보·선택점·GT와 hole rim 손실 |
+| [Task 03 frame 0 3D](sampling_f0000_clouds.png) | 원본 관측과 S0–S4 sampled cloud 비교 |
+| [Task 03 frame 120](sampling_f0120.png) | 후반 가림에서 관측 손실과 sampling 손실 구분 |

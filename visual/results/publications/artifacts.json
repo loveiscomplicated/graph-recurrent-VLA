@@ -6,7 +6,7 @@
     "private": true
   },
   "published_at": "2026-10-23T18:19:47.040976+00:00",
-  "scope": "Visual runtime through Task 02-C, including PCA5 optimization and streaming diagnostics",
+  "scope": "Visual runtime through Task 03, including PCA5 optimization and sampling diagnostics",
   "verification": "All uploaded objects matched remote hashes; downloaded report ZIPs passed SHA-256 and ZIP integrity checks.",
   "artifacts": [
     {
@@ -195,7 +195,54 @@
         "935a867a2da04ec9972da572af4f6a10"
       ],
       "evaluated_source_note": "Final evaluated snapshots match current detector/evaluator source. Earlier runs retain superseded.json pointing to the final run. PCL NOT RUN."
+    },
+    {
+      "key": "sampling",
+      "title": "Task 03 — Structural / Surface Sampling",
+      "run_id": "2551448b0fae4c6bbce3caf48774275f",
+      "execution_git_commit": "71eb5548c2de2b471f7223aa6e600d913545743a",
+      "execution_git_dirty": true,
+      "publication_commit": "1f791b70d762fa1f22e44903313c7a61ff0df8b3",
+      "hf_revision": "6b8ce8d6953ae92e76ee49f6ae83b4180e338b7c",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/6b8ce8d6953ae92e76ee49f6ae83b4180e338b7c/visual/2551448b0fae4c6bbce3caf48774275f",
+      "remote_manifest_path": "visual/2551448b0fae4c6bbce3caf48774275f/manifests/1b3c54c3c706ae6693cd6221bd7596d531525b5e3d7bfcf581f7572e58137260/manifest.json",
+      "bundle_path": "visual/2551448b0fae4c6bbce3caf48774275f/artifacts/reports/14cf7152fac146561742341444188a69372e317c78e9c796a1497a9d5e90fd8a/report-14cf7152fac146561742341444188a69372e317c78e9c796a1497a9d5e90fd8a.zip",
+      "bundle_sha256": "14cf7152fac146561742341444188a69372e317c78e9c796a1497a9d5e90fd8a",
+      "bundle_bytes": 251567664,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/6b8ce8d6953ae92e76ee49f6ae83b4180e338b7c/visual/2551448b0fae4c6bbce3caf48774275f/artifacts/reports/14cf7152fac146561742341444188a69372e317c78e9c796a1497a9d5e90fd8a/report-14cf7152fac146561742341444188a69372e317c78e9c796a1497a9d5e90fd8a.zip?download=true",
+      "entrypoint": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.html",
+      "selected_files": 837,
+      "selection_file": "sampling_files.json",
+      "dependency_artifact_keys": [
+        "rgbd"
+      ],
+      "included_run_ids": [
+        "71a16f2747bc43a686ed56a5ac856471",
+        "f13af0283e4644bea27b4b731f7bf8e0",
+        "2551448b0fae4c6bbce3caf48774275f"
+      ],
+      "development_runs": {
+        "71a16f2747bc43a686ed56a5ac856471": "Development run before corrected allocation integer remainder rule.",
+        "f13af0283e4644bea27b4b731f7bf8e0": "Corrected-allocation validation run; final non-timing summaries agree."
+      },
+      "report_document": "docs/visual-graph-integration/03_sampling.md",
+      "evaluated_source_note": "The final 16 evaluated-source snapshots match the code committed at publication_commit. A later cleanup only removes trailing blank lines in edge_evidence.py; AST is identical and original bytes remain in evaluated_source. Moved geometry helpers preserve 15 original function/class ASTs. Historical audits describe state at experiment completion, before this publication.",
+      "validation": {
+        "runtime_tests_run": 100,
+        "runtime_tests_passed": 97,
+        "runtime_tests_skipped_cuda": 3,
+        "common_infrastructure_tests_passed": 42,
+        "evaluated_source_hashes_checked": 16,
+        "unchanged_promoted_function_asts": 15,
+        "saved_selection_audit_record": 6534,
+        "relative_html_links_checked": 87,
+        "remote_object_hashes_verified": true,
+        "download_sha256_verified": true,
+        "download_zip_integrity_verified": true,
+        "gpu_sampling_executed": false,
+        "end_to_end_20hz_executed": false
+      }
     }
   ],
-  "updated_at": "2026-10-23T19:51:51.919625+00:00"
+  "updated_at": "2026-10-24T00:33:03.979119+00:00"
 }

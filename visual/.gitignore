@@ -24,3 +24,4 @@ results/v1/**/runs/
 /results/normal_comparison/
 /results/pca_optimization/
 /results/structural_edges/
+/results/sampling/

@@ -1,0 +1,3355 @@
+{
+  "entrypoint": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.html",
+  "publication_commit": "1f791b70d762fa1f22e44903313c7a61ff0df8b3",
+  "description": "Task 03 current-observation Structural/Surface sampling and geometry preservation: final 121-frame, 54-condition CPU evaluation, all saved selections, metrics, figures, evaluated source and audit logs. Both earlier development runs are preserved as dependencies with original metadata. Final run is 2551448b0fae4c6bbce3caf48774275f; the first run predates corrected allocation, and the second is the deterministic validation run. Original episode and tracker masks are in the RGB-D bundle. CUDA/MPS sampling and end-to-end 20Hz NOT RUN. A later current-source cleanup only removes a trailing blank line in edge_evidence.py; evaluated snapshots remain exact.",
+  "files": {
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/commands.txt": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/commands.txt",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.html": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.html",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/completion_audit.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/completion_audit.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/edge_evidence.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/edge_evidence.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/geometry.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/normal_estimators.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/normal_estimators.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/pca.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/pca.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/rgbd.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/sampling.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/normal_diagnostics.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_normal_comparison.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_sampling.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_sampling.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_structural_edges.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/sampling_plots.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/sampling_plots.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling_geometry.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluated_source/visual/runtime/test/test_sampling_geometry.py",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluation.log": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/evaluation.log",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0000_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0001_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0001_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0001_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0001_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0002_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0002_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0002_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0002_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0003_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0003_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0003_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0003_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0004_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0004_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0004_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0004_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0005_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0005_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0005_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0005_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0006_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0006_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0006_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0006_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0007_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0007_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0007_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0007_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0008_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0008_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0008_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0008_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0009_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0009_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0009_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0009_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0010_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0010_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0010_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0010_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0011_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0011_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0011_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0011_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0012_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0012_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0012_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0012_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0013_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0013_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0013_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0013_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0014_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0014_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0014_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0014_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0015_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0016_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0016_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0016_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0016_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0017_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0017_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0017_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0017_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0018_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0019_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0019_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0019_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0019_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0020_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0020_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0020_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0020_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0021_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0021_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0021_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0021_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0022_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0022_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0022_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0022_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0023_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0023_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0023_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0023_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0024_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0024_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0024_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0024_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0025_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0025_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0025_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0025_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0026_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0026_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0026_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0026_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0027_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0027_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0027_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0027_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0028_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0028_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0028_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0028_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0029_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0029_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0029_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0029_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0030_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0030_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0030_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0030_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0031_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0031_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0031_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0031_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0032_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0032_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0032_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0032_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0033_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0033_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0033_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0033_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0034_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0034_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0034_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0034_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0035_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0035_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0035_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0035_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0036_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0036_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0036_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0036_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0037_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0037_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0037_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0037_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0038_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0038_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0038_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0038_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0039_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0039_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0039_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0039_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0040_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0040_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0040_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0040_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0041_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0041_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0041_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0041_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0042_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0042_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0042_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0042_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0043_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0043_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0043_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0043_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0044_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0044_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0044_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0044_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0045_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0046_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0046_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0046_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0046_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0047_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0047_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0047_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0047_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0048_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0048_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0048_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0048_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0049_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0049_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0049_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0049_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0050_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0050_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0050_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0050_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0051_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0051_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0051_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0051_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0052_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0052_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0052_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0052_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0053_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0053_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0053_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0053_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0054_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0054_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0054_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0054_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0055_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0055_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0055_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0055_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0056_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0056_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0056_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0056_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0057_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0057_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0057_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0057_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0058_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0058_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0058_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0058_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0059_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0059_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0059_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0059_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0060_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0060_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0060_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0060_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0061_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0061_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0061_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0061_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0062_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0062_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0062_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0062_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0063_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0063_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0063_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0063_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0064_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0064_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0064_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0064_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0065_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0065_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0065_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0065_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0066_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0066_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0066_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0066_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0067_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0067_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0067_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0067_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0068_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0068_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0068_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0068_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0069_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0069_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0069_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0069_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0070_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0070_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0070_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0070_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0071_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0071_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0071_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0071_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0072_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0072_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0072_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0072_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0073_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0073_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0073_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0073_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0074_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0074_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0074_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0074_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0075_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0075_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0075_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0075_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0076_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0076_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0076_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0076_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0077_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0077_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0077_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0077_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0078_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0078_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0078_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0078_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0079_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0079_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0079_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0079_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0080_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0081_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0081_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0081_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0081_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0082_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0082_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0082_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0082_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0083_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0083_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0083_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0083_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0084_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0084_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0084_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0084_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0085_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0085_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0085_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0085_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0086_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0086_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0086_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0086_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0087_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0087_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0087_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0087_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0088_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0088_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0088_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0088_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0089_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0089_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0089_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0089_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0090_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0090_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0090_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0090_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0091_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0091_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0091_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0091_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0092_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0092_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0092_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0092_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0093_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0093_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0093_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0093_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0094_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0094_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0094_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0094_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0095_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0095_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0095_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0095_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0096_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0096_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0096_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0096_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0097_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0097_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0097_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0097_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0098_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0098_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0098_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0098_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0099_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0099_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0099_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0099_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0100_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0100_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0100_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0100_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0101_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0101_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0101_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0101_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0102_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0102_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0102_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0102_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0103_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0103_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0103_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0103_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0104_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0104_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0104_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0104_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0105_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0105_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0105_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0105_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0106_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0106_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0106_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0106_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0107_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0107_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0107_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0107_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0108_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0108_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0108_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0108_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0109_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0109_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0109_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0109_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0110_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0110_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0110_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0110_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0111_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0111_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0111_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0111_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0112_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0112_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0112_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0112_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0113_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0113_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0113_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0113_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0114_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0114_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0114_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0114_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0115_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0115_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0115_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0115_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0116_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0116_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0116_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0116_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0117_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0117_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0117_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0117_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0118_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0118_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0118_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0118_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0119_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0119_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0119_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0119_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_clouds.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_clouds.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_metrics.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_metrics.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_overlay.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_overlay.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_samples.npz": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/f0120_samples.npz",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/implementation.patch": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/implementation.patch",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/infrastructure-tests.log": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/infrastructure-tests.log",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/initial-status.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/initial-status.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/initial-tracked-hashes.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/initial-tracked-hashes.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/report_files.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/report_files.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/runtime-tests.log": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/runtime-tests.log",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/sensitivity.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/sensitivity.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/tradeoffs.png": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/tradeoffs.png",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/verification.json": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/verification.json",
+      "role": "result"
+    },
+    "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/verify_saved_sampling.py": {
+      "source": "visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/verify_saved_sampling.py",
+      "role": "result"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/comparison.html": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/comparison.html",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/comparison.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/comparison.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/edge_evidence.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/edge_evidence.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/geometry.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/geometry.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/normal_estimators.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/normal_estimators.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/pca.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/pca.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/rgbd.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/rgbd.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/sampling.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/normal_diagnostics.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_normal_comparison.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_normal_comparison.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_sampling.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_structural_edges.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/run_structural_edges.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/sampling_plots.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/sampling_plots.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/test_sampling.py": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/evaluated_source/visual/runtime/test/test_sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0000_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0001_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0001_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0001_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0001_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0002_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0002_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0002_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0002_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0003_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0003_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0003_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0003_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0004_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0004_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0004_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0004_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0005_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0005_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0005_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0005_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0006_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0006_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0006_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0006_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0007_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0007_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0007_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0007_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0008_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0008_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0008_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0008_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0009_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0009_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0009_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0009_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0010_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0010_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0010_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0010_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0011_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0011_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0011_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0011_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0012_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0012_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0012_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0012_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0013_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0013_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0013_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0013_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0014_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0014_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0014_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0014_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0015_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0016_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0016_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0016_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0016_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0017_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0017_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0017_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0017_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0018_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0019_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0019_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0019_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0019_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0020_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0020_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0020_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0020_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0021_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0021_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0021_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0021_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0022_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0022_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0022_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0022_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0023_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0023_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0023_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0023_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0024_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0024_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0024_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0024_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0025_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0025_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0025_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0025_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0026_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0026_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0026_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0026_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0027_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0027_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0027_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0027_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0028_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0028_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0028_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0028_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0029_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0029_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0029_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0029_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0030_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0030_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0030_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0030_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0031_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0031_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0031_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0031_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0032_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0032_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0032_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0032_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0033_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0033_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0033_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0033_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0034_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0034_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0034_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0034_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0035_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0035_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0035_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0035_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0036_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0036_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0036_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0036_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0037_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0037_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0037_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0037_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0038_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0038_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0038_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0038_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0039_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0039_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0039_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0039_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0040_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0040_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0040_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0040_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0041_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0041_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0041_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0041_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0042_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0042_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0042_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0042_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0043_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0043_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0043_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0043_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0044_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0044_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0044_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0044_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0045_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0046_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0046_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0046_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0046_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0047_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0047_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0047_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0047_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0048_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0048_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0048_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0048_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0049_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0049_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0049_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0049_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0050_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0050_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0050_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0050_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0051_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0051_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0051_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0051_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0052_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0052_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0052_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0052_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0053_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0053_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0053_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0053_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0054_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0054_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0054_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0054_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0055_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0055_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0055_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0055_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0056_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0056_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0056_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0056_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0057_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0057_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0057_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0057_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0058_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0058_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0058_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0058_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0059_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0059_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0059_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0059_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0060_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0060_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0060_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0060_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0061_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0061_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0061_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0061_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0062_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0062_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0062_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0062_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0063_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0063_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0063_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0063_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0064_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0064_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0064_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0064_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0065_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0065_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0065_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0065_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0066_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0066_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0066_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0066_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0067_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0067_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0067_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0067_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0068_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0068_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0068_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0068_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0069_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0069_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0069_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0069_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0070_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0070_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0070_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0070_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0071_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0071_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0071_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0071_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0072_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0072_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0072_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0072_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0073_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0073_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0073_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0073_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0074_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0074_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0074_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0074_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0075_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0075_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0075_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0075_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0076_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0076_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0076_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0076_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0077_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0077_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0077_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0077_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0078_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0078_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0078_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0078_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0079_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0079_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0079_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0079_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0080_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0081_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0081_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0081_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0081_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0082_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0082_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0082_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0082_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0083_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0083_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0083_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0083_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0084_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0084_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0084_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0084_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0085_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0085_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0085_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0085_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0086_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0086_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0086_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0086_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0087_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0087_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0087_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0087_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0088_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0088_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0088_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0088_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0089_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0089_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0089_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0089_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0090_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0090_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0090_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0090_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0091_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0091_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0091_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0091_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0092_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0092_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0092_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0092_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0093_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0093_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0093_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0093_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0094_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0094_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0094_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0094_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0095_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0095_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0095_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0095_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0096_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0096_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0096_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0096_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0097_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0097_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0097_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0097_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0098_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0098_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0098_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0098_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0099_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0099_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0099_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0099_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0100_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0100_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0100_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0100_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0101_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0101_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0101_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0101_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0102_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0102_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0102_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0102_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0103_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0103_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0103_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0103_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0104_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0104_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0104_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0104_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0105_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0105_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0105_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0105_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0106_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0106_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0106_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0106_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0107_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0107_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0107_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0107_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0108_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0108_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0108_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0108_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0109_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0109_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0109_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0109_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0110_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0110_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0110_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0110_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0111_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0111_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0111_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0111_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0112_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0112_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0112_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0112_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0113_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0113_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0113_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0113_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0114_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0114_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0114_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0114_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0115_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0115_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0115_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0115_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0116_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0116_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0116_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0116_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0117_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0117_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0117_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0117_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0118_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0118_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0118_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0118_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0119_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0119_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0119_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0119_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_clouds.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_metrics.json": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_overlay.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_samples.npz": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/f0120_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/sensitivity.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/sensitivity.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/tradeoffs.png": {
+      "source": "visual/results/sampling/71a16f2747bc43a686ed56a5ac856471/tradeoffs.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/comparison.html": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/comparison.html",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/comparison.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/comparison.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/edge_evidence.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/edge_evidence.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/geometry.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/geometry.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/normal_estimators.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/normal_estimators.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/pca.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/pca.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/rgbd.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/rgbd.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/sampling.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/normal_diagnostics.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_normal_comparison.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_normal_comparison.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_sampling.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_structural_edges.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/run_structural_edges.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/sampling_plots.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/sampling_plots.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/test_sampling.py": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/evaluated_source/visual/runtime/test/test_sampling.py",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0000_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0001_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0001_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0001_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0001_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0002_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0002_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0002_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0002_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0003_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0003_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0003_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0003_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0004_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0004_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0004_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0004_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0005_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0005_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0005_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0005_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0006_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0006_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0006_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0006_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0007_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0007_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0007_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0007_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0008_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0008_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0008_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0008_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0009_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0009_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0009_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0009_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0010_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0010_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0010_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0010_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0011_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0011_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0011_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0011_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0012_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0012_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0012_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0012_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0013_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0013_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0013_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0013_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0014_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0014_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0014_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0014_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0015_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0016_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0016_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0016_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0016_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0017_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0017_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0017_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0017_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0018_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0019_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0019_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0019_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0019_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0020_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0020_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0020_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0020_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0021_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0021_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0021_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0021_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0022_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0022_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0022_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0022_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0023_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0023_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0023_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0023_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0024_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0024_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0024_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0024_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0025_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0025_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0025_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0025_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0026_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0026_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0026_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0026_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0027_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0027_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0027_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0027_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0028_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0028_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0028_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0028_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0029_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0029_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0029_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0029_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0030_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0030_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0030_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0030_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0031_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0031_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0031_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0031_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0032_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0032_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0032_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0032_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0033_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0033_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0033_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0033_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0034_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0034_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0034_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0034_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0035_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0035_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0035_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0035_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0036_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0036_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0036_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0036_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0037_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0037_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0037_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0037_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0038_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0038_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0038_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0038_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0039_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0039_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0039_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0039_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0040_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0040_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0040_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0040_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0041_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0041_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0041_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0041_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0042_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0042_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0042_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0042_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0043_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0043_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0043_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0043_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0044_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0044_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0044_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0044_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0045_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0046_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0046_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0046_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0046_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0047_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0047_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0047_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0047_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0048_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0048_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0048_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0048_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0049_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0049_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0049_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0049_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0050_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0050_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0050_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0050_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0051_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0051_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0051_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0051_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0052_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0052_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0052_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0052_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0053_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0053_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0053_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0053_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0054_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0054_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0054_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0054_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0055_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0055_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0055_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0055_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0056_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0056_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0056_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0056_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0057_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0057_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0057_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0057_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0058_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0058_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0058_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0058_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0059_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0059_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0059_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0059_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0060_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0060_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0060_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0060_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0061_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0061_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0061_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0061_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0062_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0062_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0062_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0062_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0063_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0063_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0063_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0063_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0064_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0064_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0064_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0064_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0065_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0065_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0065_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0065_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0066_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0066_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0066_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0066_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0067_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0067_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0067_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0067_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0068_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0068_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0068_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0068_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0069_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0069_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0069_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0069_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0070_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0070_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0070_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0070_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0071_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0071_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0071_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0071_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0072_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0072_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0072_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0072_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0073_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0073_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0073_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0073_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0074_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0074_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0074_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0074_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0075_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0075_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0075_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0075_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0076_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0076_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0076_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0076_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0077_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0077_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0077_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0077_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0078_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0078_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0078_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0078_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0079_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0079_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0079_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0079_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0080_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0081_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0081_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0081_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0081_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0082_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0082_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0082_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0082_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0083_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0083_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0083_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0083_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0084_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0084_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0084_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0084_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0085_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0085_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0085_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0085_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0086_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0086_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0086_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0086_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0087_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0087_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0087_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0087_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0088_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0088_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0088_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0088_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0089_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0089_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0089_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0089_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0090_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0090_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0090_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0090_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0091_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0091_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0091_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0091_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0092_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0092_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0092_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0092_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0093_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0093_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0093_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0093_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0094_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0094_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0094_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0094_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0095_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0095_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0095_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0095_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0096_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0096_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0096_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0096_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0097_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0097_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0097_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0097_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0098_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0098_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0098_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0098_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0099_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0099_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0099_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0099_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0100_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0100_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0100_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0100_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0101_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0101_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0101_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0101_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0102_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0102_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0102_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0102_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0103_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0103_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0103_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0103_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0104_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0104_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0104_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0104_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0105_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0105_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0105_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0105_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0106_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0106_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0106_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0106_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0107_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0107_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0107_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0107_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0108_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0108_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0108_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0108_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0109_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0109_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0109_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0109_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0110_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0110_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0110_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0110_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0111_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0111_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0111_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0111_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0112_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0112_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0112_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0112_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0113_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0113_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0113_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0113_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0114_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0114_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0114_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0114_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0115_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0115_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0115_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0115_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0116_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0116_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0116_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0116_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0117_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0117_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0117_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0117_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0118_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0118_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0118_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0118_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0119_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0119_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0119_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0119_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_clouds.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_clouds.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_metrics.json": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_metrics.json",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_overlay.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_overlay.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_samples.npz": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/f0120_samples.npz",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/sensitivity.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/sensitivity.png",
+      "role": "dependency"
+    },
+    "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/tradeoffs.png": {
+      "source": "visual/results/sampling/f13af0283e4644bea27b4b731f7bf8e0/tradeoffs.png",
+      "role": "dependency"
+    },
+    "experiments/71a16f2747bc43a686ed56a5ac856471/metadata.json": {
+      "source": "experiments/71a16f2747bc43a686ed56a5ac856471/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/71a16f2747bc43a686ed56a5ac856471/metrics.json": {
+      "source": "experiments/71a16f2747bc43a686ed56a5ac856471/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/71a16f2747bc43a686ed56a5ac856471/config.yaml": {
+      "source": "experiments/71a16f2747bc43a686ed56a5ac856471/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/f13af0283e4644bea27b4b731f7bf8e0/metadata.json": {
+      "source": "experiments/f13af0283e4644bea27b4b731f7bf8e0/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/f13af0283e4644bea27b4b731f7bf8e0/metrics.json": {
+      "source": "experiments/f13af0283e4644bea27b4b731f7bf8e0/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/f13af0283e4644bea27b4b731f7bf8e0/config.yaml": {
+      "source": "experiments/f13af0283e4644bea27b4b731f7bf8e0/config.yaml",
+      "role": "dependency"
+    },
+    "docs/visual-graph-integration/03_sampling.md": {
+      "source": "docs/visual-graph-integration/03_sampling.md",
+      "role": "dependency"
+    },
+    "visual/runtime/sampling.md": {
+      "source": "visual/runtime/sampling.md",
+      "role": "dependency"
+    }
+  }
+}

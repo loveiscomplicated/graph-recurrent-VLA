@@ -79,4 +79,3 @@ def pair_evidence(geometry, object_id, normals, normal_valid, parameters=PARAMET
                         np.logical_xor(mask.ravel()[pixels[:, 0]], mask.ravel()[pixels[:, 1]]),
                         valid[:, 0] ^ valid[:, 1], geometry.overlap_mask.ravel()[pixels],
                         delta, jump, angles, near, far)
-
