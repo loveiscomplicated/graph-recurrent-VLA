@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "input_alignment": true,
+  "three_frame_exact_reproduction": true,
+  "selection_before_gt_sha256": "198b9d1ffe965be49b81632f53fde5903dcc1e4dff0f934c2f94f74f2521e923",
+  "gt_after_freeze": true,
+  "frame_count": 121,
+  "conditions": 2,
+  "simulator_executed": false,
+  "gpu_executed": false,
+  "edge_status": "not_implemented",
+  "html_relative_links": 16,
+  "markdown_relative_links": 24,
+  "png_decoded": {
+    "plots/f0045_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/latency.png": [
+      700,
+      1960,
+      4
+    ],
+    "plots/f0056_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/f0080_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/f0018_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/node_geometry_timeseries.png": [
+      1260,
+      2240,
+      4
+    ],
+    "plots/f0066_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/silhouette_coverage.png": [
+      840,
+      2100,
+      4
+    ],
+    "plots/support_structural_surface.png": [
+      1540,
+      2100,
+      4
+    ],
+    "plots/f0027_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/f0120_overlay.png": [
+      720,
+      1560,
+      4
+    ],
+    "plots/f0000_overlay.png": [
+      720,
+      1560,
+      4
+    ]
+  },
+  "bidirectional_report_links": true,
+  "all_242_selection_archives": true,
+  "all_provenance_rows_aligned": true,
+  "pre_gt_selection_hash_unchanged": true,
+  "exact_reproduction_gate": {
+    "frames": [
+      0,
+      45,
+      80
+    ],
+    "conditions": [
+      "ratio1_phase0",
+      "ratio0.5_phase0"
+    ],
+    "exact_selection_and_packet_arrays": 402,
+    "major_metrics_exact": true
+  },
+  "tests": {
+    "summary": "Ran 127 tests; OK",
+    "passed": 127,
+    "skipped": 0,
+    "modules": 8
+  },
+  "selection_conditions": 2,
+  "source_frame_count": 121,
+  "fixed_representative_frames": [
+    0,
+    18,
+    27,
+    45,
+    56,
+    66,
+    80,
+    120
+  ],
+  "GT_selection_independent": true,
+  "production_sampler_unchanged": true,
+  "no_caps_256_32_or_structural_ratio": true,
+  "N_plus_3_contract_recorded": true
+}
