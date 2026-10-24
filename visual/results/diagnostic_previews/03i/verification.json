@@ -1,0 +1,95 @@
+{
+  "status": "PASS for executed checks; browser loading SKIP by user instruction",
+  "required_tests": {
+    "summary": "Ran 86 tests in 0.677s; OK",
+    "modules": [
+      "visual.runtime.test.test_voxel_structural_sampling",
+      "visual.runtime.test.test_sampling",
+      "visual.runtime.test.test_sampling_geometry",
+      "visual.runtime.test.test_sampling_evaluation",
+      "visual.runtime.test.test_priority_fps_metric_control",
+      "visual.runtime.test.test_local_structural_sampling"
+    ],
+    "pass_count": 86,
+    "fail_count": 0,
+    "skip_count": 0
+  },
+  "baseline_exact": true,
+  "C_X_source_XYZ_exact": true,
+  "P_subset_R_subset_C_subset_X": true,
+  "no_padding_duplicates": true,
+  "fixed_origin_floor": true,
+  "centroid_representatives_original_only": true,
+  "variable_P_contract": true,
+  "dyadic_nested_counts": true,
+  "pre_GT_saved_readback_hash": "9ca4c0adcea037cf37022845348c0d13a949e5a1a2bbb5fbfa5a93259a52f426",
+  "selection_hash_unchanged_after_GT": true,
+  "feature_exact_available_only": true,
+  "same_pair_2px_AND_3mm": true,
+  "source_preservation": {
+    "status": "PASS",
+    "protected_file_count": 3092,
+    "all_sha256_unchanged": true,
+    "HEAD_unchanged": true
+  },
+  "config_sha256": "b5c251c7ad9d7cbc9d7c49cae3ffa0faa3505e5de918e705b2d2fb80bb36ae99",
+  "NPZ_exact_readback": true,
+  "simulator_executed": false,
+  "gpu_executed": false,
+  "performance_improvement_is_PASS_condition": false,
+  "source_snapshots": "source_snapshot/",
+  "static_browser_loading": {
+    "status": "SKIP",
+    "reason": "Computer-use permissions unavailable; user explicitly requested completion without browser execution",
+    "images_verified_by_decode": 7
+  },
+  "documents": {
+    "status": "PASS",
+    "html_relative_links": 26,
+    "markdown_relative_links": 22,
+    "png_decoded": {
+      "primary_selection.png": [
+        1269,
+        1831,
+        4
+      ],
+      "resolution_budget.png": [
+        1184,
+        1783,
+        4
+      ],
+      "primary_distances.png": [
+        1334,
+        1934,
+        4
+      ],
+      "peg_gt.png": [
+        1330,
+        2051,
+        4
+      ],
+      "box_gt.png": [
+        1330,
+        2135,
+        4
+      ],
+      "depth_roi_surface.png": [
+        1334,
+        2235,
+        4
+      ],
+      "synthetic.png": [
+        3460,
+        2284,
+        4
+      ]
+    },
+    "static_no_cdn_no_fetch": true
+  },
+  "report_only_postprocessing": {
+    "new_UUID": false,
+    "new_FPS": false,
+    "new_evaluation": false,
+    "numerical_artifacts_unchanged": true
+  }
+}

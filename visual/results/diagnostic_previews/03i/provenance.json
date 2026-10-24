@@ -1,0 +1,9 @@
+{
+  "run_id": "92f29716e76f4b998fe924f08e80357d",
+  "source_run_id": null,
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/92f29716e76f4b998fe924f08e80357d/voxel_structural_sampling.json",
+  "summary_source_sha256": "8b5e3ac915fd1d9c32d52f78609386812ab12496470f4fc35a43cb3dd5dcf5d2",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}
