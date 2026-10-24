@@ -1,0 +1,1 @@
+[{"run_id": "f68c59f210b5499dadc7e962c7f64492", "step": null, "metrics": {"eval/task03ab/Fixed256/mean_nodes": 256.0, "eval/task03ab/Fixed256/reduction": 0.0, "eval/task03ab/Adaptive/mean_nodes": 94.89256198347107, "eval/task03ab/Adaptive/reduction": 0.6293259297520661, "eval/task03ab/FixedMatched/mean_nodes": 95.0, "eval/task03ab/FixedMatched/reduction": 0.62890625}}]

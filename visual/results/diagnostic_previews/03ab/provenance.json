@@ -1,0 +1,9 @@
+{
+  "run_id": "f68c59f210b5499dadc7e962c7f64492",
+  "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.json",
+  "summary_source_sha256": "77207d553ea47f0c0526fa0030ec9b0938d29d24501463881f3c80695f9fe18c",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}

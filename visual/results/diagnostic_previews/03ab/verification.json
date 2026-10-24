@@ -1,0 +1,1130 @@
+{
+  "gates_passed": true,
+  "adaptive_geometry_executed": true,
+  "frame_gates": [
+    {
+      "source_frame": 0,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 1,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 2,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 3,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 4,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 5,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 6,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 7,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 8,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 9,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 10,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 11,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 12,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 13,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 14,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 15,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 16,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 17,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 18,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 19,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 20,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 21,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 22,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 23,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 24,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 25,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 26,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 27,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 28,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 29,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 30,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 31,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 32,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 33,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 34,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 35,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 36,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 37,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 38,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 39,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 40,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 41,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 42,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 43,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 44,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 45,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 46,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 47,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 48,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 49,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 50,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 51,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 52,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 53,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 54,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 55,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 56,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 57,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 58,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 59,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 60,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 61,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 62,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 63,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 64,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 65,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 66,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 67,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 68,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 69,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 70,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 71,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 72,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 73,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 74,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 75,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 76,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 77,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 78,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 79,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 80,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 81,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 82,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 83,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 84,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 85,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 86,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 87,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 88,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 89,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 90,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 91,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 92,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 93,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 94,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 95,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 96,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 97,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 98,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 99,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 100,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 101,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 102,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 103,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 104,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 105,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 106,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 107,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 108,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 109,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 110,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 111,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 112,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 113,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 114,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 115,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 116,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 117,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 118,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 119,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    },
+    {
+      "source_frame": 120,
+      "support_exact": true,
+      "candidate_exact": true,
+      "fixed256_all_fields_exact": true,
+      "reference_exact": true,
+      "fixed256_original_metrics_exact": true
+    }
+  ],
+  "primary_tolerance": "same pair 2px AND 3mm",
+  "input_hashes": {
+    "visual/data/step2/ep000.npz": "22ad72d776057da9ed5f85014cba47b4603e421623f29763c88edb159a5087ba",
+    "visual/results/runtime_tracking/ep000/masks.npz": "6bf9555a9c97c83a09d9733e582e9c4b9509f95e9dd06854ba05d3ac25fb7042"
+  },
+  "source_contract": {
+    "visual/runtime/rgbd.py": {
+      "original_sha256": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+      "current_sha256": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+      "status": "byte identical"
+    },
+    "visual/runtime/geometry.py": {
+      "original_sha256": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+      "current_sha256": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+      "status": "byte identical"
+    },
+    "visual/runtime/normal_estimators.py": {
+      "original_sha256": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+      "current_sha256": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+      "status": "byte identical"
+    },
+    "visual/runtime/pca.py": {
+      "original_sha256": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+      "current_sha256": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+      "status": "byte identical"
+    },
+    "visual/runtime/edge_evidence.py": {
+      "original_sha256": "14ab164cd98a0be16c7f12e2e6679b932b697028e567975b0dc31a939bf903b4",
+      "current_sha256": "2c896cc60e50f50f2b55ea377d34a6e15bffab875df2a8653dfe1b9830d30f2d",
+      "status": "AST identical (formatting only)"
+    },
+    "visual/runtime/sampling.py": {
+      "original_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+      "current_sha256": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_sampling.py": {
+      "original_sha256": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+      "current_sha256": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/sampling_evaluation.py": {
+      "original_sha256": "a99654f398d1e429601459878ed4080100bc3dc19b42e78471572298c6e05e4a",
+      "current_sha256": "daebf8834d2c0d4ca7f95e927c87ed3d6c7fc3777909a49504e265443585d60b",
+      "status": "original definitions unchanged; additive diagnostics only"
+    },
+    "visual/runtime/test/sampling_plots.py": {
+      "original_sha256": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+      "current_sha256": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/test_sampling.py": {
+      "original_sha256": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+      "current_sha256": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/test_sampling_evaluation.py": {
+      "original_sha256": "1705fd07af7fb611be87f2570d8c4dce3dfd9be8020873018aeeda258924e303",
+      "current_sha256": "8ec490314b6e55b3d4c0bc2b05f37036bf07fa3462039fd8b1676227d0a3b0bd",
+      "status": "diagnostic tests extended; not an evaluation dependency"
+    },
+    "visual/runtime/test/test_sampling_geometry.py": {
+      "original_sha256": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+      "current_sha256": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/normal_diagnostics.py": {
+      "original_sha256": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+      "current_sha256": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_normal_comparison.py": {
+      "original_sha256": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+      "current_sha256": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_structural_edges.py": {
+      "original_sha256": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+      "current_sha256": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+      "status": "byte identical"
+    },
+    "visual/runtime/test/run_normal_diagnostics.py": {
+      "original_sha256": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+      "current_sha256": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+      "status": "byte identical"
+    }
+  },
+  "deterministic_repetitions": true,
+  "adaptive_request256_exact_frames": [
+    0,
+    1,
+    2
+  ],
+  "preservation": {
+    "checked_files": 1226,
+    "changed_or_missing": [],
+    "unchanged": true
+  },
+  "evaluated_frames": 121,
+  "gpu_executed": false,
+  "source_snapshot_sha256": {
+    "visual/runtime/rgbd.py": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+    "visual/runtime/edge_evidence.py": "2c896cc60e50f50f2b55ea377d34a6e15bffab875df2a8653dfe1b9830d30f2d",
+    "visual/runtime/geometry.py": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+    "visual/runtime/sampling.py": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+    "visual/runtime/pca.py": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+    "visual/runtime/normal_estimators.py": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+    "visual/runtime/test/test_adaptive_node_budget.py": "d74c250c7380fc92a0b7983be773743531eb5acd6d6d631ab423fb7cb07d4189",
+    "visual/runtime/test/sampling_plots.py": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+    "visual/runtime/test/run_adaptive_node_budget.py": "3ddfa394bb81e7a82d0a0f8d65e4146caad3243c4fe13359eb4dd4233b2b0cc9",
+    "visual/runtime/test/sampling_evaluation.py": "daebf8834d2c0d4ca7f95e927c87ed3d6c7fc3777909a49504e265443585d60b",
+    "visual/runtime/test/test_sampling_evaluation.py": "8ec490314b6e55b3d4c0bc2b05f37036bf07fa3462039fd8b1676227d0a3b0bd",
+    "visual/runtime/test/run_sampling.py": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+    "visual/runtime/test/test_sampling_geometry.py": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+    "visual/runtime/test/run_structural_edges.py": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+    "visual/runtime/test/run_normal_diagnostics.py": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+    "visual/runtime/test/test_sampling.py": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+    "visual/runtime/test/run_normal_comparison.py": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+    "visual/runtime/test/normal_diagnostics.py": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+    "visual/runtime/test/run_rim_bottleneck.py": "8323bd3048438be9c90b663f1bc03ef6fdfd67d10eb123c1fd4930538428fda3"
+  },
+  "saved_output_postcheck": {
+    "frames": 121,
+    "selection_feature_alignment": true,
+    "independent_total_counts": {
+      "Fixed256": 30976,
+      "Adaptive": 11482,
+      "FixedMatched": 11495
+    },
+    "all_html_links_resolve": 156,
+    "causal_requests_and_fixedmatched_verified": true,
+    "timing_aliases_and_accounting_verified": true
+  },
+  "final_new_repository_files_sha256": {
+    "visual/runtime/test/run_adaptive_node_budget.py": "3ddfa394bb81e7a82d0a0f8d65e4146caad3243c4fe13359eb4dd4233b2b0cc9",
+    "visual/runtime/test/test_adaptive_node_budget.py": "d74c250c7380fc92a0b7983be773743531eb5acd6d6d631ab423fb7cb07d4189",
+    "docs/visual-graph-integration/03ab_adaptive_node_budget.md": "50af20b5d8176b1d7e978fd9afeec5abfa276bb6458797eeb81a2dc74abf524a"
+  },
+  "final_preservation": {
+    "checked_files": 1226,
+    "changed_or_missing": [],
+    "unchanged": true
+  },
+  "visual_review_pngs": [
+    "plots/budget_timeseries.png",
+    "plots/preservation_temporal.png",
+    "plots/latency_depth.png",
+    "frames/f0000_overlay.png",
+    "frames/f0015_overlay.png",
+    "frames/f0018_overlay.png",
+    "frames/f0045_overlay.png",
+    "frames/f0080_overlay.png",
+    "frames/f0120_overlay.png"
+  ],
+  "markdown_relative_links_verified": 30,
+  "whitespace_check": "PASS"
+}
