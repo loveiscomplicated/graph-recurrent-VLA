@@ -1,0 +1,9 @@
+{
+  "run_id": "1f7ad262dd2e4b2fb0ac805a4eda5278",
+  "source_run_id": "7f657cf88baf4f1f89e594252e243e1c",
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/1f7ad262dd2e4b2fb0ac805a4eda5278/local_structural_sampling.json",
+  "summary_source_sha256": "9842fe63d7df2ef37dee85ecbc49c03ed8f058c1f0f3ac72266a147c0ed03208",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}

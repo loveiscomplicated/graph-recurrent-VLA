@@ -1,0 +1,164 @@
+{
+  "status": "PASS",
+  "required_tests": {
+    "summary": "Ran 66 tests in 0.722s; OK",
+    "modules": [
+      "visual.runtime.test.test_local_structural_sampling",
+      "visual.runtime.test.test_sampling",
+      "visual.runtime.test.test_sampling_geometry",
+      "visual.runtime.test.test_sampling_evaluation",
+      "visual.runtime.test.test_priority_fps_metric_control"
+    ],
+    "pass_count": 66,
+    "fail_count": 0,
+    "skip_count": 0,
+    "execution_run_id": "c4709984427d4283815a3971a415b4af"
+  },
+  "baseline_gate": {
+    "peg": {
+      "status": "PASS",
+      "all_saved_baseline_evaluation_exact": true,
+      "global_fps_calls": 0
+    },
+    "box": {
+      "status": "PASS",
+      "all_saved_baseline_evaluation_exact": true,
+      "global_fps_calls": 0
+    }
+  },
+  "original_preservation": {
+    "status": "PASS",
+    "file_count": 1384,
+    "all_sha256_unchanged": true
+  },
+  "config_frozen_sha256": "912ba8bbda79634b9ffff2e4f11c243dd4a4edd77d163dd5f7b6d98181ac8e01",
+  "real_fps_calls": {
+    "global_baseline": 0,
+    "local_priority": 16,
+    "local_surface": 2
+  },
+  "synthetic_fps_calls": {
+    "global_priority": 7,
+    "local_priority": 56
+  },
+  "original_xyz_source_pixel_object_role_alignment": true,
+  "npz_exact_readback": true,
+  "source_input_hashes_unchanged": true,
+  "feature_unavailable_explicit": true,
+  "same_pair_joint_reference_denominators": true,
+  "gt_independence": "annotation-free selection helpers + synthetic contract tests",
+  "performance_improvement_is_not_pass_criterion": true,
+  "production_policy_adopted": false,
+  "skipped": [
+    "simulator",
+    "renderer",
+    "CUDA/GPU",
+    "independent episodes/objects/sensors",
+    "normal/candidate recalculation",
+    "feature reconstruction",
+    "production changes",
+    "task relevance scoring",
+    "external upload",
+    "dependency install",
+    "commit"
+  ],
+  "report_recovery": {
+    "selection_run_id": "c4709984427d4283815a3971a415b4af",
+    "reason": "original Task03 PNG filename link corrected; stored selection/evaluation reused unchanged",
+    "this_execution_fps_calls": 0,
+    "performance_recomputed": false
+  },
+  "this_execution_fps_calls": 0,
+  "numeric_npz_byte_identical": true,
+  "frozen_algorithm_ast_unchanged": [
+    "spatial_groups",
+    "allocate",
+    "choose_priority",
+    "select_local",
+    "spatial_metrics",
+    "synthetic_fixture",
+    "evaluate_synthetic",
+    "load_actual"
+  ],
+  "document_checks": {
+    "status": "PASS",
+    "html_targets": 52,
+    "markdown_targets": 38,
+    "png_decoded": {
+      "peg_gt_auxiliary.png": [
+        1400,
+        1820,
+        4
+      ],
+      "candidate_groups.png": [
+        1400,
+        2240,
+        4
+      ],
+      "html_preview.png": [
+        1500,
+        1400,
+        3
+      ],
+      "unfiltered_depth_xz.png": [
+        1260,
+        1820,
+        4
+      ],
+      "candidate_distance_ecdf.png": [
+        1260,
+        1820,
+        4
+      ],
+      "independent_regions.png": [
+        1260,
+        1960,
+        4
+      ],
+      "surface_negative_tradeoff.png": [
+        700,
+        2240,
+        4
+      ],
+      "synthetic_seven.png": [
+        1820,
+        2380,
+        4
+      ],
+      "box_gt_auxiliary.png": [
+        1400,
+        1820,
+        4
+      ]
+    }
+  },
+  "report_review_no_sampling_or_evaluation": true,
+  "numeric_json_metrics_unchanged": true,
+  "final_tests": {
+    "status": "PASS",
+    "summary": "Ran 66 tests in 0.625s; OK",
+    "pass_count": 66,
+    "fail_count": 0,
+    "skip_count": 0,
+    "log": "tests_final.log"
+  },
+  "browser": {
+    "status": "PASS",
+    "chrome_returncode": 0,
+    "images_complete": true,
+    "image_count": 8,
+    "screenshot": "html_preview.png",
+    "external_assets": false,
+    "tables": 2
+  },
+  "failed_attempts": [
+    {
+      "run_id": "c4709984427d4283815a3971a415b4af",
+      "phase": "HTML original PNG link verification",
+      "numerical_contract_status": "PASS",
+      "overall_attempt_status": "FAIL",
+      "sampling_repeated": false
+    }
+  ],
+  "test_accounting_note": "One existing test prints stdout before its standalone ok line; counted as PASS."
+}
