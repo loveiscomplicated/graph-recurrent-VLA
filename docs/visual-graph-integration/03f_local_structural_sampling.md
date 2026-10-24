@@ -1,5 +1,7 @@
 # Task03-F — Generalizable Local Geometry Preservation
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 실행 UUID: `1f7ad262dd2e4b2fb0ac805a4eda5278`. ep000 Frame 0 S3의 저장 Global λ=0과 Local UV spatial stratification control을 비교했다.
 
 제한된 예산에서 후보의 국소 공간 보존과 실제 구조·Surface의 trade-off를 검증한다. 후보 수를 균형 있게 나누는 UV 분할이며 structural component detection, geometry-aware grouping, density-invariant sampling이 아니다. Grouping·quota·group별 초기화가 함께 달라지므로 효과를 quota 하나에 귀속하지 않는다.

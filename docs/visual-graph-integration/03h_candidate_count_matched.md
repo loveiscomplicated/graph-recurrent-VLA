@@ -1,5 +1,7 @@
 # Task03-H — Candidate Count-Matched Structural Evidence Analysis
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 실행 UUID: `79358cfd00bd409f837b713972fba2ca`. 동일 후보 수에서도 PCA5의 기대 rim coverage가 FD2보다 높다. 후보 수 증가만으로 원래 coverage 차이를 설명할 수 없다.
 
 Primary: PCA5 297개 정확한 expected unique reference는 **79.898700/103 (77.57%)**, FD2 original은 **57/103**이며 차이는 **+22.898700 reference**다.

@@ -1,0 +1,1103 @@
+{
+  "entrypoint": "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03k — Temporal shape first evaluation. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/9185355a32b8433abc70f1738f983377/config.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/config.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/config.yaml": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/config.yaml",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/frame_metrics.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/frame_metrics.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/git_end.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/git_end.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/git_start.diff": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/git_start.diff",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/git_start.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/git_start.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/manifest.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/manifest.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/metadata.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/metadata.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/metrics.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/metrics.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0000_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0000_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0018_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0018_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0027_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0027_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0045_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0045_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0056_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0056_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0066_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0066_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0080_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0080_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/f0120_overlay.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/f0120_overlay.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/latency.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/latency.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/node_geometry_timeseries.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/node_geometry_timeseries.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/silhouette_coverage.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/silhouette_coverage.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/plots/support_structural_surface.png": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/plots/support_structural_surface.png",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0000_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0000_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0000_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0000_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0001_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0001_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0001_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0001_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0002_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0002_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0002_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0002_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0003_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0003_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0003_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0003_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0004_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0004_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0004_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0004_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0005_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0005_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0005_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0005_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0006_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0006_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0006_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0006_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0007_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0007_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0007_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0007_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0008_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0008_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0008_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0008_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0009_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0009_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0009_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0009_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0010_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0010_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0010_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0010_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0011_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0011_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0011_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0011_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0012_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0012_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0012_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0012_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0013_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0013_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0013_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0013_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0014_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0014_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0014_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0014_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0015_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0015_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0015_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0015_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0016_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0016_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0016_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0016_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0017_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0017_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0017_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0017_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0018_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0018_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0018_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0018_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0019_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0019_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0019_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0019_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0020_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0020_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0020_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0020_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0021_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0021_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0021_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0021_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0022_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0022_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0022_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0022_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0023_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0023_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0023_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0023_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0024_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0024_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0024_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0024_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0025_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0025_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0025_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0025_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0026_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0026_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0026_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0026_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0027_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0027_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0027_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0027_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0028_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0028_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0028_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0028_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0029_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0029_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0029_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0029_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0030_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0030_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0030_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0030_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0031_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0031_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0031_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0031_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0032_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0032_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0032_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0032_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0033_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0033_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0033_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0033_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0034_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0034_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0034_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0034_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0035_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0035_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0035_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0035_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0036_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0036_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0036_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0036_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0037_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0037_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0037_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0037_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0038_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0038_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0038_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0038_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0039_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0039_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0039_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0039_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0040_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0040_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0040_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0040_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0041_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0041_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0041_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0041_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0042_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0042_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0042_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0042_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0043_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0043_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0043_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0043_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0044_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0044_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0044_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0044_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0045_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0045_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0045_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0045_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0046_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0046_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0046_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0046_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0047_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0047_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0047_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0047_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0048_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0048_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0048_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0048_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0049_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0049_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0049_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0049_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0050_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0050_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0050_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0050_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0051_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0051_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0051_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0051_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0052_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0052_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0052_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0052_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0053_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0053_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0053_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0053_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0054_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0054_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0054_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0054_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0055_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0055_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0055_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0055_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0056_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0056_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0056_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0056_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0057_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0057_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0057_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0057_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0058_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0058_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0058_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0058_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0059_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0059_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0059_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0059_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0060_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0060_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0060_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0060_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0061_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0061_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0061_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0061_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0062_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0062_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0062_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0062_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0063_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0063_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0063_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0063_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0064_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0064_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0064_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0064_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0065_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0065_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0065_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0065_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0066_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0066_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0066_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0066_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0067_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0067_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0067_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0067_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0068_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0068_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0068_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0068_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0069_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0069_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0069_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0069_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0070_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0070_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0070_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0070_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0071_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0071_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0071_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0071_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0072_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0072_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0072_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0072_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0073_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0073_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0073_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0073_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0074_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0074_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0074_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0074_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0075_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0075_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0075_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0075_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0076_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0076_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0076_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0076_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0077_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0077_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0077_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0077_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0078_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0078_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0078_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0078_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0079_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0079_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0079_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0079_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0080_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0080_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0080_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0080_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0081_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0081_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0081_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0081_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0082_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0082_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0082_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0082_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0083_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0083_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0083_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0083_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0084_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0084_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0084_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0084_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0085_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0085_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0085_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0085_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0086_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0086_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0086_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0086_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0087_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0087_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0087_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0087_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0088_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0088_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0088_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0088_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0089_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0089_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0089_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0089_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0090_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0090_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0090_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0090_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0091_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0091_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0091_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0091_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0092_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0092_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0092_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0092_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0093_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0093_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0093_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0093_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0094_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0094_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0094_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0094_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0095_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0095_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0095_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0095_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0096_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0096_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0096_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0096_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0097_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0097_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0097_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0097_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0098_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0098_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0098_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0098_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0099_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0099_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0099_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0099_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0100_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0100_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0100_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0100_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0101_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0101_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0101_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0101_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0102_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0102_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0102_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0102_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0103_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0103_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0103_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0103_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0104_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0104_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0104_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0104_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0105_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0105_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0105_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0105_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0106_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0106_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0106_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0106_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0107_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0107_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0107_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0107_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0108_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0108_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0108_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0108_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0109_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0109_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0109_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0109_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0110_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0110_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0110_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0110_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0111_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0111_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0111_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0111_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0112_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0112_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0112_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0112_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0113_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0113_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0113_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0113_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0114_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0114_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0114_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0114_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0115_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0115_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0115_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0115_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0116_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0116_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0116_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0116_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0117_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0117_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0117_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0117_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0118_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0118_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0118_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0118_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0119_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0119_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0119_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0119_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0120_r0.5.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0120_r0.5.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection/f0120_r1.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection/f0120_r1.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection_before_gt.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection_before_gt.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/selection_before_gt.npz": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/selection_before_gt.npz",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/graph/vision_input.py": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/graph/vision_input.py",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_temporal_shape_first.py": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_temporal_shape_first.py",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_variable_rate_shape_first.py": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_variable_rate_shape_first.py",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_voxel_structural_sampling.py": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/run_voxel_structural_sampling.py",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/source_snapshot/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.html": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.html",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.json",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/tests.log": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/tests.log",
+      "role": "result"
+    },
+    "experiments/9185355a32b8433abc70f1738f983377/verification.json": {
+      "source": "experiments/9185355a32b8433abc70f1738f983377/verification.json",
+      "role": "result"
+    }
+  }
+}

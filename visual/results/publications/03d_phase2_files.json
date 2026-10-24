@@ -1,0 +1,79 @@
+{
+  "entrypoint": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03d_phase2 — Priority FPS trace. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/config.yaml": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/config.yaml",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/sampling.py": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/run_priority_fps_trace.py": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/run_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/test_priority_fps_trace.py": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/diagnostic_source/visual/runtime/test/test_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/implementation.patch": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/implementation.patch",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/manifest.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/manifest.json",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/metadata.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/metadata.json",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/metrics.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/metrics.json",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_distances_coverage.png": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_distances_coverage.png",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.html": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.html",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.json",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_overlay.png": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_overlay.png",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/report_snapshot.md": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/report_snapshot.md",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/source_hashes.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/source_hashes.json",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/tests.log": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/tests.log",
+      "role": "result"
+    },
+    "experiments/aa5d71078e0841fd886b5026d6030ebc/verification.json": {
+      "source": "experiments/aa5d71078e0841fd886b5026d6030ebc/verification.json",
+      "role": "result"
+    }
+  }
+}

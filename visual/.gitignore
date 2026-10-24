@@ -9,6 +9,7 @@ results/**/*.mp4
 results/**/*.npz
 results/**/*.npy
 results/**/*.h5
+results/**/*.zip
 results/**/frames/
 results/v1/**/runs/
 

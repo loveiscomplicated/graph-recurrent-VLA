@@ -26,3 +26,22 @@
 | [Task 03 frame 0](sampling_f0000.png) | 같은 관측의 후보·선택점·GT와 hole rim 손실 |
 | [Task 03 frame 0 3D](sampling_f0000_clouds.png) | 원본 관측과 S0–S4 sampled cloud 비교 |
 | [Task 03 frame 120](sampling_f0120.png) | 후반 가림에서 관측 손실과 sampling 손실 구분 |
+
+## Task 03 후속 실험
+
+작은 수치·검증 JSON과 핵심 PNG를 아래 디렉터리에 보관한다. `summary.json`은 대용량 원본 JSON에서 요약 필드만 뽑은 파일이며, `provenance.json`에 원본 경로·SHA-256·실행 identity를 기록했다.
+전체 HTML·원본 JSON·NPZ·실행 소스·개발 기록은 [HF 후속 게시 인덱스](../publications/sampling_followups.md)에 있다.
+
+| 실험 | Git 결과 |
+| --- | --- |
+| Task 03d_phase1 — Box rim staged coverage | [03d_phase1](03d_phase1/) |
+| Task 03d_phase2 — Priority FPS trace | [03d_phase2](03d_phase2/) |
+| Task 03d_phase3 — Priority FPS seed control | [03d_phase3](03d_phase3/) |
+| Task 03ab — Adaptive node budget | [03ab](03ab/) |
+| Task 03e — Priority FPS metric control | [03e](03e/) |
+| Task 03f — Local structural sampling | [03f](03f/) |
+| Task 03g — Geometry aware sampling | [03g](03g/) |
+| Task 03h — Candidate count matched control | [03h](03h/) |
+| Task 03i — Voxel structural sampling | [03i](03i/) |
+| Task 03j — Variable rate shape first sampling | [03j](03j/) |
+| Task 03k — Temporal shape first evaluation | [03k](03k/) |

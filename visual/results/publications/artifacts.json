@@ -5,8 +5,8 @@
     "repo_type": "dataset",
     "private": true
   },
-  "published_at": "2026-10-23T18:19:47.040976+00:00",
-  "scope": "Visual runtime through Task 03, including PCA5 optimization and sampling diagnostics",
+  "published_at": "2026-10-24T14:24:42.147399+00:00",
+  "scope": "Visual runtime through Task 03-K, including sampling controls, variable node budgets, graph packet receiver diagnostics and development/failed attempts",
   "verification": "All uploaded objects matched remote hashes; downloaded report ZIPs passed SHA-256 and ZIP integrity checks.",
   "artifacts": [
     {
@@ -242,7 +242,464 @@
         "gpu_sampling_executed": false,
         "end_to_end_20hz_executed": false
       }
+    },
+    {
+      "key": "03d_phase1",
+      "title": "Task 03d_phase1 — Box rim staged coverage",
+      "run_id": "d3f14ee494894daabb8ba2fab8e1b00c",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "008c904edfd934869a846cf12bc686b39536dac1",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/008c904edfd934869a846cf12bc686b39536dac1/visual/d3f14ee494894daabb8ba2fab8e1b00c",
+      "remote_manifest_path": "visual/d3f14ee494894daabb8ba2fab8e1b00c/manifests/c90a11bf99c71db2fe8a003348a41743c9e544ff60a7f0753486b8bcb6fdf5a1/manifest.json",
+      "bundle_path": "visual/d3f14ee494894daabb8ba2fab8e1b00c/artifacts/reports/912dc970744ab2d7810032c279d3b3d4bb66c8da01d622685cb21305dfa2ac3a/report-912dc970744ab2d7810032c279d3b3d4bb66c8da01d622685cb21305dfa2ac3a.zip",
+      "bundle_sha256": "912dc970744ab2d7810032c279d3b3d4bb66c8da01d622685cb21305dfa2ac3a",
+      "bundle_bytes": 1051700,
+      "entrypoint": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations.html",
+      "selected_files": 22,
+      "selection_file": "03d_phase1_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/008c904edfd934869a846cf12bc686b39536dac1/visual/d3f14ee494894daabb8ba2fab8e1b00c/artifacts/reports/912dc970744ab2d7810032c279d3b3d4bb66c8da01d622685cb21305dfa2ac3a/report-912dc970744ab2d7810032c279d3b3d4bb66c8da01d622685cb21305dfa2ac3a.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "d3f14ee494894daabb8ba2fab8e1b00c"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 22,
+        "remote_objects_verified": 17,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03d_phase1"
+    },
+    {
+      "key": "03d_phase2",
+      "title": "Task 03d_phase2 — Priority FPS trace",
+      "run_id": "aa5d71078e0841fd886b5026d6030ebc",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "5662b5cab5f1057582fca47a33a4a9f101b98605",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/5662b5cab5f1057582fca47a33a4a9f101b98605/visual/aa5d71078e0841fd886b5026d6030ebc",
+      "remote_manifest_path": "visual/aa5d71078e0841fd886b5026d6030ebc/manifests/570aa6327ee02d65c9588084baf878b2cc0d8b9a24ae590c237b7ba3c53621cd/manifest.json",
+      "bundle_path": "visual/aa5d71078e0841fd886b5026d6030ebc/artifacts/reports/1d3d6afabe73755cdd876ff41b7282679a4b5d6e75b1664c816c6f7ed9614e25/report-1d3d6afabe73755cdd876ff41b7282679a4b5d6e75b1664c816c6f7ed9614e25.zip",
+      "bundle_sha256": "1d3d6afabe73755cdd876ff41b7282679a4b5d6e75b1664c816c6f7ed9614e25",
+      "bundle_bytes": 359315,
+      "entrypoint": "experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.html",
+      "selected_files": 18,
+      "selection_file": "03d_phase2_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/5662b5cab5f1057582fca47a33a4a9f101b98605/visual/aa5d71078e0841fd886b5026d6030ebc/artifacts/reports/1d3d6afabe73755cdd876ff41b7282679a4b5d6e75b1664c816c6f7ed9614e25/report-1d3d6afabe73755cdd876ff41b7282679a4b5d6e75b1664c816c6f7ed9614e25.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "aa5d71078e0841fd886b5026d6030ebc"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 18,
+        "remote_objects_verified": 18,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03d_phase2"
+    },
+    {
+      "key": "03d_phase3",
+      "title": "Task 03d_phase3 — Priority FPS seed control",
+      "run_id": "f36f1e9e2bb64866b8d6c792db158635",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "76e75d421b17c4b02d5c85ec04e9a1ea4ecdb243",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/76e75d421b17c4b02d5c85ec04e9a1ea4ecdb243/visual/f36f1e9e2bb64866b8d6c792db158635",
+      "remote_manifest_path": "visual/f36f1e9e2bb64866b8d6c792db158635/manifests/644857c758c7c31d539cbb79e1ecfdcf24067e1df556582dba38843fc116213c/manifest.json",
+      "bundle_path": "visual/f36f1e9e2bb64866b8d6c792db158635/artifacts/reports/56e021d3f0699171df126ba46462751bb8d578a1f1fe013b29ff7827bfb0266b/report-56e021d3f0699171df126ba46462751bb8d578a1f1fe013b29ff7827bfb0266b.zip",
+      "bundle_sha256": "56e021d3f0699171df126ba46462751bb8d578a1f1fe013b29ff7827bfb0266b",
+      "bundle_bytes": 488117,
+      "entrypoint": "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.html",
+      "selected_files": 29,
+      "selection_file": "03d_phase3_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/76e75d421b17c4b02d5c85ec04e9a1ea4ecdb243/visual/f36f1e9e2bb64866b8d6c792db158635/artifacts/reports/56e021d3f0699171df126ba46462751bb8d578a1f1fe013b29ff7827bfb0266b/report-56e021d3f0699171df126ba46462751bb8d578a1f1fe013b29ff7827bfb0266b.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "f36f1e9e2bb64866b8d6c792db158635"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 29,
+        "remote_objects_verified": 29,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03d_phase3"
+    },
+    {
+      "key": "03ab",
+      "title": "Task 03ab — Adaptive node budget",
+      "run_id": "f68c59f210b5499dadc7e962c7f64492",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "50092ffa617e15aafb9afd1feead6fa95b08c67e",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/50092ffa617e15aafb9afd1feead6fa95b08c67e/visual/f68c59f210b5499dadc7e962c7f64492",
+      "remote_manifest_path": "visual/f68c59f210b5499dadc7e962c7f64492/manifests/c4b3bc965a4e5a872aae8d5f40f1fe305fdc6eeb05e52e3e6eb3c2720bdf1c1c/manifest.json",
+      "bundle_path": "visual/f68c59f210b5499dadc7e962c7f64492/artifacts/reports/67fd988224d72d3d86741b5e06ae3136d31dd38d35bf6244072accab5fe6eb0b/report-67fd988224d72d3d86741b5e06ae3136d31dd38d35bf6244072accab5fe6eb0b.zip",
+      "bundle_sha256": "67fd988224d72d3d86741b5e06ae3136d31dd38d35bf6244072accab5fe6eb0b",
+      "bundle_bytes": 126444483,
+      "entrypoint": "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.html",
+      "selected_files": 284,
+      "selection_file": "03ab_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/50092ffa617e15aafb9afd1feead6fa95b08c67e/visual/f68c59f210b5499dadc7e962c7f64492/artifacts/reports/67fd988224d72d3d86741b5e06ae3136d31dd38d35bf6244072accab5fe6eb0b/report-67fd988224d72d3d86741b5e06ae3136d31dd38d35bf6244072accab5fe6eb0b.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "f68c59f210b5499dadc7e962c7f64492"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 284,
+        "remote_objects_verified": 42,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03ab"
+    },
+    {
+      "key": "03e",
+      "title": "Task 03e — Priority FPS metric control",
+      "run_id": "7f657cf88baf4f1f89e594252e243e1c",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "ec6a336cef1ecefc64c86e92743d5700d94021e2",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/ec6a336cef1ecefc64c86e92743d5700d94021e2/visual/7f657cf88baf4f1f89e594252e243e1c",
+      "remote_manifest_path": "visual/7f657cf88baf4f1f89e594252e243e1c/manifests/5ca18c30a4f6e6bae51b6553804103cf27d6cb64950f508ac0f520a5153971cf/manifest.json",
+      "bundle_path": "visual/7f657cf88baf4f1f89e594252e243e1c/artifacts/reports/d9b14199bfc6504566f4f96ca87c6389f26e843cd085f39147f1633136971f6d/report-d9b14199bfc6504566f4f96ca87c6389f26e843cd085f39147f1633136971f6d.zip",
+      "bundle_sha256": "d9b14199bfc6504566f4f96ca87c6389f26e843cd085f39147f1633136971f6d",
+      "bundle_bytes": 9918403,
+      "entrypoint": "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.html",
+      "selected_files": 140,
+      "selection_file": "03e_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/ec6a336cef1ecefc64c86e92743d5700d94021e2/visual/7f657cf88baf4f1f89e594252e243e1c/artifacts/reports/d9b14199bfc6504566f4f96ca87c6389f26e843cd085f39147f1633136971f6d/report-d9b14199bfc6504566f4f96ca87c6389f26e843cd085f39147f1633136971f6d.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "7f657cf88baf4f1f89e594252e243e1c",
+        "9702d2709f0946f895e504554537c492"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 140,
+        "remote_objects_verified": 80,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03e",
+      "dependency_statuses": {
+        "9702d2709f0946f895e504554537c492": "failed"
+      }
+    },
+    {
+      "key": "03f",
+      "title": "Task 03f — Local structural sampling",
+      "run_id": "1f7ad262dd2e4b2fb0ac805a4eda5278",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "c8ba39524a1dd4eef9b3b64247eebaa9de24a3d8",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/c8ba39524a1dd4eef9b3b64247eebaa9de24a3d8/visual/1f7ad262dd2e4b2fb0ac805a4eda5278",
+      "remote_manifest_path": "visual/1f7ad262dd2e4b2fb0ac805a4eda5278/manifests/6a3486ea84487e780298c563353c41d62078072b09d1ad63785ed5afff454f49/manifest.json",
+      "bundle_path": "visual/1f7ad262dd2e4b2fb0ac805a4eda5278/artifacts/reports/2c99d6a030f6818fa191b2d162ce9b40a45f0d11eb726efc0e04fd9a14b8ddd4/report-2c99d6a030f6818fa191b2d162ce9b40a45f0d11eb726efc0e04fd9a14b8ddd4.zip",
+      "bundle_sha256": "2c99d6a030f6818fa191b2d162ce9b40a45f0d11eb726efc0e04fd9a14b8ddd4",
+      "bundle_bytes": 7195061,
+      "entrypoint": "experiments/1f7ad262dd2e4b2fb0ac805a4eda5278/local_structural_sampling.html",
+      "selected_files": 174,
+      "selection_file": "03f_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/c8ba39524a1dd4eef9b3b64247eebaa9de24a3d8/visual/1f7ad262dd2e4b2fb0ac805a4eda5278/artifacts/reports/2c99d6a030f6818fa191b2d162ce9b40a45f0d11eb726efc0e04fd9a14b8ddd4/report-2c99d6a030f6818fa191b2d162ce9b40a45f0d11eb726efc0e04fd9a14b8ddd4.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "1f7ad262dd2e4b2fb0ac805a4eda5278",
+        "c4709984427d4283815a3971a415b4af"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 174,
+        "remote_objects_verified": 94,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03f",
+      "dependency_statuses": {
+        "c4709984427d4283815a3971a415b4af": "failed"
+      }
+    },
+    {
+      "key": "03g",
+      "title": "Task 03g — Geometry aware sampling",
+      "run_id": "495a67210c5c4cbfab91d013239f7ce9",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "01b0f7bd94e568e47f36ff770665952c93cee27e",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/01b0f7bd94e568e47f36ff770665952c93cee27e/visual/495a67210c5c4cbfab91d013239f7ce9",
+      "remote_manifest_path": "visual/495a67210c5c4cbfab91d013239f7ce9/manifests/fe0e0d0a83c5321cca2559113ad8088e8a89f0a7b994c35a94ff5c652a3d9e0e/manifest.json",
+      "bundle_path": "visual/495a67210c5c4cbfab91d013239f7ce9/artifacts/reports/bddd654e18543ac9fdd1a2662ce69e77dc334d65040f8e3590e7c06a06c62f4d/report-bddd654e18543ac9fdd1a2662ce69e77dc334d65040f8e3590e7c06a06c62f4d.zip",
+      "bundle_sha256": "bddd654e18543ac9fdd1a2662ce69e77dc334d65040f8e3590e7c06a06c62f4d",
+      "bundle_bytes": 6222722,
+      "entrypoint": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.html",
+      "selected_files": 92,
+      "selection_file": "03g_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/01b0f7bd94e568e47f36ff770665952c93cee27e/visual/495a67210c5c4cbfab91d013239f7ce9/artifacts/reports/bddd654e18543ac9fdd1a2662ce69e77dc334d65040f8e3590e7c06a06c62f4d/report-bddd654e18543ac9fdd1a2662ce69e77dc334d65040f8e3590e7c06a06c62f4d.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "495a67210c5c4cbfab91d013239f7ce9"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 92,
+        "remote_objects_verified": 92,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03g"
+    },
+    {
+      "key": "03h",
+      "title": "Task 03h — Candidate count matched control",
+      "run_id": "79358cfd00bd409f837b713972fba2ca",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "7929ef00eb04a9f36849ecdc815fa444c0df457f",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/7929ef00eb04a9f36849ecdc815fa444c0df457f/visual/79358cfd00bd409f837b713972fba2ca",
+      "remote_manifest_path": "visual/79358cfd00bd409f837b713972fba2ca/manifests/757ff7470aaca181f0f2efa9e70a6b0b55f276123197746caf766fa35dac703e/manifest.json",
+      "bundle_path": "visual/79358cfd00bd409f837b713972fba2ca/artifacts/reports/8deb4342b75b0bb3f48cb83be44138944c4b89553c176b77566610d377b92480/report-8deb4342b75b0bb3f48cb83be44138944c4b89553c176b77566610d377b92480.zip",
+      "bundle_sha256": "8deb4342b75b0bb3f48cb83be44138944c4b89553c176b77566610d377b92480",
+      "bundle_bytes": 2242343,
+      "entrypoint": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.html",
+      "selected_files": 41,
+      "selection_file": "03h_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/7929ef00eb04a9f36849ecdc815fa444c0df457f/visual/79358cfd00bd409f837b713972fba2ca/artifacts/reports/8deb4342b75b0bb3f48cb83be44138944c4b89553c176b77566610d377b92480/report-8deb4342b75b0bb3f48cb83be44138944c4b89553c176b77566610d377b92480.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "79358cfd00bd409f837b713972fba2ca"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 41,
+        "remote_objects_verified": 21,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03h"
+    },
+    {
+      "key": "03i",
+      "title": "Task 03i — Voxel structural sampling",
+      "run_id": "92f29716e76f4b998fe924f08e80357d",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "995430173821926ccd2bfcb01e0fb6c1ff43670d",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/995430173821926ccd2bfcb01e0fb6c1ff43670d/visual/92f29716e76f4b998fe924f08e80357d",
+      "remote_manifest_path": "visual/92f29716e76f4b998fe924f08e80357d/manifests/72cb909c95433269381af39bb41161808a3797cef92988886b35d18fd038a7fd/manifest.json",
+      "bundle_path": "visual/92f29716e76f4b998fe924f08e80357d/artifacts/reports/29bfbc780e42f60fe6b4ce26dcc9e6340375008899b56869ee8b2b341d9a7c0e/report-29bfbc780e42f60fe6b4ce26dcc9e6340375008899b56869ee8b2b341d9a7c0e.zip",
+      "bundle_sha256": "29bfbc780e42f60fe6b4ce26dcc9e6340375008899b56869ee8b2b341d9a7c0e",
+      "bundle_bytes": 5164482,
+      "entrypoint": "experiments/92f29716e76f4b998fe924f08e80357d/voxel_structural_sampling.html",
+      "selected_files": 88,
+      "selection_file": "03i_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/995430173821926ccd2bfcb01e0fb6c1ff43670d/visual/92f29716e76f4b998fe924f08e80357d/artifacts/reports/29bfbc780e42f60fe6b4ce26dcc9e6340375008899b56869ee8b2b341d9a7c0e/report-29bfbc780e42f60fe6b4ce26dcc9e6340375008899b56869ee8b2b341d9a7c0e.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling"
+      ],
+      "included_run_ids": [
+        "92f29716e76f4b998fe924f08e80357d"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 88,
+        "remote_objects_verified": 29,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03i"
+    },
+    {
+      "key": "03j",
+      "title": "Task 03j — Variable rate shape first sampling",
+      "run_id": "15efc476f735491a828f5b84f352f858",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "05cb43c5f481aac38f5bec4452a6c039ea5f1304",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/05cb43c5f481aac38f5bec4452a6c039ea5f1304/visual/15efc476f735491a828f5b84f352f858",
+      "remote_manifest_path": "visual/15efc476f735491a828f5b84f352f858/manifests/1cfe621fe7856b5c680385986050f9e1a94688af672976c09e53a3d347e225a4/manifest.json",
+      "bundle_path": "visual/15efc476f735491a828f5b84f352f858/artifacts/reports/2a1c652a21800c701f10642c2ac30e9ef297151efb2e48d7edbcb63f798ba626/report-2a1c652a21800c701f10642c2ac30e9ef297151efb2e48d7edbcb63f798ba626.zip",
+      "bundle_sha256": "2a1c652a21800c701f10642c2ac30e9ef297151efb2e48d7edbcb63f798ba626",
+      "bundle_bytes": 14276208,
+      "entrypoint": "experiments/15efc476f735491a828f5b84f352f858/variable_rate_shape_first.html",
+      "selected_files": 104,
+      "selection_file": "03j_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/05cb43c5f481aac38f5bec4452a6c039ea5f1304/visual/15efc476f735491a828f5b84f352f858/artifacts/reports/2a1c652a21800c701f10642c2ac30e9ef297151efb2e48d7edbcb63f798ba626/report-2a1c652a21800c701f10642c2ac30e9ef297151efb2e48d7edbcb63f798ba626.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling",
+        "03ab"
+      ],
+      "included_run_ids": [
+        "15efc476f735491a828f5b84f352f858"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 104,
+        "remote_objects_verified": 102,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03j"
+    },
+    {
+      "key": "03k",
+      "title": "Task 03k — Temporal shape first evaluation",
+      "run_id": "9185355a32b8433abc70f1738f983377",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "cdca3a80ce4ce465298a7b59ad189abd7dfcf3c1",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/cdca3a80ce4ce465298a7b59ad189abd7dfcf3c1/visual/9185355a32b8433abc70f1738f983377",
+      "remote_manifest_path": "visual/9185355a32b8433abc70f1738f983377/manifests/019af81bd12cd4849fc3cdf465b3d83476783be2b5c5d300e08a1dcbdf85a0d9/manifest.json",
+      "bundle_path": "visual/9185355a32b8433abc70f1738f983377/artifacts/reports/5b7a320ce73a09c80d0acc147cfd32b0966f1f6d8ed36db4e3ec72466335a217/report-5b7a320ce73a09c80d0acc147cfd32b0966f1f6d8ed36db4e3ec72466335a217.zip",
+      "bundle_sha256": "5b7a320ce73a09c80d0acc147cfd32b0966f1f6d8ed36db4e3ec72466335a217",
+      "bundle_bytes": 52007230,
+      "entrypoint": "experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.html",
+      "selected_files": 274,
+      "selection_file": "03k_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/cdca3a80ce4ce465298a7b59ad189abd7dfcf3c1/visual/9185355a32b8433abc70f1738f983377/artifacts/reports/5b7a320ce73a09c80d0acc147cfd32b0966f1f6d8ed36db4e3ec72466335a217/report-5b7a320ce73a09c80d0acc147cfd32b0966f1f6d8ed36db4e3ec72466335a217.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling",
+        "03ab",
+        "03j"
+      ],
+      "included_run_ids": [
+        "9185355a32b8433abc70f1738f983377"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 274,
+        "remote_objects_verified": 275,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": "visual/results/diagnostic_previews/03k"
+    },
+    {
+      "key": "03_development",
+      "title": "Task 03 — Development and failed attempts",
+      "run_id": "aa5d71078e0841fd886b5026d6030ebc",
+      "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+      "hf_revision": "2a0b10c228eee49096b7ca6f1af1f75e26a1c16e",
+      "repository_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/2a0b10c228eee49096b7ca6f1af1f75e26a1c16e/visual/aa5d71078e0841fd886b5026d6030ebc",
+      "remote_manifest_path": "visual/aa5d71078e0841fd886b5026d6030ebc/manifests/e63c443ea5755c775fc471041d72a08d94212a0bd5691efb93803733971ccd3f/manifest.json",
+      "bundle_path": "visual/aa5d71078e0841fd886b5026d6030ebc/artifacts/reports/2d2c867ffd0e4382d129e1a88c8533705bffa3798af55f7e8ef33849649bf7db/report-2d2c867ffd0e4382d129e1a88c8533705bffa3798af55f7e8ef33849649bf7db.zip",
+      "bundle_sha256": "2d2c867ffd0e4382d129e1a88c8533705bffa3798af55f7e8ef33849649bf7db",
+      "bundle_bytes": 22786535,
+      "entrypoint": "experiments/f01e083a46a44d52b8c9713fdfca0113/priority_fps_trace.html",
+      "selected_files": 203,
+      "selection_file": "03_development_files.json",
+      "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+      "execution_git_dirty": true,
+      "bundle_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/2a0b10c228eee49096b7ca6f1af1f75e26a1c16e/visual/aa5d71078e0841fd886b5026d6030ebc/artifacts/reports/2d2c867ffd0e4382d129e1a88c8533705bffa3798af55f7e8ef33849649bf7db/report-2d2c867ffd0e4382d129e1a88c8533705bffa3798af55f7e8ef33849649bf7db.zip?download=true",
+      "dependency_artifact_keys": [
+        "rgbd",
+        "sampling",
+        "03ab"
+      ],
+      "included_run_ids": [
+        "aa5d71078e0841fd886b5026d6030ebc",
+        "0b02d4c27df14fa388fc5e44b39d17d1",
+        "2b03d0f5d6b8467a87f4e94e113f1cec",
+        "2c3d733de35c4532b2b81a0a751b7ebf",
+        "3674ba45b3074b67a6d47e8d8701688b",
+        "57952aa90dcc4424bf7767532e2de44f",
+        "5d1a3b0bd74a494eb6274f13426f18b1",
+        "7f3746308ae74221b77cce0982d9f411",
+        "847985ac6e004b55967b080906c166d3",
+        "937bbd997f134ef09c2a55666149f936",
+        "efe4215012b64a928b10105e4c217b67",
+        "f01e083a46a44d52b8c9713fdfca0113"
+      ],
+      "uploaded_by": "loveiscomplicated",
+      "verification": {
+        "bundle_member_hashes_verified": 203,
+        "remote_objects_verified": 19,
+        "download_zip_integrity_verified": true,
+        "commit_authors": [
+          "loveiscomplicated"
+        ]
+      },
+      "git_preview_directory": null,
+      "dependency_statuses": {
+        "0b02d4c27df14fa388fc5e44b39d17d1": "finished",
+        "2b03d0f5d6b8467a87f4e94e113f1cec": "finished",
+        "2c3d733de35c4532b2b81a0a751b7ebf": "failed",
+        "3674ba45b3074b67a6d47e8d8701688b": "failed",
+        "57952aa90dcc4424bf7767532e2de44f": "finished",
+        "5d1a3b0bd74a494eb6274f13426f18b1": "finished",
+        "7f3746308ae74221b77cce0982d9f411": "finished",
+        "847985ac6e004b55967b080906c166d3": "finished",
+        "937bbd997f134ef09c2a55666149f936": "finished",
+        "efe4215012b64a928b10105e4c217b67": "finished",
+        "f01e083a46a44d52b8c9713fdfca0113": "finished"
+      }
     }
   ],
-  "updated_at": "2026-10-24T00:33:03.979119+00:00"
+  "updated_at": "2026-10-24T00:33:03.979119+00:00",
+  "last_publication_actor": "loveiscomplicated"
 }

@@ -1,5 +1,7 @@
 # Task 03-D Phase 2 — Frame 0 Box Priority FPS 선택 trace
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 **결과:** 저장된 S2(FD2)·S3(PCA5)의 Box Priority 32점은 현재 `fps_indices()` 호출 한 번씩으로 **원소별 순서까지 정확히 재현**됐다. S2는 32점 중 4점이 rim reference 13/103개를, S3는 1점이 3/103개를 덮는다. S3의 후보 coverage는 91/103으로 S2의 57/103보다 높지만, 실제 32점 선택 뒤에는 반대가 된다. 모든 거리·ROI·GT 비교는 선택 순서 검증 뒤에 계산했다.
 
 - 새 진단 run: `aa5d71078e0841fd886b5026d6030ebc`. [HTML 시각화](../../experiments/aa5d71078e0841fd886b5026d6030ebc/priority_fps_trace.html), [32-step 원본 trace JSON](../../visual/results/diagnostic_previews/03d_phase2/priority_fps_trace.json), [검증 결과](../../visual/results/diagnostic_previews/03d_phase2/verification.json).

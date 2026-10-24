@@ -5,6 +5,9 @@
 HF 링크는 게시한 revision에 고정했으며 저장소 접근 권한이 있는 계정으로 로그인해야 한다.
 기계가 읽을 수 있는 경로·revision·SHA-256은 [artifacts.json](artifacts.json)에 있다.
 
+Task03-AB, D의 세 phase, E–K와 개발·실패 기록의 후속 게시 결과는
+[Task 03 후속 실험 산출물](sampling_followups.md)에 있다. 같은 비공개 저장소와 사용자 계정을 사용했다.
+
 | 결과 | 기존 run ID | ZIP 크기 | 다운로드 |
 | --- | --- | ---: | --- |
 | RGB-D·초기 검출·추적·영상 | `996f629b211147f18deeb6736c51c3e9` | 38.57 MiB | [ZIP 다운로드](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/b27cf33a98d48c396a53c779f5707602679af99f/visual/996f629b211147f18deeb6736c51c3e9/artifacts/reports/ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5/report-ad7e48e28476c9b4e17951042225c59e89bc89438f10efa1979cd2aaae0d89c5.zip?download=true) · [HF 파일 목록](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/b27cf33a98d48c396a53c779f5707602679af99f/visual/996f629b211147f18deeb6736c51c3e9) |

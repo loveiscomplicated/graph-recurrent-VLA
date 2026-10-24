@@ -1,0 +1,123 @@
+{
+  "entrypoint": "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03d_phase3 — Priority FPS seed control. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/config.yaml": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/config.yaml",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/geometry.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/rgbd.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/sampling.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_priority_fps_seed_control.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_priority_fps_trace.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/test_priority_fps_seed_control.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/diagnostic_source/visual/runtime/test/test_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/execution_source/visual/runtime/test/run_priority_fps_seed_control.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/execution_source/visual/runtime/test/run_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/execution_tests.log": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/execution_tests.log",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/git_end.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/git_end.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/git_start.diff": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/git_start.diff",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/git_start.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/git_start.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/implementation.patch": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/implementation.patch",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/manifest.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/manifest.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/metadata.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/metadata.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/metrics.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/metrics.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.html": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.html",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/refresh_report.py": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/refresh_report.py",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/report_snapshot.md": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/report_snapshot.md",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/seed_initial_points.png": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/seed_initial_points.png",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/seed_priority_final_coverage.png": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/seed_priority_final_coverage.png",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/shared_initial_coverage.png": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/shared_initial_coverage.png",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/shared_initial_overlay.png": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/shared_initial_overlay.png",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/source_hashes.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/source_hashes.json",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/tests.log": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/tests.log",
+      "role": "result"
+    },
+    "experiments/f36f1e9e2bb64866b8d6c792db158635/verification.json": {
+      "source": "experiments/f36f1e9e2bb64866b8d6c792db158635/verification.json",
+      "role": "result"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Task03-I — Shape-First Voxel Precompression + 3D FPS Cap
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 [voxel_structural_sampling.html](../../experiments/92f29716e76f4b998fe924f08e80357d/voxel_structural_sampling.html) · [voxel_structural_sampling.json](../../experiments/92f29716e76f4b998fe924f08e80357d/voxel_structural_sampling.json) · [voxel_structural_sampling.npz](../../experiments/92f29716e76f4b998fe924f08e80357d/voxel_structural_sampling.npz) · [selection_before_gt.npz](../../experiments/92f29716e76f4b998fe924f08e80357d/selection_before_gt.npz) · [selection_before_gt.json](../../experiments/92f29716e76f4b998fe924f08e80357d/selection_before_gt.json) · [verification.json](../../visual/results/diagnostic_previews/03i/verification.json) · [tests.log](../../experiments/92f29716e76f4b998fe924f08e80357d/tests.log) · [source_hashes.json](../../experiments/92f29716e76f4b998fe924f08e80357d/source_hashes.json) · [preregistered_config.json](../../visual/results/diagnostic_previews/03i/preregistered_config.json) · [implementation.patch](../../experiments/92f29716e76f4b998fe924f08e80357d/implementation.patch) · [git_start.diff](../../experiments/92f29716e76f4b998fe924f08e80357d/git_start.diff)
 
 [승인 계획](03i_voxel_structural_sampling_plan.md) · [Task03-H](03h_candidate_count_matched.md) · [Task03-F](03f_local_structural_sampling.md) · [Task03-G](03g_geometry_aware_sampling.md)

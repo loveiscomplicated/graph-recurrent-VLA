@@ -1,0 +1,1143 @@
+{
+  "entrypoint": "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03ab — Adaptive node budget. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.html": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.html",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/adaptive_node_budget.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/analysis.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/analysis.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0000_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0000_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0001_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0001_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0002_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0002_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0003_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0003_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0004_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0004_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0005_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0005_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0006_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0006_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0007_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0007_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0008_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0008_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0009_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0009_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0010_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0010_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0011_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0011_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0012_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0012_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0013_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0013_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0014_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0014_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0015_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0015_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0016_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0016_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0017_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0017_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0018_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0018_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0019_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0019_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0020_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0020_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0021_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0021_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0022_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0022_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0023_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0023_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0024_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0024_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0025_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0025_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0026_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0026_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0027_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0027_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0028_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0028_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0029_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0029_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0030_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0030_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0031_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0031_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0032_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0032_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0033_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0033_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0034_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0034_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0035_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0035_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0036_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0036_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0037_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0037_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0038_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0038_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0039_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0039_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0040_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0040_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0041_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0041_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0042_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0042_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0043_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0043_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0044_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0044_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0045_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0045_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0046_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0046_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0047_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0047_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0048_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0048_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0049_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0049_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0050_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0050_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0051_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0051_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0052_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0052_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0053_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0053_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0054_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0054_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0055_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0055_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0056_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0056_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0057_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0057_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0058_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0058_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0059_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0059_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0060_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0060_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0061_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0061_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0062_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0062_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0063_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0063_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0064_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0064_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0065_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0065_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0066_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0066_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0067_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0067_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0068_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0068_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0069_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0069_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0070_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0070_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0071_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0071_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0072_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0072_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0073_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0073_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0074_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0074_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0075_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0075_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0076_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0076_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0077_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0077_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0078_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0078_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0079_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0079_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0080_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0080_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0081_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0081_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0082_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0082_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0083_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0083_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0084_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0084_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0085_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0085_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0086_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0086_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0087_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0087_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0088_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0088_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0089_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0089_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0090_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0090_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0091_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0091_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0092_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0092_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0093_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0093_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0094_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0094_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0095_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0095_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0096_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0096_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0097_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0097_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0098_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0098_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0099_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0099_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0100_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0100_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0101_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0101_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0102_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0102_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0103_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0103_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0104_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0104_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0105_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0105_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0106_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0106_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0107_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0107_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0108_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0108_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0109_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0109_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0110_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0110_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0111_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0111_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0112_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0112_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0113_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0113_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0114_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0114_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0115_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0115_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0116_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0116_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0117_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0117_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0118_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0118_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0119_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0119_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0120_evidence.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/cache/f0120_evidence.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/config.yaml": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/config.yaml",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/edge_evidence.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/edge_evidence.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/geometry.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/normal_estimators.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/pca.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/pca.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/rgbd.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/sampling.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/normal_diagnostics.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_adaptive_node_budget.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_adaptive_node_budget.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_normal_comparison.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_sampling.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_sampling.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_structural_edges.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/sampling_plots.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/sampling_plots.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_adaptive_node_budget.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_adaptive_node_budget.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling_geometry.py": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/evaluated_source/visual/runtime/test/test_sampling_geometry.py",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/execution.log": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/execution.log",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frame_metrics.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frame_metrics.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0000_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0000_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0000_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0000_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0001_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0001_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0002_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0002_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0003_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0003_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0004_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0004_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0005_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0005_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0006_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0006_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0007_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0007_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0008_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0008_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0009_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0009_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0010_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0010_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0011_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0011_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0012_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0012_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0013_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0013_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0014_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0014_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0015_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0015_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0015_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0015_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0016_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0016_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0017_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0017_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0018_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0018_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0018_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0018_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0019_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0019_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0020_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0020_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0021_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0021_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0022_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0022_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0023_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0023_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0024_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0024_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0025_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0025_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0026_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0026_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0027_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0027_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0028_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0028_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0029_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0029_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0030_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0030_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0031_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0031_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0032_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0032_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0033_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0033_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0034_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0034_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0035_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0035_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0036_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0036_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0037_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0037_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0038_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0038_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0039_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0039_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0040_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0040_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0041_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0041_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0042_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0042_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0043_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0043_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0044_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0044_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0045_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0045_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0045_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0045_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0046_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0046_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0047_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0047_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0048_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0048_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0049_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0049_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0050_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0050_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0051_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0051_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0052_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0052_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0053_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0053_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0054_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0054_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0055_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0055_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0056_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0056_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0057_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0057_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0058_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0058_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0059_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0059_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0060_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0060_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0061_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0061_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0062_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0062_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0063_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0063_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0064_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0064_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0065_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0065_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0066_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0066_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0067_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0067_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0068_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0068_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0069_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0069_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0070_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0070_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0071_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0071_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0072_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0072_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0073_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0073_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0074_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0074_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0075_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0075_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0076_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0076_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0077_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0077_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0078_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0078_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0079_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0079_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0080_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0080_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0080_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0080_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0081_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0081_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0082_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0082_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0083_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0083_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0084_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0084_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0085_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0085_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0086_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0086_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0087_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0087_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0088_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0088_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0089_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0089_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0090_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0090_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0091_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0091_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0092_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0092_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0093_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0093_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0094_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0094_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0095_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0095_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0096_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0096_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0097_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0097_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0098_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0098_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0099_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0099_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0100_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0100_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0101_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0101_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0102_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0102_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0103_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0103_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0104_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0104_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0105_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0105_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0106_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0106_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0107_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0107_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0108_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0108_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0109_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0109_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0110_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0110_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0111_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0111_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0112_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0112_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0113_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0113_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0114_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0114_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0115_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0115_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0116_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0116_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0117_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0117_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0118_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0118_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0119_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0119_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0120_overlay.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0120_overlay.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0120_samples.npz": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/frames/f0120_samples.npz",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/implementation.patch": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/implementation.patch",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/latency.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/latency.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/manifest.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/manifest.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/metadata.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/metadata.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/metrics.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/metrics.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/plots/budget_timeseries.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/plots/budget_timeseries.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/plots/latency_depth.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/plots/latency_depth.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/plots/preservation_temporal.png": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/plots/preservation_temporal.png",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/preservation_before.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/preservation_before.json",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/tests.log": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/tests.log",
+      "role": "result"
+    },
+    "experiments/f68c59f210b5499dadc7e962c7f64492/verification.json": {
+      "source": "experiments/f68c59f210b5499dadc7e962c7f64492/verification.json",
+      "role": "result"
+    }
+  }
+}

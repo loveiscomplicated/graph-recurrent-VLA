@@ -1,5 +1,7 @@
 # Task03-G — Geometry-Aware Structural Sampling, Phase 1 Feasibility
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 Frame0 결과: Peg C→P p95는 6.662→5.664mm로 개선됐고 Box는 29.779→30.710mm로 악화됐다. X→F Surface mean/p95는 두 물체에서 소폭 개선됐지만 Final GT reference는 Peg 160→149, Box 12→9로 줄었다. Fallback은 양쪽 0점이며, 관측 patch의 유용성은 제한적이다. 일반화 성공이나 정책 채택을 주장하지 않는다.
 
 수치 선택 UUID는 2c3d733de35c4532b2b81a0a751b7ebf다. 해당 실행은 수치·문서 생성 후 최종 artifact 등록에서 종료 후 전용 API를 실행 중 호출해 failed로 남았다. 이번 보고 UUID는 저장 수치 NPZ와 pre-GT 선택을 byte-identical 복사한 문서 후처리이며 새 FPS/평가 실행은 0회다. 실패 실행과 모든 원본 산출물은 보존했다.

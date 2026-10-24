@@ -1,0 +1,31 @@
+{
+  "published_at": "2026-10-24T14:24:42.147399+00:00",
+  "actor": "loveiscomplicated",
+  "repository": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+    "repo_type": "dataset",
+    "private": true
+  },
+  "runtime_tests": {
+    "run": 250,
+    "passed": 247,
+    "skipped": 3
+  },
+  "infrastructure_tests": {
+    "run": 42,
+    "passed": 42
+  },
+  "bundles": 12,
+  "bundle_bytes": 248156599,
+  "bundle_members_verified": 1469,
+  "remote_objects_verified": 818,
+  "downloaded_zip_integrity_verified": true,
+  "not_rerun": [
+    "simulator",
+    "renderer",
+    "CUDA",
+    "MPS",
+    "tracker/model inference",
+    "full experiment sweeps"
+  ]
+}

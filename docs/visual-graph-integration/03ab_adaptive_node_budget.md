@@ -1,5 +1,7 @@
 # Task 03-AB — Adaptive Total Node Budget Ablation
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 **121프레임 구현·검증·실험을 완료했다.** 첫 유효 관측 면적을 고정 reference로 쓰는 선형 정책은
 Fixed256 대비 평균 node 수를 **62.93%**, 평균 sampling 시간을 **45.55%** 줄였다.
 그 대가로 Peg seam retention은 **61.28% → 28.16%**, Box rim은 **11.43% → 7.77%**로 낮아졌다.

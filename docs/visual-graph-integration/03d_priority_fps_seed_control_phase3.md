@@ -1,5 +1,7 @@
 # Task 03-D Phase 3 — FPS Initialization vs Candidate Distribution
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 **상태: 완료 / 승인 범위 종료.**
 
 저장된 seed 0/1/2의 B Priority coverage는 S2 7–13/103, S3 3–5/103이다. 공통 초기점 114957의 C Priority는 S2 **8/103**, S3 **3/103** (S2−S3 5 refs)이다. 이 초기점과 기존 FPS 조건에서도 후보 집합 차이에 따른 결과 차이가 남는다. 단일 공통 초기점으로 초기점 효과의 일반적 크기나 각 후보 특성의 독립적 인과 기여율을 추정하지 않는다.

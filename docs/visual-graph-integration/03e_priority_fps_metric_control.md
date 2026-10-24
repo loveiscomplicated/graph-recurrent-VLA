@@ -1,5 +1,7 @@
 # Task03-E — Depth-Weighted Structural FPS & Local Geometry Preservation
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 실행 UUID: `7f657cf88baf4f1f89e594252e243e1c`. ep000 Frame 0의 geometry-level offline ablation을 완료했다. 네 조합의 λ=1 exact reproduction 관문은 모두 PASS다.
 
 ## 고정 조건과 baseline 관문

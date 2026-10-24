@@ -1,0 +1,171 @@
+{
+  "entrypoint": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03h — Candidate count matched control. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.html": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.html",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.npz": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_count_matched.npz",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/candidate_matched.png": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_matched.png",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/candidate_original.png": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/candidate_original.png",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/config.yaml": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/config.yaml",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/expected_coverage.png": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/expected_coverage.png",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/git_end.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/git_end.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/git_start.diff": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/git_start.diff",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/git_start.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/git_start.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/implementation.patch": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/implementation.patch",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/manifest.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/manifest.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/metadata.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/metadata.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/metrics.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/metrics.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/reference_multiplicity.png": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/reference_multiplicity.png",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/roi_depth_spatial.png": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/roi_depth_spatial.png",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/selection_before_annotation.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/selection_before_annotation.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/selection_before_annotation.npz": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/selection_before_annotation.npz",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_hashes.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_hashes.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/docs/visual-graph-integration/03h_candidate_count_matched_plan.md": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/docs/visual-graph-integration/03h_candidate_count_matched_plan.md",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/__init__.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/__init__.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/experiment_artifacts.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/experiment_artifacts.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/experiment_logger.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/utils/experiment_logger.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/edge_evidence.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/edge_evidence.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/geometry.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/normal_estimators.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/rgbd.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/normal_diagnostics.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/normal_estimators.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_candidate_count_matched.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_candidate_count_matched.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_normal_comparison.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_structural_edges.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/structural_edges.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/structural_edges.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/test_candidate_count_matched.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/test_candidate_count_matched.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/source_snapshot/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/task03h_preflight_failure.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/task03h_preflight_failure.json",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/tests.log": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/tests.log",
+      "role": "result"
+    },
+    "experiments/79358cfd00bd409f837b713972fba2ca/verification.json": {
+      "source": "experiments/79358cfd00bd409f837b713972fba2ca/verification.json",
+      "role": "result"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Task03-K — Continuous-Frame Shape-First Sampling Validation
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 Run UUID: `9185355a32b8433abc70f1738f983377`. 121 source frames, two fixed conditions; this is one episode, not 121 independent experiments.
 
 [Static HTML](../../experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.html) · [JSON](../../experiments/9185355a32b8433abc70f1738f983377/temporal_shape_first.json) · [NPZ](../../experiments/9185355a32b8433abc70f1738f983377/frame_metrics.npz) · [Pre-GT selection hash](../../experiments/9185355a32b8433abc70f1738f983377/selection_before_gt.json)

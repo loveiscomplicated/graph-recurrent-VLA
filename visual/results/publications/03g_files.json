@@ -1,0 +1,375 @@
+{
+  "entrypoint": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03g — Geometry aware sampling. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/box_GT_auxiliary.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/box_GT_auxiliary.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/browser_image_loading.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/browser_image_loading.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/candidate_3d_ecdf_tail.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/candidate_3d_ecdf_tail.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/candidate_XZ_coverage.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/candidate_XZ_coverage.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/compatibility.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/compatibility.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/config.yaml": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/config.yaml",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.html": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.html",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.npz": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/geometry_aware_sampling.npz",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/git_start.diff": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/git_start.diff",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/git_status.txt": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/git_status.txt",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/html_preview.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/html_preview.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/implementation.patch": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/implementation.patch",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/independent_regions.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/independent_regions.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/manifest.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/manifest.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/metadata.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/metadata.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/metrics.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/metrics.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/original_hashes.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/original_hashes.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_and_selection.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_and_selection.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_diagnostics_before_selection.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_diagnostics_before_selection.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_quota.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/patch_quota.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/peg_GT_auxiliary.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/peg_GT_auxiliary.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/preregistered_config.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/preregistered_config.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/report.md": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/report.md",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_attempt_failure.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_attempt_failure.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_before_gt.npz": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_before_gt.npz",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_implementation.patch": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_implementation.patch",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_report.md": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_report.md",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_hashes.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_hashes.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/utils/experiment_artifacts.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/utils/experiment_artifacts.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/utils/experiment_logger.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/utils/experiment_logger.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/edge_evidence.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/edge_evidence.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/geometry.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/grounding.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/grounding.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/initialization.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/initialization.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/normal_estimators.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/pca.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/pca.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/rgbd.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/benchmark_pca_cuda.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/benchmark_pca_cuda.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/benchmark_pca_streaming.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/benchmark_pca_streaming.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/normal_diagnostics.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/normal_estimators.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_optimized.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_optimized.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_torch.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_torch.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_triton.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/pca_triton.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_adaptive_node_budget.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_adaptive_node_budget.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_geometry.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_geometry.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_geometry_aware_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_geometry_aware_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_grounding.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_grounding.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_local_structural_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_local_structural_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_normal_comparison.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_pca_optimization.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_pca_optimization.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_trace.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_rgbd.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_rgbd.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_structural_edges.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_tracking.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/run_tracking.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/sampling_plots.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/sampling_plots.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/structural_edges.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/structural_edges.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_adaptive_node_budget.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_adaptive_node_budget.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry_aware_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry_aware_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry_evaluation.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_geometry_evaluation.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_initialization.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_initialization.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_local_structural_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_local_structural_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_normal_comparison.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_normal_diagnostics.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_pca_optimized.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_pca_optimized.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_trace.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_rgbd.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_rgbd.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_rgbd_evaluation.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_rgbd_evaluation.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling_geometry.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_sampling_geometry.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_structural_edges.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/test/test_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/tracking.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_source_snapshot/visual/runtime/tracking.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_verification.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/selection_verification.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/source_hashes.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/source_hashes.json",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/source_snapshot/visual/runtime/test/run_geometry_aware_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/source_snapshot/visual/runtime/test/run_geometry_aware_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/source_snapshot/visual/runtime/test/test_geometry_aware_sampling.py": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/source_snapshot/visual/runtime/test/test_geometry_aware_sampling.py",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/surface_depth_tradeoff.png": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/surface_depth_tradeoff.png",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/tests.log": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/tests.log",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/tests_report_recovery.log": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/tests_report_recovery.log",
+      "role": "result"
+    },
+    "experiments/495a67210c5c4cbfab91d013239f7ce9/verification.json": {
+      "source": "experiments/495a67210c5c4cbfab91d013239f7ce9/verification.json",
+      "role": "result"
+    }
+  }
+}

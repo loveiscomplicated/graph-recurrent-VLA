@@ -1,0 +1,567 @@
+{
+  "entrypoint": "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03e — Priority FPS metric control. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/baseline_gate.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/baseline_gate.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/box_line_node_spacing.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/box_line_node_spacing.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/box_structural_zoom.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/box_structural_zoom.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_dom.html": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_dom.html",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_image_check.html": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_image_check.html",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_render.log": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_render.log",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_verification.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/browser_verification.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/config.yaml": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/config.yaml",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/coverage_surface_tradeoff.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/coverage_surface_tradeoff.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/git_end.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/git_end.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/git_start.diff": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/git_start.diff",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/git_start.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/git_start.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/html_preview.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/html_preview.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/implementation.patch": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/implementation.patch",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/local_reference_distances.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/local_reference_distances.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/manifest.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/manifest.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/metadata.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/metadata.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/metrics.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/metrics.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/peg_structural_zoom.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/peg_structural_zoom.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.html": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.html",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.npz": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/priority_fps_metric_control.npz",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/report_snapshot.md": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/report_snapshot.md",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/report_source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/report_source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/report_source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/report_source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/selection_overview.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/selection_overview.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_hashes.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_hashes.json",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/utils/experiment_artifacts.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/utils/experiment_artifacts.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/utils/experiment_logger.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/utils/experiment_logger.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/edge_evidence.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/edge_evidence.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/geometry.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/geometry.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/grounding.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/grounding.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/initialization.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/initialization.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/normal_estimators.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/pca.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/pca.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/rgbd.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/rgbd.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/sampling.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/sampling.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/benchmark_pca_cuda.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/benchmark_pca_cuda.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/benchmark_pca_streaming.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/benchmark_pca_streaming.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/normal_diagnostics.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/normal_estimators.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/normal_estimators.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_optimized.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_optimized.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_torch.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_torch.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_triton.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/pca_triton.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_geometry.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_geometry.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_grounding.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_grounding.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_normal_comparison.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_pca_optimization.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_pca_optimization.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_trace.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_rgbd.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_rgbd.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_sampling.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_sampling.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_structural_edges.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_tracking.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/run_tracking.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/sampling_plots.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/sampling_plots.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/structural_edges.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/structural_edges.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_geometry.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_geometry.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_geometry_evaluation.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_geometry_evaluation.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_initialization.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_initialization.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_normal_comparison.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_normal_comparison.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_normal_diagnostics.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_normal_diagnostics.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_pca_optimized.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_pca_optimized.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_trace.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_priority_fps_trace.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_rgbd.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_rgbd.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_rgbd_evaluation.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_rgbd_evaluation.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling_geometry.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_sampling_geometry.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_structural_edges.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/test/test_structural_edges.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/tracking.py": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/source_snapshot/visual/runtime/tracking.py",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/spatial_xz.png": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/spatial_xz.png",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/tests.log": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/tests.log",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/tests_final.log": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/tests_final.log",
+      "role": "result"
+    },
+    "experiments/7f657cf88baf4f1f89e594252e243e1c/verification.json": {
+      "source": "experiments/7f657cf88baf4f1f89e594252e243e1c/verification.json",
+      "role": "result"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/attempt_note.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/attempt_note.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/config.yaml": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/config.yaml",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/git_start.diff": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/git_start.diff",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/git_start.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/git_start.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/manifest.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/manifest.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/metadata.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/metadata.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/metrics.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/metrics.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/pre_fps_validation_failure.md": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/pre_fps_validation_failure.md",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/priority_fps_metric_control.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/priority_fps_metric_control.json",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/utils/experiment_artifacts.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/utils/experiment_artifacts.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/utils/experiment_logger.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/utils/experiment_logger.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/edge_evidence.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/edge_evidence.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/geometry.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/geometry.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/grounding.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/grounding.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/initialization.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/initialization.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/normal_estimators.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/normal_estimators.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/pca.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/pca.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/rgbd.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/rgbd.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/sampling.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/sampling.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/benchmark_pca_cuda.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/benchmark_pca_cuda.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/benchmark_pca_streaming.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/benchmark_pca_streaming.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/normal_diagnostics.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/normal_estimators.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/normal_estimators.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_optimized.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_optimized.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_torch.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_torch.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_triton.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/pca_triton.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_geometry.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_geometry.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_grounding.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_grounding.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_normal_comparison.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_normal_comparison.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_normal_diagnostics.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_pca_optimization.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_pca_optimization.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_metric_control.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_seed_control.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_trace.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_priority_fps_trace.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_rgbd.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_rgbd.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_sampling.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_sampling.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_structural_edges.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_structural_edges.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_tracking.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/run_tracking.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/sampling_evaluation.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/sampling_plots.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/sampling_plots.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/structural_edges.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/structural_edges.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_geometry.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_geometry.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_geometry_evaluation.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_geometry_evaluation.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_initialization.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_initialization.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_normal_comparison.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_normal_comparison.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_normal_diagnostics.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_normal_diagnostics.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_pca_optimized.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_pca_optimized.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_metric_control.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_seed_control.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_trace.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_priority_fps_trace.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_rgbd.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_rgbd.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_rgbd_evaluation.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_rgbd_evaluation.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling_geometry.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_sampling_geometry.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_structural_edges.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/test/test_structural_edges.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/tracking.py": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/source_snapshot/visual/runtime/tracking.py",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/tests.log": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/tests.log",
+      "role": "dependency"
+    },
+    "experiments/9702d2709f0946f895e504554537c492/verification.json": {
+      "source": "experiments/9702d2709f0946f895e504554537c492/verification.json",
+      "role": "dependency"
+    }
+  }
+}

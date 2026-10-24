@@ -1,5 +1,7 @@
 # Task03-D Box hole rim 병목 분석 Phase 1
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 **Frame 0의 S3는 후보 단계에서 S2보다 더 많은 rim reference를 덮지만, priority 선택 후에는 더 적게 남는다.**
 S2/S3 후보 coverage는 **57/103 대 91/103**, priority coverage는 **13/103 대 3/103**이다.
 Surface는 S2에 후보 밖 reference 3개를 보완했고 S3에는 보완하지 않아, 최종 coverage는 **16/103 대 3/103**이다.

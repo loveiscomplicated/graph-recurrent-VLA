@@ -1,5 +1,7 @@
 # Task03-J — Variable-Rate Shape-First Sampling
 
+전체 HTML·NPZ·실행 소스와 원래 run 기록은 [HF 후속 게시 인덱스](../../visual/results/publications/sampling_followups.md)에 있다. Git에 포함한 핵심 그림·작은 수치는 아래 미리보기 링크로 확인할 수 있다.
+
 [variable_rate_shape_first.html](../../experiments/15efc476f735491a828f5b84f352f858/variable_rate_shape_first.html) · [variable_rate_shape_first.json](../../experiments/15efc476f735491a828f5b84f352f858/variable_rate_shape_first.json) · [variable_rate_shape_first.npz](../../experiments/15efc476f735491a828f5b84f352f858/variable_rate_shape_first.npz) · [preregistered_config.json](../../visual/results/diagnostic_previews/03j/preregistered_config.json) · [selection_before_gt.npz](../../experiments/15efc476f735491a828f5b84f352f858/selection_before_gt.npz) · [selection_before_gt.json](../../experiments/15efc476f735491a828f5b84f352f858/selection_before_gt.json) · [verification.json](../../visual/results/diagnostic_previews/03j/verification.json) · [tests.log](../../experiments/15efc476f735491a828f5b84f352f858/tests.log) · [source_hashes.json](../../experiments/15efc476f735491a828f5b84f352f858/source_hashes.json) · [protected_baseline.json](../../experiments/15efc476f735491a828f5b84f352f858/protected_baseline.json) · [implementation.patch](../../experiments/15efc476f735491a828f5b84f352f858/implementation.patch) · [git_start.diff](../../experiments/15efc476f735491a828f5b84f352f858/git_start.diff)
 
 [승인 계획](03j_variable_rate_shape_first_plan.md) · [Task03-I historical reference](03i_voxel_structural_sampling.md)

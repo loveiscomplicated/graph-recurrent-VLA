@@ -1,0 +1,95 @@
+{
+  "entrypoint": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations.html",
+  "publication_commit": "230b345a07bb5c0f9ceb74d15b2347d7a5bedabb",
+  "description": "Task 03d_phase1 — Box rim staged coverage. Completed CPU diagnostic results, saved selections, full metrics, executed-source snapshots and original experiment metadata. Failed attempts are dependencies where listed. No CUDA/MPS/simulator rerun during publication. Prior Task03 and RGB-D input bundles are prerequisites.",
+  "files": {
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/analysis.txt": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/analysis.txt",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/build_visualizations.py": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/build_visualizations.py",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/config.yaml": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/config.yaml",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/run_rim_bottleneck.py",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/sampling_evaluation.py": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/test_sampling_evaluation.py": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/diagnostic_source/visual/runtime/test/test_sampling_evaluation.py",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/execution.log": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/execution.log",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/implementation.patch": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/implementation.patch",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/manifest.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/manifest.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/metadata.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/metadata.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/metrics.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/metrics.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/tests.log": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/tests.log",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/verification.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/verification.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/verify_visualizations.cjs": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/verify_visualizations.cjs",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations.html": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations.html",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_browser_check.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_browser_check.json",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-coverage.png": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-coverage.png",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-overlay.png": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-overlay.png",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-reference.png": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_previews/desktop-reference.png",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_template.html": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_template.html",
+      "role": "result"
+    },
+    "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_verification.json": {
+      "source": "experiments/d3f14ee494894daabb8ba2fab8e1b00c/visualizations_verification.json",
+      "role": "result"
+    }
+  }
+}
