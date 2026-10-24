@@ -1,0 +1,9 @@
+{
+  "run_id": "f36f1e9e2bb64866b8d6c792db158635",
+  "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/f36f1e9e2bb64866b8d6c792db158635/priority_fps_seed_control.json",
+  "summary_source_sha256": "11d49e29ff4dda86fc1d0d51227251f53d49f40adfff21b775efdca45daa4927",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}

@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "required_tests": {
+    "status": "PASS",
+    "summary": "Ran 45 tests in 0.644s; OK",
+    "modules": [
+      "visual.runtime.test.test_priority_fps_seed_control",
+      "visual.runtime.test.test_priority_fps_trace",
+      "visual.runtime.test.test_sampling",
+      "visual.runtime.test.test_sampling_geometry",
+      "visual.runtime.test.test_sampling_evaluation"
+    ]
+  },
+  "source_and_input_contract": "PASS",
+  "seed0_phase2_ids_reused": "PASS",
+  "saved_source_feature_role_alignment": "PASS",
+  "saved_analysis_fps_calls": 0,
+  "shared_candidate_count": 252,
+  "shared_initial": 114957,
+  "initial_xyz_exact": "PASS",
+  "initial_rng_draws": 0,
+  "real_fps_calls": {
+    "S2": 1,
+    "S3": 1
+  },
+  "unique_count_includes_initial": 32,
+  "raster_local_global_membership": "PASS",
+  "gt_annotation_independence": "PASS (synthetic tests; no GT argument in selection)",
+  "same_pair_joint_matching_and_reference_dedup": "PASS",
+  "negative_roi_union": "PASS",
+  "inputs_unchanged": "PASS",
+  "original_preservation": {
+    "status": "PASS",
+    "protected_file_count": 1289,
+    "all_sha256_unchanged": true
+  },
+  "skipped": [
+    "simulator",
+    "renderer",
+    "GPU/CUDA",
+    "other frame/episode",
+    "initialization sweep",
+    "new sampling policy",
+    "external upload",
+    "dependency installation",
+    "commit"
+  ],
+  "html_and_markdown_local_links": {
+    "status": "PASS",
+    "markdown_link_count": 21
+  },
+  "png_readback": "PASS (all 4 PNGs decoded; dynamic bounds include all initial/selected points)",
+  "report_refresh": {
+    "status": "PASS",
+    "only_saved_results": true,
+    "real_fps_reexecuted": false
+  },
+  "git_diff_check": "PASS (existing diff and all three new files)",
+  "scope_check": "PASS (only two implementation/test files plus requested Markdown added)",
+  "source_snapshots": "PASS (executed and final presentation sources separately hashed)",
+  "visual_review": "PASS (4 PNGs inspected; all six first points and all 64 control selections within axes)",
+  "artifact_registration": "PASS (finished local run, registered output sidecars present)"
+}
