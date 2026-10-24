@@ -7,6 +7,10 @@ S4 depth-only 우선 선택은 이 조건에서 Peg 보존을 낮추고 가림·
 이 수치는 **Tracker가 현재 관측한 reference 대비 Sampling 보존율**이다.
 최종 detector, threshold, ratio 또는 feature 표현을 채택한 결과는 아니다.
 
+후속 [Task03-D Box rim 병목 분석 Phase 1](03d_box_rim_bottleneck_phase1.md)은 저장된 frame 0/120의
+관측·후보·priority·Surface coverage를 분리한다. Frame 0의 S3는 후보 coverage가 더 높지만
+priority와 최종 coverage는 더 낮았다. 오염·원거리 depth·FPS 거리 경쟁의 인과 기여율은 미확인이다.
+
 최종 run: `2551448b0fae4c6bbce3caf48774275f`.
 [전체 HTML](../../visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.html), [전체 summary·설정·fidelity JSON](../../visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/comparison.json),
 [검증 기록](../../visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/verification.json), [budget/ratio/false selection/latency 그림](../../visual/results/sampling/2551448b0fae4c6bbce3caf48774275f/tradeoffs.png),

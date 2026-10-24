@@ -1,0 +1,28 @@
+{
+  "run_id": "d3f14ee494894daabb8ba2fab8e1b00c",
+  "tests": {
+    "command": "WANDB_MODE=disabled MPLCONFIGDIR=/tmp/task03d-mpl .venv/bin/python -m unittest visual.runtime.test.test_sampling_evaluation visual.runtime.test.test_sampling visual.runtime.test.test_sampling_geometry -v",
+    "pass_count": 31,
+    "fail_count": 0,
+    "skip_count": 0
+  },
+  "diagnostic": {
+    "command": "WANDB_MODE=disabled MPLCONFIGDIR=/tmp/task03d-mpl .venv/bin/python -m visual.runtime.test.run_rim_bottleneck",
+    "status": "PASS",
+    "frames": [
+      0,
+      120
+    ],
+    "target_coverage_exact": true,
+    "all_original_tolerances_exact": true,
+    "negative_roi_exact": true
+  },
+  "diff_check": "PASS",
+  "inputs_unchanged": true,
+  "source_snapshot_current": true,
+  "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+  "metadata_status": "finished",
+  "cpu_only": true,
+  "external_upload": false,
+  "commit_created": false
+}
