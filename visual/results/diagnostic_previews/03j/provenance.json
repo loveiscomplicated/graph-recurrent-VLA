@@ -1,0 +1,9 @@
+{
+  "run_id": "15efc476f735491a828f5b84f352f858",
+  "source_run_id": null,
+  "execution_git_commit": "2e10a51736826aa980f2fe79a801eb6c9da8e288",
+  "execution_git_dirty": true,
+  "summary_source": "experiments/15efc476f735491a828f5b84f352f858/variable_rate_shape_first.json",
+  "summary_source_sha256": "4aee067e701c15a3c04eefe7157c658b20431a2aa8d5ecd5b8f5bd67ae77ec23",
+  "note": "Selected unchanged results; full original files and executed source are in the matching HF bundle. Publication checks ran on CPU; CUDA/MPS/simulator were not rerun."
+}

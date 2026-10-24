@@ -1,0 +1,183 @@
+{
+  "status": "PASS for executed checks",
+  "tests": {
+    "summary": "Ran 127 tests in 3.992s; OK",
+    "modules": [
+      "visual.runtime.test.test_variable_rate_shape_first",
+      "visual.runtime.test.test_variable_rate_graph_contract",
+      "visual.runtime.test.test_voxel_structural_sampling",
+      "visual.runtime.test.test_sampling",
+      "visual.runtime.test.test_sampling_geometry",
+      "visual.runtime.test.test_sampling_evaluation",
+      "tests.test_experiment_logger",
+      "tests.test_experiment_artifacts"
+    ],
+    "passed": 127,
+    "skipped": 0
+  },
+  "documents": {
+    "status": "PASS",
+    "html_relative_links": 45,
+    "markdown_relative_links": 30,
+    "png_decoded": {
+      "f0000_r1_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0000_r0.75_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0000_r0.5_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0000_r0.25_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0000_r0.5_phase1.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0045_r1_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0045_r0.75_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0045_r0.5_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0045_r0.25_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0045_r0.5_phase1.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0080_r1_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0080_r0.75_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0080_r0.5_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0080_r0.25_phase0.png": [
+        990,
+        2090,
+        4
+      ],
+      "f0080_r0.5_phase1.png": [
+        990,
+        2090,
+        4
+      ],
+      "tradeoffs.png": [
+        1170,
+        2080,
+        4
+      ]
+    },
+    "static_no_script_no_fetch_no_cdn": true,
+    "bidirectional_report_links": true
+  },
+  "source_preservation": {
+    "status": "PASS",
+    "protected_file_count": 5911,
+    "all_protected_sha256_unchanged": true,
+    "HEAD_unchanged": true,
+    "non_source_OS_metadata_exclusions": [
+      {
+        "path": "experiments/.DS_Store",
+        "reason": "Finder metadata changed externally before UUID/selection; not source or experiment artifact",
+        "initial_sha256": "3bc259c0cb1324fcaf8e5863735852e859997ec04acc07948049b949bbfc3358",
+        "current_sha256": "6f623f76a6432d612c244d2a99d00280f5352ac85d7d028331bdfb9bda64077d"
+      }
+    ]
+  },
+  "input_exact_alignment": true,
+  "structural_and_surface_counts_exact": true,
+  "original_source_XYZ_exact": true,
+  "packet_receiver_hashes_exact": {
+    "f0000/r1_phase0": "05749823072b31a432428bb4006fa2e0bd7956a0be6eceadcf30d58862482b50",
+    "f0000/r0.75_phase0": "d18b1f1e0dbe5e4540a9f0690c2279422b34e3d15a546064f2a924bfa1af01c1",
+    "f0000/r0.5_phase0": "be294d8d08f91e899ca6b63866baa712079cd884b5a519661415ac476d3728d0",
+    "f0000/r0.25_phase0": "3471ff3518fd3525fe2b2f04c00333445d9ef6032247cbadfeedd847c26c926a",
+    "f0000/r0.5_phase1": "eca7d8e8046e41fe9dcda859b3ffd72840a76141421548d0241a933732338831",
+    "f0045/r1_phase0": "45a13c0d3aebfbe1367bfe7a7ec3e06aeca6cc42a6117971b80fb1f64c565398",
+    "f0045/r0.75_phase0": "f8bc5f6ab8c199f3f8da107b75d3656efa9279a618e5829c18d882ac69c401b9",
+    "f0045/r0.5_phase0": "d38315d9ec0a69a72aaa61d7d9437775ef08a2ed68e616a0c195cecb2d1319e2",
+    "f0045/r0.25_phase0": "41f95f8d167b550f72e81c1bb4f2e791a1b001537c5726c183c0fc36ed329630",
+    "f0045/r0.5_phase1": "937d082aa4649943ee61751fdbec4eaf746a01b2f42b98ce4c86235f6671f003",
+    "f0080/r1_phase0": "530db884437f88730d8fc444f7239d7efae30854ff03e126eacc9085707fadc2",
+    "f0080/r0.75_phase0": "8f77f622966613e66f48ba76cf07662ff97fdbec9dbdc9f459e0a13042060258",
+    "f0080/r0.5_phase0": "1952e6fcab548477d311d638aff35e29d052d84c2beceaab935f61e66538048c",
+    "f0080/r0.25_phase0": "3ff3a446157eae0f5db7e6316d5b482fc701077baeb94092e7c1ac5c6ade84ca",
+    "f0080/r0.5_phase1": "e95c8da075db63c393f8ed78d091bc4403a10cac35539f2dbfaed97d860406cc"
+  },
+  "all_15_conditions_saved_before_GT": true,
+  "pre_GT_npz_sha256": "78348d234cb54e7f7115cd07dcb17387934b8e5ce70cbe38095e2be34919b382",
+  "pre_GT_json_sha256": "f306f2b736e0047f4f43c8341c1275ce9c17ee4c87177dee9bc4f90425152501",
+  "selection_hash_unchanged": true,
+  "config_hash_unchanged": true,
+  "NPZ_exact_readback": true,
+  "JSON_readback": true,
+  "peak_rss_bytes": 1452621824,
+  "browser_display": {
+    "status": "NOT_EXECUTED",
+    "reason": "actual browser display not run; relative-link checks, PNG decode and visual PNG inspection are separate"
+  },
+  "visual_PNG_inspection": [
+    "tradeoffs.png",
+    "f0000_r0.5_phase0.png"
+  ],
+  "simulator_executed": false,
+  "renderer_executed": false,
+  "CUDA_MPS_GPU_executed": false,
+  "existing_GNN_end_to_end": false,
+  "edge_status": "not_implemented",
+  "policy_adopted": false,
+  "performance_is_PASS_condition": false,
+  "external_upload": false,
+  "report_only_recovery": {
+    "new_UUID": false,
+    "new_selection": false,
+    "new_GT_evaluation": false,
+    "numerical_artifacts_unchanged": true,
+    "initial_failure": "attempt_failure.json",
+    "original_source": "source_snapshot/",
+    "report_source": "report_source_snapshot/",
+    "local_scalar_recovery": "shared experiment_logger.scalars/write from saved numerical rows; no W&B transport"
+  },
+  "final_audit": {
+    "tracked_diff_unchanged_from_start": true,
+    "numerical_selection_evaluation_AST_unchanged_from_executed_snapshot": true,
+    "protected_files_rechecked": 5911,
+    "registered_sidecar_identity_verified": 101,
+    "local_scalar_event_count": 1,
+    "finished_metadata_and_manifest_identity_verified": true
+  }
+}

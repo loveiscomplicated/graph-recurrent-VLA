@@ -1,0 +1,881 @@
+{
+  "run_id": "15efc476f735491a828f5b84f352f858",
+  "config": {
+    "task": "03-J",
+    "rules": {
+      "episode": "ep000",
+      "camera": "base_camera",
+      "frames": [
+        0,
+        45,
+        80
+      ],
+      "arms": [
+        [
+          1.0,
+          0
+        ],
+        [
+          0.75,
+          0
+        ],
+        [
+          0.5,
+          0
+        ],
+        [
+          0.25,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ],
+      "pca": "stored optimized PCA5 orientation only, strict >20 degrees",
+      "voxel": "Task03-I nominal metric, multiplier 1, original centroid-nearest",
+      "contour": "raw mask RETR_EXTERNAL CHAIN_APPROX_NONE; canonical global component walk",
+      "thinning": "rational floor(k*q/p), ceil(M*p/q); phase1 only .5, no wrap/refill",
+      "surface_additional": {
+        "0": 97,
+        "1": 95
+      },
+      "global_cap": null,
+      "structural_cap": null,
+      "extra_outlier_removals": 0,
+      "production_policy_adopted": false,
+      "selection_order": "object 0 then 1; per-object P_pca + new P_sil + Surface",
+      "phase_policy": "diagnostic only; never choose phase after results",
+      "scale_interpretation": "PCA5 spatial-support design proxy; no measured silhouette uncertainty calibration"
+    },
+    "source_sha256": {
+      "docs/visual-graph-integration/03j_variable_rate_shape_first_plan.md": "8ed8a375da5daed2e191f6b0af07042a8d7f995cdc18d2eb7f79929efa56e762",
+      "graph/vision_input.py": "78f3dd6dfc5701818a9e5e56396ac708a760bb2cc5fb48370bf5baee3416be80",
+      "utils/experiment_artifacts.py": "04a9eef116d5a56f9f4a9fd511d050a09ccc774c73a4bdb63f3cc00c09c8132f",
+      "utils/experiment_logger.py": "76e0c1088377810d6415c1a33c1e4e3259bcfa918b0559d7b630f800727dbe45",
+      "visual/runtime/edge_evidence.py": "2c896cc60e50f50f2b55ea377d34a6e15bffab875df2a8653dfe1b9830d30f2d",
+      "visual/runtime/geometry.py": "36d20b7873d5ef9e1381e3bbe319da89e16fa5b44455488786dadd250bd814a9",
+      "visual/runtime/grounding.py": "3c372c90aa3b77edb598e4222d2747cdd17ef979898b12602e14401cf3bcda7b",
+      "visual/runtime/initialization.py": "27800d6c5b5cddff28209a371dbe6fe1c0e8c84bf2a54ad049345a3fb1fa1252",
+      "visual/runtime/normal_estimators.py": "bf080a3ece0e2de6c7439257b943a3e44fdd8236010e526c202c15bcd57cdf2e",
+      "visual/runtime/pca.py": "7a1a5fc459faed561497597d217f037b7b637d70497174d591d87c5156196517",
+      "visual/runtime/rgbd.py": "be76fef13d5f58a7199f3952c1f59ce3bf9d1a2ddac09a6773dce39e9f891164",
+      "visual/runtime/sampling.py": "45860d0adfbefb2818b67fe5705cb8c36d7c344c1c52c44d4ca5abc6765e37ed",
+      "visual/runtime/test/benchmark_pca_cuda.py": "052e300cb9b7aedc04dae3cd20c22614ebcdd2f1d0e0bae482271e325fded84a",
+      "visual/runtime/test/benchmark_pca_streaming.py": "2ad4ddcaa33a03f7922f79312f8d959b9ad92fa2bfa2a03a718f13f866a26fcb",
+      "visual/runtime/test/normal_diagnostics.py": "d3da4f81a2452a9e11c4781ade557af5baeed96a2593876fdda768efb89ffddc",
+      "visual/runtime/test/normal_estimators.py": "3b8d15c3a55fe124956a75601ceb244204579dd0bef64720ca4524ccec24a692",
+      "visual/runtime/test/pca_optimized.py": "3ea4a2c3e80f8dd6b66baf366d8f75214810cc79a79ff9a2bbd2cef2c811c890",
+      "visual/runtime/test/pca_torch.py": "6a27dd01efbc411d88e8bd9a595c29797ce70f4d4308cc6c88b6af543defb482",
+      "visual/runtime/test/pca_triton.py": "699100eee075ee11eb1a4b1b1e94bbd5da92d2e5733c5b99f7df462451e8e692",
+      "visual/runtime/test/run_adaptive_node_budget.py": "3ddfa394bb81e7a82d0a0f8d65e4146caad3243c4fe13359eb4dd4233b2b0cc9",
+      "visual/runtime/test/run_candidate_count_matched.py": "df2b3ea2a6b80262e016a13bc02256965a4524cb18647dadac85018450393738",
+      "visual/runtime/test/run_geometry.py": "cd051a6bbae95593351b8c10d96a413216c768550bac2221d58ce8b55d1727c3",
+      "visual/runtime/test/run_geometry_aware_sampling.py": "6fcfd638a929e793ba920297942f2b85eb6b00b066058dd0133d32a358648276",
+      "visual/runtime/test/run_grounding.py": "86fa4d84acd43a69e31e7e240ea79d19d9e26f33ea9fcc1a64fb8018fcf7d89d",
+      "visual/runtime/test/run_local_structural_sampling.py": "4f65391c281fa8143d4be35bec957f979b11440be3178b7ae903a66fc7bc525f",
+      "visual/runtime/test/run_normal_comparison.py": "b3caa29120144be1affbd8b9329b95ae24750ff3bd7736832cc2e69bc9e1816b",
+      "visual/runtime/test/run_normal_diagnostics.py": "688c07957dd04e3ee7abbcebf962745199a194df317a266e2642c9d8bdae64aa",
+      "visual/runtime/test/run_pca_optimization.py": "4353e5a59377ff8e918df564d215385feb4c8394d378e34f80b1451cbe195b0b",
+      "visual/runtime/test/run_priority_fps_metric_control.py": "c01afcd516f3cf2b1f1d34d5878be2376e849e50dc7c1b809854d8f5231d1ca9",
+      "visual/runtime/test/run_priority_fps_seed_control.py": "e9ecf5d8d4fb140242063c341711cff787d14dada2cb362f50706def372b7a26",
+      "visual/runtime/test/run_priority_fps_trace.py": "f41905efd42b375f74da5baaac770ade914df21f192bda3a6182792edae68f3b",
+      "visual/runtime/test/run_rgbd.py": "374bf129dc2eaf7f9c000a9b19fa2816ce1c0580ec59bc79ca326c7e198a363a",
+      "visual/runtime/test/run_rim_bottleneck.py": "8323bd3048438be9c90b663f1bc03ef6fdfd67d10eb123c1fd4930538428fda3",
+      "visual/runtime/test/run_sampling.py": "dcbcb9a20c71555f836a5b13fc5c0b556d73eda430dbff1ecb119d0776689081",
+      "visual/runtime/test/run_structural_edges.py": "eb123019b2606a37d9c629aac7c4e3f2a77c14b577141485cb7e1a94b117e2fe",
+      "visual/runtime/test/run_tracking.py": "28689bad6afcf0116cd23596e8ec09e5601fcb9b6f35ae093d1972bcc4af10f3",
+      "visual/runtime/test/run_variable_rate_shape_first.py": "b28eebd2235d2d026a256fac1bd805bad4f9172da327c86e2d79b438fdbc9ab6",
+      "visual/runtime/test/run_voxel_structural_sampling.py": "990c0de604aa9594cbe36b1987b7e55b44386b8814a34a3c83b7e9f954bee913",
+      "visual/runtime/test/sampling_evaluation.py": "daebf8834d2c0d4ca7f95e927c87ed3d6c7fc3777909a49504e265443585d60b",
+      "visual/runtime/test/sampling_plots.py": "fca7005f90f5f665c823fc9ae147e1ca1917285367655f6dcb30ed5144a1e223",
+      "visual/runtime/test/structural_edges.py": "bd9db684acff23a64ef5f2fff53cf35cf6eb5b36805c1f43e5e60bd2cd9102f2",
+      "visual/runtime/test/test_adaptive_node_budget.py": "d74c250c7380fc92a0b7983be773743531eb5acd6d6d631ab423fb7cb07d4189",
+      "visual/runtime/test/test_candidate_count_matched.py": "17f5a36e36d53cceefb9860e1e4953c5d6c668701000386417ed15cd46fa913d",
+      "visual/runtime/test/test_geometry.py": "cff95cb959cd0ccdb6370b907c6d50c04fd3cc1770d4111e3459c8d5d2c2924d",
+      "visual/runtime/test/test_geometry_aware_sampling.py": "cf2bd9fd5a1915b6d9fc3194898342745d6c0ba28355a306c303149f0b9eaf5f",
+      "visual/runtime/test/test_geometry_evaluation.py": "27c2bd3c46cb2ddbc67fa58f8899b70b178640aa7b05e90349d5272e7633c866",
+      "visual/runtime/test/test_initialization.py": "8a9928a656f3b02d55a07f3dde798df96053217f7829ef61494cb3dc879f34e0",
+      "visual/runtime/test/test_local_structural_sampling.py": "d6758da4be04c7622a40ed9226503e6d2884de89f08992fc731200c8d21d7994",
+      "visual/runtime/test/test_normal_comparison.py": "cc3e5cfe1dd9322412fc939247c4dd4258e22ca09eec77a07ce2d18d9513ab79",
+      "visual/runtime/test/test_normal_diagnostics.py": "62898a79895a74d9e982d7ccb1996ca44a99af3a9890c18d2776a74a4680e5b4",
+      "visual/runtime/test/test_pca_optimized.py": "a41d5a75b8e38987d17bd697efe538f776a530df753301d8666ded2e82fe8ad1",
+      "visual/runtime/test/test_priority_fps_metric_control.py": "92977784be3da1c7151d2a032acefa1009e1ccf930d8514eec5623086613b565",
+      "visual/runtime/test/test_priority_fps_seed_control.py": "69c8b3a1c420bec843bd8a3d948db009cd78c9ea6c99cb1376e15b60c3f47645",
+      "visual/runtime/test/test_priority_fps_trace.py": "60e7a8a69c538c325cd59cf81527b52b09b19f1fdd4464025e02de39744c8f0a",
+      "visual/runtime/test/test_rgbd.py": "bc2331b428c41276711156781771d820201c8b5da9d2e5e5efb785273e1e66c3",
+      "visual/runtime/test/test_rgbd_evaluation.py": "4e931d5f562f70ca967505c437c7f93fe0be8dcaacfe6169db88171bad229942",
+      "visual/runtime/test/test_sampling.py": "84240df749df06534e961db4e98418928230ef3cdbe920946d7489f2fab9dc60",
+      "visual/runtime/test/test_sampling_evaluation.py": "8ec490314b6e55b3d4c0bc2b05f37036bf07fa3462039fd8b1676227d0a3b0bd",
+      "visual/runtime/test/test_sampling_geometry.py": "a6df427b8510d0018931f637eb3c3357d3ed57211cd592ab07d7b8c8094de031",
+      "visual/runtime/test/test_structural_edges.py": "c270dc3def473fb7730801a73cf2e6eb6cd7287e7883b839b2e18969d33ccf0e",
+      "visual/runtime/test/test_variable_rate_graph_contract.py": "0390b58df6ee94946419bef9f078de677d1798667c7674ff73a3400854337785",
+      "visual/runtime/test/test_variable_rate_shape_first.py": "eeb792f01f4712653a04f60512a7b2d1db3ef877811841cd72b91c4217f21e45",
+      "visual/runtime/test/test_voxel_structural_sampling.py": "88c39e5c3e853d29f219a0f573c0d14b350a5228ec6f806667641ca101119620",
+      "visual/runtime/tracking.py": "001630b2a71094182d488ba079dc13f6bb7b9cb46f7f9f366aca6a0db3c32522"
+    },
+    "baseline_manifest_sha256": "ea31ca0375c329acdea5583f3824c587913963cfd02f2ef1d587e967a291f4e0",
+    "source_run_id": "2551448b0fae4c6bbce3caf48774275f",
+    "historical_voxel_run_id": "92f29716e76f4b998fe924f08e80357d",
+    "dependencies": {
+      "python": "3.11.13",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "opencv": "5.0.0",
+      "matplotlib": "3.11.2"
+    },
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "device": "cpu",
+    "simulator_executed": false,
+    "gpu_executed": false
+  },
+  "aggregate": {
+    "r1_phase0": {
+      "point_nodes_equal_frame_mean": 1090.3333333333333,
+      "objects": {
+        "peg": {
+          "P": {
+            "equal_frame_mean": 532.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              799,
+              496,
+              301
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 629.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              896,
+              593,
+              398
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 0.9820955262208978,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.9218752384185791,
+              0.7919896161183715,
+              1.232421724125743
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 5.045843348648039,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              6.68754811623667,
+              3.6912937982645357,
+              4.758688131442911
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.8825065773828978,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.9060240963855422,
+              0.837037037037037,
+              0.9044585987261147
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 1.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 1.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        "box": {
+          "P": {
+            "equal_frame_mean": 366.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              703,
+              142,
+              254
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 461.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              798,
+              237,
+              349
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 2.044313365520857,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              2.068877858823008,
+              1.9624993205070496,
+              2.1015629172325134
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 7.919716541062293,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              12.441095253191188,
+              5.5563201695013875,
+              5.761734200494301
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.7337625476181726,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.703125,
+              0.7357512953367875,
+              0.7624113475177305
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.9976359338061466,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1.0,
+              1.0,
+              0.9929078014184397
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 1.6666666666666667,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              2,
+              1,
+              2
+            ]
+          }
+        }
+      }
+    },
+    "r0.75_phase0": {
+      "point_nodes_equal_frame_mean": 868.6666666666666,
+      "objects": {
+        "peg": {
+          "P": {
+            "equal_frame_mean": 400.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              601,
+              373,
+              227
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 497.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              698,
+              470,
+              324
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 1.5673150011423675,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1.4618771691080683,
+              1.2517872697724495,
+              1.988280564546585
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 5.124348048089321,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              6.710888357797599,
+              3.7868791399284247,
+              4.875276646541941
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.6731152020206327,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.6843373493975904,
+              0.6407407407407407,
+              0.6942675159235668
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.9858849410380376,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.983132530120482,
+              1.0,
+              0.9745222929936306
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 2.6666666666666665,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3,
+              2,
+              3
+            ]
+          }
+        },
+        "box": {
+          "P": {
+            "equal_frame_mean": 276.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              527,
+              107,
+              195
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 371.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              622,
+              202,
+              290
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 2.9921939644725186,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3.216023637838513,
+              2.900365772874064,
+              2.8601924827049796
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 8.131755152151745,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              12.702911591595901,
+              5.77796664670779,
+              5.914387218151544
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.5755711931873858,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.533203125,
+              0.5906735751295337,
+              0.6028368794326241
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.954115569955842,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.955078125,
+              0.9533678756476683,
+              0.9539007092198581
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 3.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3,
+              3,
+              3
+            ]
+          }
+        }
+      }
+    },
+    "r0.5_phase0": {
+      "point_nodes_equal_frame_mean": 647.0,
+      "objects": {
+        "peg": {
+          "P": {
+            "equal_frame_mean": 268.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              402,
+              251,
+              152
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 365.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              499,
+              348,
+              249
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 1.9121883989389943,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1.8481283849735792,
+              1.4416416193818198,
+              2.4467951924615834
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 5.268852065984316,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              6.706982510231898,
+              3.8001969944426426,
+              5.2993766932784085
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.46053683950238317,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.4578313253012048,
+              0.43333333333333335,
+              0.49044585987261147
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.9739783858244965,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.963855421686747,
+              0.9962962962962963,
+              0.9617834394904459
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 2.6666666666666665,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3,
+              2,
+              3
+            ]
+          }
+        },
+        "box": {
+          "P": {
+            "equal_frame_mean": 186.66666666666666,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              356,
+              71,
+              133
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 281.6666666666667,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              451,
+              166,
+              228
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 3.9596319300404326,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              4.202568669466475,
+              3.642184287309646,
+              4.034142833345176
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 8.459738551086707,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              13.337778590020116,
+              5.954048369877097,
+              6.0873886933629064
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.4157727732762528,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.3671875,
+              0.44041450777202074,
+              0.4397163120567376
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.8993977344238049,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.908203125,
+              0.8963730569948186,
+              0.8936170212765957
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 3.6666666666666665,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              4,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    },
+    "r0.25_phase0": {
+      "point_nodes_equal_frame_mean": 420.3333333333333,
+      "objects": {
+        "peg": {
+          "P": {
+            "equal_frame_mean": 134.33333333333334,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              201,
+              125,
+              77
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 231.33333333333334,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              298,
+              222,
+              174
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 3.3408449830388007,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3.3919340188258165,
+              2.342411918001827,
+              4.288189012288758
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 5.4872711997873,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              6.83911247924152,
+              3.976652451212899,
+              5.646048668907481
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.2559343294385374,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.236144578313253,
+              0.22592592592592592,
+              0.3057324840764331
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.7315498369983828,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.6698795180722892,
+              0.7222222222222222,
+              0.802547770700637
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 5.333333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              5,
+              5,
+              6
+            ]
+          }
+        },
+        "box": {
+          "P": {
+            "equal_frame_mean": 94.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              178,
+              36,
+              68
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 189.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              273,
+              131,
+              163
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 7.558360781831553,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              10.660095601380263,
+              5.7722398730381155,
+              6.242746871076277
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 9.213297270691205,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              14.791554422189133,
+              6.4061865618105145,
+              6.442150828073967
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.2560815086080182,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.19140625,
+              0.31088082901554404,
+              0.26595744680851063
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.551833089117946,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.5078125,
+              0.5803108808290155,
+              0.5673758865248227
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 7.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              8,
+              6,
+              7
+            ]
+          }
+        }
+      }
+    },
+    "r0.5_phase1": {
+      "point_nodes_equal_frame_mean": 644.3333333333334,
+      "objects": {
+        "peg": {
+          "P": {
+            "equal_frame_mean": 268.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              402,
+              250,
+              152
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 365.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              499,
+              347,
+              249
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 1.964346522959583,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              1.8314432036632207,
+              1.4797346356676337,
+              2.581861729547894
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 5.2248253677323895,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              6.63937869517527,
+              3.7477126729818684,
+              5.28738473504003
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.4637496909080057,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.4674698795180723,
+              0.43333333333333335,
+              0.49044585987261147
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.9780203143311628,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.980722891566265,
+              0.9851851851851852,
+              0.9681528662420382
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 2.6666666666666665,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              3,
+              3,
+              2
+            ]
+          }
+        },
+        "box": {
+          "P": {
+            "equal_frame_mean": 184.33333333333334,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              354,
+              71,
+              128
+            ]
+          },
+          "F": {
+            "equal_frame_mean": 279.3333333333333,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              449,
+              166,
+              223
+            ]
+          },
+          "candidate_to_F_p95_mm": {
+            "equal_frame_mean": 3.8527671073054024,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              4.058378536689853,
+              3.3767837207780778,
+              4.123139064448278
+            ]
+          },
+          "X_to_F_p95_mm": {
+            "equal_frame_mean": 8.48880022646906,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              13.354243142197417,
+              5.960452905391652,
+              6.151704631818108
+            ]
+          },
+          "silhouette_exact_F": {
+            "equal_frame_mean": 0.41857596304309214,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.365234375,
+              0.45077720207253885,
+              0.4397163120567376
+            ]
+          },
+          "silhouette_tolerance_F": {
+            "equal_frame_mean": 0.9131864777786965,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              0.904296875,
+              0.927461139896373,
+              0.9078014184397163
+            ]
+          },
+          "missing_walk_visits_F": {
+            "equal_frame_mean": 4.0,
+            "defined_frame_count": 3,
+            "total_frame_count": 3,
+            "per_frame": [
+              5,
+              3,
+              4
+            ]
+          }
+        }
+      }
+    }
+  },
+  "tests_summary": "Ran 127 tests in 3.992s; OK",
+  "policy_adopted": false
+}
