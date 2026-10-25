@@ -91,4 +91,22 @@ class ReceiverTests(unittest.TestCase):
         self.assertNotIn('GraphBuilder',code);self.assertNotIn("['x']",code)
 
 
+class RuntimeV2ReceiverTests(unittest.TestCase):
+    def test_measured_rows_provenance_deepcopy_and_supplied_robot_positions(self):
+        from visual.runtime.test.test_vision_features import feature_fixture, assert_tree_equal
+        from visual.runtime.vision_packet import complete_vision_packet
+        for empty in (False, True):
+            source,evidence,frame=feature_fixture(empty=empty)
+            packet=complete_vision_packet(source,evidence,frame)
+            saved=copy.deepcopy(packet)
+            robots=np.array([[0,0,0],[0,.02,0],[0,-.02,0]],np.float32)
+            result=receive_vision_packet(packet,robot_positions=robots)
+            assert_tree_equal(self,result.packet,saved)
+            np.testing.assert_array_equal(result.positions[3:],packet['points'])
+            np.testing.assert_array_equal(result.point_node_index,np.arange(len(packet['points']))+3)
+            result.packet['provenance']['source_index'][:]=-2
+            result.packet['feature_diagnostics']['normal_valid'][:]=False
+            assert_tree_equal(self,packet,saved)
+
+
 if __name__=='__main__':unittest.main()
