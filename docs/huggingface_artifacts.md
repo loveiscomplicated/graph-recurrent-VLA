@@ -84,10 +84,11 @@ Token이 있으면 exit 0, token이 없거나 SDK/설정 읽기에 실패하면 
 네트워크 연결 없이 설정 유무만 검사한다. 실제 인증·Organization 쓰기 권한은
 `python -m tools.publish_experiment --init-repos`의 결과로 확인한다.
 
-기존 `Graph-Recurrent-VLA` Organization의 Repository 쓰기/생성 권한을 가진
-계정과 token이 필요하다. 읽기 전용 token으로는 생성과 업로드를 할 수 없다.
-Fine-grained token은 대상 Organization과 Repository에 필요한 쓰기/생성 범위를
-허용해야 한다. Organization 역할이 있어도 token 범위가 부족하면 API가 거부할 수 있다.
+기본 Repository를 쓸 때는 기존 `Graph-Recurrent-VLA` Organization의 쓰기/생성
+권한이 필요하다. `--repo-id`로 목적지를 바꿀 때는 해당 namespace/repository에
+대한 계정 권한과 token이 필요하다. 읽기 전용 token으로는 생성과 업로드를 할 수 없다.
+Fine-grained token은 대상에 필요한 쓰기/생성 범위를 허용해야 한다. 계정 권한이 있어도
+token 범위가 부족하면 API가 거부할 수 있다.
 
 Token을 command 인자로 전달하지 않는다. 코드·manifest·config·로그에 token을 저장하지 않는다.
 Logger의 기존 재귀적인 비밀 키 마스킹을 재사용하고, JSON config/metrics/episode metadata도
@@ -276,7 +277,7 @@ Checkpoint를 역직렬화하거나 영상을 재인코딩하지 않는다. 게�
 이 용량은 양쪽 Repository의 공통 파일과 manifest를 포함한 논리적 총량이며 원격 중복 제거 전 값이다.
 실제 전송에서는 이미 있는 동일 파일을 제외한다. 파일 hash 계산에는 전체 파일 읽기가 필요하다.
 
-목적지는 종류별로 재정의할 수 있으나 기존 Organization 밖의 경로는 거부한다.
+목적지는 종류별로 재정의할 수 있다. Namespace 쓰기 권한은 Hugging Face 계정이 확인한다.
 
 ```bash
 python -m tools.publish_experiment --run-id RUN_ID --include checkpoint rollouts \
