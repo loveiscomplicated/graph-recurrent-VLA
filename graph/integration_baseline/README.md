@@ -356,3 +356,108 @@ Normal `run_control resume --run <uuid>` can create a new pipeline window in an
 existing STOPPED run's tmux session, retaining its independent Discord window.
 First compile/setup and warm frame timings must be reported separately. The
 source/config/verification checks run again before each subsequent stage.
+
+## Task07: opt-in stop-the-clock closed-loop evaluation
+
+This evaluates **B: Stop-the-clock / Zero-simulation-time-inference-delay /
+20Hz simulation-control Closed-loop Evaluation**. It establishes neither offline
+BC error (A) nor real-time closed-loop performance (C). Each current RGB-D frame
+is processed once before one synchronous policy-controlled `env.step`. Wall-time
+inference has no 50ms deadline. Simulation advances 50ms per action: 20Hz control,
+100Hz physics, five actual `scene.step` calls. The run-local TimeLimit is250;
+the shared simulator's default100 remains unchanged.
+
+The existing DINO Tiny/SAM2.1 Small, prefix initialization, independent late-object
+tracking groups, Shape-First/PCA5/F5/Raw EDE, graph k4/M16, GNN and GRU are reused.
+`online_vision_adapter` registers observed JPEGs into a bounds-checked SAM2 image
+sequence and extends `num_frames=t+1`; appending files alone is insufficient.
+It retains existing predictor feature/object memory. No backward refinement,
+GT object input, expert/rescue action, `vision_speed` revision, or training change
+is enabled. `EpisodeStream` carries hidden across consecutive observations,
+including empty objects, and resets at episode boundaries. Hidden artifacts
+identify the episode and consumed timestep; `restore_stream_hidden` restores
+GRU state only and does not pretend to restore simulator/tracker state.
+
+Use the existing Python environment, with locally cached model assets:
+
+```bash
+# Two random-weight contract episodes × 3 live steps, a separate250-step timing
+# probe, fixture tests, and recorded-prefix/offline SAM2 comparisons.
+MPLCONFIGDIR=/tmp/task07-mpl .venv/bin/python -m graph.integration_baseline.rollout_stop_clock \
+  --mode smoke --config graph/integration_baseline/rollout_config.json
+```
+
+Each invocation gets a new ExperimentLogger UUID and writes local metadata,
+JSON/NPZ, graph/hidden/action/controller traces,20FPS MP4/PNG, source snapshot/diff,
+verification JSON and `experiments/<uuid>/stop_the_clock_rollout.html` without a
+CDN. W&B is disabled; nothing is uploaded. Random/identity-normalizer smoke
+results have `ROLLOUT_NOT_EXECUTED` and no learned-policy success rate.
+Failed initialization/runtime contracts stop execution and retain error status;
+remaining planned seeds are explicitly `NOT_EXECUTED`. Metrics unavailable from
+the current instrumentation (collision/task-failure) stay null.
+
+### Receive a completed immutable checkpoint bundle
+
+Do not run these commands against an active training directory. After training
+completion or receipt of an explicitly safe immutable snapshot, place these
+**original files**, preserving relative paths, in an independent transfer bundle:
+
+- `training/best.json`, the selected `training/checkpoints/<name>.pt`, and its
+  immutable `<name>.json` checkpoint receipt.
+- Original `config.yaml`, `robot_state_schema.json`, `expert_action_schema.json`,
+  `dataset_manifest.json`, `split_manifest.json`, `vision_manifest.json`,
+  `source_hashes.json`, and `executed_conditions.json`.
+- `vision_runtime.json` describing the Vision weights and SAM2 source actually
+  used by training. The helper below inventories the local cache/source. Run it
+  in the original completed training environment with an **external bundle**
+  destination, and verify its identity against that run's recorded source and
+  weight revisions. A later inventory alone cannot prove historical provenance.
+- The original training execution UUID. GPU dataset UUID and training UUID may
+  differ. Preserve the effective training source inventory when a recorded
+  execution revision was used; an unverified revision/missing source blocks
+  evaluation rather than enabling an optimization.
+
+```bash
+# Completed training environment only; writes to an independent bundle.
+HF_HUB_OFFLINE=1 .venv/bin/python -m graph.integration_baseline.rollout_checkpoint \
+  --write-runtime-identity --output /absolute/transfer/bundle/vision_runtime.json
+
+# Evaluation host, after receiving the entire immutable bundle.
+.venv/bin/python -m graph.integration_baseline.rollout_checkpoint \
+  --bundle /absolute/transfer/bundle --source-run-id ORIGINAL_TRAINING_UUID \
+  --output /absolute/transfer/bundle/checkpoint_manifest.json
+
+# Fix the exact original frozen test12 reset groups and fresh held-out40 seeds.
+.venv/bin/python -m graph.integration_baseline.rollout_stop_clock \
+  --mode prepare-seeds --config graph/integration_baseline/rollout_config.json \
+  --checkpoint-manifest /absolute/transfer/bundle/checkpoint_manifest.json \
+  --seeds-manifest /absolute/transfer/bundle/seeds_manifest.json
+
+# Explicit trained-policy evaluation; never started by smoke or a training poll.
+.venv/bin/python -m graph.integration_baseline.rollout_stop_clock \
+  --mode evaluate --config graph/integration_baseline/rollout_config.json \
+  --checkpoint-manifest /absolute/transfer/bundle/checkpoint_manifest.json \
+  --seeds-manifest /absolute/transfer/bundle/seeds_manifest.json
+```
+
+The loader hashes every bundle member, checks Best pointer/receipt/progress and
+the checkpoint's config/dataset/split/Vision identities, validates exact model,
+robot/action schemas and train-only normalizer statistics, then strictly loads
+FP32 weights. It loads verified bytes with `weights_only=True` and a fixed
+allowlist for the existing NumPy RNG types, never unrestricted pickle. No
+optimizer, scheduler or RNG restoration is needed. Partial/corrupt snapshots,
+missing metadata, schema/source mismatch or different Vision weights are fatal.
+Evaluation also compares installed simulator versions/controller semantics to
+the original collection conditions. Only the host-specific URDF installation
+directory is canonicalized to its filename; controller numeric values stay exact.
+
+`rollout_seeds.template.json` is intentionally not a valid evaluation manifest
+before the original split arrives. Default smoke seeds39000/39001 and timing
+seed39002 are excluded. Held-out candidates41000..41039 exclude the original
+collection range30000..30159, prior evaluation/pilot2000..2029, smoke29000..29003,
+and every supplied dataset seed/reset group. The frozen-test12 and held-out40
+groups get separate success rates and two-sided Wilson95% intervals; errors or
+unexecuted seeds prevent a complete-group success rate. Do not tune on these
+test seeds. Any seed allocation change must be frozen before the first evaluation.
+
+See [Task07 implementation and measured verification](../../docs/visual-graph-integration/07_stop_the_clock_rollout.md).
