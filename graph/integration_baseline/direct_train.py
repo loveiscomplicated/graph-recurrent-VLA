@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import random
 import resource
+import sys
 from time import perf_counter
 from uuid import uuid4
 
@@ -20,14 +21,24 @@ from graph.prototype.v2.state import StateNormalizer
 def seed_all(seed,threads):
     random.seed(seed);np.random.seed(seed);torch.manual_seed(seed);torch.set_num_threads(threads)
     torch.use_deterministic_algorithms(True)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cuda.matmul.allow_tf32=False
+        torch.backends.cudnn.allow_tf32=False
+        torch.backends.cudnn.benchmark=False
 
 
-def rng_state():
-    return dict(python=random.getstate(),numpy=np.random.get_state(),torch=torch.get_rng_state())
+def rng_state(*,include_cuda=False):
+    result=dict(python=random.getstate(),numpy=np.random.get_state(),torch=torch.get_rng_state())
+    if include_cuda:result['cuda']=torch.cuda.get_rng_state_all()
+    return result
 
 
 def restore_rng(state):
     random.setstate(state['python']);np.random.set_state(state['numpy']);torch.set_rng_state(state['torch'])
+    if 'cuda' in state:
+        if not torch.cuda.is_available():raise RuntimeError('CUDA checkpoint cannot resume on CPU')
+        torch.cuda.set_rng_state_all(state['cuda'])
 
 
 def normalizer_state(n):
@@ -56,10 +67,14 @@ def optimizer(model,config):
 
 
 def memory(model,opt):
-    return dict(model_bytes=sum(p.numel()*p.element_size() for p in model.parameters()),
+    result=dict(model_bytes=sum(p.numel()*p.element_size() for p in model.parameters()),
         optimizer_bytes=sum(v.numel()*v.element_size() for s in opt.state.values() for v in s.values() if torch.is_tensor(v)),
-        process_highwater_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
-        memory_scope='macOS process RSS high-water, includes imports/graph collation; not isolated tensor peak')
+        process_highwater_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*(1 if sys.platform=='darwin' else 1024),
+        memory_scope='process RSS high-water including imports/graph collation; CUDA tensor allocator measured separately')
+    if next(model.parameters()).is_cuda:
+        result.update(cuda_allocated_bytes=torch.cuda.memory_allocated(),cuda_reserved_bytes=torch.cuda.memory_reserved(),
+            cuda_peak_allocated_bytes=torch.cuda.max_memory_allocated(),cuda_peak_reserved_bytes=torch.cuda.max_memory_reserved())
+    return result
 
 
 def save_checkpoint(run,name,model,opt,scheduler,normalizer,ident,progress,*,pointers=()):
@@ -67,7 +82,8 @@ def save_checkpoint(run,name,model,opt,scheduler,normalizer,ident,progress,*,poi
     path=root/name;tmp=path.with_name(path.name+'.partial')
     if path.exists() or tmp.exists():raise FileExistsError('checkpoint collision: '+str(path))
     payload=dict(version='direct_bc_v1',model=model.state_dict(),optimizer=opt.state_dict(),scheduler=scheduler.state_dict(),
-        normalizer=normalizer_state(normalizer),identity=ident,progress=progress,rng=rng_state())
+        normalizer=normalizer_state(normalizer),identity=ident,progress=progress,
+        rng=rng_state(include_cuda=next(model.parameters()).is_cuda))
     torch.save(payload,tmp)
     restored=torch.load(tmp,map_location='cpu',weights_only=False)
     if restored['identity']!=ident or restored['progress']['global_step']!=progress['global_step']:
@@ -115,7 +131,8 @@ def finite_update(model,opt,pred,target,mask,clip):
 def gate(run,config,dataset,*,smoke=False):
     """Real packets, candidate B2×T32, step equivalence, exact optimizer/RNG resume."""
     run=Path(run);seed_all(config['seed'],config['threads']);device=config['device']
-    if device!='cpu':raise ValueError('this implementation has only executed CPU; device switching forbidden')
+    if device not in ('cpu','cuda'):raise ValueError('explicit CPU or CUDA backend required')
+    if device=='cuda' and not torch.cuda.is_available():raise RuntimeError('CUDA unavailable; no CPU fallback')
     ids=dataset.splits['train'][:config['training']['batch_size']]
     length=config['training']['sequence_length']
     if len(ids)!=2 or any(dataset.episodes[e]['actions']<length for e in ids):
@@ -123,7 +140,7 @@ def gate(run,config,dataset,*,smoke=False):
     norm=dataset.fit_normalizer();model=IntegrationPolicy(dataset.schema,**config['model']).to(device)
     opt,scheduler=optimizer(model,config);ident=identity(run,config,dataset)
     graph,state,target,valid=batch(dataset,ids,0,length,device,config)
-    model.eval();initial=torch.randn(1,len(ids),config['model']['gru_hidden'])
+    model.eval();initial=torch.randn(1,len(ids),config['model']['gru_hidden'],device=device)
     with torch.no_grad():
         output,hidden=model(graph,state,norm,initial)
         h=initial.clone();steps=[]
@@ -139,14 +156,14 @@ def gate(run,config,dataset,*,smoke=False):
     progress=dict(epoch=0,global_step=1,best=None,patience=0,cursor=None)
     receipt=save_checkpoint(run,'gate-step1-'+uuid4().hex[:8]+'.pt',model,opt,scheduler,norm,ident,progress,pointers=('gate',))
     # Nonzero hidden and next optimizer update must agree after save/reload.
-    h=h.detach();expected_rng=(random.random(),float(np.random.rand()),torch.rand(3))
+    h=h.detach();expected_rng=(random.random(),float(np.random.rand()),torch.rand(3),torch.rand(3,device=device))
     opt.zero_grad(set_to_none=True);pred,_=model(graph,state,norm,h)
     finite_update(model,opt,pred,target,valid,config['training']['gradient_clip'])
     expected=copy.deepcopy(model.state_dict());expected_opt=copy.deepcopy(opt.state_dict())
-    restored_model=IntegrationPolicy(dataset.schema,**config['model']);restored_opt,restored_scheduler=optimizer(restored_model,config)
+    restored_model=IntegrationPolicy(dataset.schema,**config['model']).to(device);restored_opt,restored_scheduler=optimizer(restored_model,config)
     restored_norm,_,_=restore_checkpoint(run,'gate',restored_model,restored_opt,restored_scheduler,ident)
-    actual_rng=(random.random(),float(np.random.rand()),torch.rand(3))
-    if expected_rng[:2]!=actual_rng[:2] or not torch.equal(expected_rng[2],actual_rng[2]):raise ValueError('RNG resume mismatch')
+    actual_rng=(random.random(),float(np.random.rand()),torch.rand(3),torch.rand(3,device=device))
+    if expected_rng[:2]!=actual_rng[:2] or any(not torch.equal(expected_rng[i],actual_rng[i]) for i in (2,3)):raise ValueError('RNG resume mismatch')
     pred,_=restored_model(graph,state,restored_norm,h)
     finite_update(restored_model,restored_opt,pred,target,valid,config['training']['gradient_clip'])
     for k,v in restored_model.state_dict().items():torch.testing.assert_close(v,expected[k],atol=0,rtol=0)
@@ -232,7 +249,7 @@ def train(run,config,dataset,events,logger):
                 if (run/'STOP').exists():save_stop(cursor);raise StopRequested()
                 check_space(run,config)
                 g,s,y,mask=batch(dataset,active,start,t['sequence_length'],config['device'],config)
-                h=None if start==0 else torch.cat([hidden[e] for e in active],dim=1)
+                h=None if start==0 else torch.cat([hidden[e] for e in active],dim=1).to(config['device'])
                 pred,next_h=model(g,s,norm,h)
                 loss,gradient=finite_update(model,opt,pred,y,mask,t['gradient_clip'])
                 # Keep each stream's identity across shrinking padded batches.
@@ -286,7 +303,7 @@ def offline_test(run,config,dataset,events,logger):
     if (run/'training/test_started.json').exists():
         raise RuntimeError('test already consumed without result; manual intervention required')
     atomic(run/'training/test_started.json',dict(best=read(run/'training/best.json')),immutable=True)
-    model=IntegrationPolicy(dataset.schema,**config['model']);opt,scheduler=optimizer(model,config)
+    model=IntegrationPolicy(dataset.schema,**config['model']).to(config['device']);opt,scheduler=optimizer(model,config)
     norm,progress,receipt=restore_checkpoint(run,'best',model,opt,scheduler,identity(run,config,dataset))
     report=dict(status='COMPLETE',checkpoint=receipt,selection='validation only',test_evaluations=1,
         metrics=evaluate(dataset,model,norm,dataset.splits['test'],config),closed_loop_success='NOT_EXECUTED')

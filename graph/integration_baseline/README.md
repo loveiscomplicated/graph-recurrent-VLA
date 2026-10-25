@@ -272,3 +272,87 @@ readback/link verification, and updates the run-owned
 Before completion, that document and HTML explicitly show in-progress status.
 Browser layout validation, CUDA/MPS, HPO, architecture search and closed-loop
 success evaluation are not claimed.
+
+### Existing-data CUDA execution
+
+`gpu_run` is an explicit opt-in path for migrating the collected CPU dataset
+to an NVIDIA host. It preserves the original raw dataset UUID, byte-exact raw
+config and frozen 96/12/12 split. A new ExperimentLogger UUID owns GPU graphs,
+training and reports; `data_source.json` links the immutable original directory.
+No simulator or Expert is run on this path. The original CPU default remains.
+
+Use the repository's existing locked Linux environment (`visual/setup.sh`),
+which pins Torch2.8.0+cu128 and the existing SAM2 revision. Populate the same
+DINO/SAM2 assets before offline execution and record their revisions/hashes.
+No global Python environment, NVIDIA driver or model architecture is changed.
+
+```bash
+source visual/env.sh
+source /opt/nvm/nvm.sh  # this Vast image installs Node/Codex outside default PATH
+
+# Server preflight must contain actual callback verification, not a copied
+# success claim from another host. --fixture prepares a separate smoke UUID.
+python -m graph.integration_baseline.gpu_run prepare \
+  --data /workspace/datasets/<original_dataset_uuid> \
+  --preflight /workspace/task06c-preflight --fixture
+
+# Run this smoke command in its own tmux session. It validates all raw files,
+# processes two whole real TRAIN episodes, and executes B2×T32 forward/backward,
+# optimizer, sequence-vs-step and exact model/optimizer/CPU+CUDA RNG resume gates.
+python -m graph.integration_baseline.gpu_run smoke --run <smoke_uuid>
+
+python -m graph.integration_baseline.gpu_run prepare \
+  --data /workspace/datasets/<original_dataset_uuid> \
+  --preflight /workspace/task06c-preflight
+python -m graph.integration_baseline.gpu_run launch \
+  --run <new_cuda_uuid> --smoke-run <smoke_uuid>
+```
+
+The launcher verifies matching smoke/full configs, reuses the immutable smoke
+graph episodes and starts the existing independent tmux supervisor from Vision.
+Status/stop/resume still use `run_control` and the new CUDA UUID. CUDA is mandatory
+for both Vision and model computation; failures never select CPU automatically.
+The BC model retains FP32, with AMP/TF32 off and deterministic operations required.
+Vision uses the existing upstream CUDA inference defaults; no autocast is added.
+Mid-chunk hidden state is saved on CPU and explicitly restored onto the selected
+device. Checkpoints preserve CUDA RNG alongside existing state. Memory reports
+use correct Linux RSS units and include CUDA allocated/reserved/peak bytes.
+The tmux launch script persists the selected model-cache and Codex executable
+directory so it does not depend on the SSH client's transient shell environment.
+
+Each CUDA run owns `06c_direct_expert_bc_training_cuda_<uuid8>.md`; the original CPU report
+and raw data are retained. GPU Vision timing and numeric/memory verification must
+come from the target host's smoke, not from the earlier CPU result.
+
+If the container forbids the namespaces required by Codex's workspace sandbox,
+the actual callback fixture fails even after login and training stays
+`BLOCKED_AUTO_CODEX_CALLBACK`. No sandbox bypass or kernel restriction change is
+used. **Only an explicit user waiver** permits `gpu_run prepare --without-callback`.
+That run preserves fatal error bundles and exits for manual intervention without
+dispatching Codex. Smoke/full configs may differ in this operational requirement
+the fixture marker and the report destination; numerical/model/data/runtime settings must still match.
+
+### Validated FP32 Vision execution revision
+
+`vision_speed` is opt-in through a checksummed `execution_revision.json` pointer.
+It memoizes raw image/prompt DINO detections before prefix-dependent assignment,
+reuses SAM2 preflight only while objects/conditioning inputs are unchanged, and
+compiles the existing SAM2 image encoder forward using AOT Eager, retaining eager
+CUDA kernels. Inductor is excluded when paired tests change mask pixels. Precision,
+1024 internal image size, prompts, causal horizon, per-frame propagation, masks,
+Shape-First/F5/Raw EDE and policy architecture remain unchanged. No BF16 or VOS
+predictor replacement is enabled. A temporary prompt, object change or reset
+invalidates the preflight fast path.
+
+Adoption requires real paired RGB-D-to-CPU-Action7 timing, exact masks/packets/
+actions, agreement with existing graph-cache masks and contract tests. The
+immutable original config/source snapshot remains; `execution_revisions/`
+stores the verification, new source inventory and source/config checksums.
+Source guard rejects unvalidated revisions or any later unrecorded source edit.
+Completed graph receipts are reused. Unfinished episode attempts remain partial.
+Checkpoint/config/split identities and optimizer/RNG state are retained.
+
+Normal `run_control resume --run <uuid>` can create a new pipeline window in an
+existing STOPPED run's tmux session, retaining its independent Discord window.
+First compile/setup and warm frame timings must be reported separately. The
+source/config/verification checks run again before each subsequent stage.

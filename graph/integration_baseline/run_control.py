@@ -29,6 +29,7 @@ def path_for(run):
 def settings():
     os.environ.update(WANDB_MODE='disabled',HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',
         OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',VECLIB_MAXIMUM_THREADS='1',PYTHONUNBUFFERED='1',MPLBACKEND='Agg')
+    os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG',':4096:8')
 
 
 def prepare(config_path,preflight,*,smoke=False):
@@ -90,6 +91,10 @@ def prepare(config_path,preflight,*,smoke=False):
 def source_gate(run,*,allow_repair=False):
     from graph.integration_baseline.direct_errors import source_inventory,ALLOWED_REPAIR,changed
     before=read(run/'source_hashes.json');after=source_inventory();difference=changed(before,after)
+    if (run/'execution_revision.json').exists():
+        from graph.integration_baseline.vision_speed import verify_revision_sources
+        verify_revision_sources(run,before,after)
+        return
     if difference:
         verified=list((run/'errors').glob('*/repair_verified.json'))
         if not allow_repair or not verified or not difference.issubset(ALLOWED_REPAIR):
@@ -109,7 +114,9 @@ def launch(run,*,resume=False,after_repair=False):
         if gate.get('status')!='PASS':raise RuntimeError('real collection/vision/training smoke and automation tests must pass before launch')
     session=('grvla-06c-smoke-' if config.get('fixture_only') else 'grvla-06c-')+run.name[:8]
     exists=subprocess.run(['tmux','has-session','-t','='+session],capture_output=True).returncode==0
-    if exists:raise RuntimeError('session already exists: '+session)
+    if exists and not resume:raise RuntimeError('session already exists: '+session)
+    if exists and resume and read(run/'status.json')['status']!='STOPPED':
+        raise RuntimeError('existing-session resume requires a cooperative STOPPED state')
     if resume:
         resume_gate(run)
         if (run/'STOP').exists():
@@ -123,11 +130,19 @@ def launch(run,*,resume=False,after_repair=False):
     text='#!/bin/sh\nset -eu\ncd '+shlex.quote(str(REPO))+'\n'
     text+='export WANDB_MODE=disabled HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PYTHONUNBUFFERED=1\n'
     text+='export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 MPLBACKEND=Agg\n'
+    if config.get('runtime_bin_directory'):
+        text+='export PATH='+shlex.quote(config['runtime_bin_directory'])+':"$PATH"\n'
+    if config.get('model_cache_directory'):
+        text+='export HF_HOME='+shlex.quote(config['model_cache_directory'])+'\n'
+    if (run/'execution_revision.json').exists():
+        text+='export TORCHINDUCTOR_CACHE_DIR='+shlex.quote(str(run/'compiler_cache'))+' TORCHINDUCTOR_COMPILE_THREADS=1 MAX_JOBS=2\n'
     text+='exec '+shlex.join(command)+' >> '+shlex.quote(str(run/'logs/supervisor.log'))+' 2>&1\n'
     # Launch scripts are revisioned as well; never rewrite a previous command.
     if script.exists():script=run/f'launch-{len(list(run.glob("launch*.sh")))}.sh'
     script.write_text(text);script.chmod(0o700)
-    subprocess.run(['tmux','new-session','-d','-s',session,'-c',str(REPO),shlex.join(['/bin/sh',str(script)])],check=True)
+    tmux_command=(['tmux','new-window','-d','-t','='+session,'-n','pipeline-resume'] if exists else
+                  ['tmux','new-session','-d','-s',session])
+    subprocess.run([*tmux_command,'-c',str(REPO),shlex.join(['/bin/sh',str(script)])],check=True)
     append(run/'launches.jsonl',dict(time=now(),session=session,resume=resume,script=str(script.relative_to(run))))
     atomic(run/'tmux.json',dict(session=session,launch_script=str(script.relative_to(run)),time=now()))
     print(json.dumps(dict(run_id=run.name,tmux_session=session,status='LAUNCHED')),flush=True)
@@ -143,6 +158,8 @@ def stage(run,name):
     logger=ExperimentLogger(team='integration',model='graph_gnn_gru_direct_expert_bc',seed=config['seed'],
         config=dict(pipeline_run_id=run.name,stage=name,parameters=config),job_type='train' if name=='training' else 'evaluate')
     logger.record(source_run_id=run.name,stage=name,pipeline_run_id=run.name)
+    if (run/'execution_revision.json').exists():
+        logger.record(execution_revision=read(run/'execution_revision.json'))
     append(run/'execution_runs.jsonl',dict(stage=name,run_id=logger.run_id,time=now(),pid=os.getpid()))
     try:
         torch_config(config)
@@ -175,6 +192,10 @@ def stage(run,name):
 def torch_config(config):
     import torch
     torch.set_num_threads(config['threads'])
+    if config.get('execution_mode')=='existing_data_cuda':
+        if config['device']!='cuda' or config['vision_device']!='cuda' or not torch.cuda.is_available():
+            raise RuntimeError('explicit CUDA execution required; no device fallback')
+        return
     if config['device']!='cpu' or config['vision_device']!='cpu':
         raise ValueError('CPU is the frozen executed backend; no automatic fallback')
 
@@ -220,12 +241,14 @@ def supervise(run,after_repair=False):
             error_bundle=bundle(run,active_stage,failure_code)
             events.emit('fatal_error',stage=active_stage,error_type=type(exc).__name__,bundle=str(error_bundle))
             # Fixtures validate failure handling separately and never launch repair on their own errors.
-            if not config.get('fixture_only'):
+            if not config.get('fixture_only') and config.get('auto_callback_required',True):
                 try:dispatch(run,error_bundle,events)
                 except BaseException as dispatch_error:
                     atomic(run/'status.json',dict(status='BLOCKED_AUTO_CODEX_CALLBACK',stage=active_stage,
                         run_id=run.name,error_type=type(dispatch_error).__name__,bundle=str(error_bundle),time=now()))
                     events.emit('callback_dispatch_failed',error_type=type(dispatch_error).__name__,bundle=str(error_bundle))
+            elif not config.get('fixture_only'):
+                events.emit('manual_intervention_required',reason='automatic callback explicitly disabled for this run',bundle=str(error_bundle))
             return 1
         finally:events.close()
 
@@ -237,6 +260,10 @@ def resume_gate(run):
     config=read(run/'config.yaml');torch_config(config)
     if read(run/'status.json')['status'] in ('COMPLETE','SMOKE_COMPLETE'):
         raise RuntimeError('completed runs cannot be resumed')
+    if (run/'data_source.json').exists():
+        source=Path(read(run/'data_source.json')['directory'])
+        for e in read(source/'dataset_manifest.json')['episodes']:
+            validate_receipt(source,e,read(source/'robot_state_schema.json'))
     if (run/'robot_state_schema.json').exists():
         schema=read(run/'robot_state_schema.json')
         for e in receipts(run):validate_receipt(run,e,schema)
@@ -244,7 +271,7 @@ def resume_gate(run):
         dataset=DirectDataset(run)
         dataset.validate()
         if (run/'training/last_valid.json').exists():
-            model=IntegrationPolicy(dataset.schema,**config['model']);opt,scheduler=optimizer(model,config)
+            model=IntegrationPolicy(dataset.schema,**config['model']).to(config['device']);opt,scheduler=optimizer(model,config)
             restore_checkpoint(run,'last_valid',model,opt,scheduler,identity(run,config,dataset))
         elif ((run/'stages/training.json').exists() or (run/'training/progress.json').exists() or
               ((run/'stage_failure.json').exists() and read(run/'stage_failure.json').get('stage')=='training')):

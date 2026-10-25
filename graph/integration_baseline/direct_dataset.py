@@ -4,6 +4,7 @@ The Task06-B recorder, original expert, Vision algorithms and model inputs are
 unchanged. Each finalized episode/receipt and final manifest is immutable.
 """
 from collections import OrderedDict
+from copy import deepcopy
 from dataclasses import asdict
 import hashlib
 import json
@@ -210,18 +211,25 @@ def freeze_split(run,config):
     return result
 
 
-def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
+def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episode_ids=None):
     """Existing causal streaming algorithm; interrupted episode output is preserved."""
     from graph.integration_baseline.vision import causal_masks,packet_from_frame
     from visual.runtime.grounding import GDino
     from visual.runtime.tracking import SAM2Tracker
     from visual.runtime.rgbd import TrackedRGBDFrame
-    run=Path(run); manifest=read(run/'dataset_manifest.json'); camera=config['vision']['camera']
+    run=Path(run)
+    source_run=Path(read(run/'data_source.json')['directory']) if (run/'data_source.json').exists() else run
+    manifest=read(source_run/'dataset_manifest.json'); camera=config['vision']['camera']
     summary_path=run/'vision_manifest.json'
-    if summary_path.exists() and frame_limit is None and episode_limit is None: return read(summary_path)
+    if summary_path.exists() and frame_limit is None and episode_limit is None and episode_ids is None: return read(summary_path)
     detector=GDino(device=config['vision_device']);tracker=SAM2Tracker(device=config['vision_device'])
+    from graph.integration_baseline.vision_speed import revision,enable
+    execution_revision=revision(run)
+    if execution_revision:
+        detector,tracker=enable(detector,tracker,compile_image_encoder=True)
     results=[]
     for ep in manifest['episodes'][:episode_limit]:
+        if episode_ids is not None and ep['episode_id'] not in episode_ids:continue
         stop_gate(run); check_space(run,config)
         eid=ep['episode_id']; receipt=run/'vision/receipts'/f'ep{eid}.json'
         if receipt.exists():
@@ -230,7 +238,7 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
                 if sha(run/row['path'])!=row['sha256']: raise ValueError('vision packet corruption')
             if sha(run/entry['mask_path'])!=entry['mask_sha256']: raise ValueError('mask corruption')
             results.append(entry);continue
-        a=validate_receipt(run,ep,read(run/'robot_state_schema.json'))
+        a=validate_receipt(source_run,ep,read(source_run/'robot_state_schema.json'))
         root=run/'vision'/f'ep{eid}'
         # Never replace partial graphs; a fresh attempt gets a distinct directory.
         from uuid import uuid4
@@ -240,8 +248,8 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
             stop_gate(run);check_space(run,config)
             frame=TrackedRGBDFrame(t,camera,rgb[t],a[camera+'/depth'][t],a[camera+'/intrinsic'][t],
                 a[camera+'/cam2world'][t],a['tcp_pose'][t],{0:masks[0],1:masks[1]},t,float(a['timestamp'][t]))
-            packet,cost=packet_from_frame(frame,run.name+f':ep{eid}',keep_ratio=.5)
-            packet['observation_provenance']=dict(dataset_id=run.name,episode_id=eid,timestep=t,
+            packet,cost=packet_from_frame(frame,source_run.name+f':ep{eid}',keep_ratio=.5)
+            packet['observation_provenance']=dict(dataset_id=source_run.name,episode_id=eid,timestep=t,
                 episode_sha256=ep['sha256'],rgb_sha256=digest(rgb[t]),
                 mask_source='prefix_causal_rgb_gdino_forward_sam2')
             validate_packet(packet)
@@ -262,7 +270,12 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
                 object_counts=counts,point_count=len(packet['points']),missing=missing,
                 timings_ms=dict(**cost,mask_ms=timing['elapsed_ms']),has_action_target=t<ep['actions']))
             if t%50==0: events.emit('vision_progress',episode=eid,frame=t,total=len(rgb),objects=counts)
+        if execution_revision:detector.reset_episode()
         masks,provenance=causal_masks(rgb,detector,tracker,process)
+        if execution_revision:
+            provenance['execution_optimization']=dict(settings=execution_revision['settings'],
+                detector=detector.statistics(),sam2=deepcopy(tracker.grvla_speed_statistics),
+                revision=execution_revision['revision_id'])
         mask_path=folder/'masks.npz';tmp=folder/'masks.partial.npz'
         np.savez_compressed(tmp,masks=masks,timestep=np.arange(len(rgb)),episode_id=np.int64(eid))
         with np.load(tmp,allow_pickle=False) as f: np.testing.assert_array_equal(f['masks'],masks)
@@ -275,9 +288,9 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
         else: atomic(receipt,entry,immutable=True)
         results.append(entry)
         events.emit('vision_episode_complete',episode=eid,frames=len(rows),elapsed_seconds=entry['elapsed_seconds'])
-    summary=dict(dataset_id=run.name,dataset_sha256=sha(run/'dataset_manifest.json'),
+    summary=dict(dataset_id=source_run.name,dataset_sha256=sha(source_run/'dataset_manifest.json'),
         camera=camera,policy=dict(keep_ratio=.5,raw_ede=True,variable_N=True,point_budget=None),episodes=results)
-    if frame_limit is None and episode_limit is None:
+    if frame_limit is None and episode_limit is None and episode_ids is None:
         atomic(summary_path,summary,immutable=True)
     else: atomic(run/'vision_smoke_manifest.json',summary,immutable=True)
     return summary
@@ -286,10 +299,12 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None):
 class DirectDataset:
     """Small LRU of robot arrays; RGB-D is only read during integrity validation."""
     def __init__(self,run,*,smoke=False):
-        self.run=Path(run);self.manifest=read(self.run/'dataset_manifest.json')
+        self.output=Path(run)
+        self.run=Path(read(self.output/'data_source.json')['directory']) if (self.output/'data_source.json').exists() else self.output
+        self.manifest=read(self.run/'dataset_manifest.json')
         self.schema=read(self.run/'robot_state_schema.json')
         split=read(self.run/'split_manifest.json'); self.splits=split['splits']
-        self.graph_manifest=read(self.run/('vision_smoke_manifest.json' if smoke else 'vision_manifest.json'))
+        self.graph_manifest=read(self.output/('vision_smoke_manifest.json' if smoke else 'vision_manifest.json'))
         if (split['dataset_id']!=self.run.name or self.manifest['dataset_id']!=self.run.name or
             split['dataset_sha256']!=sha(self.run/'dataset_manifest.json') or
             self.graph_manifest['dataset_sha256']!=split['dataset_sha256'] or
@@ -312,7 +327,7 @@ class DirectDataset:
             p=e['mask_provenance']
             if p['future_observations_used'] or p['gt_segmentation_used'] or not p['sam2_horizon'].startswith('num_frames=t+1;'):
                 raise ValueError('causal mask provenance contract')
-            if sha(self.run/e['mask_path'])!=e['mask_sha256']:raise ValueError('mask file checksum mismatch')
+            if sha(self.output/e['mask_path'])!=e['mask_sha256']:raise ValueError('mask file checksum mismatch')
             for row in e['packets']:
                 key=(e['episode_id'],row['timestep'])
                 if key in self.packet_rows:raise ValueError('duplicate packet identity')
@@ -332,7 +347,7 @@ class DirectDataset:
     def frame(self,eid,t):
         a=self.raw(eid);row=self.packet_rows[(eid,t)]
         if not 0<=t<len(a['actions']) or not row['has_action_target']:raise ValueError('unlabelled final observation')
-        path=self.run/row['path']
+        path=self.output/row['path']
         if sha(path)!=row['sha256']:raise ValueError('packet checksum mismatch')
         p=read_packet(path);validate_packet(p);pr=p['observation_provenance']
         if (p['episode']!=self.run.name+f':ep{eid}' or p['source_frame']!=t or p['frame_idx']!=t or
@@ -358,10 +373,11 @@ class DirectDataset:
             a=validate_receipt(self.run,e,self.schema)
             present=[];phases={}
             timesteps=sorted(t for i,t in self.packet_rows if i==eid) if partial else range(e['observations'])
+            if partial and not timesteps:continue
             if partial and list(timesteps)!=list(range(len(timesteps))):raise ValueError('smoke observations must be a contiguous prefix')
             for t in timesteps:
-                row=self.packet_rows[(eid,t)];p=read_packet(self.run/row['path'])
-                if sha(self.run/row['path'])!=row['sha256']:raise ValueError('packet corruption')
+                row=self.packet_rows[(eid,t)];p=read_packet(self.output/row['path'])
+                if sha(self.output/row['path'])!=row['sha256']:raise ValueError('packet corruption')
                 validate_packet(p)
                 pr=p['observation_provenance'];camera=self.graph_manifest['camera']
                 if pr['rgb_sha256']!=digest(a[camera+'/rgb'][t]):raise ValueError('RGB identity mismatch')
@@ -387,4 +403,4 @@ class DirectDataset:
             box_never_observed_fraction=sum(e['box_never_observed'] for e in coverage)/len(coverage))
         report['scope']='PARTIAL_REAL_SMOKE_PREFIX' if partial else 'FULL_DATASET'
         report['validated_graph_observations']=sum(e['observations'] for e in coverage)
-        atomic(self.run/('smoke_dataset_validation.json' if partial else 'dataset_validation.json'),report,immutable=True);return report
+        atomic(self.output/('smoke_dataset_validation.json' if partial else 'dataset_validation.json'),report,immutable=True);return report

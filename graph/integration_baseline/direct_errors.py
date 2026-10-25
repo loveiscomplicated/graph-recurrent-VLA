@@ -74,6 +74,9 @@ def dispatch(run,error_bundle,events,*,launcher=None,fixture=False):
         cmd=[sys.executable,'-m','graph.integration_baseline.run_control','repair','--run',run.name,'--bundle',str(error_bundle)]
         if fixture:cmd+=['--callback-fixture']
         command=shlex.join(cmd)+' >> '+shlex.quote(str(run/'errors/repair.log'))+' 2>&1'
+        config=read(run/'config.yaml') if (run/'config.yaml').exists() else {}
+        if config.get('runtime_bin_directory'):
+            command='export PATH='+shlex.quote(config['runtime_bin_directory'])+':"$PATH"; '+command
         record=dict(status='DISPATCHED',session=session,bundle=str(error_bundle),attempt=1,time=now())
         # Record before launch; a launch failure consumes the attempt and cannot loop.
         atomic(marker,record,immutable=True)

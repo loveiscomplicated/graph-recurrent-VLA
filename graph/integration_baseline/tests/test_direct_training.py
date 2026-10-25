@@ -153,6 +153,16 @@ class ErrorTests(unittest.TestCase):
                 self.assertEqual(supervise(run),0);called.assert_not_called()
             self.assertEqual(read(run/'status.json')['status'],'STOPPED')
 
+    def test_explicit_callback_waiver_preserves_bundle_without_dispatch(self):
+        from graph.integration_baseline.run_control import supervise
+        with tempfile.TemporaryDirectory() as tmp:
+            run=Path(tmp);atomic(run/'config.yaml',dict(discord_required=False,fixture_only=False,auto_callback_required=False));(run/'logs').mkdir()
+            with patch('graph.integration_baseline.run_control.source_gate'),patch('subprocess.Popen') as process,patch('graph.integration_baseline.direct_errors.source_inventory',return_value={}),patch('graph.integration_baseline.direct_errors.dispatch') as called:
+                process.return_value.wait.return_value=7;process.return_value.pid=1234
+                self.assertEqual(supervise(run),1);called.assert_not_called()
+            self.assertEqual(len(list((run/'errors').glob('*/bundle.json'))),1)
+            self.assertEqual(read(run/'status.json')['status'],'FAILED')
+
 
 class DatasetTrainingTests(unittest.TestCase):
     @classmethod
@@ -193,6 +203,22 @@ class DatasetTrainingTests(unittest.TestCase):
         export_npz(self.run/e['path'],target)
         with np.load(target,allow_pickle=False) as f:self.assertEqual(f['actions'].shape,(3,7))
         with self.assertRaises(FileExistsError):export_npz(self.run/e['path'],target)
+
+    def test_separate_execution_preserves_source_dataset_identity(self):
+        import shutil
+        output=Path(self.tmp.name)/uuid4().hex;output.mkdir()
+        atomic(output/'data_source.json',dict(directory=str(self.run)))
+        for p in self.run.glob('*.npz'):shutil.copy2(p,output/p.name)
+        shutil.copy2(self.run/'vision_manifest.json',output/'vision_manifest.json')
+        frozen=sha(self.run/'dataset_manifest.json');split=sha(self.run/'split_manifest.json')
+        d=DirectDataset(output);eid=next(iter(d.episodes));frame=d.frame(eid,0)
+        self.assertEqual(frame.packet['observation_provenance']['dataset_id'],self.run.name)
+        self.assertNotEqual(output.name,self.run.name);self.assertEqual(d.run,self.run)
+        d.validate()
+        self.assertTrue((output/'dataset_validation.json').exists())
+        self.assertFalse((self.run/'dataset_validation.json').exists())
+        self.assertEqual(sha(self.run/'dataset_manifest.json'),frozen)
+        self.assertEqual(sha(self.run/'split_manifest.json'),split)
 
     def test_cooperative_mid_epoch_resume_matches_uninterrupted_exactly(self):
         from graph.integration_baseline import direct_train as module

@@ -14,6 +14,11 @@ from graph.integration_baseline.direct_runtime import REPO,atomic,read,sha,final
 DOC=REPO/'docs/visual-graph-integration/06c_direct_expert_bc_training.md'
 
 
+def document(run):
+    config=read(Path(run)/'config.yaml')
+    return REPO/config['report_document'].format(run_id=Path(run).name,run_id_short=Path(run).name[:8]) if config.get('report_document') else DOC
+
+
 def save_text(path,text):
     path=Path(path);tmp=path.with_name(path.name+'.'+uuid4().hex+'.partial')
     with tmp.open('x') as f:f.write(text);f.flush();os.fsync(f.fileno())
@@ -24,9 +29,17 @@ def save_text(path,text):
 def status_document(run):
     """Initial report explicitly describes execution as pending/running."""
     run=Path(run)
+    doc=document(run);config=read(run/'config.yaml')
+    reuse_note=('수집 완료 CPU Dataset을 재사용하며 CUDA Vision/학습을 실행한다.'
+                if config.get('execution_mode')=='existing_data_cuda' else '새 Expert Dataset을 수집한다.')
+    callback_note=('오류 이벤트만 sandboxed Codex를 최대1회 호출하며 별도 repair tmux를 사용한다.'
+                   if config.get('auto_callback_required',True) else
+                   '사용자의 명시적 예외 승인으로 자동 Codex 콜백을 제외했다. 오류 Bundle을 보존하고 수동 조치를 기다린다.')
     text=f'''# Task06-C — Direct Expert Dataset + Graph–GNN–GRU/BC
 
-Run UUID: `{run.name}`. **독립 tmux 실행 준비/시작 단계. 전체 Dataset 및 학습 완료 아님.**
+Run UUID: `{run.name}`. **독립 tmux 실행 준비/시작 단계. 전체 Vision Dataset 및 학습 완료 아님.**
+
+{reuse_note}
 
 상태의 기준은 [status.json](../../experiments/{run.name}/status.json)이다.
 최종 Dataset, Loss, Test 성능은 아직 산출되지 않았다. 정상 완료 시 Pipeline이
@@ -38,19 +51,19 @@ Run UUID: `{run.name}`. **독립 tmux 실행 준비/시작 단계. 전체 Datase
 기존 Expert·Vision·Raw EDE·Graph·GNN·GRU·BC regression MSE를 유지한다.
 Object 결손은 기록하며 GT로 보완하지 않는다.
 
-학습: CPU, AdamW lr3e-4/weight_decay1e-5/betas(0.9,0.999)/eps1e-8,
+학습: {config['device']}, AdamW lr3e-4/weight_decay1e-5/betas(0.9,0.999)/eps1e-8,
 CosineAnnealingLR(T_max50,eta_min0), max50 epochs/patience10/clip1,
 연속 TBPTT32/batch2. Robot normalizer는 train만 fit한다. 기존 Graph feature view는
 변경 없이 사용한다. Checkpoint 선택은 validation만, final test는 1회 offline 평가다.
 
 Discord는 사용자의 후속 지시에 따라 비활성화했다. 로그·오류·복구 이력은 로컬에 남긴다.
-오류 이벤트만 sandboxed Codex를 최대1회 호출하며 별도 repair tmux를 사용한다.
-Closed-loop rollout, CUDA/MPS, 외부 게시, dependency 설치, git commit은 수행하지 않는다.
+{callback_note}
+Closed-loop rollout, 외부 게시, git commit은 수행하지 않는다. 선택하지 않은 Backend는 미실행이다.
 
 실행/중지/재개 명령과 tmux 생존 범위는 [README](../../graph/integration_baseline/README.md)를 따른다.
 '''
-    if DOC.exists() and run.name not in DOC.read_text():raise FileExistsError('another run owns Task06-C document')
-    save_text(DOC,text)
+    if doc.exists() and run.name not in doc.read_text():raise FileExistsError('another run owns Task06-C document')
+    save_text(doc,text)
     save_text(run/'graph_gru_training.html',f'<!doctype html><meta charset="utf-8"><title>Task06-C | In progress</title><h1>Task06-C — In progress</h1><p>Run {run.name}. Dataset/training are not complete.</p><p><a href="status.json">Live local status</a> · <a href="config.yaml">Frozen config</a></p>')
 
 
@@ -122,7 +135,7 @@ def generate(run,config):
         collection_seconds=sum(e['elapsed_seconds'] for e in m['episodes']+m['failed_episodes']),
         vision_seconds=sum(e['elapsed_seconds'] for e in graph['episodes']),
         limitations=['BC loss is not manipulation success','predicted mask semantic accuracy is not GT-scored',
-            'CPU only; CUDA/MPS NOT_EXECUTED','no closed-loop student rollout','no external artifact publishing',
+            f'executed model device: {config["device"]}; other devices NOT_EXECUTED','no closed-loop student rollout','no external artifact publishing',
             'no HPO, new architecture, expert change, dependency install or git commit'],time=now())
     atomic(run/'summary.json',summary,immutable=True)
     body=f'''<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -164,7 +177,7 @@ GT Object/Hole/Goal은 Student 입력에 없다. 그래프 결손을 GT로 보�
 Train-only Robot Normalizer를 동결하고 기존 Graph feature view를 유지했다.
 AdamW lr3e-4/weight_decay1e-5, CosineAnnealingLR T50/eta_min0,
 TBPTT32/batch2/gradient clip1/max50/patience10이다. 연속 chunk hidden carry/detach,
-다른 Episode hidden reset과 padding mask를 적용했다. CPU에서만 실행했다.
+다른 Episode hidden reset과 padding mask를 적용했다. 선택한 장치 `{config['device']}`에서 실행했다.
 
 학습 {training['epochs']} Epoch, {training['elapsed_seconds']:.1f}s. Best Validation Checkpoint:
 `{training['best']['path']}` (Epoch {training['best']['epoch']}).
@@ -180,12 +193,13 @@ Discord는 후속 사용자 지시에 따라 비활성화했다. 실제 Codex sa
 오류·복구는 errors/와 events.jsonl에 보존했다. 처리량·Model/Optimizer Memory는 training/metrics.json에 있다.
 Checkpoint는 Model/Optimizer/Scheduler/RNG/Normalizer/Split/Dataset/Config를 보존한다.
 
-CUDA/MPS, Closed-loop Student Rollout/Success Rate, HPO, Architecture Search, 외부 게시·Git Commit은 미실행이다.
+선택하지 않은 장치, Closed-loop Student Rollout/Success Rate, HPO, Architecture Search, 외부 게시·Git Commit은 미실행이다.
 향후 Closed-loop 평가는 동일 Camera/Robot76/Action7 계약, Episode Reset/Hidden lifecycle,
 별도 평가 Seed와 안전한 배포 전 검증이 필요하다. 과거 60/60 Expert 성공률은 이번 결과에 합산하지 않았다.
 '''
-    if DOC.exists() and run.name not in DOC.read_text():raise ValueError('Task06-C document belongs to another run')
-    save_text(DOC,doc);save_text(run/'06c_direct_expert_bc_training.md',doc)
+    target_doc=document(run)
+    if target_doc.exists() and run.name not in target_doc.read_text():raise ValueError('Task06-C document belongs to another run')
+    save_text(target_doc,doc);save_text(run/'06c_direct_expert_bc_training.md',doc)
     for filename,kind in [('summary.json','metrics'),('verification.json','metrics'),('graph_gru_training.html','reports'),
         ('dataset_manifest.json','episode_metadata'),('split_manifest.json','episode_metadata'),('vision_coverage.json','metrics')]:
         register_existing_output(run,run/filename,kind=kind)
