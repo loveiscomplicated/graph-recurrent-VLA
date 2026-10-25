@@ -226,6 +226,9 @@ __marimo__/
 # Local audit artifacts
 /audit_outputs/
 
+# Generated integration report bundle (publish through the experiment artifact workflow)
+/docs/visual-graph-integration.zip
+
 # Experiment tracking artifacts and local credentials
 /experiments/
 *.tracking.json
