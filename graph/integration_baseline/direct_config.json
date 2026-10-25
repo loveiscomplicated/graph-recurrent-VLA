@@ -1,0 +1,35 @@
+{
+  "task": "Task06-C",
+  "seed": 42,
+  "device": "cpu",
+  "vision_device": "cpu",
+  "threads": 1,
+  "collection": {
+    "target_successes": 120,
+    "max_attempts": 160,
+    "start_seed": 30000,
+    "horizon": 250,
+    "noise": 0,
+    "hole_shift": null,
+    "gate_episodes": 2,
+    "control_mode": "pd_ee_delta_pose",
+    "sim_backend": "physx_cpu",
+    "control_freq": 20,
+    "physics_freq": 100
+  },
+  "splits": {"train": 96, "validation": 12, "test": 12},
+  "vision": {"camera": "base_camera", "keep_ratio": 0.5, "point_budget": null},
+  "model": {"d": 64, "L": 2, "gru_hidden": 144, "gru_layers": 1, "enc_hidden": 128},
+  "graph": {"k": 4, "M": 16, "block_rows": 64},
+  "training": {
+    "optimizer": "AdamW", "learning_rate": 0.0003, "weight_decay": 0.00001,
+    "betas": [0.9, 0.999], "eps": 1e-8, "amsgrad": false,
+    "scheduler": "CosineAnnealingLR", "eta_min": 0,
+    "max_epochs": 50, "gradient_clip": 1.0, "patience": 10,
+    "sequence_length": 32, "batch_size": 2, "loss": "regression7_MSE"
+  },
+  "discord_required": false,
+  "auto_callback_required": true,
+  "auto_repair_attempts": 1,
+  "minimum_free_bytes": 8589934592
+}

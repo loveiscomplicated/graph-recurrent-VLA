@@ -1,0 +1,16 @@
+[provisional_smoke_config]
+L = 2
+d = 64
+k = 4
+M = 16
+keep_ratio = 0.5
+pair_block_rows = 64
+gru_hidden = 144
+gru_layers = 1
+enc_hidden = 128
+device = "cpu"
+robot_state_schema = "panda_observable_robot_state_v1"
+action_schema = "pd_ee_delta_pose_regression7"
+sequence_batch = 2
+sequence_length = 4
+seed = 0
