@@ -1,0 +1,13 @@
+{
+  "checkpoint_sha256": "3f4ded2101c91b103760e07cc100fe480866778d0309fddac4a0efb83116d776",
+  "selection": "per split: lowest episode ID, then lowest other ID with both objects on every close frame",
+  "splits": ["train", "validation"],
+  "phases": ["reach", "descend", "close"],
+  "post_close_context_steps": 8,
+  "rollout_context_steps": 64,
+  "atol": 0.000001,
+  "rtol": 0.00001,
+  "seed": 42,
+  "cuda_memory_fraction": 0.08,
+  "minimum_cuda_free_bytes": 2147483648
+}
