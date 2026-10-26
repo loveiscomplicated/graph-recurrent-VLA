@@ -1,0 +1,25 @@
+{
+  "checkpoint_sha256": "3f4ded2101c91b103760e07cc100fe480866778d0309fddac4a0efb83116d776",
+  "seed": 42,
+  "episodes": [
+    {"split": "train", "episode_id": 30000, "seed": 30000},
+    {"split": "train", "episode_id": 30003, "seed": 30003},
+    {"split": "validation", "episode_id": 30007, "seed": 30007},
+    {"split": "validation", "episode_id": 30012, "seed": 30012}
+  ],
+  "conditions": ["expert", "model", "replace_gripper", "stop_arm"],
+  "close_steps": 8,
+  "lift_steps": 20,
+  "hold_steps": 20,
+  "lift_height_m": 0.08,
+  "minimum_peg_lift_m": 0.04,
+  "minimum_tcp_lift_m": 0.06,
+  "atol": 0.000001,
+  "rtol": 0.00001,
+  "minimum_cuda_free_bytes": 12884901888,
+  "cuda_memory_fraction": 0.6,
+  "camera": "base_camera",
+  "graph": {"k": 4, "M": 16, "block_rows": 64},
+  "scope": "MIXED_CONTROL_CAUSAL_DIAGNOSTIC_NOT_POLICY_SUCCESS_RATE",
+  "lift_protocol": "robot-only ScriptedExpert._servo to pre-close TCP + world z0.08m, unchanged orientation; max_trans0.02; gripper=-1 for all lift/hold steps; no extra close settling"
+}
