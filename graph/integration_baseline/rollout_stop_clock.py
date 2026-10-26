@@ -466,6 +466,9 @@ def validate_config(config):
     all_smoke = config['smoke_seeds'] + [config['time_contract_seed']]
     if len(all_smoke) != len(set(all_smoke)) or set(all_smoke) & set(config['heldout_seeds']):
         raise ValueError('smoke and evaluation seeds must be distinct')
+    groups = config.get('evaluation_groups', ['frozen_test', 'heldout'])
+    if not isinstance(groups, list) or not groups or len(groups) != len(set(groups)) or not set(groups) <= {'frozen_test','heldout'}:
+        raise ValueError('evaluation_groups must explicitly select distinct frozen_test/heldout groups')
 
 
 def execute(args):
@@ -492,7 +495,9 @@ def execute(args):
         rollout_report.snapshot(run)
         report = dict(official_name=OFFICIAL_NAME, status='RUNNING', mode=args.mode, run_id=logger.run_id,
                       trained_policy_evaluated=False, episodes=[], contracts={},
-                      remote_training_accessed=False, dependency_installation=False)
+                      remote_training_accessed=config.get('execution_context',{}).get('remote_training_accessed',False),
+                      dependency_installation=config.get('execution_context',{}).get('dependency_installation',False),
+                      training_process_modified=False)
         env = vision = None
         failed = False
         try:
@@ -519,7 +524,9 @@ def execute(args):
                 physics_timestep=float(task.scene.px.timestep),
                 backend=str(task.backend), robot=task.agent.uid,
                 controller_config={k:asdict(v.config) for k,v in task.agent.controller.controllers.items()},
-                cuda='NOT_EXECUTED', mps='NOT_EXECUTED')
+                model_device=config['model_device'], vision_device=config['vision_device'],
+                cuda='EXECUTED' if any(config[k].startswith('cuda') for k in ('model_device','vision_device')) else 'NOT_EXECUTED',
+                mps='NOT_EXECUTED')
             from recurrent.common import versions
             conditions['versions'] = versions()
             if (conditions['control_freq'],conditions['physics_freq'],conditions['physics_substeps'],schema['dimension']) != (20,100,5,76):
@@ -527,6 +534,7 @@ def execute(args):
             if not np.isclose(conditions['physics_timestep'], .01, atol=1e-9, rtol=0):
                 raise ValueError('actual physics timestep must be 10ms')
             atomic(run/'executed_conditions.json', conditions)
+            report['executed_conditions'] = conditions
             atomic(run/'robot_state_schema.json', schema)
             from mani_skill.envs.sapien_env import BaseEnv
             from mani_skill.agents.controllers.pd_ee_pose import PDEEPoseController
@@ -535,7 +543,7 @@ def execute(args):
             installed = run/'installed_source'; installed.mkdir()
             for cls in (BaseEnv, PDEEPoseController, SAM2VideoPredictor, misc):
                 path = Path(inspect.getfile(cls)); shutil.copy2(path, installed/path.name)
-            if smoke:
+            if smoke and args.checkpoint_manifest is None:
                 model = IntegrationPolicy(schema, **config['model']).to(config['model_device']).eval()
                 normalizer = RobotNormalizer(schema, StateNormalizer(torch.zeros(76),torch.ones(76)), [])
                 specs = [dict(seed=s, group='smoke') for s in config['smoke_seeds']]
@@ -558,11 +566,23 @@ def execute(args):
                         raise ValueError('training/live simulator version mismatch: '+key)
                 atomic(run/'checkpoint_provenance.json', provenance)
                 report['source_run_id'] = provenance['manifest']['source_run_id']
-                seed_manifest = read(args.seeds_manifest)
-                specs = validate_seeds(seed_manifest, provenance, config)
-                atomic(run/'seeds_manifest.json', seed_manifest)
-                forbidden = [g for values in provenance['split']['reset_groups'].values() for g in values]
-                report['policy'] = 'STRICT_LOADED_TRAINED_CHECKPOINT'
+                if smoke:
+                    specs = [dict(seed=s, group='smoke') for s in config['smoke_seeds']]
+                    forbidden = []
+                    report['policy'] = 'STRICT_LOADED_TRAINED_CHECKPOINT_CONTRACT_SMOKE; excluded from performance'
+                    report['contracts']['environment_time'] = time_contract(env, config)
+                else:
+                    seed_manifest = read(args.seeds_manifest)
+                    all_specs = validate_seeds(seed_manifest, provenance, config)
+                    selected_groups = config.get('evaluation_groups', ['frozen_test', 'heldout'])
+                    specs = [s for s in all_specs if s['group'] in selected_groups]
+                    report['evaluation_groups'] = selected_groups
+                    report['excluded_by_evaluation_scope'] = [dict(s,status='NOT_EXECUTED',
+                        reason='group excluded by config frozen before performance execution')
+                        for s in all_specs if s['group'] not in selected_groups]
+                    atomic(run/'seeds_manifest.json', seed_manifest)
+                    forbidden = [g for values in provenance['split']['reset_groups'].values() for g in values]
+                    report['policy'] = 'STRICT_LOADED_TRAINED_CHECKPOINT'
             report['planned_seeds'] = specs
             report['episodes'] = [dict(s,status='NOT_EXECUTED') for s in specs]
             from visual.runtime.grounding import GDino
@@ -592,7 +612,7 @@ def execute(args):
                 if not smoke:
                     logger.log(dict(success=int(episode['success']),episode_length=episode['episode_length']), step=index)
             report['contracts']['live_vision'] = dict(status='PASS', source='new RGB from reset/each env.step')
-            report['contracts']['live_closed_loop'] = dict(status='PASS', random_policy=smoke,
+            report['contracts']['live_closed_loop'] = dict(status='PASS', random_policy=smoke and args.checkpoint_manifest is None,
                 physics_during_inference=0, physics_per_action=5, controller_entry_equal=True)
             if smoke:
                 with np.load(run/'episodes'/f"smoke_{config['smoke_seeds'][0]}"/'observations.npz') as saved:
@@ -627,7 +647,7 @@ def execute(args):
                 if path.is_file() and 'source_snapshot' not in path.parts and path.suffix in {'.json','.npz','.png','.mp4','.html','.log','.diff'} and not path.name.endswith('.tracking.json'):
                     logger.link_output(path, kind='rollouts' if path.suffix=='.mp4' else 'trajectory' if path.suffix=='.npz' else 'reports')
             logger.record(rollout_status=report['status'], trained_policy_evaluated=report['trained_policy_evaluated'],
-                          environment=report.get('contracts',{}).get('environment_time',{}),
+                          environment=report.get('executed_conditions',{}),
                           source_run_id=report.get('source_run_id'))
             if failed:
                 logger.finish(failed=True)

@@ -127,6 +127,28 @@ class CheckpointTests(unittest.TestCase):
             load_bundle(self.manifest,check_runtime=False)
         self.assertNotIn('UNSAFE_EXECUTION',stream.getvalue())
 
+    def test_offline_runtime_inventory_requests_only_inference_assets(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        from graph.integration_baseline.rollout_checkpoint import vision_runtime_identity
+        snapshot=self.root/'cached_revision';snapshot.mkdir()
+        names=['added_tokens.json','config.json','model.safetensors','preprocessor_config.json',
+               'special_tokens_map.json','tokenizer.json','tokenizer_config.json','vocab.txt']
+        for name in names:
+            (snapshot/name).write_bytes(b'fixture')
+        sam=self.root/'sam2';sam.mkdir();(sam/'__init__.py').write_text('# fixture\n')
+        checkpoint=self.root/'sam2.pt';checkpoint.write_bytes(b'fixture weights')
+        def cached(repo, **kwargs):
+            self.assertTrue(kwargs['local_files_only'])
+            self.assertEqual(set(kwargs['allow_patterns']),set(names))
+            return str(snapshot)
+        with patch.dict('sys.modules',{'sam2':SimpleNamespace(__file__=str(sam/'__init__.py'))}), \
+             patch('huggingface_hub.snapshot_download',side_effect=cached), \
+             patch('visual.runtime.tracking.DEFAULT_CHECKPOINT',checkpoint):
+            identity=vision_runtime_identity()
+        self.assertEqual(set(identity['dino_files']),set(names))
+        self.assertFalse((snapshot/'README.md').exists())
+
 
 if __name__=='__main__':
     unittest.main()

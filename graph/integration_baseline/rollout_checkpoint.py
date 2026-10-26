@@ -42,9 +42,13 @@ def vision_runtime_identity():
     import sam2
     from huggingface_hub import snapshot_download
     from visual.runtime.tracking import DEFAULT_CHECKPOINT
-    dino = Path(snapshot_download('IDEA-Research/grounding-dino-tiny', local_files_only=True))
     names = ('added_tokens.json', 'config.json', 'model.safetensors', 'preprocessor_config.json',
              'special_tokens_map.json', 'tokenizer.json', 'tokenizer_config.json', 'vocab.txt')
+    # Newer Hub versions validate the requested snapshot inventory even offline.
+    # Request only the actual inference assets; README and duplicate .bin weights
+    # need not exist in a safetensors-only training cache.
+    dino = Path(snapshot_download('IDEA-Research/grounding-dino-tiny',
+                                allow_patterns=list(names), local_files_only=True))
     files = {name: sha(dino/name) for name in names}
     sam_root = Path(sam2.__file__).parent
     return dict(dino_revision=dino.name, dino_files=files, sam2_checkpoint_sha256=sha(DEFAULT_CHECKPOINT),

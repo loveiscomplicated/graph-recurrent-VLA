@@ -29,6 +29,7 @@ def summarize(episodes, *, smoke):
         complete = all(e['status'] == 'COMPLETE' for e in rows)
         successes = sum(e.get('success', False) for e in rows)
         result['groups'][group] = dict(planned=len(rows), completed=sum(e['status']=='COMPLETE' for e in rows),
+            status='NOT_EXECUTED' if not rows else 'COMPLETE' if complete else 'INCOMPLETE',
             successes=successes, success_rate=successes/len(rows) if rows and complete else None,
             confidence_interval_95=wilson(successes, len(rows)) if rows and complete else None,
             interval_method='Wilson score, two-sided 95%; independent episode seeds assumed')

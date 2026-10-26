@@ -72,6 +72,10 @@ class StopClockTests(unittest.TestCase):
         self.assertEqual(wilson(0,0),None)
         self.assertLess(wilson(0,40)[1],.1)
         self.assertGreater(wilson(40,40)[0],.9)
+        selected=summarize([dict(group='heldout',status='COMPLETE',success=False)],smoke=False)
+        self.assertEqual(selected['groups']['frozen_test']['status'],'NOT_EXECUTED')
+        self.assertIsNone(selected['groups']['frozen_test']['success_rate'])
+        self.assertEqual(selected['groups']['heldout']['success_rate'],0.)
 
     def test_restorable_hidden_has_episode_timestep_identity(self):
         schema=robot_fixture()[1];model=IntegrationPolicy(schema).eval()
@@ -116,6 +120,10 @@ class StopClockTests(unittest.TestCase):
 
     def test_config_fixes_20hz_and_rejects_50hz(self):
         c=read(Path(__file__).parents[1]/'rollout_config.json');validate_config(c)
+        c['evaluation_groups']=['heldout'];validate_config(c)
+        c['evaluation_groups']=['unknown']
+        with self.assertRaises(ValueError):validate_config(c)
+        c.pop('evaluation_groups')
         c['environment']['control_freq']=50
         with self.assertRaises(ValueError):validate_config(c)
 
