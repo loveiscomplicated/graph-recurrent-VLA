@@ -461,3 +461,64 @@ unexecuted seeds prevent a complete-group success rate. Do not tune on these
 test seeds. Any seed allocation change must be frozen before the first evaluation.
 
 See [Task07 implementation and measured verification](../../docs/visual-graph-integration/07_stop_the_clock_rollout.md).
+
+### Checkpoint smoke and explicitly selected evaluation groups
+
+`--mode smoke --checkpoint-manifest <manifest>` runs the same small, excluded
+smoke protocol with the strictly loaded trained weights and train normalizer.
+It checks the original simulator conditions and still reports no performance
+success rate. Without that optional manifest, smoke uses random weights.
+
+An evaluation config may set `"evaluation_groups": ["heldout"]` to run only the
+already frozen held-out group. The complete original seed manifest is still
+validated; excluded frozen-test seeds are listed separately as `NOT_EXECUTED`.
+This supports a held-out run when a different host cannot reproduce the original
+frozen reset hashes. It does not waive reset checks, reinterpret excluded seeds
+as failures, or select seeds after observing policy outcomes. Omitting this key
+retains the default frozen-test12 plus held-out40 protocol.
+
+The offline checkpoint inventory requests only the eight DINO inference assets.
+New Hub versions therefore do not require an unused README or duplicate
+`pytorch_model.bin` in a safetensors-only cache. Weights/source checks remain strict.
+
+For the actual Vast.ai57640710 execution, independent Gymnasium1.3.0 environment,
+CUDA/Vulkan startup, selected-group rationale and results/status, see
+[Task07 Vast execution](../../docs/visual-graph-integration/07b_stop_clock_vast57640710.md).
+
+### Fixed-checkpoint Expert grasp diagnostic
+
+`grasp_diagnostic.py` compares the actual `direct_train.evaluate()` T32 path with
+the existing Rollout `infer`/`EpisodeStream.step` path on four preselected stored
+Train/Validation episodes. It checks exact Graph/Robot76 inputs, identical past
+hidden and independent hidden carry, then compares Expert Action7 around
+reach/descend/close. It also replays the first64 stored inputs from41005 against
+the original recorded action/hidden. No new Vision, simulator steps, training,
+normalizer fitting or model changes are performed. The fixed checkpoint,
+selection, FP32 tolerance and GPU memory budget are in `grasp_diagnostic_config.json`.
+See [the measured diagnostic and CLI](../../docs/visual-graph-integration/07c_fixed_checkpoint_grasp_diagnostic.md).
+
+### Live close-window intervention diagnostic
+
+`grasp_intervention.py` is a separate, opt-in mixed-control experiment. For each
+fixed Train/Validation seed, four fresh real Expert approaches build live Vision
+and GRU history. Only the eight close actions differ: Expert zero-arm/full-close,
+model/model, model/full-close, or zero-arm/model. It checks identical paired
+prefixes including the first close inference, and never restores another trial's
+state or resets hidden at takeover. All conditions then use the same robot-only
+8cm lift target and full-close gripper for20 lift/20 hold steps. Later full closing
+can recover a weak initial close, so close-end contact is recorded separately.
+GT pose/contact are outcome diagnostics; they do not enter model inputs.
+
+```bash
+python -m graph.integration_baseline.grasp_intervention \
+  --config graph/integration_baseline/grasp_intervention_config.json \
+  --checkpoint-manifest <immutable_bundle>/checkpoint_manifest.json \
+  --output-root <independent_diagnostic_experiments>
+python -m graph.integration_baseline.grasp_intervention_report <diagnostic_run>
+```
+
+Run on the existing CUDA evaluation environment; this diagnostic does not install
+dependencies. For CUDA/Vulkan bootstrap on Vast, see the recorded invocation in
+[the intervention report](../../docs/visual-graph-integration/07d_live_grasp_intervention.md).
+These hybrid trials are excluded from policy evaluation and do not change the
+closed-loop rollout policy, training, normalizer or production defaults.
