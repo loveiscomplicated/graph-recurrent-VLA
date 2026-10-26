@@ -228,6 +228,8 @@ __marimo__/
 
 # Generated integration report bundle (publish through the experiment artifact workflow)
 /docs/visual-graph-integration.zip
+# Locally generated archive of the visual-graph integration docs
+/docs/visual-graph-integration/아카이브.zip
 
 # Experiment tracking artifacts and local credentials
 /experiments/
