@@ -357,6 +357,76 @@ existing STOPPED run's tmux session, retaining its independent Discord window.
 First compile/setup and warm frame timings must be reported separately. The
 source/config/verification checks run again before each subsequent stage.
 
+## Opt-in reuse of Visual's GPU streaming path
+
+`vision.backend="visual_stream"` selects the existing
+`visual/scripts/stream_v1.py::StreamTracker`: SAM2.1 Small, 1024 internal input,
+native image-encoder compilation, BF16 autocast with FP32 weights, GPU resize,
+two retained frames and sixteen non-conditioning memory frames. A missing
+backend preserves `legacy_fp32`. CUDA is required; no CPU fallback is selected.
+The new path does not use the FP32 `execution_revision.json` mechanism.
+
+Grounding DINO still performs detection using the existing prompts, thresholds,
+five-frame scans and two-scan confirmation. `MemoizedDetector` caches only raw
+image/prompt results; prefix-dependent initialization is evaluated as before.
+New current-frame DINO boxes enter the existing SAM2 state before propagation.
+Existing objects keep their conditioning memory. Missing objects produce empty
+masks, and the adapter returns the existing `(2,H,W)` boolean CPU mask boundary.
+JPEG staging and independent late-object feature caches are removed.
+
+Visual's opt-in `StreamTracker(..., observed_horizon=True)` exposes only `t+1`
+frames, accepts an empty `start(rgb,{})`, and supports `step(rgb,boxes=...)`.
+The original fixed-horizon default and existing callers are preserved. The
+preprocessing and propagation algorithms remain in the Visual module.
+
+For a **new** existing-data run, prepare both smoke and full configs with
+`gpu_run prepare --vision-backend visual_stream` and the normal data/preflight
+arguments. This only prepares the run; normal smoke/launch requirements remain.
+Cached legacy Vision receipts cannot be relabelled or reused as streaming output.
+For online evaluation, add `"backend":"visual_stream"` inside the new config's
+`vision` object and set `vision_device="cuda"`. Checkpoint/source/config checks
+remain strict: an existing FP32 training config does not silently become a
+streaming checkpoint. No training, default switch, or existing-run migration is
+implied by selecting this internal experimental backend.
+
+The standalone recorded-input verification is:
+
+```bash
+source visual/env.sh
+export WANDB_MODE=disabled HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+export TORCHINDUCTOR_COMPILE_THREADS=4
+
+# Run once where all original TRAIN files are available. New outputs required.
+python -m graph.integration_baseline.streaming_vision_benchmark \
+  --prepare-robot-from /path/to/original_dataset_uuid \
+  --write-robot /path/to/new_inputs/train_robot.npz
+
+# Requires original TRAIN RGB-D episodes 30002/30047 and the frozen metadata.
+python -m graph.integration_baseline.streaming_vision_benchmark \
+  --dataset /path/to/original_dataset_uuid \
+  --train-robot /path/to/new_inputs/train_robot.npz \
+  --repeats 3 --threads 8 --output-root experiments
+```
+
+Each condition owns a fresh worker process. The comparison measures legacy
+offline/online, direct Visual, and the new adapter. Controlled ablations use
+frozen RGB-keyed DINO outputs from the direct run, with unchanged prefix rules;
+they compare to `tracking_reference`, not to DINO-inclusive latency. Precision,
+PIL/GPU preprocessing, native compile, preflight reuse, separate states, pruning
+and inherited deterministic/cuDNN settings are tested separately. Their deltas
+must not be added together. A separate profiling pass reports inclusive CUDA
+intervals and call counts; model load, warmup and compile are excluded from
+steady timing and reported separately.
+
+Adoption requires direct/adapter pixel equality, repeatability, real SAM2
+causality/memory checks, matching packets/graphs/actions, and <=10% p50/p95
+adapter overhead. Tracking p95 <=50ms is a separate gate. The synchronous
+RGB-D-to-CPU-Action7 pass retains the existing FP32 policy with random weights
+and the exact frozen TRAIN96 normalizer. It is a latency/output diagnostic,
+not task success, a live-camera test, or a full-path 20Hz claim. All artifacts
+are local `ExperimentLogger` outputs; the command never publishes them.
+
 ## Task07: opt-in stop-the-clock closed-loop evaluation
 
 This evaluates **B: Stop-the-clock / Zero-simulation-time-inference-delay /

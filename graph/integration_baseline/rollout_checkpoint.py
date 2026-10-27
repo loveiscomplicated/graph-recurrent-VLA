@@ -32,8 +32,10 @@ SOURCE_FILES = (
 )
 
 
-def required_sources():
-    return sorted(set(SOURCE_FILES) | {str(p.relative_to(ROOT)) for p in
+def required_sources(vision_backend='legacy_fp32'):
+    extra = {'visual/scripts/stream_v1.py', 'graph/integration_baseline/streaming_vision_adapter.py',
+             'graph/integration_baseline/vision_speed.py'} if vision_backend == 'visual_stream' else set()
+    return sorted(set(SOURCE_FILES) | extra | {str(p.relative_to(ROOT)) for p in
         (ROOT/'visual/runtime').rglob('*.py')})
 
 
@@ -141,7 +143,7 @@ def load_bundle(manifest_path, *, device='cpu', eval_config=None, check_runtime=
         raise ValueError('normalizer std floor violated')
     if receipt['global_step'] != cp['progress']['global_step'] or receipt['epoch'] != cp['progress'].get('completed_epoch', cp['progress']['epoch']):
         raise ValueError('receipt progress mismatch')
-    for path in required_sources():
+    for path in required_sources(config['vision'].get('backend', 'legacy_fp32')):
         if meta['source'].get(path) != sha(ROOT/path):
             raise ValueError('training source missing/changed: '+path)
     if check_runtime and meta['vision_runtime'] != vision_runtime_identity():

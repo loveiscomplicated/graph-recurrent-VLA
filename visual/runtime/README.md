@@ -74,3 +74,34 @@ points under one combined budget, preserving source pixels and geometric
 evidence. The [measured report](../../docs/visual-graph-integration/03_sampling.md)
 compares general FPS and four candidate-priority conditions. This internal
 NumPy result does not implement final Graph packaging, stale cache or edges.
+
+### Opt-in GPU streaming integration
+
+The fast E2 implementation is `visual.scripts.stream_v1.StreamTracker`, rather
+than this directory's legacy video-directory `SAM2Tracker`. It continues to own
+GPU preprocessing, one-frame SAM2 propagation and memory pruning. Its optional
+`observed_horizon=True` mode supports a live observed prefix:
+
+```python
+from visual.scripts.stream_v1 import StreamTracker
+
+stream = StreamTracker(predictor, preprocess="gpu", prune=True,
+                       keep_mem=16, keep_frames=2, observed_horizon=True)
+with torch.inference_mode(), torch.autocast("cuda", dtype=torch.bfloat16):
+    masks0 = stream.start(rgb0, initial_boxes)  # {} is valid in this mode
+    frame, masks1 = stream.step(rgb1, boxes=current_new_boxes)
+stream.reset()
+```
+
+Boxes are current RGB detector decisions, keyed by SAM2 IDs. Grounding DINO
+still performs detection; SAM2 registers those boxes before propagating the
+current frame. New objects share the existing state and image feature cache,
+while previous object conditioning memory remains. `num_frames=t+1` is updated
+before prompting/propagation, and unavailable frames raise `FutureFrameAccess`.
+`reset()` also releases the retained image buffer. Existing callers that omit
+the new option retain their fixed-horizon behavior.
+
+The Graph team's opt-in adapter and matched-input validation are documented in
+[`graph/integration_baseline/README.md`](../../graph/integration_baseline/README.md#opt-in-reuse-of-visuals-gpu-streaming-path).
+Historical E2 results in `visual/REPORT.md` are not measurements of the current
+host or of the new integration.

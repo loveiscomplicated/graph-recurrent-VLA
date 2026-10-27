@@ -9,9 +9,9 @@
   prune      : 오래된 비조건 memory 삭제 (현재 프레임 − keep_mem 이전). SAM2 는 최근 6 프레임 mask memory 와
                최근 15 프레임 object pointer 만 읽으므로 keep_mem=16 이면 결과가 같아야 한다
   model image_size : build 시 hydra override (1024 기본, 768/512)
+  observed_horizon : opt-in current-prefix num_frames, empty initialization and
+                     current-frame box registration via step(rgb, boxes=...).
 """
-import time
-
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -26,15 +26,19 @@ class FutureFrameAccess(RuntimeError):
 
 
 class CausalFrames:
-    def __init__(self, image_size, device="cuda", keep=4, preprocess="gpu", max_frames=100000):
+    def __init__(self, image_size, device="cuda", keep=4, preprocess="gpu", max_frames=100000,
+                 observed_horizon=False):
         self.S, self.dev, self.keep, self.pre = image_size, device, keep, preprocess
         self.buf = {}
         self.latest = -1
         self.max_frames = max_frames
+        self.observed_horizon = observed_horizon
         self.mean, self.std = MEAN.to(device), STD.to(device)
 
     def __len__(self):
-        return self.max_frames  # SAM2 는 num_frames 를 상한 체크에만 쓴다
+        # Legacy E2 used a fixed horizon. SAM2 also uses num_frames for temporal
+        # pointer normalization; live integrations must expose the prefix only.
+        return self.latest + 1 if self.observed_horizon else self.max_frames
 
     def push(self, rgb):
         S = self.S
@@ -60,16 +64,21 @@ class CausalFrames:
 
 
 class StreamTracker:
-    def __init__(self, predictor, preprocess="gpu", prune=True, keep_mem=16, keep_frames=2):
+    def __init__(self, predictor, preprocess="gpu", prune=True, keep_mem=16, keep_frames=2,
+                 observed_horizon=False):
         self.p = predictor
         self.pre, self.prune, self.keep_mem, self.keep_frames = preprocess, prune, keep_mem, keep_frames
         self.state = None
+        self.frames = None
+        self.obj_ids = []
+        self.observed_horizon = observed_horizon
 
     def _init_state(self, rgb0):
         import importlib
         H, W = rgb0.shape[:2]
         mod = importlib.import_module(type(self.p).__module__)
-        frames = CausalFrames(self.p.image_size, keep=self.keep_frames, preprocess=self.pre)
+        frames = CausalFrames(self.p.image_size, device=self.p.device, keep=self.keep_frames,
+                              preprocess=self.pre, observed_horizon=self.observed_horizon)
         frames.push(rgb0)  # init_state 가 frame 0 feature 를 미리 계산한다
         orig = mod.load_video_frames
         mod.load_video_frames = lambda **kw: (frames, H, W)
@@ -82,11 +91,13 @@ class StreamTracker:
 
     def start(self, rgb0, boxes):
         """boxes: {obj_id: [x1,y1,x2,y2] or None}"""
+        if self.observed_horizon and self.state is not None:
+            raise RuntimeError("reset before starting another observed episode")
         self.state = self._init_state(rgb0)
         self.obj_ids = [o for o, b in boxes.items() if b is not None]
         for oid in self.obj_ids:
             self.p.add_new_points_or_box(self.state, frame_idx=0, obj_id=oid, box=np.asarray(boxes[oid], np.float32))
-        return self._propagate(0)
+        return {} if self.observed_horizon and not self.obj_ids else self._propagate(0)
 
     def _propagate(self, t):
         out = {}
@@ -97,9 +108,22 @@ class StreamTracker:
             self._prune(t)
         return out
 
-    def step(self, rgb):
+    def step(self, rgb, boxes=None):
+        """Push one observation, register current DINO boxes, then propagate once.
+
+        A late box adds an object to the existing state; it never restarts other
+        objects or uses an earlier observation as the new conditioning frame.
+        """
+        if self.state is None:
+            raise RuntimeError("start before step")
         t = self.frames.push(rgb)
-        return t, self._propagate(t)
+        if self.observed_horizon:
+            self.state["num_frames"] = t + 1
+        for oid, box in (boxes or {}).items():
+            if box is not None:
+                self.add_box(t, oid, box)
+        out = {} if self.observed_horizon and not self.obj_ids else self._propagate(t)
+        return t, out
 
     def logit(self, oid, t):
         od = self.state["output_dict_per_obj"][self.p._obj_id_to_idx(self.state, oid)]
@@ -115,6 +139,7 @@ class StreamTracker:
 
     def add_box(self, t, oid, box):
         _, oids, res = self.p.add_new_points_or_box(self.state, frame_idx=t, obj_id=oid, box=np.asarray(box, np.float32))
+        self.obj_ids = list(oids)
         return res[list(oids).index(oid), 0] > 0
 
     def add_mask(self, t, oid, mask):
@@ -125,3 +150,7 @@ class StreamTracker:
         if self.state is not None:
             self.p.reset_state(self.state)
             self.state = None
+        if self.frames is not None:
+            self.frames.buf.clear()
+            self.frames = None
+        self.obj_ids = []

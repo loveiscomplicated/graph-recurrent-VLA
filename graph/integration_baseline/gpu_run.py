@@ -15,7 +15,9 @@ from graph.integration_baseline.direct_runtime import REPO,atomic,read,sha,Event
 from graph.integration_baseline.run_control import settings,torch_config,launch
 
 
-def prepare(data,preflight,*,smoke=False,callback_required=True):
+def prepare(data,preflight,*,smoke=False,callback_required=True,vision_backend='legacy_fp32'):
+    if vision_backend not in ('legacy_fp32','visual_stream'):
+        raise ValueError('unknown vision backend: '+str(vision_backend))
     from utils.experiment_logger import ExperimentLogger
     from graph.integration_baseline.direct_errors import source_inventory
     settings();data=Path(data).resolve();preflight=Path(preflight).resolve()
@@ -28,6 +30,7 @@ def prepare(data,preflight,*,smoke=False,callback_required=True):
     original=read(data/'config.yaml')
     for key in ['model','graph','training','seed','vision','splits']:
         if config[key]!=original[key]:raise ValueError('frozen baseline settings changed: '+key)
+    if vision_backend=='visual_stream':config['vision']['backend']=vision_backend
     config.update(device='cuda',vision_device='cuda',execution_mode='existing_data_cuda',discord_enabled=False,
         report_document='docs/visual-graph-integration/06c_direct_expert_bc_training_cuda_{run_id_short}.md',fixture_only=smoke,
         auto_callback_required=callback_required)
@@ -117,10 +120,14 @@ def main():
     p.add_argument('command',choices=['prepare','smoke','launch'])
     p.add_argument('--data',type=Path);p.add_argument('--preflight',type=Path);p.add_argument('--run');p.add_argument('--smoke-run')
     p.add_argument('--fixture',action='store_true')
+    p.add_argument('--vision-backend',choices=['legacy_fp32','visual_stream'],default='legacy_fp32',
+                   help='prepare only; opt-in backend for a new run, never an existing cache')
     p.add_argument('--without-callback',action='store_true',help='only after explicit user waiver of the unavailable callback')
     args=p.parse_args()
-    if args.command=='prepare':prepare(args.data,args.preflight,smoke=args.fixture,callback_required=not args.without_callback)
+    if args.command=='prepare':prepare(args.data,args.preflight,smoke=args.fixture,
+        callback_required=not args.without_callback,vision_backend=args.vision_backend)
     else:
+        if args.vision_backend!='legacy_fp32':p.error('--vision-backend is prepare-only; existing run config is immutable')
         from graph.integration_baseline.run_control import path_for
         run=path_for(args.run)
         if args.command=='smoke':smoke(run)

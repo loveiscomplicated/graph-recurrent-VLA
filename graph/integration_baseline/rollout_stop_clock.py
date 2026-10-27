@@ -457,7 +457,13 @@ def late_object_probe(rgb, initialization, detector, tracker, output):
 def validate_config(config):
     expected = dict(horizon=250, control_mode='pd_ee_delta_pose', sim_backend='physx_cpu',
                     control_freq=20, physics_freq=100)
-    if config['environment'] != expected or config['vision'] != dict(camera='base_camera', keep_ratio=.5, point_budget=None):
+    vision = dict(config['vision'])
+    backend = vision.pop('backend', 'legacy_fp32')
+    if backend not in ('legacy_fp32', 'visual_stream'):
+        raise ValueError('unknown vision backend: ' + str(backend))
+    if backend == 'visual_stream' and not config['vision_device'].startswith('cuda'):
+        raise ValueError('visual_stream requires CUDA')
+    if config['environment'] != expected or vision != dict(camera='base_camera', keep_ratio=.5, point_budget=None):
         raise ValueError('fixed simulator/Vision contract changed')
     if config['graph'] != dict(k=4, M=16, block_rows=64) or config['model'] != dict(d=64,L=2,gru_hidden=144,gru_layers=1,enc_hidden=128):
         raise ValueError('fixed graph/model contract changed')
@@ -590,9 +596,10 @@ def execute(args):
             try:
                 runtime_identity = vision_runtime_identity()
                 atomic(run/'vision_runtime.json', runtime_identity)
-                detector = GDino(device=config['vision_device'])
-                tracker = SAM2Tracker(device=config['vision_device'])
-                vision = OnlineVisionAdapter(detector, tracker)
+                from graph.integration_baseline.streaming_vision_adapter import make_online_vision
+                vision = make_online_vision(config)
+                if config['vision'].get('backend', 'legacy_fp32') == 'legacy_fp32':
+                    detector, tracker = vision.detector, vision.tracker
             except Exception as exc:
                 report['contracts']['live_vision'] = dict(status='BLOCKED_RUNTIME_VISION', error_type=type(exc).__name__)
                 raise
@@ -617,7 +624,12 @@ def execute(args):
             if smoke:
                 with np.load(run/'episodes'/f"smoke_{config['smoke_seeds'][0]}"/'observations.npz') as saved:
                     rgb = saved['rgb'].copy()
-                report['contracts']['recorded_vision'] = compare_saved_sequence(rgb, detector, tracker, run)
+                if config['vision'].get('backend', 'legacy_fp32') == 'visual_stream':
+                    from graph.integration_baseline.streaming_vision_checks import compare_stream_sequence
+                    report['contracts']['recorded_vision'] = compare_stream_sequence(
+                        rgb, vision.initializer.detector.detector, vision.tracker, run)
+                else:
+                    report['contracts']['recorded_vision'] = compare_saved_sequence(rgb, detector, tracker, run)
                 if report['contracts']['recorded_vision']['status'] != 'PASS':
                     raise RuntimeError('recorded online/offline Vision contract failure')
             report.update(status='SMOKE_COMPLETE' if smoke else 'COMPLETE', trained_policy_evaluated=not smoke)

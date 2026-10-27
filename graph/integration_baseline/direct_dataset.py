@@ -216,16 +216,24 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
     from graph.integration_baseline.vision import causal_masks,packet_from_frame
     from visual.runtime.grounding import GDino
     from visual.runtime.tracking import SAM2Tracker
+    from graph.integration_baseline.streaming_vision_adapter import build_stream_tracker, stream_masks
     from visual.runtime.rgbd import TrackedRGBDFrame
     run=Path(run)
     source_run=Path(read(run/'data_source.json')['directory']) if (run/'data_source.json').exists() else run
     manifest=read(source_run/'dataset_manifest.json'); camera=config['vision']['camera']
     summary_path=run/'vision_manifest.json'
-    if summary_path.exists() and frame_limit is None and episode_limit is None and episode_ids is None: return read(summary_path)
-    detector=GDino(device=config['vision_device']);tracker=SAM2Tracker(device=config['vision_device'])
+    backend=config['vision'].get('backend','legacy_fp32')
+    if backend not in ('legacy_fp32','visual_stream'):raise ValueError('unknown vision backend: '+str(backend))
+    if summary_path.exists() and frame_limit is None and episode_limit is None and episode_ids is None:
+        summary=read(summary_path)
+        if summary.get('backend','legacy_fp32')!=backend:raise ValueError('Vision backend changed; use a new run UUID')
+        return summary
+    detector=GDino(device=config['vision_device'])
+    tracker=build_stream_tracker(config['vision_device']) if backend=='visual_stream' else SAM2Tracker(device=config['vision_device'])
     from graph.integration_baseline.vision_speed import revision,enable
     execution_revision=revision(run)
     if execution_revision:
+        if backend!='legacy_fp32':raise ValueError('FP32 execution revision cannot be combined with visual_stream')
         detector,tracker=enable(detector,tracker,compile_image_encoder=True)
     results=[]
     for ep in manifest['episodes'][:episode_limit]:
@@ -234,6 +242,7 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
         eid=ep['episode_id']; receipt=run/'vision/receipts'/f'ep{eid}.json'
         if receipt.exists():
             entry=read(receipt)
+            if entry.get('backend','legacy_fp32')!=backend:raise ValueError('cached Vision backend mismatch; use a new run UUID')
             for row in entry['packets']:
                 if sha(run/row['path'])!=row['sha256']: raise ValueError('vision packet corruption')
             if sha(run/entry['mask_path'])!=entry['mask_sha256']: raise ValueError('mask corruption')
@@ -251,7 +260,7 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
             packet,cost=packet_from_frame(frame,source_run.name+f':ep{eid}',keep_ratio=.5)
             packet['observation_provenance']=dict(dataset_id=source_run.name,episode_id=eid,timestep=t,
                 episode_sha256=ep['sha256'],rgb_sha256=digest(rgb[t]),
-                mask_source='prefix_causal_rgb_gdino_forward_sam2')
+                mask_source='prefix_causal_rgb_gdino_forward_sam2' if backend=='legacy_fp32' else 'visual_stream_rgb_dino_sam2')
             validate_packet(packet)
             path=folder/f'f{t:04d}.npz';tmp=folder/f'f{t:04d}.partial.npz'
             save_packet(tmp,packet);finalize(tmp,path)
@@ -271,7 +280,9 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
                 timings_ms=dict(**cost,mask_ms=timing['elapsed_ms']),has_action_target=t<ep['actions']))
             if t%50==0: events.emit('vision_progress',episode=eid,frame=t,total=len(rgb),objects=counts)
         if execution_revision:detector.reset_episode()
-        masks,provenance=causal_masks(rgb,detector,tracker,process)
+        if backend=='visual_stream':
+            masks,provenance=stream_masks(rgb,detector,tracker,process,episode_identity=f'{source_run.name}:ep{eid}')
+        else:masks,provenance=causal_masks(rgb,detector,tracker,process)
         if execution_revision:
             provenance['execution_optimization']=dict(settings=execution_revision['settings'],
                 detector=detector.statistics(),sam2=deepcopy(tracker.grvla_speed_statistics),
@@ -282,6 +293,7 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
         finalize(tmp,mask_path)
         entry=dict(episode_id=eid,episode_sha256=ep['sha256'],packets=rows,mask_provenance=provenance,
                    mask_path=str(mask_path.relative_to(run)),mask_sha256=sha(mask_path),elapsed_seconds=perf_counter()-tick)
+        if backend=='visual_stream':entry['backend']=backend
         if len(rows)!=len(rgb): raise ValueError('vision processing did not produce all observations')
         # A limited fixture must never advertise full-episode coverage.
         if len(rgb)!=ep['observations']: entry['scope']='PARTIAL_SMOKE_ONLY'
@@ -290,6 +302,7 @@ def process_vision(run,config,events,*,frame_limit=None,episode_limit=None,episo
         events.emit('vision_episode_complete',episode=eid,frames=len(rows),elapsed_seconds=entry['elapsed_seconds'])
     summary=dict(dataset_id=source_run.name,dataset_sha256=sha(source_run/'dataset_manifest.json'),
         camera=camera,policy=dict(keep_ratio=.5,raw_ede=True,variable_N=True,point_budget=None),episodes=results)
+    if backend=='visual_stream':summary['backend']=backend
     if frame_limit is None and episode_limit is None and episode_ids is None:
         atomic(summary_path,summary,immutable=True)
     else: atomic(run/'vision_smoke_manifest.json',summary,immutable=True)

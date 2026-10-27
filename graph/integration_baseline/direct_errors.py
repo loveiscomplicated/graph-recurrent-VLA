@@ -23,7 +23,7 @@ def source_inventory():
     for root in ['graph','recurrent','envs','utils','tools']:
         for pattern in ['*.toml','*.yaml','*.json','*.md']:
             paths.extend(Path(root).rglob(pattern))
-    paths += [Path('AGENTS.md'),Path('README.md')]
+    paths += [Path('AGENTS.md'),Path('README.md'),Path('visual/scripts/stream_v1.py')]
     return {str(p):sha(p) for p in sorted(paths) if p.is_file()}
 
 
