@@ -359,6 +359,9 @@ source/config/verification checks run again before each subsequent stage.
 
 ## Opt-in reuse of Visual's GPU streaming path
 
+Implementation, isolation and measured validation are recorded in
+[the streaming reuse report](../../docs/visual-graph-integration/06d_visual_stream_reuse.md).
+
 `vision.backend="visual_stream"` selects the existing
 `visual/scripts/stream_v1.py::StreamTracker`: SAM2.1 Small, 1024 internal input,
 native image-encoder compilation, BF16 autocast with FP32 weights, GPU resize,
