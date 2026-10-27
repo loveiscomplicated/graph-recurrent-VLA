@@ -427,9 +427,14 @@ memory, and each condition requires at least 2GiB free disk. Override these
 explicitly with `--gpu-memory-fraction` / `--minimum-free-gb` when appropriate.
 Use `--instance-id` to record the actual host instance in the new run metadata.
 
-Adoption requires direct/adapter pixel equality, repeatability, real SAM2
-causality/memory checks, matching packets/graphs/actions, and <=10% p50/p95
-adapter overhead. Tracking p95 <=50ms is a separate gate. The synchronous
+Native max-autotune can select different floating-point kernels in independent
+processes. `direct_control` repeats the direct path in another process to audit
+that variability. Adoption compares direct/adapter on the **same compiled
+predictor**, preserving exact pixel equality, repeatability, initialization,
+real SAM2 causality/memory checks and matching packets/graphs/actions. Timed
+paired repeats alternate their order and require <=10% p50/p95 adapter overhead.
+Independent-process pixel/action differences remain in the report and are not
+silently treated as identical. Tracking p95 <=50ms is a separate gate. The synchronous
 RGB-D-to-CPU-Action7 pass retains the existing FP32 policy with random weights
 and the exact frozen TRAIN96 normalizer. It is a latency/output diagnostic,
 not task success, a live-camera test, or a full-path 20Hz claim. All artifacts

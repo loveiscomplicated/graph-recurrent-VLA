@@ -30,6 +30,7 @@ FAST = dict(path='direct', bf16=True, compile=True, preprocess='gpu', prune=True
             cudnn_tf32=True, frozen_dino=False)
 VARIANTS = {
     'direct': dict(FAST),
+    'direct_control': dict(FAST),
     'adapter': dict(FAST, path='adapter'),
     'legacy_offline': dict(FAST, path='legacy_offline', bf16=False, compile=False,
                            preprocess='jpeg_pil', prune=False, separate_states=True,
@@ -46,7 +47,7 @@ VARIANTS = {
     'no_prune': dict(FAST, frozen_dino=True, prune=False),
     'legacy_numerics': dict(FAST, frozen_dino=True, deterministic=True, cudnn_tf32=False),
 }
-CANONICAL = {'direct', 'adapter', 'legacy_offline', 'legacy_online'}
+CANONICAL = {'direct', 'direct_control', 'adapter', 'legacy_offline', 'legacy_online'}
 
 
 def statistics(values):
@@ -362,7 +363,8 @@ def worker(plan_path, name):
         preflight = None
     model_load_ms = (perf_counter()-tick)*1000
 
-    def episode(eid, a, callback=None):
+    def episode(eid, a, callback=None, *, path=None):
+        active_path = path or settings['path']
         rgb = a['base_camera/rgb']
         samples, values = [], []
         previous_calls = meter.calls
@@ -378,7 +380,7 @@ def worker(plan_path, name):
             values.append(masks.copy())
             if callback:
                 callback(eid, t, masks, elapsed)
-        if settings['path'] == 'legacy_offline':
+        if active_path == 'legacy_offline':
             start = perf_counter()
             masks, meta = causal_masks(rgb, meter, tracker,
                 lambda t, m, timing: record(t, m, timing['elapsed_ms'], {}))
@@ -390,9 +392,9 @@ def worker(plan_path, name):
             if callback:
                 overhead -= sum(r['total_ms']-r['mask_ms'] for r in pipeline_rows[-len(rgb):])
             return np.stack(values), samples, found, overhead
-        if settings['path'] == 'legacy_online':
+        if active_path == 'legacy_online':
             online = OnlineVisionAdapter(meter, tracker)
-        elif settings['path'] == 'adapter':
+        elif active_path == 'adapter':
             online = StreamVisionAdapter(meter, tracker, bf16=settings['bf16'])
         else:
             online = None
@@ -469,10 +471,72 @@ def worker(plan_path, name):
             torch.use_deterministic_algorithms(settings['deterministic'])
             torch.backends.cudnn.allow_tf32 = settings['cudnn_tf32']
         checks = None
+        paired = None
         if name == 'adapter':
             from graph.integration_baseline.streaming_vision_checks import compare_stream_sequence
             checks = {str(eid): compare_stream_sequence(a['base_camera/rgb'], meter, tracker, folder/f'checks_ep{eid}')
                       for eid, a in data}
+            # Native max-autotune may select different floating-point kernels
+            # in separate processes. Compare the adapter to the direct module
+            # on the *same* compiled predictor, without relaxing pixel equality.
+            paired_frames = {'direct': [], 'adapter': []}
+            paired_first = {'direct': {}, 'adapter': {}}
+            paired_found = {'direct': {}, 'adapter': {}}
+            paired_repeatable = True
+            pair_differences = 0
+            for repeat in range(plan['repeats']):
+                current_pair = {'direct': {}, 'adapter': {}}
+                order = ('direct','adapter') if repeat % 2 == 0 else ('adapter','direct')
+                for path in order:
+                    for eid, a in data:
+                        masks, samples, found, _ = episode(eid, a, path=path)
+                        current_pair[path][eid] = masks
+                        paired_frames[path].extend(dict(r,repeat=repeat) for r in samples)
+                        if repeat == 0:
+                            paired_first[path][eid] = masks
+                            paired_found[path][str(eid)] = found
+                        else:
+                            paired_repeatable &= np.array_equal(paired_first[path][eid], masks)
+                pair_differences += sum(int(np.count_nonzero(current_pair['direct'][eid] !=
+                                                            current_pair['adapter'][eid])) for eid,_ in data)
+            def pair_tracking(rows):
+                return statistics([r['mask_ms'] for r in rows if r['timestep']>0 and
+                                   not r['dino_requests'] and r['initialized_objects']>0])
+            # Actual sequential RGB-D -> Action7, with both paths sharing the
+            # same predictor/kernel choices and the unchanged strict FP32 policy.
+            torch.use_deterministic_algorithms(True)
+            torch.backends.cudnn.allow_tf32 = False
+            pair_pipeline, pair_actions, pair_pipeline_masks = {}, {}, {}
+            for path in ('direct','adapter'):
+                callback, rows, actions = policy_callback(plan, dict(data), schema, split, folder)
+                eid, a = data[0]
+                short = dict(a, **{'base_camera/rgb': a['base_camera/rgb'][:16]})
+                episode(eid, short, callback, path=path)
+                rows.clear(); actions.clear()
+                pair_pipeline_masks[path] = {}
+                for eid, a in data:
+                    masks, _, _, _ = episode(eid, a, callback, path=path)
+                    pair_pipeline_masks[path][eid] = masks
+                pair_pipeline[path], pair_actions[path] = rows, np.stack(actions)
+            torch.use_deterministic_algorithms(settings['deterministic'])
+            torch.backends.cudnn.allow_tf32 = settings['cudnn_tf32']
+            paired = dict(scope='same compiled predictor; alternating order for timed repeats; pixel-exact gate',
+                differing_mask_pixels=pair_differences,
+                masks_exact=pair_differences==0,
+                initialization_equal=paired_found['direct']==paired_found['adapter'],
+                repeats_exact=bool(paired_repeatable),
+                direct_tracking=pair_tracking(paired_frames['direct']),
+                adapter_tracking=pair_tracking(paired_frames['adapter']),
+                pipeline_mask_differing_pixels=sum(int(np.count_nonzero(pair_pipeline_masks['direct'][eid] !=
+                    pair_pipeline_masks['adapter'][eid])) for eid,_ in data),
+                action_max_abs_diff=float(np.max(np.abs(pair_actions['direct']-pair_actions['adapter']))))
+            for field in ('packet_digest','graph_digest'):
+                paired[field+'_different_frames'] = sum(a[field]!=b[field] for a,b in
+                    zip(pair_pipeline['direct'],pair_pipeline['adapter']))
+            atomic(folder/'paired_frames.json', paired_frames)
+            atomic(folder/'paired_pipeline_frames.json', pair_pipeline)
+            atomic(folder/'paired_validation.json', paired)
+            np.savez_compressed(folder/'paired_actions.npz', **pair_actions)
         if name == 'direct':
             from visual.scripts.stream_v1 import CausalFrames
             profiler = StageProfiler()
@@ -507,7 +571,7 @@ def worker(plan_path, name):
                   cuda_peak_reserved_bytes=torch.cuda.max_memory_reserved(),
                   offline_preparation_and_reset_overhead_ms=overheads,
                   dino=dict(actual_calls=meter.calls, wall_ms=meter.wall_ms, parts_ms=meter.parts),
-                  preflight=preflight, checks=checks,
+                  preflight=preflight, checks=checks, paired=paired,
                   boundary='in-memory raw RGB -> CPU boolean masks, with DINO when requested',
                   legacy_offline_boundary_exception='JPEG directory preparation outside frame timing; recorded separately',
                   pipeline_scope='separate actual synchronous pass; FP32 random policy, exact TRAIN96 normalizer, no optimizer/closed-loop')
@@ -543,19 +607,26 @@ def summarize(run, plan):
             comparisons[name] = comparison
     gates = dict(status='INCOMPLETE', masks_exact=False, adapter_overhead_pass=False,
                  tracking_20hz_pass=False, real_weight_checks_pass=False,
-                 repeatability_pass=False, downstream_exact=False)
+                 repeatability_pass=False, downstream_exact=False, initialization_equal=False)
     if 'direct' in results and 'adapter' in results:
-        a, b = (results[n]['groups']['sam2_tracking_only'] for n in ('direct','adapter'))
+        pair = results['adapter'].get('paired') or {}
+        a, b = pair.get('direct_tracking', {}), pair.get('adapter_tracking', {})
+        if not a or not b:
+            a, b = (results[n]['groups']['sam2_tracking_only'] for n in ('direct','adapter'))
         overhead = {k: b[k]/a[k]-1 for k in ('median','p95')}
-        gates.update(masks_exact=comparisons['adapter']['masks_exact'],
+        gates.update(masks_exact=pair.get('masks_exact',False),
+                     initialization_equal=pair.get('initialization_equal',False),
+                     cross_process_masks_exact=comparisons['adapter']['masks_exact'],
+                     equivalence_scope='same compiled predictor; independent-process differences are reported separately',
                      adapter_overhead_fraction=overhead, adapter_overhead_pass=all(v<=.10 for v in overhead.values()),
                      tracking_20hz_pass=b['p95']<=50,
                      real_weight_checks_pass=all(v['status']=='PASS' for v in results['adapter']['checks'].values()),
-                     repeatability_pass=results['direct']['repeats_exact'] and results['adapter']['repeats_exact'],
-                     downstream_exact=all(comparisons['adapter'].get(k) == 0 for k in (
-                         'packet_digest_different_frames','graph_digest_different_frames','action_max_abs_diff')))
+                     repeatability_pass=results['direct']['repeats_exact'] and results['adapter']['repeats_exact'] and pair.get('repeats_exact',False),
+                     downstream_exact=all(pair.get(k) == 0 for k in (
+                         'pipeline_mask_differing_pixels','packet_digest_different_frames',
+                         'graph_digest_different_frames','action_max_abs_diff')))
         restored = all(gates[k] for k in ('masks_exact','adapter_overhead_pass','real_weight_checks_pass',
-                                        'repeatability_pass','downstream_exact'))
+                                        'repeatability_pass','downstream_exact','initialization_equal'))
         gates['status'] = 'RESTORED' if restored else 'GATE_FAILED'
     summary = dict(run_id=run.name, status='COMPLETE' if len(results)==len(plan['variants']) else 'INCOMPLETE',
                    gates=gates, results=results, comparisons_to_direct=comparisons,
@@ -596,6 +667,7 @@ def run(args):
                 gpu_memory_fraction=args.gpu_memory_fraction,
                 minimum_free_bytes=int(args.minimum_free_gb*1024**3),
                 resource_policy='one worker; monitor foreign GPU PIDs each second; stop our worker only')
+    plan['validation_method'] = 'same-runtime paired equivalence; independent-process direct control'
     provenance = args.train_robot.with_name('train_robot_provenance.json')
     proof = read(provenance)
     manifest, split = read(dataset/'dataset_manifest.json'), read(dataset/'split_manifest.json')

@@ -302,6 +302,12 @@ class BenchmarkGateTests(unittest.TestCase):
                 (p/'pipeline_frames.json').write_text(json.dumps([{'packet_digest':'same','graph_digest':'same'}]*2))
                 result = dict(initializations={}, repeats_exact=repeatable, checks={'30002': {'status':'PASS'}},
                               groups={'sam2_tracking_only': {'median':40., 'p95':p95}, 'dino_scan':{'n':0}})
+                if name == 'adapter':
+                    result['paired'] = dict(masks_exact=pixels==0, repeats_exact=repeatable,
+                        initialization_equal=True, direct_tracking={'median':40.,'p95':45.},
+                        adapter_tracking={'median':40.,'p95':p95},
+                        pipeline_mask_differing_pixels=pixels, packet_digest_different_frames=0,
+                        graph_digest_different_frames=0, action_max_abs_diff=action)
                 (p/'result.json').write_text(json.dumps(result))
             write('direct', 45)
             write('adapter', 46)
