@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "device": "cpu",
+  "retraining": false,
+  "simulator_executed": false,
+  "independent_final_test_executed": false,
+  "CUDA_executed": false,
+  "MPS_executed": false,
+  "historical_protection": "PARTIAL",
+  "later_revalidation": "PASS",
+  "source_guard": {
+    "status": "PASS",
+    "checked_files": 840
+  },
+  "source_archive_hashes": "PASS",
+  "stale_hash_negative_control": "PASS",
+  "contract_tests": {
+    "historical": 54,
+    "release": 4,
+    "executed": 58,
+    "failures": 0,
+    "errors": 0
+  },
+  "encoder_checkpoints": {
+    "strict_loaded": 36,
+    "graph_readouts": 2232,
+    "permutation_cases": 108,
+    "atol": 2e-06,
+    "rtol": 2e-05
+  },
+  "probe_checkpoints": {
+    "hash_verified_and_decoded": 244,
+    "atol": 2e-06,
+    "rtol": 2e-05
+  },
+  "real_frame_XYZ_source_pixel_exact_rows": 861,
+  "cross_host_world_transform": {
+    "max_abs_m": 2.9802322387695312e-08,
+    "atol": 1e-07,
+    "rtol": 1e-06,
+    "bitwise_identity_claimed": false
+  },
+  "raw_RGBD_recapture": "NOT_EXECUTED; captures excluded; synthetic original-helper contracts also executed",
+  "decode": {
+    "png": 155,
+    "mp4": 10,
+    "decoded_video_frames": 184
+  },
+  "document_links": 173,
+  "original_files_unchanged": 1657,
+  "shared_infrastructure_tests": {
+    "executed": 42,
+    "passed": 41,
+    "failed": 1,
+    "preexisting_failure_reproduced_in_original_worktree": true,
+    "test": "tests.test_experiment_artifacts.ArtifactTests.test_reject_running_run_symlink_and_outside_organization",
+    "cause": "test expects rejection of another namespace; current HEAD validate_repositories accepts valid namespace/repository IDs",
+    "common_source_changed": false
+  }
+}
