@@ -638,13 +638,21 @@ def summarize(run, plan):
     for name, result in results.items():
         track, scan = result['groups']['sam2_tracking_only'], result['groups']['dino_scan']
         lines.append(f'| {name} | {track.get("median",0):.3f} | {track.get("p95",0):.3f} | {scan.get("mean",0):.3f} |')
+    pair = results.get('adapter', {}).get('paired')
+    if pair:
+        for key in ('direct_tracking','adapter_tracking'):
+            track = pair[key]
+            lines.append(f'| paired {key} | {track["median"]:.3f} | {track["p95"]:.3f} | — |')
     lines += ['', 'Tracking includes preprocessing and CPU mask return. Initial frames, compile and warmup are separate.',
               'Frozen-DINO ablations compare to tracking_reference; they do not measure detection latency.',
               'Ablation deltas have interactions and must not be added together.', '',
+              'Exact adapter equivalence uses the same compiled predictor and alternating timed repeats. Independent-process differences and direct_control are retained as separate audits.', '',
               'The profiling pass is separate and inclusive; nested intervals must not be summed.', '',
               summary['limits'], '', '[Full summary](summary.json) · [Frozen plan](plan.json)', '']
     (run/'report.md').write_text('\n'.join(lines))
     table = ''.join('<tr><td>'+escape(n)+'</td><td>'+f'{r["groups"]["sam2_tracking_only"].get("median",0):.3f}'+'</td><td>'+f'{r["groups"]["sam2_tracking_only"].get("p95",0):.3f}'+'</td></tr>' for n,r in results.items())
+    if pair:
+        table += ''.join('<tr><td>paired '+key+'</td><td>'+f'{pair[key]["median"]:.3f}'+'</td><td>'+f'{pair[key]["p95"]:.3f}'+'</td></tr>' for key in ('direct_tracking','adapter_tracking'))
     (run/'report.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Visual streaming validation</title>'
         '<style>body{font:16px system-ui;max-width:1100px;margin:40px auto;padding:0 20px}td,th{padding:10px;border-bottom:1px solid #ddd}pre{white-space:pre-wrap}</style>'
         '<h1>Visual streaming integration</h1><p>Run '+escape(run.name)+'</p><p>'+escape(summary['limits'])+'</p>'
@@ -668,6 +676,7 @@ def run(args):
                 minimum_free_bytes=int(args.minimum_free_gb*1024**3),
                 resource_policy='one worker; monitor foreign GPU PIDs each second; stop our worker only')
     plan['validation_method'] = 'same-runtime paired equivalence; independent-process direct control'
+    plan['tqdm_disable'] = True
     provenance = args.train_robot.with_name('train_robot_provenance.json')
     proof = read(provenance)
     manifest, split = read(dataset/'dataset_manifest.json'), read(dataset/'split_manifest.json')
@@ -702,9 +711,10 @@ def run(args):
                 raise RuntimeError('GPU is occupied; no existing process will be stopped')
             folder = run/name; folder.mkdir()
             atomic(folder/'before_gpu.json', snapshot)
+            worker_env = dict(os.environ, TQDM_DISABLE='1')
             with (folder/'worker.log').open('w') as log:
                 process = subprocess.Popen([sys.executable,'-m',__spec__.name,'--worker',name,'--plan',str(run/'plan.json')],
-                                           stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                                           stdout=log, stderr=subprocess.STDOUT, start_new_session=True, env=worker_env)
                 returncode, interference = monitor_worker(process, folder, plan['minimum_free_bytes'])
             if returncode:
                 failures[name] = returncode

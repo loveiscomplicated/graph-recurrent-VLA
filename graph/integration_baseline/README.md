@@ -396,6 +396,7 @@ source visual/env.sh
 export WANDB_MODE=disabled HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 export TORCHINDUCTOR_COMPILE_THREADS=4
+export TQDM_DISABLE=1
 
 # Run once where all original TRAIN files are available. New outputs required.
 python -m graph.integration_baseline.streaming_vision_benchmark \
