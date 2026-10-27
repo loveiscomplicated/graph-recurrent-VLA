@@ -187,7 +187,7 @@ def prepare_object(x, xyz, pca, raw_mask, valid_depth, overlap, intrinsic):
         timings_ms=dict(contour=(t1-t0)*1000, nominal_scale=(t2-t1)*1000, voxel=(t3-t2)*1000))
 
 
-def select_object(prepared, ratio, phase, requested_surface):
+def select_object(prepared, ratio, phase, requested_surface, *, fps_fn=None):
     """No GT, ROI, reference, cap, score, or random first-point input."""
     if type(requested_surface) is not int or requested_surface < 0:
         raise ValueError('nonnegative Surface request required')
@@ -201,7 +201,8 @@ def select_object(prepared, ratio, phase, requested_surface):
     initial = source_rows(x, p)
     if not len(initial) and count:
         initial = np.array([0], np.int64)  # deterministic first Surface, inside request
-    rows = fps_indices(xyz, len(p)+count, initial=initial)
+    fps = fps_indices if fps_fn is None else fps_fn
+    rows = fps(xyz, len(p)+count, initial=initial)
     f = x[rows]
     np.testing.assert_array_equal(f[:len(p)], p)
     if len(np.unique(f)) != len(f):

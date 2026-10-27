@@ -143,6 +143,18 @@ class ThinningTests(unittest.TestCase):
 
 
 class SelectionTests(unittest.TestCase):
+    def test_optional_fps_backend_receives_shape_prefix(self):
+        prep = fixture()
+        reference = task.select_object(prep, .5, 0, 17)
+        calls = []
+        def backend(points, count, **kwargs):
+            calls.append((count, kwargs))
+            return task.fps_indices(points, count, **kwargs)
+        selected = task.select_object(prep, .5, 0, 17, fps_fn=backend)
+        self.assertEqual(len(calls), 1)
+        np.testing.assert_array_equal(prep['X'][calls[0][1]['initial']], selected['P'])
+        np.testing.assert_array_equal(selected['F'], reference['F'])
+
     def test_no_total_or_structural_cap_original_XYZ(self):
         prep=fixture(); s=task.select_object(prep,1.,0,97)
         self.assertGreater(len(s['P']),32); self.assertGreater(len(s['F']),256)

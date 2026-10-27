@@ -210,8 +210,9 @@ def extract_candidates(evidence: SamplingEvidence, config: SamplingConfig, metho
     return result
 
 
-def sample_points(evidence: SamplingEvidence, config=SamplingConfig(), *, method='S3'):
+def sample_points(evidence: SamplingEvidence, config=SamplingConfig(), *, method='S3', fps_fn=None):
     """Object budgets -> Structural FPS -> remaining-support FPS seeded by priority."""
+    fps = fps_indices if fps_fn is None else fps_fn
     t0 = perf_counter(); objects = extract_candidates(evidence, config, method); t1 = perf_counter()
     available = np.array([len(objects[i].points) for i in (PEG, BOX)])
     weights = np.sqrt(available) if config.allocation == 'sqrt_observed_points' else available
@@ -233,14 +234,14 @@ def sample_points(evidence: SamplingEvidence, config=SamplingConfig(), *, method
         # Unused depth reservation can be used by orientation, never vice versa.
         dn = min(int(depth_slots[i]), len(di))
         on = min(int(slots[i])-dn, len(oi))
-        orientation = oi[fps_indices(obj.points[oi], on, seed=seed)]
-        depth = di[fps_indices(obj.points[di], dn, seed=seed,)]
+        orientation = oi[fps(obj.points[oi], on, seed=seed)]
+        depth = di[fps(obj.points[di], dn, seed=seed,)]
         selections[i] = np.concatenate((orientation, depth))
         priority_sizes[i], depth_sizes[i] = on+dn, dn
     t3 = perf_counter()
     for i in (PEG, BOX):
         seed = int(np.random.SeedSequence([config.seed, i]).generate_state(1)[0])
-        selections[i] = fps_indices(objects[i].points, int(budgets[i]), seed=seed, initial=selections[i])
+        selections[i] = fps(objects[i].points, int(budgets[i]), seed=seed, initial=selections[i])
     t4 = perf_counter()
     flat, xyz, ids, priority, depth_priority, metadata = [], [], [], [], [], {}
     counts = {}

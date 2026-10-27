@@ -24,6 +24,20 @@ class SamplingTests(unittest.TestCase):
     def evidence(self, frame=None, method='pca5'):
         return extract_sampling_evidence(self.frame() if frame is None else frame, method)
 
+    def test_optional_fps_backend_preserves_seed_prefix_and_source_rows(self):
+        frame, _, _ = synthetic_case('crease', K, shape=(64, 64))
+        evidence = self.evidence(frame)
+        reference = sample_points(evidence)
+        calls = []
+        def backend(points, count, **kwargs):
+            calls.append((count, kwargs))
+            return fps_indices(points, count, **kwargs)
+        candidate = sample_points(evidence, fps_fn=backend)
+        self.assertEqual(len(calls), 6)
+        self.assertTrue(any(len(k.get('initial', ())) for _, k in calls))
+        np.testing.assert_array_equal(candidate.flat_index, reference.flat_index)
+        np.testing.assert_array_equal(candidate.object_id, reference.object_id)
+
     def test_budget_ratio_observed_uniqueness_alignment_and_reproducibility(self):
         f, _, _ = synthetic_case('crease', K, shape=(64, 64))
         e = self.evidence(f)
