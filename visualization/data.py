@@ -1,4 +1,4 @@
-"""Read saved Task07 graph inputs for the local visualization frontend."""
+"""Read saved Task07 graph inputs and list Task09-C diagnostic graphs."""
 
 import base64
 import json
@@ -129,6 +129,8 @@ def list_episodes(root):
         except (OSError, ValueError, json.JSONDecodeError):
             continue
     rank = {'success': 0, 'failure': 1, 'unknown': 2}
+    from visualization.persistent import list_persistent_episodes
+    episodes.extend(list_persistent_episodes(root))
     return sorted(episodes, key=lambda item: (rank[item['result']], item['id']))
 
 

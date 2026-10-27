@@ -5,6 +5,7 @@
   const nodeColors = ['#f5f5f5','#facc68','#f194ff','#f16e72','#61bbff'];
   const edgeColors = ['#b3bdcd','#f4b966','#c895f5'];
   let data, frames = [], frameData = null, index = 0;
+  let variant = null;
   let selected = -1, projected = [], timer = null, coordinate = 'ee';
   let requestToken = 0, episodeToken = 0, busy = false;
   let yaw = -.68, pitch = .38, scale = 1, panX = 0, panY = 0, focus = [0,0,0];
@@ -17,13 +18,14 @@
     const rows=(values,width)=>Array.from({length:values.length/width},(_,i)=>Array.from(values.subarray(i*width,(i+1)*width)));
     const a=i32(frame.edge_index);
     return {t:frame.t,
-      node_input:rows(f32(frame.node_input),14),
+      node_input:rows(f32(frame.node_input),frame.feature_dimension || 14),
       world_position:rows(f32(frame.world_position),3),
       node_type:Array.from(raw(frame.node_type)),
       edge_index:Array.from({length:frame.e},(_,i)=>[a[i],a[frame.e+i]]),
       edge_attr:rows(f32(frame.edge_attr),4),
       edge_type:Array.from(raw(frame.edge_type)),
-      source_index:Array.from(i32(frame.source_index))};
+      source_index:Array.from(i32(frame.source_index)), node_ids:frame.node_ids, source_label:frame.source_label || 'source index',
+      feature_fields:frame.feature_fields || [], phase:frame.phase, timestamp:frame.timestamp};
   }
   function current() {
     return frameData;
@@ -93,7 +95,11 @@
     for (const i of order) {
       if (!showNode[types[i]]) continue;
       const p=projected[i], robot=types[i]<3, radius=(robot?6:2.8)*clamp(p.perspective,.6,1.7);
-      ctx.fillStyle=nodeColors[types[i]]; ctx.beginPath(); ctx.arc(p.x,p.y,radius,0,2*Math.PI); ctx.fill();
+      ctx.fillStyle=nodeColors[types[i]];
+      if (!robot && $('color-mode').value==='status' && nodes[i].length>14) {
+        ctx.fillStyle=nodes[i][14]>.5?'#55d9e6':nodes[i][15]>.5?'#f2a55a':'#d191ff';
+      }
+      ctx.beginPath(); ctx.arc(p.x,p.y,radius,0,2*Math.PI); ctx.fill();
       if (i===selected) { ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(p.x,p.y,radius+5,0,2*Math.PI); ctx.stroke(); }
       if (robot) { ctx.fillStyle='#f3f6fb'; ctx.font='12px system-ui'; ctx.fillText(data.node_types[types[i]],p.x+9,p.y-7); }
     }
@@ -110,13 +116,15 @@
         neighbors.push({target:b,type:frame.edge_type[i],attr:frame.edge_attr[i]}); }
       if (b===selected) incoming++;
     }
-    const source=selected>=3?frame.source_index[selected-3]:'—';
+    const source=selected>=3?(frame.node_ids ? frame.node_ids[selected-3] : frame.source_index[selected-3]):'—';
+    const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const vec=a=>a.map(x=>Number(x).toPrecision(6)).join(', ');
-    $('inspector').innerHTML=`<strong>#${selected} · ${data.node_types[t]}</strong><br><span class="pill">source index ${source}</span>`+
+    $('inspector').innerHTML=`<strong>#${selected} · ${data.node_types[t]}</strong><br><span class="pill">${frame.node_ids?'node id':escape(frame.source_label)} ${escape(source)}</span>`+
       `<div class="row"><span>in / out</span><strong>${incoming} / ${outgoing}</strong></div>`+
       `<div class="muted">out: ${links.map((v,i)=>data.edge_types[i]+' '+v).join(' · ')}</div>`+
       `<h3>노드 위치 [m]</h3><pre>EE (모델 입력) ${vec(n.slice(0,3))}\n월드 절대     ${vec(frame.world_position[selected])}</pre>`+
       `<h3>나머지 node_input</h3><pre>F5           ${vec(n.slice(3,8))}\navailable    ${vec(n.slice(8,11))}\nvalid        ${vec(n.slice(11,14))}</pre>`+
+      (n.length>14?`<h3>관측 상태 · 저장된 입력</h3><pre>${frame.feature_fields.map((name,i)=>escape(name)+'  '+Number(n[14+i]).toPrecision(6)).join('\n')}</pre>`:'')+
       `<h3>Outgoing edge_attr [distance m, direction xyz]</h3><pre>`+
       neighbors.slice(0,12).map(x=>`→ #${x.target} ${data.edge_types[x.type]}\n  ${vec(x.attr)}`).join('\n')+
       (neighbors.length>12?`\n… ${neighbors.length-12} more`:'')+'</pre>';
@@ -128,14 +136,14 @@
     $('timeline').value=index; $('frame-label').textContent=`t = ${timestep} · 로딩 중`;
     $('frame-count').textContent=`${index+1} / ${frames.length}`;
     try {
-      const packed=await getJSON(`/api/frame?id=${encodeURIComponent(episodeId)}&t=${timestep}`);
+      const packed=await getJSON(`/api/frame?id=${encodeURIComponent(episodeId)}&t=${timestep}`+(variant?`&variant=${encodeURIComponent(variant)}`:''));
       if (token!==requestToken) return;
       frameData=unpack(packed);
     } catch(err) {
       if (token===requestToken) $('summary').textContent='프레임 로드 실패: '+err.message;
       return;
     }
-    $('frame-label').textContent=`t = ${timestep}`;
+    $('frame-label').textContent=`t = ${timestep}`+(current().phase?` · ${current().phase}`:'');
     const f=current(), nc=data.node_types.map((_,t)=>f.node_type.filter(x=>x===t).length),
           ec=data.edge_types.map((_,t)=>f.edge_type.filter(x=>x===t).length);
     $('summary').innerHTML=`<div class="row"><span>노드</span><strong>${f.node_input.length}</strong></div>`+
@@ -160,6 +168,13 @@
   },200);};
   $('prev').onclick=()=>{stop();setFrame(index-1);}; $('next').onclick=()=>{stop();setFrame(index+1);};
   $('timeline').oninput=e=>{stop();setFrame(Number(e.target.value));}; $('reset').onclick=cameraFit;
+  $('graph-variant').onchange=()=>{
+    stop(); variant=$('graph-variant').value;
+    const url=new URL(location.href);url.searchParams.set('variant',variant);history.replaceState(null,'',url);
+    $('variant-note').textContent=variant.startsWith('O')?'Oracle · GT를 사용하는 평가 조건입니다.':'저장된 센서 기반 그래프 · 물체당 최대 128개 노드';
+    setFrame(index,true);
+  };
+  $('color-mode').onchange=draw;
   function setCoordinate(value) {
     coordinate=value;
     $('frame-ee').classList.toggle('primary',value==='ee');
@@ -216,9 +231,19 @@
       const detail=await getJSON(`/api/episode?id=${encodeURIComponent(id)}`);
       if(token!==episodeToken) return;
       data=detail;
+      variant=data.variants?(new URLSearchParams(location.search).get('variant') || data.default_variant):null;
+      if(data.variants && !data.variants.some(v=>v.id===variant))variant=data.default_variant;
+      $('variant-controls').hidden=!data.variants; $('status-controls').hidden=!data.variants;
+      if(data.variants){
+        $('graph-variant').replaceChildren(...data.variants.map(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.label;return o;}));
+        $('graph-variant').value=variant;
+        $('variant-note').textContent=variant.startsWith('O')?'Oracle · GT를 사용하는 평가 조건입니다.':'저장된 센서 기반 그래프 · 물체당 최대 128개 노드';
+        $('capture-link').href='/captures?episode='+encodeURIComponent(data.episode.capture_id);
+      }
       frames=data.timesteps; index=0; selected=-1;
       $('episode').textContent=data.episode.id;
       showOutcome(data.episode);
+      if(data.episode.kind==='persistent_geometry')$('episode-meta').textContent+=` · ${data.episode.split} · ${data.episode.revision}`;
       $('node-filters').replaceChildren(); $('edge-filters').replaceChildren();
       showNode.fill(true); showEdge.fill(true);
       filters($('node-filters'),data.node_types,nodeColors,showNode);

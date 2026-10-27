@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task09-C · 수집 데이터 확인</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/captures.css">
+<body>
+<header class="site-header"><a class="back-link" href="/">← 그래프 목록</a><h1>Task09-C · 수집 데이터 확인</h1><span class="muted">동일 시점의 Main / Wrist</span></header>
+<main class="capture-page">
+  <p class="muted">저장된 RGB·깊이·마스크를 확인합니다. GT는 평가용 분할 정답이며, 동작 성공 여부는 이 화면에서 판정하지 않습니다.</p>
+  <label for="capture-select">에피소드</label>
+  <select id="capture-select" disabled><option>목록을 불러오는 중…</option></select>
+  <p id="capture-meta" class="card-path"></p>
+  <section id="capture-videos" hidden>
+    <h2>그래프 영상</h2>
+    <p class="muted">같은 시점의 그래프 또는 point cloud를 월드 좌표로 재생합니다. 확대 영역은 에피소드 전체·모든 조건에서 같은 방향·축척을 쓰며, 전체 보기(오른쪽 위)는 각 조건의 모든 점을 표시합니다. 확대 영역 밖 점 수는 영상 하단에 표시합니다. 그래프는 물체당 최대 128개 노드, 초기 FPS point cloud는 최대 1,024점입니다. Oracle 조건은 GT를 사용합니다.</p>
+    <div class="capture-controls"><label for="video-run">그래프 실행</label><select id="video-run"></select><label for="video-variant">조건</label><select id="video-variant"></select><button id="video-seek">현재 프레임에 맞추기</button><a id="interactive-graph" class="back-link">인터랙티브 3D 열기 →</a></div>
+    <p id="video-meta" class="muted"></p>
+    <p id="video-description" class="muted" hidden></p>
+    <div class="video-grid">
+      <figure><figcaption id="video-caption-rgb">a. Graph + RGB · Main / Wrist</figcaption><video id="video-graph-rgb" controls playsinline preload="metadata" aria-label="그래프와 RGB 영상"></video></figure>
+      <figure><figcaption id="video-caption-only">b. Only graph</figcaption><video id="video-graph-only" controls playsinline preload="metadata" aria-label="그래프만 영상"></video></figure>
+    </div>
+  </section>
+  <p id="video-message" class="muted"></p>
+  <div class="capture-controls">
+    <button id="prev" disabled aria-label="이전 프레임">←</button><button id="play" disabled>재생</button><button id="next" disabled aria-label="다음 프레임">→</button>
+    <label>재생 속도 <select id="speed"><option value="2">2 fps</option><option value="5" selected>5 fps</option><option value="10">10 fps</option></select></label>
+    <label>깊이 상한 <select id="depth-limit"><option value="500">0.5 m</option><option value="1000">1 m</option><option value="2000" selected>2 m</option><option value="5000">5 m</option></select></label>
+  </div>
+  <input id="timeline" type="range" min="0" max="0" value="0" disabled aria-label="프레임 타임라인">
+  <div id="phase-jumps" class="capture-controls" aria-label="동작 단계 이동"></div>
+  <p id="frame-status" role="status">데이터를 불러오는 중입니다.</p>
+  <p class="capture-legend"><span class="peg">● Peg</span> <span class="box">● Box</span> <span class="overlap">● 중복 예측</span> · 깊이: 가까움 <span class="depth-ramp"></span> 멂 · 무효 깊이(≤0): 검정 · 마스크 배경은 원본 RGB</p>
+  <div id="camera-views"></div>
+  <h2>프레임별 확인 수치</h2>
+  <p class="muted">픽셀 수와 IoU는 화면 전체의 가시 GT 기준입니다. 둘 다 비어 있으면 IoU는 —로 표시합니다. 예측은 수집 시 저장된 원본 마스크입니다.</p>
+  <div class="table-scroll"><table><thead><tr><th>카메라</th><th>유효 깊이 / 범위</th><th>물체</th><th>예측 픽셀</th><th>GT 픽셀</th><th>IoU</th></tr></thead><tbody id="capture-stats"></tbody></table></div>
+  <p id="capture-error" role="alert"></p>
+</main>
+<script src="/captures.js" defer></script>
+</body>
+</html>

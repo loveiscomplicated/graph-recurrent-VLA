@@ -24,7 +24,7 @@
   function render() {
     const needle = $('episode-search').value.trim().toLowerCase();
     const shown = episodes.filter(e => (result === 'all' || e.result === result) &&
-      (!needle || e.id.toLowerCase().includes(needle)));
+      (!needle || (e.id+' '+e.name).toLowerCase().includes(needle)));
     $('list-summary').textContent = `표시 ${shown.length}개 · 전체 ${episodes.length}개`;
     const cards = shown.map(e => {
       const card = document.createElement('a');
@@ -38,6 +38,7 @@
       const path = document.createElement('div'); path.className = 'card-path'; path.textContent = e.id;
       const meta = document.createElement('div'); meta.className = 'card-meta';
       const parts = [`${e.frames}프레임`, `t ${e.first_timestep}–${e.last_timestep}`];
+      if(e.kind==='persistent_geometry')parts.push(e.split,`${e.variants.length}개 그래프 조건`,e.revision);
       if (e.first_success_step != null) parts.push(`첫 성공 ${e.first_success_step} step`);
       if (e.status) parts.push(e.status);
       meta.textContent = parts.join(' · ');
