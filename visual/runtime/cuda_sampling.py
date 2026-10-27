@@ -12,8 +12,8 @@ from time import perf_counter
 import numpy as np
 
 from visual.runtime.cuda_driver import CudaDriver
-from visual.runtime.geometry import GeometryFrame, GeometryParameters
-from visual.runtime.pca import build_geometry, cropped_features
+from visual.runtime.geometry import GeometryFrame, GeometryParameters, GeometricFeatures
+from visual.runtime.pca import build_geometry
 from visual.runtime.edge_evidence import pair_evidence
 from visual.runtime.sampling import SamplingEvidence, _integer
 
@@ -22,7 +22,7 @@ class CudaSampling:
     def __init__(self):
         self.driver = CudaDriver(Path(__file__).with_suffix('.cu'))
 
-    def normals(self, geometry, parameters=GeometryParameters()):
+    def _normal_device(self, geometry, parameters):
         d = self.driver; h, w = geometry.valid_depth.shape
         xyz = d.upload('xyz', geometry.xyz.astype(np.float32, copy=False))
         supports = np.stack([geometry.observed_mask(i) for i in (0, 1)]).astype(np.uint8)
@@ -31,18 +31,46 @@ class CudaSampling:
         d.launch('pca5', (2*h*w+127)//128, 128,
                  [xyz, support, normal, valid, C.c_int(h), C.c_int(w),
                   C.c_float(parameters.depth_jump_abs_m), C.c_float(parameters.depth_jump_rel)])
+        return xyz, support, normal, valid
+
+    def normals(self, geometry, parameters=GeometryParameters()):
+        d = self.driver; h, w = geometry.valid_depth.shape
+        self._normal_device(geometry, parameters)
         values = d.download('normal', (2, h, w, 3), np.float32)
         available = d.download('normal_valid', (2, h, w), np.uint8).astype(bool)
         return {i: (values[i], available[i]) for i in (0, 1)}
 
     def evidence(self, frame, parameters=GeometryParameters()):
         start = perf_counter(); geometry = build_geometry(frame); a = perf_counter()
-        normals = self.normals(geometry, parameters); b = perf_counter()
-        features = {i: cropped_features(geometry, i, *normals[i], parameters) for i in (0, 1)}
+        d = self.driver; h, w = geometry.valid_depth.shape
+        xyz, support, normal, valid = self._normal_device(geometry, parameters)
+        raw = d.upload('raw_masks', np.stack([geometry.object_masks[i] for i in (0, 1)]).astype(np.uint8))
+        depth = d.buffer('feature_depth', 2*h*w*4)
+        variation = d.buffer('feature_variation', 2*h*w*4)
+        flags = d.buffer('feature_flags', 2*h*w)
+        count = d.buffer('feature_count', 2*h*w)
+        angle_h = d.buffer('angle_h', 2*h*w*4); angle_v = d.buffer('angle_v', 2*h*w*4)
+        d.launch('features', (2*h*w+127)//128, 128,
+                 [xyz, raw, support, normal, valid, depth, variation, flags, count,
+                  angle_h, angle_v, C.c_int(h), C.c_int(w),
+                  C.c_float(parameters.depth_jump_abs_m), C.c_float(parameters.depth_jump_rel)])
+        normals = d.download('normal', (2,h,w,3), np.float32)
+        available = d.download('normal_valid', (2,h,w), np.uint8).astype(bool)
+        depths = d.download('feature_depth', (2,h,w), np.float32)
+        variations = d.download('feature_variation', (2,h,w), np.float32)
+        bits = d.download('feature_flags', (2,h,w), np.uint8)
+        counts = d.download('feature_count', (2,h,w), np.uint8)
+        ah = d.download('angle_h', (2,h,w), np.float32)
+        av = d.download('angle_v', (2,h,w), np.float32); b = perf_counter()
+        features = {i: GeometricFeatures(geometry.object_masks[i], geometry.observed_mask(i),
+                    normals[i], available[i], depths[i], (bits[i]&1)!=0, (bits[i]&2)!=0,
+                    (bits[i]&4)!=0, (bits[i]&8)!=0, (bits[i]&16)!=0, variations[i],
+                    (bits[i]&32)!=0, counts[i]) for i in (0, 1)}
         c = perf_counter()
-        pairs = {i: pair_evidence(geometry, i, *normals[i], parameters) for i in (0, 1)}
+        pairs = {i: pair_evidence(geometry, i, normals[i], available[i], parameters,
+                                  pair_angles=(ah[i], av[i])) for i in (0, 1)}
         end = perf_counter()
-        timing = dict(geometry=(a-start)*1000, normals=(b-a)*1000, features=(c-b)*1000,
+        timing = dict(geometry=(a-start)*1000, normals_and_gpu_features=(b-a)*1000, features_unpack=(c-b)*1000,
                       pair_evidence=(end-c)*1000, extraction_total=(end-start)*1000)
         result = GeometryFrame(frame.source_frame, frame.camera, frame.frame_idx, frame.timestamp,
                                geometry, features, timing)

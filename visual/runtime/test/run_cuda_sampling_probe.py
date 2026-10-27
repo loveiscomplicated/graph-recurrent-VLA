@@ -203,7 +203,7 @@ def main():
                 for dataset,modes in dsets.items():
                     for mode,r in modes.items():
                         s=r['latency_ms'];lines.append(f'| {scope} | {dataset} | {mode} | {s["median"]:.3f} | {s["p95"]:.3f} | {r.get("median_speedup",1):.2f} | {r["provisional_geometry_pass"]} |')
-            lines+=['','Numerical screen is provisional, not trained-policy/task-success equivalence.','CPU feature/pair/contour/voxel/packet stages remain; GPU kernels cover PCA5 normals and FPS.','Startup, compile and full-input warmup excluded; host/device copies included.']
+            lines+=['','Numerical screen is provisional, not trained-policy/task-success equivalence.','GPU kernels cover PCA5 normals, pixel features, pair angles and optionally FPS; CPU geometry, pair assembly, contour, voxel and packet stages remain.','Startup, compile and full-input warmup excluded; host/device copies included.']
             report=root/'report.md';report.write_text('\n'.join(lines)+'\n');log.link_output(report,kind='reports')
             log.record(validation_status='COMPLETE',optimizer_updates=0,published=False)
             print('\n'.join(lines),flush=True)

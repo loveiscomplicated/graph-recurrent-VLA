@@ -42,7 +42,7 @@ class PairEvidence:
                     mask=self.endpoint_mask(self.mask_boundary))
 
 
-def pair_evidence(geometry, object_id, normals, normal_valid, parameters=PARAMETERS):
+def pair_evidence(geometry, object_id, normals, normal_valid, parameters=PARAMETERS, *, pair_angles=None):
     """Preserve all adjacent pairs touching the raw object mask, even invalids.
 
     Mask transition, invalid depth and overlap flags are independent. An external
@@ -53,11 +53,14 @@ def pair_evidence(geometry, object_id, normals, normal_valid, parameters=PARAMET
     indices = np.arange(np.prod(shape), dtype=np.int32).reshape(shape)
     mask = geometry.object_masks[object_id]
     support = geometry.observed_mask(object_id)
-    parts = []
-    for a, b in (((slice(None), slice(None, -1)), (slice(None), slice(1, None))),
-                 ((slice(None, -1), slice(None)), (slice(1, None), slice(None)))):
+    parts, angle_parts = [], []
+    if pair_angles is not None and (len(pair_angles)!=2 or any(np.shape(a)!=shape for a in pair_angles)):
+        raise ValueError('precomputed right/down angles must match image shape')
+    for direction, (a, b) in enumerate((((slice(None), slice(None, -1)), (slice(None), slice(1, None))),
+                 ((slice(None, -1), slice(None)), (slice(1, None), slice(None))))):
         keep = mask[a] | mask[b]
         parts.append(np.column_stack((indices[a][keep], indices[b][keep])))
+        if pair_angles is not None: angle_parts.append(np.asarray(pair_angles[direction],np.float32)[a][keep])
     pixels = np.concatenate(parts)
     valid = geometry.valid_depth.ravel()[pixels]
     both = valid.all(1)
@@ -68,10 +71,15 @@ def pair_evidence(geometry, object_id, normals, normal_valid, parameters=PARAMET
     jump[both] = np.abs(delta[both]) > (parameters.depth_jump_abs_m
                     + parameters.depth_jump_rel*np.min(z[both], axis=1))
     nv = normal_valid.ravel()[pixels].all(1)
-    angles = np.full(len(pixels), np.nan, np.float32)
-    n = normals.reshape(-1, 3)[pixels[nv]]
-    angles[nv] = np.rad2deg(np.arctan2(np.linalg.norm(np.cross(n[:, 0], n[:, 1]), axis=1),
-                                      np.einsum('ij,ij->i', n[:, 0], n[:, 1])))
+    if pair_angles is None:
+        angles = np.full(len(pixels), np.nan, np.float32)
+        n = normals.reshape(-1, 3)[pixels[nv]]
+        angles[nv] = np.rad2deg(np.arctan2(np.linalg.norm(np.cross(n[:, 0], n[:, 1]), axis=1),
+                                          np.einsum('ij,ij->i', n[:, 0], n[:, 1])))
+    else:
+        angles = np.concatenate(angle_parts)
+        if not np.array_equal(np.isfinite(angles), nv):
+            raise ValueError('precomputed angles do not match normal validity')
     near = np.full(len(pixels), -1, np.int8)
     near[jump] = np.argmin(z[jump], axis=1).astype(np.int8)
     far = np.where(jump, 1-near, -1).astype(np.int8)

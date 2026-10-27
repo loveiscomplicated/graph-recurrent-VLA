@@ -5,6 +5,7 @@ import numpy as np
 
 from visual.runtime.geometry import build_organized_geometry, compute_geometric_features, process_geometry, GeometryParameters
 from visual.runtime.rgbd import PEG, BOX
+from visual.runtime.edge_evidence import pair_evidence
 from visual.runtime.sampling import (SamplingConfig, allocate_budget, fps_indices,
     extract_sampling_evidence, extract_candidates, sample_points)
 from visual.runtime.test.normal_diagnostics import synthetic_frame, synthetic_case, quantize
@@ -23,6 +24,25 @@ class SamplingTests(unittest.TestCase):
 
     def evidence(self, frame=None, method='pca5'):
         return extract_sampling_evidence(self.frame() if frame is None else frame, method)
+
+    def test_precomputed_pair_angles_preserve_pair_evidence(self):
+        ev = self.evidence(); geometry = ev.frame.geometry
+        for oid in (PEG, BOX):
+            reference = ev.pairs[oid]; obj = ev.frame.objects[oid]
+            h, w = geometry.valid_depth.shape
+            horizontal = np.full((h, w), np.nan, np.float32)
+            vertical = np.full((h, w), np.nan, np.float32)
+            a, b = reference.pixels.T
+            horizontal.ravel()[a[b-a == 1]] = reference.normal_angle_deg[b-a == 1]
+            vertical.ravel()[a[b-a == w]] = reference.normal_angle_deg[b-a == w]
+            actual = pair_evidence(geometry, oid, obj.normals, obj.normal_valid,
+                                   pair_angles=(horizontal, vertical))
+            for field in fields(reference):
+                np.testing.assert_equal(getattr(actual, field.name), getattr(reference, field.name))
+            horizontal.fill(np.nan); vertical.fill(np.nan)
+            with self.assertRaises(ValueError):
+                pair_evidence(geometry, oid, obj.normals, obj.normal_valid,
+                              pair_angles=(horizontal, vertical))
 
     def test_optional_fps_backend_preserves_seed_prefix_and_source_rows(self):
         frame, _, _ = synthetic_case('crease', K, shape=(64, 64))

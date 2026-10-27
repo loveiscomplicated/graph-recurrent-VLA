@@ -104,3 +104,42 @@ extern "C" __global__ void fps(const float* xyz,float* distance,int* output,
         if(tid==0)cur=index[0];__syncthreads();
     }
 }
+
+extern "C" __global__ void features(const float* xyz,const uint8_t* raw,const uint8_t* support,
+    const float* normal,const uint8_t* normal_valid,float* depth_jump,float* variation,
+    uint8_t* flags,uint8_t* neighbor_count,float* angle_h,float* angle_v,
+    int h,int w,float ab,float rel) {
+    int k=blockIdx.x*blockDim.x+threadIdx.x,np=h*w;
+    if(k>=2*np)return;
+    int oid=k/np,p=k%np,v=p/w,u=p%w;
+    bool mask=raw[k],observed=support[k],nv=normal_valid[k];
+    float z=xyz[3*p+2],maxdepth=0,maxangle=0;
+    bool pair=false,jump=false,maskedge=false,invalidedge=false;
+    int count=0;angle_h[k]=NAN;angle_v[k]=NAN;
+    for(int direction=0;direction<4;direction++) {
+        int yy=v+(direction==2?-1:direction==3?1:0);
+        int xx=u+(direction==0?-1:direction==1?1:0);
+        if(yy<0||xx<0||yy>=h||xx>=w)continue;
+        int q=yy*w+xx,oq=oid*np+q;
+        float zq=xyz[3*q+2];bool qvalid=isfinite(zq)&&zq>0;
+        if(observed&&qvalid) {
+            float dz=fabsf(z-zq);pair=true;maxdepth=fmaxf(maxdepth,dz);
+            if(!link(z,zq,ab,rel))jump=true;
+        }
+        maskedge |= mask&&!raw[oq]; invalidedge |= observed&&!qvalid;
+        if(nv&&normal_valid[oq]) {
+            float ax=normal[3*k],ay=normal[3*k+1],az=normal[3*k+2];
+            float bx=normal[3*oq],by=normal[3*oq+1],bz=normal[3*oq+2];
+            float cx=ay*bz-az*by,cy=az*bx-ax*bz,cz=ax*by-ay*bx;
+            float angle=atan2f(sqrtf(cx*cx+cy*cy+cz*cz),ax*bx+ay*by+az*bz);
+            maxangle=fmaxf(maxangle,angle);count++;
+            if(direction==1)angle_h[k]=angle*(180.f/3.14159265358979323846f);
+            if(direction==3)angle_v[k]=angle*(180.f/3.14159265358979323846f);
+        }
+    }
+    bool varvalid=nv&&count>0;
+    depth_jump[k]=pair?maxdepth:NAN;variation[k]=varvalid?maxangle:NAN;
+    neighbor_count[k]=(uint8_t)count;
+    flags[k]=(pair?1:0)|(jump?2:0)|(maskedge?4:0)|(invalidedge?8:0)
+             |((mask&&(v==0||u==0||v==h-1||u==w-1))?16:0)|(varvalid?32:0);
+}
