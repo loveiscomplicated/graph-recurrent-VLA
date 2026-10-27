@@ -277,6 +277,8 @@ def main():
     parser.add_argument('--point-cap',type=int,default=128)
     parser.add_argument('--workers',type=int,default=1)
     args=parser.parse_args()
+    from .handoff import maybe_delegate
+    if maybe_delegate('evaluate',args):return
     capture=json.loads((args.capture/'capture_manifest.json').read_text())
     metadata=json.loads((args.capture/'metadata.json').read_text())
     if metadata['status']!='finished' or not all(e['complete'] for e in capture['episodes']):

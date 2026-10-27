@@ -4,8 +4,11 @@ from datetime import datetime
 import json
 from pathlib import Path
 import numpy as np
+from scipy.spatial import cKDTree
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
 from graph.integration_baseline.io import write_json
-from graph.integration_baseline.geometry09b_probe import csv_write
+from graph.integration_baseline.geometry09b_probe import csv_write,absolute
 from .render import table,read_npz,COLORS
 
 
@@ -27,6 +30,67 @@ def source_paths(state):
     return {entry['stage']:Path(entry['directory']) for entry in state['completed']}
 
 
+def native_connectivity(points):
+    """Map spatial support, not a claim about true material topology."""
+    n=len(points)
+    if n<2:return dict(nodes=n,spatial_components=n,largest_component_fraction=1. if n else None,isolated_nodes=n)
+    distance,indices=cKDTree(points).query(points,k=min(9,n))
+    rows=np.repeat(np.arange(n),indices.shape[1]);cols=indices.ravel()
+    selected=(rows!=cols)&(distance.ravel()<=.02)
+    adjacency=coo_matrix((np.ones(int(selected.sum())),(rows[selected],cols[selected])),shape=(n,n)).tocsr()
+    count,labels=connected_components(adjacency,directed=False)
+    return dict(nodes=n,spatial_components=int(count),largest_component_fraction=float(np.bincount(labels).max()/n),
+                isolated_nodes=int((np.diff(adjacency.indptr)==0).sum()))
+
+
+def paired_summary(paths,dataset):
+    capture=paths['independent_capture' if dataset=='independent' else 'development_capture']
+    probes=paths['frozen_final_application' if dataset=='independent' else 'frozen_probes']
+    collected=json.loads((capture/'capture_manifest.json').read_text())
+    lookup={}
+    for episode in collected['episodes']:
+        source=capture/'collection'/f'seed{episode["seed"]}'
+        for branch in episode['branches']:
+            gt=read_npz(source/branch['source']/'gt.npz')
+            old=read_npz(source/f'f{branch["timestep"]:04d}_gt.npz')
+            for oid in (0,1):
+                for scope,names in (('main',[episode['roles']['main']]),('both',list(episode['roles'].values()))):
+                    visible=any(np.any(gt[name+'/segmentation']==gt['actor_ids'][oid]) for name in names)
+                    baseline=any(np.any(old[name+'/segmentation']==old['actor_ids'][oid]) for name in names)
+                    lookup[(episode['seed'],branch['timestep'],branch['condition'],oid,scope)]=(visible,baseline)
+    geometry=paths['independent_branches' if dataset=='independent' else 'development_branches']
+    frames=json.loads((geometry/'geometry_manifest.json').read_text())['frames']
+    folders={(f['seed'],f['timestep'],f.get('condition','baseline')):geometry/f['folder'] for f in frames}
+    counts={}
+    def graph_count(row,condition):
+        key=(row['variant'],int(row['seed']),int(row['timestep']),condition,int(row['object_id']))
+        if key not in counts:
+            with np.load(folders[key[1:4]]/(key[0]+'_graph.npz'),allow_pickle=False) as a:
+                counts[key]=int((a['node_type']==key[4]+3).sum())
+        return counts[key]
+    rows=[]
+    for row in table(probes/'paired_delta_metrics.csv'):
+        if row['physical_valid']!='True' or row['target_moved']!='True':continue
+        scope='main' if row['variant'] in ('G0','G1','G2') else 'both'
+        visible,baseline=lookup[(int(row['seed']),int(row['timestep']),row['condition'],int(row['object_id']),scope)]
+        sensor_free=row['probe'] in ('P0_robot76','Constant')
+        supported=(False if sensor_free else graph_count(row,row['condition'])>=6 and graph_count(row,'baseline')>=6)
+        for stratum in ('ALL_VALID_MOVED','COMMON_VISIBLE_BASE_AND_BRANCH','OWN_SENSOR_VISIBLE_BASE_AND_BRANCH','OWN_SENSOR_HIDDEN_BASE_AND_BRANCH','SUPPORTED_VISIBLE_GRAPH_BASE_AND_BRANCH'):
+            if stratum=='COMMON_VISIBLE_BASE_AND_BRANCH' and row['visibility_stratum']!='BOTH_VISIBLE':continue
+            if sensor_free and stratum.startswith(('OWN_','SUPPORTED_')):continue
+            if stratum=='OWN_SENSOR_VISIBLE_BASE_AND_BRANCH' and not (visible and baseline):continue
+            if stratum=='OWN_SENSOR_HIDDEN_BASE_AND_BRANCH' and (visible or baseline):continue
+            if stratum=='SUPPORTED_VISIBLE_GRAPH_BASE_AND_BRANCH' and not (visible and baseline and supported):continue
+            rows.append(dict(dataset=dataset,stratum=stratum,**row,
+                near_zero_response=int(float(row['predicted_norm_mm'])<1.),
+                direction_defined=int(row['direction_cosine']!='')))
+    result=grouped(rows,('dataset','split','stratum','variant','encoder','model','probe','decoder','object_id'),
+        ('delta_error_mm','direction_cosine','signed_gain','delta_x_error_mm','delta_y_error_mm','delta_z_error_mm',
+         'true_norm_mm','predicted_norm_mm','near_zero_response','direction_defined'))
+    for row in result:row['pairs']=row.pop('frames')
+    return result
+
+
 def collect_summary(state,destination):
     destination=Path(destination);destination.mkdir(parents=True,exist_ok=True)
     paths=source_paths(state)
@@ -38,7 +102,7 @@ def collect_summary(state,destination):
         'pose_rotation_error_deg','motion_update_error_mm','uncertainty_mean_mm',
         'newly_added','newly_added_correct','new_correct_previously_unseen_nodes',
         'duplicate_neighbour_fraction_1mm','low_confidence_error_mm','medium_confidence_error_mm','high_confidence_error_mm')
-    geo=[];filters=[];boundary=[];splits=[];costs=[];missing=[];matched_support=[];unknown=[];depth=[]
+    geo=[];filters=[];boundary=[];splits=[];costs=[];missing=[];matched_support=[];unknown=[];depth=[];connectivity=[]
     for label,geometry_stage,capture_stage,audit_stage in (
             ('development','development_geometry','development_capture','development_boundary_audit'),
             ('independent','independent_geometry','independent_capture','independent_boundary_audit')):
@@ -77,6 +141,14 @@ def collect_summary(state,destination):
                         values=a[key];depth.append(dict(dataset=label,seed=frame['seed'],camera=key.split('/')[0],
                             invalid_fraction=float((values<=0).mean()),zero_pixels=int((values==0).sum()),
                             negative_pixels=int((values<0).sum()),pixels=values.size))
+            if frame['timestep']%5==0:
+                for variant in ('G0','G1','G2','G3','G4','O1','O2','O3'):
+                    a=read_npz(root/frame['folder']/(variant+'_map.npz'))
+                    for oid in (0,1):
+                        selected=(a['object_id']==oid)&(a['status']!=3)
+                        connectivity.append(dict(dataset=label,split=frame['split'],seed=frame['seed'],
+                            timestep=frame['timestep'],variant=variant,object_id=oid,
+                            **native_connectivity(a['world_xyz'][selected])))
         for key in sorted({(r['split'],r['camera'],r['object_id']) for r in fusion}):
             rr=[r for r in fusion if (r['split'],r['camera'],r['object_id'])==key]
             total=sum(r['count'] for r in rr);rejected=sum(r['unknown_conflict'] for r in rr)
@@ -101,7 +173,7 @@ def collect_summary(state,destination):
                     missing.append(dict(dataset=label,split=split,variant=variant,object_id=oid,frames=len(rr),
                         empty_input_frames=sum(int(r['count'])==0 for r in rr),
                         GT_visible_and_empty=sum(int(r['count'])==0 and int(r['common_both_visible_reference'])>0 for r in rr)))
-    shape=[];identities=[]
+    shape=[];identities=[];position_heads=[]
     models=json.loads((paths['diagnostic_training']/'model_manifest.json').read_text())['models']
     for model in models:
         identity=json.loads((paths['diagnostic_training']/model['directory']/'model_identity.json').read_text())
@@ -111,6 +183,14 @@ def collect_summary(state,destination):
             for split in sorted(set(a['split'])):
                 selected=(a['split']==split)&a['physical_valid']&(a['condition']!='baseline_repeat')
                 for oid in (0,1):
+                    for group in ('baseline','counterfactual','ALL_VALID'):
+                        selected_group=selected.copy()
+                        if group=='baseline':selected_group &= a['condition']=='baseline'
+                        elif group=='counterfactual':selected_group &= a['condition']!='baseline'
+                        position_heads.append(dict(dataset=label,split=str(split),variant=model['variant'],
+                            encoder=model['encoder'],object_id=oid,condition_group=group,
+                            **absolute(a['target6'][selected_group,oid*3:oid*3+3],
+                                       a['prediction36'][selected_group,oid*3:oid*3+3])))
                     valid=selected&a['target_valid'][:,6+oid*15]
                     error=a['prediction36'][valid,6+oid*15:6+(oid+1)*15]-a['target36'][valid,6+oid*15:6+(oid+1)*15]
                     shape.append(dict(dataset=label,split=str(split),variant=model['variant'],encoder=model['encoder'],object_id=oid,
@@ -121,8 +201,15 @@ def collect_summary(state,destination):
                      ('split_episode_summary.csv',splits),('compute_costs.csv',costs),('input_missing_summary.csv',missing),('surface_decoder_metrics.csv',shape)):
         csv_write(destination/name,rows)
     csv_write(destination/'fusion_unknown_summary.csv',unknown)
+    csv_write(destination/'diagnostic_position_head_metrics.csv',position_heads)
     depth_summary=grouped(depth,('dataset','seed','camera'),('invalid_fraction','zero_pixels','negative_pixels','pixels'))
     csv_write(destination/'depth_invalidity_summary.csv',depth_summary)
+    csv_write(destination/'native_map_connectivity.csv',connectivity)
+    connectivity_summary=grouped(connectivity,('dataset','split','variant','object_id'),
+        ('nodes','spatial_components','largest_component_fraction','isolated_nodes'))
+    csv_write(destination/'native_map_connectivity_summary.csv',connectivity_summary)
+    paired=paired_summary(paths,'development')+paired_summary(paths,'independent')
+    csv_write(destination/'paired_probe_summary.csv',paired)
     costs_stage=[]
     for stage,root in paths.items():
         metadata=json.loads((root/'metadata.json').read_text())
@@ -130,7 +217,11 @@ def collect_summary(state,destination):
         costs_stage.append(dict(stage=stage,run_id=root.name,wall_seconds=seconds))
     summary=dict(stage_costs=costs_stage,models=identities,geometry=geo,robot_filters=filters,boundaries=boundary,
                  splits=splits,input_missing=missing,shape_decoder=shape,matched_count_support=matched_support,
-                 fusion_unknown=unknown,depth_invalidity=depth_summary,
+                 fusion_unknown=unknown,depth_invalidity=depth_summary,paired_probes=paired,
+                 native_map_connectivity=connectivity_summary,
+                 diagnostic_position_heads=position_heads,
+                 diagnostic_head_metric_scope='primary summary excludes physical-invalid and baseline-repeat rows; original developmental whole-split exports remain unchanged',
+                 native_connectivity_definition='undirected3D spatial k8/radius20mm proximity; interval5; distinct from normal/witness/free-space graph edge policy',
                  statistic='unweighted frame mean within split/object/variant; undefined distance/purity excluded with defined_n; zero-support coverage is zero')
     write_json(destination/'benchmark_summary.json',summary)
     return summary

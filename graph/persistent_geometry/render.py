@@ -25,6 +25,20 @@ def table(path):
     with Path(path).open(newline='') as f:return list(csv.DictReader(f))
 
 
+def decode_video(path):
+    """Decode every frame with bounded threads, without a second count process."""
+    reader=imageio.get_reader(path,input_params=['-threads','1'],
+        output_params=['-threads','1','-filter_threads','1'])
+    first=last=None;count=0
+    try:
+        for frame in reader:
+            if first is None:first=frame.copy()
+            last=frame.copy();count+=1
+    finally:reader.close()
+    if count<2 or first.shape!=last.shape:raise ValueError('temporal MP4 decode')
+    return count,list(first.shape)
+
+
 def plot_axes(ax,bounds,title):
     ax.set(xlim=bounds[0],ylim=bounds[1],zlim=bounds[2],xlabel='World X (m)',ylabel='Y (m)',zlabel='Z (m)',title=title)
     ax.view_init(elev=24,azim=-65);ax.set_box_aspect([b[1]-b[0] for b in bounds]);ax.tick_params(labelsize=7)
@@ -90,7 +104,8 @@ def sequence(capture,geometry,destination,seed,*,stride=2):
     selected_times={frames[i]['timestep'] for i in identity_indices}|{frames[-1]['timestep']}
     video=destination/f'seed{seed}_persistent_geometry.mp4'
     written=[]
-    with imageio.get_writer(video,fps=8,codec='libx264',quality=8,macro_block_size=16) as writer:
+    with imageio.get_writer(video,fps=8,codec='libx264',quality=8,macro_block_size=16,
+            ffmpeg_params=['-threads','1','-filter_threads','1']) as writer:
         chosen=[frames[i] for i in sorted(set(range(0,len(frames),stride))|set(identity_indices)|{len(frames)-1})]
         for frame in chosen:
             t=frame['timestep'];folder=geometry/frame['folder']
@@ -134,14 +149,13 @@ def sequence(capture,geometry,destination,seed,*,stride=2):
         a=read_npz(folder/(name+'_graph.npz'));xyz=transform(a['node_input'][:,:3],pose_matrix(data['tcp_pose']))
         ax=fig.add_subplot(1,2,i+1,projection='3d')
         edge=a['edge_index'][:,(a['edge_type']==0)&(a['edge_index'][0]<a['edge_index'][1])]
-        ax.add_collection3d(Line3DCollection(xyz[edge.T],colors=COLORS[name],linewidths=.5,alpha=.5))
+        if edge.shape[1]:ax.add_collection3d(Line3DCollection(xyz[edge.T],colors=COLORS[name],linewidths=.5,alpha=.5))
         ax.scatter(*xyz[3:].T,s=5,c=COLORS[name]);plot_axes(ax,bounds,label)
     fig.tight_layout();fig.savefig(destination/'raw_ede_vs_surface_edges.png');plt.close(fig)
     # Independent actual decode, rather than assuming a successful writer.
-    reader=imageio.get_reader(video)
-    first=reader.get_data(0);last=reader.get_data(reader.count_frames()-1);count=reader.count_frames();reader.close()
-    if first.shape!=last.shape or count!=len(chosen) or not first.size:raise ValueError('MP4 decode/readback mismatch')
-    return dict(seed=seed,video=video.name,video_frames=count,decoded_shape=list(first.shape),
+    count,shape=decode_video(video)
+    if count!=len(chosen):raise ValueError('MP4 decode/readback mismatch')
+    return dict(seed=seed,video=video.name,video_frames=count,decoded_shape=shape,
         physical_observation_count=len(frames),render_stride=stride,pngs=written,
         event_keyframes=[frames[i]['timestep'] for i in identity_indices],
         event_selection='first actual GT-both-camera Box occlusion interval and first reappearance; otherwise equal time intervals')
@@ -208,7 +222,7 @@ def filter_and_aperture(capture,geometry,destination,seed):
         selected=a['node_type']==4;ax.scatter(*world[selected].T,c=COLORS[name],s=5,label=name+' Box input')
         edges=a['edge_index'][:,(a['edge_type']==0)&(a['edge_index'][0]<a['edge_index'][1])]
         edges=edges[:,a['node_type'][edges[0]]==4]
-        ax.add_collection3d(Line3DCollection(world[edges.T],colors=COLORS[name],linewidths=.5,alpha=.6))
+        if edges.shape[1]:ax.add_collection3d(Line3DCollection(world[edges.T],colors=COLORS[name],linewidths=.5,alpha=.6))
         plot_axes(ax,bounds,name+' Box boundary and aperture');ax.legend(fontsize=6,loc='upper left')
     fig.suptitle(f'Seed{seed} t={t}; fixed GT Box evaluation region; out-of-region contamination shown in full-scene video')
     fig.tight_layout();fig.savefig(Path(destination)/'aperture_boundary.png');plt.close(fig)

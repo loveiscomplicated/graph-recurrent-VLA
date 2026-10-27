@@ -280,7 +280,7 @@ class Contracts(unittest.TestCase):
         from graph.persistent_geometry.encoder import DiagnosticEncoder
         torch.set_num_threads(1)
         c = camera(); g = build_graph(current_records([surface()]), np.zeros((3, 3)), c.tcp_pose, 0)
-        permutation = np.r_[np.arange(3), np.arange(len(g.node_type)-1, 2, -1)]
+        permutation = np.random.default_rng(43).permutation(len(g.node_type))
         reverse = np.argsort(permutation)
         other = deepcopy(g)
         other.node_input = g.node_input[permutation]

@@ -2,6 +2,7 @@
 import argparse
 from copy import deepcopy
 import json
+import os
 from pathlib import Path
 import numpy as np
 import torch
@@ -106,6 +107,8 @@ def main():
     parser.add_argument('--geometry',type=Path,required=True)
     parser.add_argument('--output',type=Path,required=True)
     args=parser.parse_args()
+    from .handoff import maybe_delegate
+    if maybe_delegate('branch_eval',args):return
     capture=json.loads((args.capture/'capture_manifest.json').read_text())
     geometry=json.loads((args.geometry/'geometry_manifest.json').read_text())
     for root in (args.capture,args.geometry):
@@ -125,8 +128,11 @@ def main():
         for episode in capture['episodes']:
             rows,checks=evaluate_episode(root,args.capture,args.geometry,episode,config['point_cap_per_object'])
             branch_frames.extend(rows);repeats.extend(checks)
-        frames=[{**f,'folder':str((args.geometry/f['folder']).resolve()),'condition':'baseline','physical_valid':True}
+        # Relative frame references keep the same artifact layout portable
+        # between the local CPU runner and remote CUDA feature extraction.
+        frames=[{**f,'folder':os.path.relpath((args.geometry/f['folder']).resolve(),root.resolve()),'condition':'baseline','physical_valid':True}
                 for f in geometry['frames']]
+        branch_frames=[{**f,'folder':os.path.relpath(f['folder'],root.resolve())} for f in branch_frames]
         frames.extend(branch_frames)
         write_json(root/'geometry_manifest.json',dict(config=config,frames=frames))
         write_json(root/'branch_manifest.json',dict(frames=branch_frames,repeat_checks=repeats))

@@ -3,6 +3,7 @@ import argparse
 import csv
 from html.parser import HTMLParser
 import json
+import os
 from pathlib import Path
 import re
 from urllib.parse import unquote,urlsplit
@@ -50,6 +51,47 @@ def relocate(path,path_map=None):
     return path
 
 
+def frame_folder(root,stored,path_map=None):
+    """Resolve relative references at their recorded origin before relocating."""
+    if not Path(stored).is_absolute() and path_map:
+        for old,new in path_map.items():
+            if Path(new).resolve()==root.resolve():
+                return relocate(Path(os.path.normpath(str(Path(old)/stored))),path_map)
+    return relocate(root/stored,path_map)
+
+
+def verify_model_inputs(model_run,geometry,*,path_map=None):
+    """Join saved feature rows to the exact graph and target bytes they used."""
+    frames=json.loads((geometry/'geometry_manifest.json').read_text())['frames']
+    lookup={(f['seed'],f['timestep'],f.get('condition','baseline')):f for f in frames}
+    cache={};models=rows=0
+    def digest(path):
+        if path not in cache:cache[path]=sha256(path)
+        return cache[path]
+    for manifest in sorted(model_run.glob('models/*/sample_manifest.json')):
+        variant=manifest.parent.name.rsplit('_',1)[0]
+        samples=json.loads(manifest.read_text())
+        with np.load(manifest.parent/'frozen_features.npz',allow_pickle=False) as features:
+            if len(samples)!=len(features['seed']):raise ValueError('feature/source sample count')
+            for i,sample in enumerate(samples):
+                key=(sample['seed'],sample['timestep'],sample['condition'])
+                frame=lookup[key];folder=frame_folder(geometry,frame['folder'],path_map)
+                if sample['split']!=frame['split']:raise ValueError('feature/source split mismatch')
+                if digest(folder/(variant+'_graph.npz'))!=sample['graph_sha256']:
+                    raise ValueError('feature/source graph hash mismatch')
+                target=folder/'evaluation_targets.npz'
+                if digest(target)!=sample['target_sha256']:raise ValueError('feature/source target hash mismatch')
+                with np.load(target,allow_pickle=False) as saved:
+                    np.testing.assert_array_equal(features['target36'][i],saved['target36'])
+                    np.testing.assert_array_equal(features['target_valid'][i],saved['target_valid'])
+                    np.testing.assert_array_equal(features['robot76'][i],saved['robot76'])
+                rows+=1
+        models+=1
+    if not models:raise ValueError('no model feature manifests to verify')
+    return dict(status='PASS',models=models,rows=rows,unique_hashed_files=len(cache),
+                scope='episode/time/condition/split/variant and exact graph/target bytes; target and robot feature rows exact')
+
+
 def verify_run(root,*,deep=True,path_map=None,check_joins=True):
     metadata=json.loads((root/'metadata.json').read_text())
     if metadata['status']!='finished':raise ValueError('readback requires finalized run '+str(root))
@@ -90,9 +132,8 @@ def verify_run(root,*,deep=True,path_map=None,check_joins=True):
             with Image.open(path) as image:image.verify()
             counts['png']+=1
         elif path.suffix=='.mp4':
-            reader=imageio.get_reader(path);n=reader.count_frames()
-            first=reader.get_data(0);last=reader.get_data(n-1);reader.close()
-            if n<2 or first.shape!=last.shape:raise ValueError('temporal MP4 decode')
+            from .render import decode_video
+            decode_video(path)
             counts['mp4']+=1
     if check_joins and (root/'geometry_manifest.json').exists():
         manifest=json.loads((root/'geometry_manifest.json').read_text())
@@ -101,7 +142,7 @@ def verify_run(root,*,deep=True,path_map=None,check_joins=True):
             identity=(frame['seed'],frame['timestep'],frame.get('condition','baseline'))
             if identity in unique:raise ValueError('duplicate physical frame condition')
             unique.add(identity)
-            folder=relocate(root/frame['folder'],path_map)
+            folder=frame_folder(root,frame['folder'],path_map)
             with np.load(folder/'evaluation_targets.npz',allow_pickle=False) as a:
                 if int(a['timestep'])!=frame['timestep']:raise ValueError('map/target timestep mismatch')
             for name in ('G0','G1','G2','G3','G4','O1','O2','O3'):

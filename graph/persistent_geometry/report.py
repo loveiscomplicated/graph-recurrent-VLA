@@ -81,7 +81,8 @@ def main():
         for source in sources:
             destination=root/'sources'/source.name
             # Same-filesystem hard links avoid duplicating immutable raw maps.
-            # No contents, permissions, sidecars or timestamps are modified.
+            # Contents, permissions, sidecars and modification times remain
+            # unchanged; linking changes filesystem link counts/ctime only.
             shutil.copytree(source,destination,copy_function=os.link)
             mapping[str(source)]=str(Path('sources')/source.name)
         write_json(root/'path_remap.json',dict(remote_prefix_to_bundle_relative=mapping,

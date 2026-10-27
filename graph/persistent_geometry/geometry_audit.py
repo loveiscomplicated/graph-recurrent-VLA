@@ -92,6 +92,8 @@ def main():
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--interval',type=int,default=5)
     args=parser.parse_args()
+    from .handoff import maybe_delegate
+    if maybe_delegate('geometry_audit',args):return
     manifest=json.loads((args.geometry/'geometry_manifest.json').read_text())
     capture=Path(manifest['config']['capture'])
     collected=json.loads((capture/'capture_manifest.json').read_text())

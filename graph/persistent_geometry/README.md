@@ -96,12 +96,48 @@ current visible-surface-summary30. No grasp/hole goal, phase, reward, action or
 success target enters the loss. These are newly trained diagnostic encoders,
 not rankings based on applying old BC checkpoints to a changed schema.
 
+The opt-in encoder identifies TCP/left/right slots by node type when an input
+permutation moves the robot nodes. It remaps packed edges before using the
+existing structured readout. Canonical builder output uses the unchanged
+forward path; the shared production encoder is not modified. The permutation
+contract covers all nodes, including the three named robot nodes.
+
+`report --state PIPELINE_STATE_JSON --output COMPARISON_ROOT` aggregates completed
+runs, renders the final videos, audits real negatives, reads back source files
+and creates a portable `sources/<uuid>` bundle with a path-remapping manifest.
+It creates comparison facts; the reviewed Markdown/HTML interpretation is a
+separate artifact and must be verified before delivery.
+
+## CPU stage handoff
+
+For the executed final evaluation, CPU array geometry ran on the user's M4 Pro
+with one worker, while frozen CUDA inference stayed on Vast. The opt-in
+`handoff.maybe_delegate` CLI hook checks
+`/workspace/task09c/local_cpu_handoff.json`. Only enabled, explicitly listed
+module/output pairs are delegated. Request/receipt files preserve the original
+experiment UUID; every returned file is SHA-256 checked before the remote
+runner continues. Disable the marker after the three stages finish. Without an
+enabled matching marker these CLIs execute normally on the current host.
+
+Capture/geometry references can be relative to matching sibling run roots.
+Branch frame references are relative to their original run directory;
+`verify.frame_folder` resolves that recorded origin before applying a bundle
+path map. Transport does not change map math or frozen model selection.
+
+Cross-host numerical identity is not guaranteed. The executed 20-frame audit
+found identical semantic node/edge sets for G1–G4/O1–O3 within float tolerances,
+but G0 Raw EDE edge sets differed across installed numerical environments.
+The final report records this train/evaluation-host limitation. The measured
+8.7x ratio describes that CPU prefix's per-frame wall time, not the complete
+pipeline or transfer time. It is not a claim of bitwise graph equivalence.
+
 ## Executed environment and limits
 
 The research execution uses Vast instance57640710, RTX3090, existing CUDA
 perception/GNN dependencies, CPU PhysX and SAPIEN rendering. CUDA PhysX was not
-executed. Local macOS tests are synthetic/array contracts, not a simulator/GPU
-execution claim. No dependencies are installed or artifacts published by these
+executed. Local macOS work includes synthetic/array contracts and the final CPU
+geometry evaluation, not a simulator/GPU execution claim. No dependencies are
+installed or artifacts published by these
 runners.
 
 Partial surfaces leave rigid pose directions ambiguous. Registration explicitly

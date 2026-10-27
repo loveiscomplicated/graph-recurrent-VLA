@@ -94,10 +94,31 @@ def analyze(capture,geometry,destination):
             if count or oldcount:continue
             a=read_npz(source/branch['source']/'input.npz');b=read_npz(source/f'f{t:04d}_input.npz')
             same=all(np.array_equal(a[name+'/'+key],b[name+'/'+key]) for name in masks for key in ('rgb','depth_raw_mm'))
+            dependency=[];oracle_shift=None
+            if same:
+                baseline_folder=geometry/by_frame[(seed,t,'baseline')]['folder']
+                branch_folder=geometry/by_frame[(seed,t,branch['condition'])]['folder']
+                for variant in ('G0','G1','G2','G3','G4'):
+                    old_graph=read_npz(baseline_folder/(variant+'_graph.npz'))
+                    new_graph=read_npz(branch_folder/(variant+'_graph.npz'))
+                    maximum=0.
+                    for field,values in old_graph.items():
+                        if values.dtype.kind in 'fc':
+                            np.testing.assert_allclose(values,new_graph[field],atol=1e-6,rtol=1e-5)
+                            maximum=max(maximum,float(np.max(abs(values-new_graph[field]))) if values.size else 0.)
+                        else:np.testing.assert_array_equal(values,new_graph[field])
+                    dependency.append(dict(variant=variant,practical_graph_unchanged=True,max_absolute_error=maximum))
+                old_map=read_npz(baseline_folder/'O3_map.npz');new_map=read_npz(branch_folder/'O3_map.npz')
+                old_index={str(identity):i for i,identity in enumerate(old_map['persistent_node_id']) if old_map['object_id'][i]==oid and old_map['status'][i]!=3}
+                shift=[np.linalg.norm(new_map['world_xyz'][i]-old_map['world_xyz'][old_index[str(identity)]])*1000
+                    for i,identity in enumerate(new_map['persistent_node_id']) if str(identity) in old_index]
+                oracle_shift=float(np.mean(shift)) if shift else None
             moves.append(dict(seed=seed,timestep=t,condition=branch['condition'],object_id=oid,
                 actual_translation_mm=float(np.linalg.norm(gt['actor_pose'][oid,:3]-old['actor_pose'][oid,:3])*1000),
                 same_robot=branch['robot_state_exact'],same_calibration=branch['calibration_exact'],
                 RGBD_identical=bool(same),both_baseline_branch_fully_hidden=True,
+                practical_graphs_identical_to_tolerance=all(r['practical_graph_unchanged'] for r in dependency) if same else None,
+                practical_dependency_checks=json.dumps(dependency),O3_historical_node_displacement_mm=oracle_shift,
                 physical_valid=True,no_physics_step=branch['no_physics_step'],
                 scope='actual actor pose intervention and render; no dynamic PhysX contact-force claim'))
     # Real calibrated observations with coherent CV+GL corruption: checking the

@@ -1,10 +1,30 @@
 """Diagnostic geometry encoders only. No recurrent module or action outputs."""
 import torch
 from torch import nn
+from dataclasses import replace
 
 from graph.integration_baseline.model import GraphEncoder
 from graph.prototype.models import mlp
 from .graph import FEATURE_DIMENSION
+
+
+def canonical_robot_slots(graph):
+    """Adapt named robot slots without changing the legacy encoder/readout.
+
+    Normal builder outputs already have TCP/Left/Right first and are returned
+    unchanged. Arbitrary node permutations are canonicalized using semantic
+    node types, with edge endpoints remapped and all physical features retained.
+    """
+    expected=torch.arange(3,device=graph.node_type.device)[None].expand(graph.count,-1)
+    robot_rows=graph.ptr[:-1,None]+expected
+    if torch.equal(graph.node_type[robot_rows],expected):return graph
+    order=torch.argsort(graph.node_graph*5+graph.node_type,stable=True)
+    inverse=torch.empty_like(order);inverse[order]=torch.arange(len(order),device=order.device)
+    result=replace(graph,node_input=graph.node_input[order],node_type=graph.node_type[order],
+                   edge_index=inverse[graph.edge_index],node_graph=graph.node_graph[order])
+    if not torch.equal(result.node_type[robot_rows],expected):
+        raise ValueError('one named TCP/Left/Right node per graph required')
+    return result
 
 
 def geometry_summary(graph):
@@ -40,7 +60,7 @@ class DiagnosticEncoder(nn.Module):
         self.output_dimension = 5*d + (30 if variant == 'E2' else 0)
 
     def forward(self, graph):
-        z, presence = self.graph_encoder(graph)
+        z, presence = self.graph_encoder(canonical_robot_slots(graph))
         if self.variant == 'E2':
             z = torch.cat((z, geometry_summary(graph)), -1)
         return z, presence
