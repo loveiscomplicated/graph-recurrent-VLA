@@ -1,0 +1,117 @@
+{
+  "legacy_fps/__init__.py": {
+    "status": "unchanged",
+    "historical_sha256": "0d7840f0578b63ec46a2013c00e787eb2918f65bae53b94829748782d2cf29cb",
+    "release_sha256": "0d7840f0578b63ec46a2013c00e787eb2918f65bae53b94829748782d2cf29cb"
+  },
+  "legacy_fps/adapter.py": {
+    "status": "unchanged",
+    "historical_sha256": "a922db541726180b9f26ce9c66e1fa52d607747a665e3f616c548b6251960348",
+    "release_sha256": "a922db541726180b9f26ce9c66e1fa52d607747a665e3f616c548b6251960348"
+  },
+  "legacy_fps/benchmark.py": {
+    "status": "ported",
+    "historical_sha256": "cbf663e52a1b14745845cccef2a3b6070917b959ed1517e5305f0a7b051517a8",
+    "release_sha256": "f88dd61a911bc76447ddfdcf47870039248a3cd13c81e80e06fb4d18b679f65e"
+  },
+  "legacy_fps/branches.py": {
+    "status": "unchanged",
+    "historical_sha256": "268728552b5ff0f86254e71083b16a7cc52b4d89621e6e1fa65e5475efbb3287",
+    "release_sha256": "268728552b5ff0f86254e71083b16a7cc52b4d89621e6e1fa65e5475efbb3287"
+  },
+  "legacy_fps/failure_audit.py": {
+    "status": "unchanged",
+    "historical_sha256": "6da8bd67b27e885b12c10a3e8e1c52b341958675b082c700b18b5e14ed80ba02",
+    "release_sha256": "6da8bd67b27e885b12c10a3e8e1c52b341958675b082c700b18b5e14ed80ba02"
+  },
+  "legacy_fps/integration.py": {
+    "status": "unchanged",
+    "historical_sha256": "4eee49674bd81ec476f5da4996f449a86ee8ebfce4b9bfb909ab3af1324cb387",
+    "release_sha256": "4eee49674bd81ec476f5da4996f449a86ee8ebfce4b9bfb909ab3af1324cb387"
+  },
+  "legacy_fps/integration_guard.py": {
+    "status": "ported",
+    "historical_sha256": "1f68cd66bd2b89026edc096cdbae054941845dc7c7328543e2ffe7042fd73f3f",
+    "release_sha256": "cbc9d368b76803fbd0cc73de1c0eb1e23c8fdbcd414466dca6432e6c418f461a"
+  },
+  "legacy_fps/latency.py": {
+    "status": "unchanged",
+    "historical_sha256": "6623d85bcd3f8bf528f0c381480bc45e5e0c0e86e6f760ac1939389e67a56475",
+    "release_sha256": "6623d85bcd3f8bf528f0c381480bc45e5e0c0e86e6f760ac1939389e67a56475"
+  },
+  "legacy_fps/learning.py": {
+    "status": "unchanged",
+    "historical_sha256": "45cb373af89ad17b805a0a9f62d935991c55f55087f469c3020a0d6a3c46653d",
+    "release_sha256": "45cb373af89ad17b805a0a9f62d935991c55f55087f469c3020a0d6a3c46653d"
+  },
+  "legacy_fps/pipeline.py": {
+    "status": "unchanged",
+    "historical_sha256": "f6dbdb0fb410d469fa1726c4fe21b3c4910b29c172fa58dd7b1fb8b67b427f6c",
+    "release_sha256": "f6dbdb0fb410d469fa1726c4fe21b3c4910b29c172fa58dd7b1fb8b67b427f6c"
+  },
+  "legacy_fps/prepare_release.py": {
+    "status": "added",
+    "historical_sha256": null,
+    "release_sha256": "3c416a16654a1a6040a28b9da5c3129c9c52a755f428f02f8d141bf7023131ea"
+  },
+  "legacy_fps/readout_adapter.py": {
+    "status": "unchanged",
+    "historical_sha256": "2f38d555c1e0ced9dac7e467f44f4dc284c081fd6e652b30cba3dd427d14391a",
+    "release_sha256": "2f38d555c1e0ced9dac7e467f44f4dc284c081fd6e652b30cba3dd427d14391a"
+  },
+  "legacy_fps/render.py": {
+    "status": "unchanged",
+    "historical_sha256": "c5c9568bca670988dec8224c3750d7532f72a38e949289b29386e1b0d77a8e10",
+    "release_sha256": "c5c9568bca670988dec8224c3750d7532f72a38e949289b29386e1b0d77a8e10"
+  },
+  "legacy_fps/report.py": {
+    "status": "unchanged",
+    "historical_sha256": "83ea8b022fade11ec4292d591ac9453325497c2a24da2d99d3054f680961ca18",
+    "release_sha256": "83ea8b022fade11ec4292d591ac9453325497c2a24da2d99d3054f680961ca18"
+  },
+  "legacy_fps/run_pinned.py": {
+    "status": "added",
+    "historical_sha256": null,
+    "release_sha256": "771f8fbc01f2b6eebc0debe705e078fcb47ec3cb3f7ebeae5e91ed48c353f399"
+  },
+  "legacy_fps/runtime.py": {
+    "status": "added",
+    "historical_sha256": null,
+    "release_sha256": "538fd8cd6ca627d8e132f7cd4f96390b28d394cab550bf3099f54efd278a95bb"
+  },
+  "legacy_fps/temporal.py": {
+    "status": "unchanged",
+    "historical_sha256": "a461e8a7c838671e47303cea10c32ebf498f5152784538777b7bdb98eaea754b",
+    "release_sha256": "a461e8a7c838671e47303cea10c32ebf498f5152784538777b7bdb98eaea754b"
+  },
+  "legacy_fps/temporal_media.py": {
+    "status": "unchanged",
+    "historical_sha256": "bc2db39654ed0453b44efbd6ba7910b39b6361b1a4e44f082dd7d71766f72846",
+    "release_sha256": "bc2db39654ed0453b44efbd6ba7910b39b6361b1a4e44f082dd7d71766f72846"
+  },
+  "legacy_fps/test_release.py": {
+    "status": "added",
+    "historical_sha256": null,
+    "release_sha256": "2a42c2e56b68963ff91691447962705f0118e24bd5410dfee1aace446c99cc1e"
+  },
+  "legacy_fps/tests.py": {
+    "status": "unchanged",
+    "historical_sha256": "835e0506f26ac6b4d41ebed0fd21c69d7b89ff5e6fe61fe238472b4790cb6cc6",
+    "release_sha256": "835e0506f26ac6b4d41ebed0fd21c69d7b89ff5e6fe61fe238472b4790cb6cc6"
+  },
+  "legacy_fps/training_adapter.py": {
+    "status": "unchanged",
+    "historical_sha256": "b52a789a447cf7c30b656365543567d81cf9f3360033d367b0c58da7922d618c",
+    "release_sha256": "b52a789a447cf7c30b656365543567d81cf9f3360033d367b0c58da7922d618c"
+  },
+  "legacy_fps/verify.py": {
+    "status": "unchanged",
+    "historical_sha256": "b3c1da3ba0a3877bc3fb0c6f0f52804ac0bf00f6ae0fe985f13608cc997145df",
+    "release_sha256": "b3c1da3ba0a3877bc3fb0c6f0f52804ac0bf00f6ae0fe985f13608cc997145df"
+  },
+  "legacy_fps/verify_release.py": {
+    "status": "added",
+    "historical_sha256": null,
+    "release_sha256": "43153b0d877008939182aff3f79647686b2d6eff61a6303ab3f04a6674e0217a"
+  }
+}

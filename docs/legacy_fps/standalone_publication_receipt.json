@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "private": true,
+  "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+  "revision": "6558a391ed9cf84c51f0b74186a6b4fb372b3e2f",
+  "run_id": "8c41299e9d3e4989bbf32ab1b894dc49",
+  "path": "integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2/09c_legacy_fps_extension.md",
+  "view_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/blob/6558a391ed9cf84c51f0b74186a6b4fb372b3e2f/integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2/09c_legacy_fps_extension.md",
+  "download_url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/6558a391ed9cf84c51f0b74186a6b4fb372b3e2f/integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2/09c_legacy_fps_extension.md",
+  "size": 42463,
+  "sha256": "b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2",
+  "remote_files_verified": 5,
+  "source_and_download_byte_identical": true,
+  "receipt": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+    "repo_type": "dataset",
+    "status": "uploaded",
+    "revision": "6558a391ed9cf84c51f0b74186a6b4fb372b3e2f",
+    "url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/6558a391ed9cf84c51f0b74186a6b4fb372b3e2f/integration/8c41299e9d3e4989bbf32ab1b894dc49",
+    "manifest_path": "integration/8c41299e9d3e4989bbf32ab1b894dc49/manifests/e59ce1261b94ba71f5aecbc146970e217529996c8daea0db6275884b01a44b47/manifest.json",
+    "uploaded_files": 2,
+    "skipped_files": 3
+  }
+}
