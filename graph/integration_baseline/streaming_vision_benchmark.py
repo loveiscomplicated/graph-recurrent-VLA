@@ -137,7 +137,8 @@ class DinoMeter:
         self.requests += 1
         for k, v in self.detector.last_ms.items():
             self.parts[k] = self.parts.get(k, 0.) + v
-        self.detections[detection_key(rgb, prompt)] = deepcopy(result)
+        # Store JSON-native pairs; the detector API itself returns a tuple.
+        self.detections[detection_key(rgb, prompt)] = [deepcopy(result[0]), deepcopy(result[1])]
         return result
 
 

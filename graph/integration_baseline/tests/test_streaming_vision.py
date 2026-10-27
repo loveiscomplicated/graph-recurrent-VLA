@@ -248,6 +248,22 @@ class StreamAdapterTests(unittest.TestCase):
 
 
 class BenchmarkGateTests(unittest.TestCase):
+    def test_recorded_dino_pairs_roundtrip_through_atomic_json(self):
+        from graph.integration_baseline.streaming_vision_benchmark import DinoMeter, FrozenDetector
+        from graph.integration_baseline.direct_runtime import atomic, read
+        class Detector:
+            last_ms = {'forward': 1.}
+            def __call__(self, rgb, prompt):
+                return [[0.,0.,1.,1.]], [.8]
+        meter = DinoMeter(Detector())
+        boxes, scores = meter(image(0), 'peg')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'detections.json'
+            atomic(path, meter.detections)
+            restored_boxes, restored_scores = FrozenDetector(read(path))(image(0), 'peg')
+        self.assertEqual(boxes, restored_boxes)
+        self.assertEqual(scores, restored_scores)
+
     def test_resource_guard_parses_host_pids_and_terminates_only_our_worker_group(self):
         from graph.integration_baseline.streaming_vision_benchmark import gpu_process_ids, monitor_worker
         from unittest.mock import Mock
