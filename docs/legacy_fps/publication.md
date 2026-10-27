@@ -5,6 +5,16 @@ The original run UUIDs, team, execution Git commit/dirty flag and checkpoint byt
 are preserved. `publication_commit` links the later implementation separately.
 Git commits are local; there was no Git remote push or HF Space deployment.
 
+## Standalone original Markdown
+
+The original local `docs/visual-graph-integration/09c_legacy_fps_extension.md` was
+published byte for byte as a separate private Dataset file. [View the original
+Markdown at the fixed revision](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/blob/6558a391ed9cf84c51f0b74186a6b4fb372b3e2f/integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2/09c_legacy_fps_extension.md) or [download it](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/6558a391ed9cf84c51f0b74186a6b4fb372b3e2f/integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2/09c_legacy_fps_extension.md).
+It is 42,463 bytes with SHA-256 `b569444dfc474e433911a5856d44c6c64fc7156f73e1c39fbebdc084037d5ca2`.
+Its original links point to the historical sibling artifact tree and may not
+resolve on Hugging Face; use the selected ZIP below to browse linked evidence.
+[Publication and remote readback receipt](standalone_publication_receipt.json).
+
 ## Download
 
 Both repositories were verified **private** before and after publishing. These
