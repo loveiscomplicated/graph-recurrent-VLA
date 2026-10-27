@@ -219,6 +219,9 @@ pass에서는 50ms p95 gate를 통과했지만 앞의 독립 pass와 첫 실행�
 상한을 유지하는 의미도 있다. 각 변경은 상호작용하므로 차이를 더해 전체 원인
 비율로 만들지 않는다. 독립 process의 작은 kernel/수치 차이와 순차 측정의
 시간 변동도 포함된다.
+별도 `profile.json`의 stage는 감싼 메서드 범위다. 특히 `memory_encoder`는
+predictor의 `_run_memory_encoder` helper 계측이며, 내부의 모든 memory 연산
+호출을 센 값은 아니다. 중첩된 inclusive 시간은 합산하지 않는다.
 
 이 두 실제 episode에서는 관측된 객체가 모두 frame 0에서 초기화됐다. 따라서
 초기화 사건별 state 분리 조건도 episode 안에서는 한 state를 사용했다.
