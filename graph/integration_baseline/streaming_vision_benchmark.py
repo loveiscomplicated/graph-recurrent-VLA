@@ -230,12 +230,16 @@ def reserve_gpu(folder, fraction):
     del sentinel
 
 
-def monitor_worker(process, folder):
+def monitor_worker(process, folder, minimum_free_bytes=0):
     """Stop only our new process group when another GPU process appears."""
     interference = None
     while process.poll() is None:
         owner_path = folder/'gpu_owner.json'
-        if owner_path.exists():
+        if minimum_free_bytes and shutil.disk_usage(folder).free < minimum_free_bytes:
+            interference = dict(status='ABORTED_FOR_DISK_RESERVE', worker_container_pid=process.pid,
+                minimum_free_bytes=minimum_free_bytes,
+                action='SIGTERM to this newly created worker process group only')
+        elif owner_path.exists():
             owner = read(owner_path)['nvml_host_pid']
             snapshot = gpu_snapshot()
             foreign = gpu_process_ids(snapshot) - {owner}
@@ -243,17 +247,18 @@ def monitor_worker(process, folder):
                 interference = dict(status='ABORTED_FOR_OTHER_GPU_WORK',
                     foreign_nvml_host_pids=sorted(foreign), worker_container_pid=process.pid,
                     action='SIGTERM to this newly created worker process group only')
-                atomic(folder/'resource_interference.json', interference)
-                try:
-                    os.killpg(process.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
-                try:
-                    process.wait(timeout=20)
-                except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGKILL)
-                    process.wait()
-                break
+        if interference:
+            atomic(folder/'resource_interference.json', interference)
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                process.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
+            break
         time.sleep(1)
     return process.wait(), interference
 
@@ -627,7 +632,7 @@ def run(args):
             with (folder/'worker.log').open('w') as log:
                 process = subprocess.Popen([sys.executable,'-m',__spec__.name,'--worker',name,'--plan',str(run/'plan.json')],
                                            stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
-                returncode, interference = monitor_worker(process, folder)
+                returncode, interference = monitor_worker(process, folder, plan['minimum_free_bytes'])
             if returncode:
                 failures[name] = returncode
                 atomic(run/'failures.json', failures)
