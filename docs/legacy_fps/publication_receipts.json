@@ -1,0 +1,61 @@
+{
+  "publication_commit": "afa5392b5f8fe01877894c366f0e3452c8c9cd49",
+  "model": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-models",
+    "repo_type": "model",
+    "status": "uploaded",
+    "revision": "98f9118b3ea114c5b555c1d7d2151fa3ac434f30",
+    "url": "https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/98f9118b3ea114c5b555c1d7d2151fa3ac434f30/integration/b220c3fdced649adab3edee0c7d5378b",
+    "manifest_path": "integration/b220c3fdced649adab3edee0c7d5378b/manifests/f3bf4760fbf4c05d886a47d692d7e1263df9862a6ff6e61a8fee2714dce3a145/manifest.json",
+    "uploaded_files": 259,
+    "skipped_files": 0
+  },
+  "dataset": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+    "repo_type": "dataset",
+    "status": "uploaded",
+    "revision": "fbaac6691194048043932bffb86cc96678f80bcf",
+    "url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/fbaac6691194048043932bffb86cc96678f80bcf/integration/8c41299e9d3e4989bbf32ab1b894dc49",
+    "manifest_path": "integration/8c41299e9d3e4989bbf32ab1b894dc49/manifests/82952cb58b2bd38e6d0edad9e85830a3cea755a256c5d54896e5b4fd51c6ab53/manifest.json",
+    "uploaded_files": 4,
+    "skipped_files": 0
+  },
+  "remote_verification": {
+    "model": {
+      "status": "PASS",
+      "repo_id": "Graph-Recurrent-VLA/graph-recurrent-models",
+      "repo_type": "model",
+      "revision": "98f9118b3ea114c5b555c1d7d2151fa3ac434f30",
+      "private": true,
+      "unique_files": 259,
+      "logical_checkpoint_files": 280,
+      "method": "remote LFS SHA-256 or Git blob SHA-1 plus exact byte size, at immutable revision"
+    },
+    "dataset": {
+      "status": "PASS",
+      "repo_id": "Graph-Recurrent-VLA/graph-recurrent-rollouts",
+      "repo_type": "dataset",
+      "revision": "fbaac6691194048043932bffb86cc96678f80bcf",
+      "private": true,
+      "unique_files": 4,
+      "method": "remote LFS SHA-256 or Git blob SHA-1 plus exact byte size at immutable revision; complete report ZIP downloaded and SHA-256 matched",
+      "downloaded_zip_sha256": "3d0e12d6e7f02632ee61589a9e814e43fdcf6df3742549fa6685f00150adf4aa",
+      "downloaded_zip_bytes": 57146393
+    }
+  },
+  "zip_verification": {
+    "status": "PASS",
+    "archive_sha256": "3d0e12d6e7f02632ee61589a9e814e43fdcf6df3742549fa6685f00150adf4aa",
+    "archive_bytes": 57146393,
+    "zip_members": 562,
+    "bundle_file_hashes_checked": 559,
+    "relative_document_links_checked": 173,
+    "downloaded_source_contract_tests": 58,
+    "publication_commit": "afa5392b5f8fe01877894c366f0e3452c8c9cd49"
+  },
+  "credential_scan": {
+    "status": "PASS",
+    "files_and_archive_members_checked": 2520,
+    "credential_values_logged": false
+  }
+}

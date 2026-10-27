@@ -2,6 +2,8 @@
 
 2026-10-27 · independent feasibility diagnostic · 100-update pilot + source compatibility revalidation
 
+2026-10-28 게시: [비공개 고정 Revision ZIP](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/resolve/fbaac6691194048043932bffb86cc96678f80bcf/integration/8c41299e9d3e4989bbf32ab1b894dc49/artifacts/reports/3d0e12d6e7f02632ee61589a9e814e43fdcf6df3742549fa6685f00150adf4aa/report-3d0e12d6e7f02632ee61589a9e814e43fdcf6df3742549fa6685f00150adf4aa.zip) · [다운로드·재현 안내와 검증](../legacy_fps/publication.md#download). 아래 실험 수치·실행 당시 상태는 원본 기록이며, Git 구현·HF 게시만 후속 수행했다. 저장소 외부 Artifact 링크는 다운로드 안내로 연결한다. ZIP 안의 보고서는 선택된 근거 파일에 대한 상대 경로를 제공한다.
+
 ## 1. 연구 질문과 실행 범위
 
 초기 Vision 팀의 `erosion → SOR → FPS` 경로를 Source Pixel provenance와 함께 독립 재현하고, 동일한 현재 RGB-D/예측 마스크에서 Shape-First G0–G4와 Legacy L0–L4를 비교했다. 주요 실험 UUID는 `8c41299e9d3e4989bbf32ab1b894dc49`, 후속 소스 재검증 UUID는 `bd465b9d57ed4fd6843e87c950896edc`다.
@@ -14,7 +16,7 @@ Train8/Validation4 Episode의 t=0과 Seed30002/30125의 t=0..15를 합친 **42�
 
 참고한 [기존09-C 보고서](09c_persistent_geometry_graph_benchmark.md)의 Final2EP/258프레임·2000-update 결과와 이 파일럿의 수치를 직접 순위 비교하지 않는다. 아래 G/L 비교는 이번 확장 안에서 같은 입력·분할·예산을 사용한 결과다.
 
-[실행 구성/프레임 목록](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry_manifest.json) · [Capture/Frozen identity](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/capture_identity.json) · [진단 학습 구성](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/model_manifest.json)
+[실행 구성/프레임 목록](../legacy_fps/publication.md#download) · [Capture/Frozen identity](../legacy_fps/publication.md#download) · [진단 학습 구성](../legacy_fps/publication.md#download)
 
 ## 2. 실제 Sensor/Camera와 입력 Identity
 
@@ -24,7 +26,7 @@ G/L 양쪽에 같은 RGB-D, predicted Peg/Box mask, calibration, 물체 ID와 �
 
 과거 Vision v0는512×512, 현재 입력은128×128이다. 과거 시각화와 현재 Graph 수치를 직접 성능 비교하지 않았다. 현재 Capture와 원본 HDF5의 `actual_reset` 불일치도 보존했다. 제공된 과거 Screenshot의 RGB-D/Runtime hash가 없어 **정확한 Screenshot 재현은 입증하지 못했다.** Seed30002/t0/Reach/Main의 새 동일 관측 비교로 한정한다.
 
-[Seed30002 Camera audit](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry/seed30002/camera_audit.json) · [t0 실제 RGB/예측 마스크](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/media/sensor_input_t0000.png)
+[Seed30002 Camera audit](../legacy_fps/publication.md#download) · [t0 실제 RGB/예측 마스크](../legacy_fps/publication.md#download)
 
 ## 3. Legacy Source와 원래 Point 정책 재현
 
@@ -45,7 +47,7 @@ Source SHA256은 `191f0f8932d5be580890a50e412bc3ae1a474f85b674275b6d072d52c8a9de
 
 원래 seed0의 순차 Episode/Frame/Peg→Box RNG와 이번 seed42의 독립 프레임 RNG 정책은 구분한다. 이번 seed는 parent episode/timestep/camera/object의 canonical JSON hash로 만들고 같은 물리 분기의 Parent RNG 그룹을 공유한다. `LEGACY_EXACT_GIVEN_INPUT_AND_RNG`는 같은 입력과 RNG 상태에서 원본 함수와 같다는 의미이며, 과거 전체 실행의 선택 픽셀까지 같다는 주장은 아니다.
 
-[원형 Source Snapshot](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/source_snapshot/original_legacy_pointcloud.py) · [Legacy Step5 기록](../../visual/results/step5/pointcloud.json) · [Step8 기록](../../visual/results/step8/demo_conf_ep001_pointcloud.json) · [계약 테스트](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/contract_tests.log)
+[원형 Source Snapshot](../legacy_fps/publication.md#download) · [Legacy Step5 기록](../../visual/results/step5/pointcloud.json) · [Step8 기록](../../visual/results/step8/demo_conf_ep001_pointcloud.json) · [계약 테스트](../legacy_fps/publication.md#download)
 
 ## 4. G0–G4 / L0–L4와 Feature·Budget 계약
 
@@ -78,9 +80,9 @@ Peg의 predicted mask는 비어 있어 G0/L0 모두0개다. SAM2가 완전히 �
 
 Box는 같은148점 진단에서도 거리 개선이 남았지만 Boundary Coverage는30.1%→7.2%로 감소했다. Edge를 숨겨도 G0의 sparse selection과 Legacy의 내부 표면 밀도 차이가 남는다. 시각 차이를 Edge clutter만으로 설명할 수는 없다.
 
-![Seed30002 t0 동일 시점 Point/Edge/Matched-N 비교](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/media/comparison_t0000.png)
+![Seed30002 t0 동일 시점 Point/Edge/Matched-N 비교](../legacy_fps/publication.md#download)
 
-[Same-view 영상](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/media/same_view.mp4) · [Matched-N 영상](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/media/matched_N.mp4)
+[Same-view 영상](../legacy_fps/publication.md#download) · [Matched-N 영상](../legacy_fps/publication.md#download)
 
 ## 6. Native Representation 기하 비교
 
@@ -115,7 +117,7 @@ Legacy는 Peg의 거리와 순도를 개선했으나 native 가시 coverage69.9%
 
 Gi/Li 쌍 안에서는 같은 센서 범위를 사용한다. Main 전용과 Main+Wrist의 own-visible 분모는 다르므로 이 표의 coverage만으로 camera 효과를 비교하지 않는다.
 
-[Native/cap/matched 전체 수치](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry_metrics.csv) · [t0 평균·정의 분모](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/comparison_summary.json)
+[Native/cap/matched 전체 수치](../legacy_fps/publication.md#download) · [t0 평균·정의 분모](../legacy_fps/publication.md#download)
 
 ## 7. Matched Point Budget과 실제 FPS 동작 빈도
 
@@ -132,7 +134,7 @@ Matched-N은 각 물체의 실제 native 지원 수 중 min(Gi,Li)를 택하고 
 
 **이번 결과를 FPS 알고리즘 자체의 우위라고 부를 수 없다.** 대부분의 현재 해상도 사례는 erosion/SOR를 포함한 전체 정책과 점 밀도 차이다. Erosion/SOR/FPS 각각을 분리한 factorial ablation은 실행하지 않았다.
 
-[실제 전처리 동작·실패 catalog](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/failure_catalog.json) · [Pixel별 제거 감사 집계](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/preprocessing_failure_audit.csv)
+[실제 전처리 동작·실패 catalog](../legacy_fps/publication.md#download) · [Pixel별 제거 감사 집계](../legacy_fps/publication.md#download)
 
 ## 8. Robot Self-filter와 연속 전처리 손실
 
@@ -151,7 +153,7 @@ Wrist Box는 제거 후에도 robot 오염37.9%, mask 순도2.5%로 실패가 �
 
 전처리 감사에서 Erosion 때문에 유효 입력이 완전히 비게 된 사례는0개였다. SOR가 제거한 올바른 surface pixel은3676개였고, 정의한4mm Hole rim reference에 해당하는 제거는0개였다. Filtered/Unfiltered·Camera 중복을 포함한 계수다. **SOR rim 제거0은 전체 경계 보존의 증거가 아니다.** Erosion에서 먼저 사라진 경계와 FPS 후 coverage를 함께 봐야 한다.
 
-[필터 전후와 분모](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/robot_filter_metrics.csv) · [실제 t0 filter tensor](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry/seed30002/f0000/robot_filter.npz)
+[필터 전후와 분모](../legacy_fps/publication.md#download) · [실제 t0 filter tensor](../legacy_fps/publication.md#download)
 
 ## 9. Persistent Node Lifecycle와 Pose Tracking
 
@@ -176,7 +178,7 @@ Main-only G2/L2는 이 Episode에서 Peg map이 없었다. 따라서 낮은 평�
 
 L4 Peg는 G4보다 Ghost255.9→140.5, pose 이동오차58.72→31.87mm로 줄었으나 정확한 추적이라고 보기 어렵다. Box는 L4의 Ghost299.6과 pose13.98mm로 G4의289.6/10.55mm보다 나빴다. 물체를 합친 평균만으로 FPS Map의 일관된 개선을 주장하지 않는다.
 
-[L 시간축 기하 원자료](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/geometry_metrics.csv) · [동일 Capture G reference 원자료](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/G_reference_geometry_metrics.csv) · [완료된 G 파일의 Source identity](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/reference_source_identity.json)
+[L 시간축 기하 원자료](../legacy_fps/publication.md#download) · [동일 Capture G reference 원자료](../legacy_fps/publication.md#download) · [완료된 G 파일의 Source identity](../legacy_fps/publication.md#download)
 
 ## 10. 가림·신규 표면·Ghost 사례
 
@@ -184,9 +186,9 @@ L4 Peg는 G4보다 Ghost255.9→140.5, pose 이동오차58.72→31.87mm로 줄�
 
 Map lifecycle의 추가/갱신 이벤트와 GT 기준 `new_correct_previously_unseen_nodes`를 구분했다. **t0 이후 평가한13개 시점에서 G2/L2/G4/L4의 해당 신규 표면 지표는 양성0개**였다. 전체106개 모든 시점에 신규 표면이 없었다는 결론은 아니다. 기하 지표는 interval10과 고정25/65/마지막 시점에서 계산했고, t0 초기화·기존 표면의 새 node·sampling으로 놓친 이벤트를 분리해야 한다. 올바른 신규 표면 통합 우위는 이번 파일럿에서 미확인이다.
 
-![t65 평가 전용 Ghost 표시: 검은 X는 GT surface에서8mm 초과인 estimated node](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/media/ghost_t0065.png)
+![t65 평가 전용 Ghost 표시: 검은 X는 GT surface에서8mm 초과인 estimated node](../legacy_fps/publication.md#download)
 
-[전체106프레임 persistent 비교 영상](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/media/persistent_full.mp4) · [신규 node 추가 영상](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/media/new_surface_full.mp4) · [Ghost/실패 영상](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/media/ghost_full.mp4) · [시각 사례 수치](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/visual_cases.json)
+[전체106프레임 persistent 비교 영상](../legacy_fps/publication.md#download) · [신규 node 추가 영상](../legacy_fps/publication.md#download) · [Ghost/실패 영상](../legacy_fps/publication.md#download) · [시각 사례 수치](../legacy_fps/publication.md#download)
 
 ## 11. Main+Wrist Fusion 기여
 
@@ -207,7 +209,7 @@ Map lifecycle의 추가/갱신 이벤트와 GT 기준 `new_correct_previously_un
 
 L1→L3의 Peg 현재 visible coverage0%→87.2%는 Wrist의 관측 기여다. Box coverage36.6%는 같았고 L3 source 순도61.4%로 잘못된 camera 입력이 남았다. L2→L4는 Peg 누적 coverage를 추가했지만 Box 누적 coverage60.2%→33.1%로 악화됐다. 동일성/좌표 정합 통과와 올바른 물체 형상 복원은 구분해야 한다.
 
-[Main/Wrist 전체 영상](../../../task09c_legacy_fps/temporal_runs/41385af9132c4ff6b84bd944400711c3/media/fusion_full.mp4) · [t0 Fusion conflict audit](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry/seed30002/f0000/fusion_audit.json)
+[Main/Wrist 전체 영상](../legacy_fps/publication.md#download) · [t0 Fusion conflict audit](../legacy_fps/publication.md#download)
 
 ## 12. 같은 FPS Point의 Edge 유무·정책
 
@@ -224,7 +226,7 @@ L0는 Edge가 없어 crossing0이며, geometry가 완전하다는 뜻은 아니�
 
 FPS Raw EDE는 실제 현재 Main Source Pixel/Observed Component에서 원래 helper로 재계산했다. Camera/과거 Timestep이 섞인 Map에는 단일 raster UV Raw EDE를 적용하지 않았다. G/L source·feature row join 및 same-point Edge 조건84건을 실제 tensor로 검사했다.
 
-[Edge 길이/교차/분모 전체](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/edge_metrics.csv) · [t0 FPS Raw EDE node/edge tensor](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/geometry/seed30002/f0000/L0_rawede_graph.npz)
+[Edge 길이/교차/분모 전체](../legacy_fps/publication.md#download) · [t0 FPS Raw EDE node/edge tensor](../legacy_fps/publication.md#download)
 
 ## 13. 동일 예산 GNN·Frozen Probe 구성
 
@@ -246,7 +248,7 @@ E0는 공통 Edge-aware GNN, E1은 message passing을 제거한 Point-set encodi
 
 정식2000-update/2000-Probe-epoch 확장과 독립 final62091/62092 적용은 **NOT_EXECUTED**다. 기존09-C 최종 보고서의19개 모델/Final 결과를 이번 FPS 후보와 같은 학습 조건의 비교값으로 가져오지 않았다.
 
-[학습·Checkpoint identity](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/model_manifest.json) · [Split/실제 Frame 목록](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/split_manifest.json) · [Probe244개 구성/선택](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/probe_manifest.json)
+[학습·Checkpoint identity](../legacy_fps/publication.md#download) · [Split/실제 Frame 목록](../legacy_fps/publication.md#download) · [Probe244개 구성/선택](../legacy_fps/publication.md#download)
 
 ## 14. Geometry Readout Probe 결과
 
@@ -295,7 +297,7 @@ L0+E0는 G0+E0보다 위치61.85→68.54mm, paired Δ11.09→16.12mm로 나빴�
 
 L0/L0_surface/L0_rawede의 E1 readout과 선택 파라미터 hash는 정확히 같았다. Edge만 바꿔도 no-message 결과가 바뀌지 않는 Negative Control이다. E2가 좋은 조건도 있으나100-update/소수 Episode·한 seed 결과이며 최종 우승 구조를 선정하지 않는다.
 
-[전체 Absolute Probe/정의 분모](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/absolute_metrics.csv) · [Paired Δ/방향/gain](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/paired_delta_metrics.csv) · [Episode별 Probe](../../../task09c_legacy_fps/learning_runs/b220c3fdced649adab3edee0c7d5378b/per_episode_metrics.csv)
+[전체 Absolute Probe/정의 분모](../legacy_fps/publication.md#download) · [Paired Δ/방향/gain](../legacy_fps/publication.md#download) · [Episode별 Probe](../legacy_fps/publication.md#download)
 
 ## 15. 실패 사례·Negative Control·소스 호환성
 
@@ -316,7 +318,7 @@ L0/L0_surface/L0_rawede의 E1 readout과 선택 파라미터 hash는 정확히 �
 
 이후 원본 작업의 Encoder에도 같은 목적의 수정이 들어왔다. 후속 독립 스냅샷에서 현재 source 계약54개, 기존36 Checkpoint의2232개 실제 Graph Readout/Decoder exact, 전체 노드 순열108건을 재검증했다. CPU↔이전 CUDA 차이는 atol2e-6 + rtol2e-5 내였다. Backend 간 bitwise 동일성은 주장하지 않는다.
 
-[실패 Attempt readback](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/failed_attempts_readback.json) · [후속 Source 재검증](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/source_revalidation.md) · [정상 입력 exact/순열 결과](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/encoder_revalidation.json)
+[실패 Attempt readback](../legacy_fps/publication.md#download) · [후속 Source 재검증](../legacy_fps/publication.md#download) · [정상 입력 exact/순열 결과](../legacy_fps/publication.md#download)
 
 ## 16. 계산 비용·Memory
 
@@ -337,7 +339,7 @@ CPU 분석은 nice19, BLAS/OMP1 thread로 실행했다. 다음은 Seed30002/t0 �
 
 전체 pipeline·Graph+metric·pure 단계 시간을 구분해 저장했다. GPU 진단은 다른 GPU process가 없는 검사와6% allocator cap에서만 시작했고, NVIDIA host PID와 container PID 차이를 처리했다. 확인한 확장 GPU 단계와 해당 원본 학습 시간은 겹치지 않았다. 실시간20Hz 보장이나 속도 최적화는 수행하지 않았다.
 
-[CPU 단계 비용](../../../task09c_legacy_fps/latency_runs/ff8379e4ae494841a61b4b9986666bed/cpu_stage_costs.json) · [실제 GNN inference](../../../task09c_legacy_fps/latency_runs/ff8379e4ae494841a61b4b9986666bed/gnn_inference_costs.json) · [GPU 실행 시간 근거](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/original09c_runtime_outcome.json)
+[CPU 단계 비용](../legacy_fps/publication.md#download) · [실제 GNN inference](../legacy_fps/publication.md#download) · [GPU 실행 시간 근거](../legacy_fps/publication.md#download)
 
 ## 17. 최종 연구 질문 Q1–Q12
 
@@ -397,10 +399,10 @@ CPU 분석은 nice19, BLAS/OMP1 thread로 실행했다. 다음은 Seed30002/t0 �
 
 최초 bundle 검증은3331 JSON/4944 NPZ/155 PNG/10 MP4를 실제 readback/decode했다. Source/F5 join50220행, historical feature10025행, same-point Edge84건과 Geometry2520행을 재검사했다. 초기 계약54개 및 모델별 CUDA 순열 감사를 보존했다. 후속은 CPU에서54계약·2232 정상 Graph exact·108 전체 순열 검사와 Source Hash Guard를 확인했다. 최초 전체 보호 PARTIAL을 소급해 PASS로 바꾸지 않으며 **현재 검증 revision 호환성·후속 실행 구간 보호 PASS**를 별도 기록한다.
 
-[최초 verification](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/verification.json) · [최초 전역 보호 감사](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/protection_audit.json) · [소스 변경 후 verification](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/verification.json) · [새 구간 원본 보호](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/new_window_protection_audit.json) · [기존 Artifact 보호](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/prior_artifact_protection_audit.json) · [현재 Source transition](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/source_transition.json)
+[최초 verification](../legacy_fps/publication.md#download) · [최초 전역 보호 감사](../legacy_fps/publication.md#download) · [소스 변경 후 verification](../legacy_fps/publication.md#download) · [새 구간 원본 보호](../legacy_fps/publication.md#download) · [기존 Artifact 보호](../legacy_fps/publication.md#download) · [현재 Source transition](../legacy_fps/publication.md#download)
 
-[현재 Integration Manifest](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/integration_manifest.json) · [Hash Guard 검사](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/integration_guard_tests.json) · [기하 함수 AST 감사](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/geometry_AST_audit.json) · [미적용 Implementation diff](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/implementation.diff) · [정적 HTML 원보고서](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/legacy_fps_extension.html) · [후속 호환성 보고서](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/source_revalidation.html)
+[현재 Integration Manifest](../legacy_fps/publication.md#download) · [Hash Guard 검사](../legacy_fps/publication.md#download) · [기하 함수 AST 감사](../legacy_fps/publication.md#download) · [미적용 Implementation diff](../legacy_fps/publication.md#download) · [정적 HTML 원보고서](../legacy_fps/publication.md#download) · [후속 호환성 보고서](../legacy_fps/publication.md#download)
 
-[최초 로컬 전송 검증](../../../task09c_legacy_fps/local_transfer_verification.json) · [후속 로컬 전송 검증](../../../task09c_legacy_fps/revalidation_runs/bd465b9d57ed4fd6843e87c950896edc/local_transfer_verification.json) · [10개 영상 decode/contact-sheet 감사](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/video_contact_sheet_audit.json) · [시각 검수 기록](../../../task09c_legacy_fps/experiments/8c41299e9d3e4989bbf32ab1b894dc49/visual_inspection.json)
+[최초 로컬 전송 검증](../legacy_fps/publication.md#download) · [후속 로컬 전송 검증](../legacy_fps/publication.md#download) · [10개 영상 decode/contact-sheet 감사](../legacy_fps/publication.md#download) · [시각 검수 기록](../legacy_fps/publication.md#download)
 
 이 문서의 수치는 해당 저장 Run에서 집계했다. 파일럿의 기하 이점, GNN 정보 보존과 후속 Policy 도입 판단은 각각 구분한다.
