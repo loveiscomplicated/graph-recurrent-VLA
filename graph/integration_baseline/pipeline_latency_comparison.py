@@ -188,6 +188,22 @@ def make_frame(a,t,masks):
         {0:masks[0],1:masks[1]},t,float(a['timestamp'][t]))
 
 
+def native_cpu(mode, frame, episode, arrays, t, model, normalizer, hidden):
+    """Whole-path control with no downstream wrappers or intermediate sync."""
+    if mode == 'visual_s3_cpu':
+        evidence=extract_sampling_evidence(frame)
+        result=sample_points(evidence, method='S3')
+        return result,hidden,{}, {},dict(points=len(result.points),edges=0)
+    packet,_=vision.packet_from_frame(frame,episode)
+    graph=build_graph(packet,geometry_in_ee(arrays['robot_world_geometry'][t],arrays['tcp_pose'][t]))
+    packed=pack_graphs([graph],[(0,0)]).to('cuda')
+    robot=torch.from_numpy(arrays['robot_state'][t].copy())[None].cuda()
+    with torch.inference_mode(), torch.autocast('cuda',enabled=False):
+        action,hidden=model.step(packed,robot,normalizer,hidden)
+    action=action.cpu().numpy().copy()
+    return (packet,action),hidden,{}, {},dict(points=len(packet['points']),edges=int(graph.edge_index.shape[1]))
+
+
 def summarize(rows):
     result={}
     for mode in MODES:
@@ -247,7 +263,7 @@ def main():
             source=source_root/rel;target=root/'source_snapshot'/rel;target.parent.mkdir(parents=True,exist_ok=True)
             target.write_bytes(source.read_bytes());hashes[rel]=sha(source)
         save('source_hashes.json',hashes)
-        masks_ref={}; outputs_ref={}; rows=[]; checks=[];detail_rows=[]
+        masks_ref={}; outputs_ref={}; rows=[]; checks=[];detail_rows=[];control_rows=[]
         def episode(mode,eid,a,repeat,phase):
             adapter.reset(f'{phase}:{eid}');hidden=None;mask_hashes=[]
             original_push=adapter.initializer.push; original_dino=adapter.initializer.detector.detector
@@ -268,7 +284,10 @@ def main():
                     masks,record=adapter.process(a['base_camera/rgb'][t],f'{phase}:{eid}',t)
                     torch.cuda.synchronize();mask_ms=(perf_counter()-start)*1000
                     frame=make_frame(a,t,masks)
-                    output,hidden,modules,detail,counts=downstream(mode,frame,f'ep{eid}',a,t,model,normalizer,hidden,gpu,phase=='detail')
+                    if phase=='control':
+                        output,hidden,modules,detail,counts=native_cpu(mode,frame,f'ep{eid}',a,t,model,normalizer,hidden)
+                    else:
+                        output,hidden,modules,detail,counts=downstream(mode,frame,f'ep{eid}',a,t,model,normalizer,hidden,gpu,phase=='detail')
                     torch.cuda.synchronize();total=(perf_counter()-start)*1000
                     modules.update(dino=dino_ms,prefix_initialization=init_ms-dino_ms,
                                    sam2_preprocess_tracking_mask_return=mask_ms-init_ms)
@@ -279,6 +298,7 @@ def main():
                         total_ms=total,modules_ms=modules,detail=detail,counts=counts,dino_calls=dino_calls)
                     if phase=='timed': rows.append(row)
                     if phase=='detail': detail_rows.append(row)
+                    if phase=='control': control_rows.append(row)
                     if phase=='timed' and repeat==0:
                         key=(eid,t);digest=fingerprint(masks);mask_hashes.append(digest)
                         if key in masks_ref:
@@ -325,7 +345,10 @@ def main():
                 save('frames_partial.json',rows)
             for mode in ('raw_ede_cpu','raw_ede_cuda'):
                 for eid,a in data.items():episode(mode,eid,a,0,'detail')
+            for mode in ('visual_s3_cpu','raw_ede_cpu'):
+                for eid,a in data.items():episode(mode,eid,a,0,'control')
             save('frames.json',rows);save('policy_detail_frames.json',detail_rows);save('checks.json',checks)
+            save('native_control_frames.json',control_rows)
             summary=summarize(rows)
             masks_equal=all(x.get('mask_equal',True) for x in checks)
             original_equal=all(x.get('packet_original_equal',True) for x in checks)
