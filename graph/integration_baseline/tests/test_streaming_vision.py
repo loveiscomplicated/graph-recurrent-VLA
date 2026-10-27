@@ -266,6 +266,12 @@ class BenchmarkGateTests(unittest.TestCase):
             self.assertEqual(code, -15)
             self.assertEqual(reason['foreign_nvml_host_pids'], [200])
             self.assertEqual(kill.call_args.args[0], 1234)
+            with patch('graph.integration_baseline.streaming_vision_benchmark.shutil.disk_usage',
+                       return_value=SimpleNamespace(free=1)), \
+                 patch('graph.integration_baseline.streaming_vision_benchmark.os.killpg') as kill:
+                code, reason = monitor_worker(process, folder, minimum_free_bytes=2)
+            self.assertEqual(reason['status'], 'ABORTED_FOR_DISK_RESERVE')
+            self.assertEqual(kill.call_args.args[0], 1234)
 
     def test_adoption_requires_latency_masks_repeatability_and_downstream_equality(self):
         from graph.integration_baseline.streaming_vision_benchmark import summarize
