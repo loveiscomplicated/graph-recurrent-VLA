@@ -334,6 +334,38 @@ HF API 사용은 공식 [Repository 관리](https://huggingface.co/docs/huggingf
 [업로드](https://huggingface.co/docs/huggingface_hub/guides/upload),
 [HfApi](https://huggingface.co/docs/huggingface_hub/package_reference/hf_api)를 기준으로 했다.
 
+## 명시적인 정적 보고서 Space 배포
+
+브라우저에서 바로 확인할 정적 보고서는 기존 ZIP selection을 재사용해
+`tools.publish_experiment --static-space`로 별도 배포할 수 있다. 이 옵션은
+`--run-id`, `--include reports`, `--report-files`를 요구하며, 기존 dataset/model
+게시 경로나 W&B identity를 변경하지 않는다.
+
+```bash
+python -m tools.publish_experiment --run-id RUN_ID --include reports \
+  --report-files selection.json \
+  --static-space Graph-Recurrent-VLA/REPORT_NAME --dry-run
+```
+
+선택 목록에는 루트의 `index.html`과 `README.md`가 필요하다. README의 YAML
+frontmatter는 `sdk: static`, `app_file: index.html`을 지정한다. Python API 등
+서버가 필요한 보고서는 지원하지 않으며 상대경로를 사용하는 정적 파일을 준비한다.
+실제 배포는 `--dry-run`을 제거한다. 이 명시적 workflow에서는 Space를 생성할 수 있고,
+기본은 **private**다. 요청된 공개 배포에만 `--public-space`를 지정한다. 기존 Space의
+SDK/공개 범위가 다르면 업로드를 거부하며 공개 범위를 자동 변경하지 않는다.
+Space 목적지는 `Graph-Recurrent-VLA/NAME`으로 제한하고 조직 쓰기 권한을 확인한다.
+
+`utils.experiment_artifacts.deploy_static_space`는 `create_report_bundle`을 사용해
+완료 상태·소유권·안전한 상대경로·JSON 비밀 마스킹을 검증한다. 생성한 ZIP에서
+명시적으로 선택한 멤버와 provenance manifest만 Space에 올린다. 기존 config/metrics는
+ZIP에만 보존된다. 성공 시 기존 run의 `static_space_uploads.json`에 revision과 URL,
+bundle SHA-256을 기록한다. 이 배포 receipt는 W&B 사후 sync 대상에 자동 포함되지 않는다.
+실패 시 학습 결과와 로컬 ZIP은 유지되며 같은 명령으로 재실행할 수 있다.
+
+`--dry-run`은 네트워크를 호출하지 않지만 로컬 report ZIP/manifest/sidecar를 만든다.
+Space 업데이트는 선택 파일의 새 버전을 commit하며, 미선택 원격 파일을 삭제하지 않는다.
+일반 실험 산출물의 immutable hash 경로 업로드와 구별되는 명시적 웹사이트 배포다.
+
 ## W&B URL 연동
 
 HF 성공 receipt는 W&B 접속 없이 저장한다. 원래 W&B run의 summary에 링크를 반영하려면 별도 실행한다.

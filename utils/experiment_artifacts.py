@@ -451,6 +451,62 @@ def publish(directory, include, *, repositories=None, dry_run=False, private=Fal
     return report
 
 
+def deploy_static_space(directory, selection, repo_id, *, public=False, dry_run=False):
+    """Explicitly host a selected report as a static Space using the same bundle.
+
+    This separate workflow creates a private Space by default and never changes
+    an existing Space's visibility. Dataset/model artifact routing is unchanged.
+    Only selected website members and their provenance manifest are deployed.
+    """
+    if not re.fullmatch(rf'{ORGANIZATION}/[A-Za-z0-9][A-Za-z0-9._-]*', repo_id):
+        raise ValueError('static Space must be in Graph-Recurrent-VLA')
+    if selection.get('entrypoint') != 'index.html':
+        raise ValueError('static Space entrypoint must be index.html')
+    bundle = create_report_bundle(directory, selection)
+    with ZipFile(bundle) as archive:
+        names = [*sorted(selection['files']), 'bundle_manifest.json']
+        bodies = {name: archive.read(name) for name in names}
+    readme = bodies.get('README.md', b'').decode('utf-8')
+    frontmatter = readme.split('---', 2)
+    if (len(frontmatter) != 3 or frontmatter[0].strip()
+            or not re.search(r'^sdk: static\s*$', frontmatter[1], re.M)
+            or not re.search(r'^app_file: index.html\s*$', frontmatter[1], re.M)):
+        raise ValueError('Space README requires sdk: static and app_file: index.html')
+    result = dict(status='dry-run', repo_id=repo_id, private=not public,
+                  bundle_sha256=digests(bundle)[1], files=len(bodies),
+                  total_bytes=sum(map(len, bodies.values())))
+    if dry_run:
+        return result
+    api, operation, reason = connect()
+    if reason:
+        return dict(result, status='skipped', reason=reason)
+    try:
+        identity = api.whoami()
+        allowed = any(org.get('name') == ORGANIZATION and org.get('roleInOrg') in ('admin', 'write', 'contributor')
+                      for org in identity.get('orgs', []))
+        if identity.get('auth', {}).get('accessToken', {}).get('role') == 'read' or not allowed:
+            return dict(result, status='skipped', reason='organization write access not confirmed')
+        api.create_repo(repo_id=repo_id, repo_type='space', space_sdk='static',
+                        private=not public, exist_ok=True)
+        info = api.repo_info(repo_id, repo_type='space')
+        if info.private != (not public):
+            raise ValueError('existing Space visibility differs; no visibility change performed')
+        if getattr(info, 'sdk', 'static') != 'static':
+            raise ValueError('existing Space must use the static SDK')
+        commit = api.create_commit(repo_id, repo_type='space', parent_commit=info.sha,
+            operations=[operation(path_in_repo=name, path_or_fileobj=body) for name, body in bodies.items()],
+            commit_message=f'Deploy selected static report from {Path(directory).name}')
+        result.update(status='complete', revision=commit.oid,
+                      url=f'https://huggingface.co/spaces/{repo_id}')
+        receipt = Path(directory) / 'static_space_uploads.json'
+        receipts = json.loads(receipt.read_text()) if receipt.exists() else dict(schema_version=1, deployments=[])
+        receipts['deployments'].append(result)
+        write(receipt, receipts)
+        return result
+    except Exception as exc:
+        return dict(result, status='failed', **failure_details(exc))
+
+
 def sync_wandb_links(directory):
     """Separate opt-in metadata update, no run resume/init or history replay."""
     directory = Path(directory)
