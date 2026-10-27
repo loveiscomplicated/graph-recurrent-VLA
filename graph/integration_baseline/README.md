@@ -419,6 +419,14 @@ must not be added together. A separate profiling pass reports inclusive CUDA
 intervals and call counts; model load, warmup and compile are excluded from
 steady timing and reported separately.
 
+The benchmark requires an initially idle GPU and monitors other NVML processes
+once per second. If another GPU process appears, it terminates only its own new
+worker process group and preserves partial outputs. Host NVML PIDs are never
+used as container kill PIDs. The default Torch allocator limit is 35% of device
+memory, and each condition requires at least 2GiB free disk. Override these
+explicitly with `--gpu-memory-fraction` / `--minimum-free-gb` when appropriate.
+Use `--instance-id` to record the actual host instance in the new run metadata.
+
 Adoption requires direct/adapter pixel equality, repeatability, real SAM2
 causality/memory checks, matching packets/graphs/actions, and <=10% p50/p95
 adapter overhead. Tracking p95 <=50ms is a separate gate. The synchronous

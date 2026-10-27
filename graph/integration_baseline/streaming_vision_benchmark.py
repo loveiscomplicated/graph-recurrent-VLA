@@ -4,6 +4,7 @@ Each condition runs in a fresh process. Profiling, warmup, serialization and
 model loading are outside steady latency. Never trains or publishes artifacts.
 """
 import argparse
+import csv
 from copy import deepcopy
 import hashlib
 from html import escape
@@ -12,6 +13,9 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import signal
+import shutil
+import time
 from time import perf_counter
 
 import numpy as np
@@ -204,6 +208,56 @@ def gpu_snapshot():
                 processes=query('--query-compute-apps=pid,process_name,used_memory'))
 
 
+def gpu_process_ids(snapshot):
+    """NVML reports host PIDs, which must never be used as container kill PIDs."""
+    return {int(row[0].strip()) for row in csv.reader(snapshot['processes'].splitlines()) if row}
+
+
+def reserve_gpu(folder, fraction):
+    if gpu_process_ids(gpu_snapshot()):
+        raise RuntimeError('GPU became occupied before worker initialization')
+    tick = perf_counter()
+    torch.cuda.set_per_process_memory_fraction(fraction)
+    sentinel = torch.zeros(1, device='cuda')
+    torch.cuda.synchronize()
+    snapshot = gpu_snapshot()
+    pids = gpu_process_ids(snapshot)
+    if len(pids) != 1:
+        raise RuntimeError('exclusive worker GPU ownership could not be established')
+    atomic(folder/'gpu_owner.json', dict(container_pid=os.getpid(), nvml_host_pid=next(iter(pids)),
+        initialization_ms=(perf_counter()-tick)*1000, memory_fraction_limit=fraction,
+        scope='single NVML process immediately after an initially idle GPU allocation'))
+    del sentinel
+
+
+def monitor_worker(process, folder):
+    """Stop only our new process group when another GPU process appears."""
+    interference = None
+    while process.poll() is None:
+        owner_path = folder/'gpu_owner.json'
+        if owner_path.exists():
+            owner = read(owner_path)['nvml_host_pid']
+            snapshot = gpu_snapshot()
+            foreign = gpu_process_ids(snapshot) - {owner}
+            if foreign:
+                interference = dict(status='ABORTED_FOR_OTHER_GPU_WORK',
+                    foreign_nvml_host_pids=sorted(foreign), worker_container_pid=process.pid,
+                    action='SIGTERM to this newly created worker process group only')
+                atomic(folder/'resource_interference.json', interference)
+                try:
+                    os.killpg(process.pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass
+                try:
+                    process.wait(timeout=20)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGKILL)
+                    process.wait()
+                break
+        time.sleep(1)
+    return process.wait(), interference
+
+
 def load_inputs(plan):
     from graph.integration_baseline.direct_dataset import validate_receipt
     source = Path(plan['dataset'])
@@ -285,6 +339,7 @@ def worker(plan_path, name):
     torch.backends.cudnn.allow_tf32 = settings['cudnn_tf32']
     torch.backends.cudnn.benchmark = False
     data, schema, split = load_inputs(plan)
+    reserve_gpu(folder, plan.get('gpu_memory_fraction', .35))
     tick = perf_counter()
     detector = (FrozenDetector(read(Path(plan_path).parent/'direct/detections.json'))
                 if settings['frozen_dino'] else GDino(device='cuda'))
@@ -529,9 +584,12 @@ def run(args):
                 dataset_sha256=sha(dataset/'dataset_manifest.json'), episodes=[30002,30047],
                 train_robot=str(args.train_robot.resolve()), train_robot_sha256=sha(args.train_robot),
                 repeats=args.repeats, threads=args.threads,
-                variants={n:VARIANTS[n] for n in args.variants}, seed=42,
+                variants={n:v for n,v in VARIANTS.items() if n in args.variants}, seed=42,
                 adoption=dict(mask_pixel_exact=True, adapter_overhead_max_fraction=.10, tracking_p95_budget_ms=50),
-                task='reused Visual streaming validation', instance_id=57676962)
+                task='reused Visual streaming validation', instance_id=args.instance_id,
+                gpu_memory_fraction=args.gpu_memory_fraction,
+                minimum_free_bytes=int(args.minimum_free_gb*1024**3),
+                resource_policy='one worker; monitor foreign GPU PIDs each second; stop our worker only')
     provenance = args.train_robot.with_name('train_robot_provenance.json')
     proof = read(provenance)
     manifest, split = read(dataset/'dataset_manifest.json'), read(dataset/'split_manifest.json')
@@ -553,26 +611,30 @@ def run(args):
                    'graph/integration_baseline/direct_dataset.py', 'graph/integration_baseline/direct_errors.py',
                    'graph/integration_baseline/rollout_checkpoint.py', 'graph/integration_baseline/rollout_stop_clock.py',
                    'visual/pyproject.toml', 'visual/uv.lock']
-        import shutil
         for relative in changed:
             target = run/'source_snapshot'/relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT/relative, target)
         failures = {}
         for name in plan['variants']:
+            if shutil.disk_usage(run).free < plan['minimum_free_bytes']:
+                raise OSError('disk reserve reached; existing files will not be removed')
             snapshot = gpu_snapshot()
             if snapshot['processes']:
                 raise RuntimeError('GPU is occupied; no existing process will be stopped')
             folder = run/name; folder.mkdir()
             atomic(folder/'before_gpu.json', snapshot)
             with (folder/'worker.log').open('w') as log:
-                process = subprocess.run([sys.executable,'-m',__spec__.name,'--worker',name,'--plan',str(run/'plan.json')],
-                                         stdout=log, stderr=subprocess.STDOUT)
-            if process.returncode:
-                failures[name] = process.returncode
+                process = subprocess.Popen([sys.executable,'-m',__spec__.name,'--worker',name,'--plan',str(run/'plan.json')],
+                                           stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                returncode, interference = monitor_worker(process, folder)
+            if returncode:
+                failures[name] = returncode
                 atomic(run/'failures.json', failures)
             else:
                 print('CONDITION_COMPLETE='+name, flush=True)
+            if interference or (name == 'direct' and returncode):
+                break
         summary = summarize(run, plan)
         for path in run.rglob('*'):
             if path.is_file() and not path.name.endswith('.tracking.json') and path.name not in {
@@ -593,6 +655,9 @@ def main():
     parser.add_argument('--output-root', type=Path, default=Path('experiments'))
     parser.add_argument('--repeats', type=int, default=3)
     parser.add_argument('--threads', type=int, default=8)
+    parser.add_argument('--instance-id', type=int)
+    parser.add_argument('--minimum-free-gb', type=float, default=2.)
+    parser.add_argument('--gpu-memory-fraction', type=float, default=.35)
     parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=list(VARIANTS))
     parser.add_argument('--worker', choices=VARIANTS)
     parser.add_argument('--plan', type=Path)
@@ -608,6 +673,8 @@ def main():
     else:
         if args.dataset is None or args.train_robot is None or args.repeats < 1:
             parser.error('--dataset, --train-robot and positive --repeats required')
+        if not 0 < args.gpu_memory_fraction <= 1 or args.minimum_free_gb < 0:
+            parser.error('valid GPU memory fraction and nonnegative disk reserve required')
         if 'direct' not in args.variants or 'adapter' not in args.variants:
             parser.error('direct and adapter conditions are required')
         raise SystemExit(run(args))

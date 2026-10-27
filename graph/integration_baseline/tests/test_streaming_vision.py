@@ -248,6 +248,25 @@ class StreamAdapterTests(unittest.TestCase):
 
 
 class BenchmarkGateTests(unittest.TestCase):
+    def test_resource_guard_parses_host_pids_and_terminates_only_our_worker_group(self):
+        from graph.integration_baseline.streaming_vision_benchmark import gpu_process_ids, monitor_worker
+        from unittest.mock import Mock
+        from graph.integration_baseline.direct_runtime import atomic
+        self.assertEqual(gpu_process_ids({'processes': '100, python, 123 MiB\n200, python, 5 MiB'}), {100,200})
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            atomic(folder/'gpu_owner.json', {'nvml_host_pid': 100})
+            process = Mock(pid=1234)
+            process.poll.return_value = None
+            process.wait.return_value = -15
+            with patch('graph.integration_baseline.streaming_vision_benchmark.gpu_snapshot',
+                       return_value={'processes':'100, python, 123 MiB\n200, other, 5 MiB'}), \
+                 patch('graph.integration_baseline.streaming_vision_benchmark.os.killpg') as kill:
+                code, reason = monitor_worker(process, folder)
+            self.assertEqual(code, -15)
+            self.assertEqual(reason['foreign_nvml_host_pids'], [200])
+            self.assertEqual(kill.call_args.args[0], 1234)
+
     def test_adoption_requires_latency_masks_repeatability_and_downstream_equality(self):
         from graph.integration_baseline.streaming_vision_benchmark import summarize
         with tempfile.TemporaryDirectory() as folder:
