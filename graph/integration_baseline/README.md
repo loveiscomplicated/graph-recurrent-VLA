@@ -1,5 +1,14 @@
 # Task06 opt-in integration baseline
 
+Matched module latency measurements for the actual Task03 Visual S3 endpoint
+and Raw EDE RGB-D-to-Action7 pipeline are documented in
+[`06e_full_pipeline_latency_comparison.md`](../../docs/visual-graph-integration/06e_full_pipeline_latency_comparison.md).
+The opt-in runner is `python -m graph.integration_baseline.pipeline_latency_comparison`;
+it requires the recorded episode/schema/split inputs, TRAIN normalizer rows,
+cached DINO/SAM2 weights and CUDA. It reuses the existing production functions,
+compares CPU and experimental GPU evidence/FPS, records exclusive wall intervals,
+and executes uninstrumented controls. It does not change pipeline defaults.
+
 This package implements the approved feasibility baseline. Existing simulator,
 GT prototypes, Recurrent policies, Task03–05 sources/artifacts and defaults are
 unchanged. No dependency installation or publishing is needed.
