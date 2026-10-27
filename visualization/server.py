@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 import re
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from graph.integration_baseline.graph import EDGE_TYPES, NODE_TYPES
 from visualization.data import episode_info, frame_for_step, graph_steps, list_episodes
@@ -14,6 +14,7 @@ from visualization.captures import capture_episode, capture_frame, list_captures
 from visualization.persistent import (VARIANTS, is_persistent_id, persistent_episode,
                                       persistent_frame)
 from visualization.media import capture_media, video_file
+from visualization.results import bounded, build_catalog, public_catalog, resource_bytes
 
 
 STATIC = {'/': ('index.html', 'text/html; charset=utf-8'),
@@ -24,11 +25,16 @@ STATIC = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/list.js': ('list.js', 'text/javascript; charset=utf-8'),
           '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
           '/style.css': ('style.css', 'text/css; charset=utf-8')}
+STATIC.update({'/results': ('results.html', 'text/html; charset=utf-8'),
+               '/results.css': ('results.css', 'text/css; charset=utf-8'),
+               '/results.js': ('results.js', 'text/javascript; charset=utf-8'),
+               '/results-unavailable': ('results_unavailable.html', 'text/html; charset=utf-8')})
 
 
 def make_handler(experiments_root):
     root = Path(experiments_root).resolve()
     frontend = Path(__file__).parent
+    catalog = None
 
     class Handler(BaseHTTPRequestHandler):
         def send_bytes(self, status, body, content_type):
@@ -100,12 +106,28 @@ def make_handler(experiments_root):
             self.end_headers()
 
         def do_GET(self):
+            nonlocal catalog
             request = urlsplit(self.path)
             query = parse_qs(request.query)
             try:
                 if request.path in STATIC:
                     name, content_type = STATIC[request.path]
                     self.send_bytes(HTTPStatus.OK, (frontend/name).read_bytes(), content_type)
+                elif request.path == '/api/results':
+                    catalog = build_catalog(root)
+                    self.send_json(HTTPStatus.OK, public_catalog(catalog))
+                elif request.path.startswith('/result-files/'):
+                    if catalog is None:
+                        catalog = build_catalog(root)
+                    key = unquote(request.path[len('/result-files/'):])
+                    resource = catalog['resources'].get(key)
+                    if resource is None or not bounded(catalog['repo'], resource):
+                        raise FileNotFoundError('report resource is not selected')
+                    if resource.suffix.lower() == '.mp4':
+                        self.send_video(resource)
+                    else:
+                        body, content_type = resource_bytes(catalog, key)
+                        self.send_bytes(HTTPStatus.OK, body, content_type)
                 elif request.path == '/api/episodes':
                     self.send_json(HTTPStatus.OK, {'episodes': list_episodes(root)})
                 elif request.path == '/api/captures':

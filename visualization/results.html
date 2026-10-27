@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>실험 결과 모아보기 · Graph Recurrent VLA</title>
+<link rel="stylesheet" href="/results.css">
+</head>
+<body>
+<header class="results-header">
+  <a class="brand" href="/results"><span class="brand-mark" aria-hidden="true">◈</span> GRAPH RECURRENT VLA</a>
+  <nav aria-label="주요 메뉴"><a class="current" aria-current="page" href="/results">실험 결과</a><a id="capture-nav" href="/captures">수집 데이터 · FPS 비교 <span aria-hidden="true">↗</span></a></nav>
+</header>
+<main class="results-main">
+  <section class="results-intro" aria-labelledby="page-title">
+    <div><p class="eyebrow">RESEARCH NOTEBOOK <span>연구 결과 아카이브</span></p><h1 id="page-title">실험 결과 모아보기<span class="title-dot">.</span></h1><p class="intro-copy">점군에서 그래프, 그리고 행동까지.<br>실험에서 확인한 내용과 남은 질문을 한곳에서 살펴보세요.</p></div>
+    <div class="collection-count"><strong id="topic-total">—</strong><span>개의 연구 주제</span><small id="report-total">보고서 목록을 준비하고 있습니다</small></div>
+  </section>
+  <a class="capture-shortcut" id="capture-shortcut" href="/captures"><span class="shortcut-icon" aria-hidden="true">▶</span><span><strong>수집 데이터 직접 살펴보기</strong><small>Main · Wrist RGB-D와 그래프, 초기 FPS point cloud를 같은 시점에서 비교합니다.</small></span><span class="shortcut-arrow" aria-hidden="true">↗</span></a>
+  <section class="report-library" aria-label="실험 보고서 목록">
+    <div class="library-heading"><h2>결과 목록</h2><span class="library-note">주제별 보고서와 관련 실행 기록</span></div>
+    <div class="library-controls">
+      <div id="category-filters" class="category-filters" role="group" aria-label="연구 주제 필터"><button type="button" data-category="all" aria-pressed="true" class="active">전체</button></div>
+      <label class="search-field"><span aria-hidden="true">⌕</span><input id="result-search" type="search" placeholder="주제, 키워드, Task 검색" aria-label="실험 결과 검색"><kbd aria-hidden="true">/</kbd></label>
+    </div>
+    <div class="list-info"><p id="result-summary" role="status">보고서를 불러오는 중입니다.</p><label>정렬 <select id="result-sort" aria-label="결과 정렬"><option value="task">연구 단계 역순</option><option value="date">최근 실행순</option></select></label></div>
+    <div id="result-list" class="result-list"></div>
+    <p id="result-error" class="error-message" role="alert" hidden></p>
+  </section>
+  <footer class="results-footer"><span>저장된 실험 보고서를 주제별로 정리했습니다.</span><span>실행 완료 표시는 실험의 성공 판정과 구분됩니다.</span></footer>
+</main>
+<script src="/results.js" defer></script>
+</body>
+</html>

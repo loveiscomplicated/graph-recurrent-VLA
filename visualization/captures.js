@@ -142,7 +142,7 @@
     $('video-graph-only').setAttribute('aria-label',isPointcloud?'포인트 클라우드만 영상':'그래프만 영상');
     if ($('interactive-graph')) {
       $('interactive-graph').hidden=isPointcloud;
-      if(!isPointcloud) $('interactive-graph').href=`/viewer?episode=${encodeURIComponent(run.geometry_id)}&variant=${encodeURIComponent(variant.id)}`;
+      if(!isPointcloud) $('interactive-graph').href=`${document.documentElement.dataset.captureData?'./viewer.html':'/viewer'}?episode=${encodeURIComponent(run.geometry_id)}&variant=${encodeURIComponent(variant.id)}`;
     }
   }
   function showVideoRun(){

@@ -136,7 +136,7 @@
     $('timeline').value=index; $('frame-label').textContent=`t = ${timestep} · 로딩 중`;
     $('frame-count').textContent=`${index+1} / ${frames.length}`;
     try {
-      const packed=await getJSON(`/api/frame?id=${encodeURIComponent(episodeId)}&t=${timestep}`+(variant?`&variant=${encodeURIComponent(variant)}`:''));
+      const packed=await getFrame(episodeId,timestep,variant);
       if (token!==requestToken) return;
       frameData=unpack(packed);
     } catch(err) {
@@ -216,6 +216,27 @@
     if(!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
     return value;
   }
+  const staticRoot=document.documentElement.dataset.viewerData;
+  const graphBundles=new Map();
+  function staticEpisodePath(id) {
+    if(!/^[A-Za-z0-9_-]+\/geometry\/seed\d+$/.test(id)) throw new Error('올바르지 않은 에피소드');
+    return staticRoot+'/'+id.split('/').map(encodeURIComponent).join('/');
+  }
+  function getEpisode(id) {
+    return getJSON(staticRoot ? staticEpisodePath(id)+'/episode.json' : `/api/episode?id=${encodeURIComponent(id)}`);
+  }
+  async function getFrame(id,timestep,graphVariant) {
+    if(!staticRoot) return getJSON(`/api/frame?id=${encodeURIComponent(id)}&t=${timestep}`+(graphVariant?`&variant=${encodeURIComponent(graphVariant)}`:''));
+    if(!/^(G[0-4]|O[1-3])$/.test(graphVariant)) throw new Error('올바르지 않은 그래프 조건');
+    const url=staticEpisodePath(id)+'/'+graphVariant+'.json';
+    if(!graphBundles.has(url)) {
+      const request=getJSON(url).catch(error=>{graphBundles.delete(url);throw error;});
+      graphBundles.set(url,request);
+    }
+    const frame=(await graphBundles.get(url))[String(timestep)];
+    if(!frame) throw new Error('저장된 프레임이 없습니다.');
+    return frame;
+  }
   const labels={success:'성공',failure:'실패',unknown:'미확인'};
   function showOutcome(episode) {
     const status=$('episode-status'); status.className='status '+episode.result;
@@ -228,7 +249,7 @@
     stop(); requestToken++; const token=++episodeToken; frameData=null; draw();
     $('summary').textContent='Episode를 불러오는 중입니다.';
     try {
-      const detail=await getJSON(`/api/episode?id=${encodeURIComponent(id)}`);
+      const detail=await getEpisode(id);
       if(token!==episodeToken) return;
       data=detail;
       variant=data.variants?(new URLSearchParams(location.search).get('variant') || data.default_variant):null;
@@ -238,7 +259,7 @@
         $('graph-variant').replaceChildren(...data.variants.map(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.label;return o;}));
         $('graph-variant').value=variant;
         $('variant-note').textContent=variant.startsWith('O')?'Oracle · GT를 사용하는 평가 조건입니다.':'저장된 센서 기반 그래프 · 물체당 최대 128개 노드';
-        $('capture-link').href='/captures?episode='+encodeURIComponent(data.episode.capture_id);
+        $('capture-link').href=(staticRoot?'./index.html':'/captures')+'?episode='+encodeURIComponent(data.episode.capture_id);
       }
       frames=data.timesteps; index=0; selected=-1;
       $('episode').textContent=data.episode.id;
@@ -256,7 +277,7 @@
     resize(); new ResizeObserver(resize).observe(canvas);
     const id=new URLSearchParams(location.search).get('episode');
     if (id) openEpisode(id);
-    else location.replace('/');
+    else location.replace(staticRoot?'./index.html'+location.search:'/');
   }
   start();
 })();

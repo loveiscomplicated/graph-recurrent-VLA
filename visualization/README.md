@@ -232,3 +232,78 @@ FPS 배포 검증: 신규 MP4 6개 전 프레임 디코딩(734프레임), 기존
 367개 수집 프레임 불변, 조건별 영상/설명 연결 및 관련 뷰어 테스트 14개 통과.
 로컬 Chrome에서 FPS 선택과 두 영상 재생을 확인했다. 원격은 API로 RUNNING과
 433개 게시 파일의 크기·Git/LFS hash 일치를 확인했다.
+
+## 실험 결과 목록
+
+로컬 서버의 `/results`에서 **실험 결과 모아보기**를 연다. 기존 `/`의 3D rollout
+목록과 `/captures`는 유지하며 두 화면의 헤더에서도 결과 목록으로 이동할 수 있다.
+정적 배포의 루트 `index.html`은 기존 수집·그래프/FPS 화면이며, **실험 결과 모아보기**
+메뉴로 `results.html`의 목록을 연다. `captures.html`도 같은 수집 화면의 별칭으로 유지한다.
+보고서의 **← 결과 목록**은 `results.html`로 돌아온다. 기존 `?episode=...` 북마크도 유지한다.
+
+`results_catalog.json`은 보고서 파일별 한국어 제목·소제목·주제·Task와 대표 실행을
+정의한다. `results.py`는 `experiments/<run_id>/*.html`을 읽어 같은 주제의 실행들을
+묶는다. 브라우저 검수본·템플릿·하위 source snapshot은 기본 목록에서 제외한다.
+진행 중인 실행은 상태만 표시하고 웹 파일은 게시하지 않는다. 실패·중간 보고·
+상태 미기록·그림 누락도 별도로 표시하며 완료를 실험 성공으로 해석하지 않는다.
+
+현재 49개 보고서를 38개 주제로 정리했고, 진행 중 1개를 제외한 48개를 열 수 있다.
+검색은 한국어 제목·소제목·Task·기존 키워드·run ID를 지원한다. 주제 필터,
+최근 실행순 정렬, 관련 실행 펼치기를 제공한다. 새로운 파일명은 임시 한국어
+항목으로 자동 발견되며 내용을 읽은 뒤 curation JSON에 적절한 제목을 추가한다.
+
+```bash
+.venv/bin/python -m visualization.export_results \
+  --capture-run e835cf0c001e47ee88a1e8dbb5fb877c \
+  --geometry-run b1c5851d4a35489098d7b9eaeaf6b6c4 \
+  --output outputs/results-main-final
+.venv/bin/python -m http.server 8881 --directory outputs/results-main-final
+```
+
+출력 폴더는 새 경로를 사용한다. 보고서가 실제로 참조하는 그림·영상·작은 JSON/CSV·
+설명 문서만 명시적 selection에 포함하며 원본 HTML/실험 파일은 수정하지 않는다.
+웹용 사본에는 **← 결과 목록** 링크를 추가한다. 원본 데이터·체크포인트·소스/로그·
+2MiB 초과 JSON/CSV/TXT 링크는 로컬 자료 안내로 이어진다. 원본에 없는 그림은
+누락 표시를 사용하며 다른 실행의 그림으로 대체하지 않는다. 선택하지 않은 파일과
+symlink·저장소 밖 경로는 로컬 report API에서도 제공하지 않는다.
+
+`results_export_manifest.json`은 파일별 원본 run/path/hash와 준비된 웹용 사본 hash를 보존한다.
+공통 JSON 정규화·비밀 키 마스킹 이후 실제 게시 파일의 hash는 `bundle_manifest.json`을 따른다.
+기존 capture run을 hosting identity로 재사용하되 다른 실행의 자료는 dependency로
+구분한다. 게시에는 기존 공통 report bundle·Static Space workflow를 사용한다.
+
+```bash
+.venv/bin/python -m tools.publish_experiment \
+  --run-id e835cf0c001e47ee88a1e8dbb5fb877c --include reports \
+  --report-files outputs/results-main-final-selection.json \
+  --static-space Graph-Recurrent-VLA/task09c-captures
+```
+
+검증: 관련 Python 테스트 21개 통과, Node UI 동작 검사(목록·검색·필터·빈 결과·
+검색 URL 복원·이전 capture 북마크) 통과. 웹 사본 53개 HTML의 상대 링크 2,760개
+확인(깨진 링크 0개), PNG 749개 decode, 원본 HTML 50개와 수집 프레임 367개
+불변 확인. 첫 목록 배치는 Chrome에서 확인했고, 검색/필터는 별도 동작 검사로
+확인했다. Simulator/GPU/학습을 실행하지 않았다.
+
+현재 배포 revision: `eb8632b235a9bd653c845b32f5a2a698fbd2f87f`.
+기존 비공개 [Space](https://huggingface.co/spaces/Graph-Recurrent-VLA/task09c-captures)의
+첫 화면은 기존 수집·그래프 비교 UI로 유지한다. 실험 결과 모아보기는 헤더 링크로
+`results.html`에서 연다. 기존 3개 에피소드·54개 비교 영상과 한국어 결과 목록은 유지한다.
+
+원격 API 검증: RUNNING/private 상태, 선택 게시 파일 2,081개의 크기·Git/LFS hash
+일치, 메인·목록 JSON·요청한 Raw EDE HTML의 revision 고정 다운로드 확인.
+
+첫 화면 복원 검증: 관련 테스트 8개 통과, HTML 상대 링크 검사 통과. 원격 index/captures는
+기존 수집·그래프 UI, results.html은 별도 목록, 보고서의 복귀 링크는 results.html임을 확인했다.
+
+### 허깅페이스 정적 3D 뷰어
+
+정적 배포의 수집 화면에서 **인터랙티브 3D 열기**를 누르면 선택한 에피소드와
+그래프 조건을 그대로 3D 뷰어로 연다. 좌클릭 드래그로 회전하고 휠로 확대·축소하며,
+타임라인, 좌표계, 노드·엣지 필터와 노드 입력 검사를 사용할 수 있다. G0–G4와
+Oracle O1–O3의 저장 그래프를 제공한다. FPS point cloud는 현재 영상으로 제공하며
+인터랙티브 그래프 데이터에는 포함하지 않는다.
+
+정적 내보내기는 선택한 geometry run의 그래프를 에피소드와 조건별 JSON으로 묶는다.
+최초 조건 선택 때 해당 조건의 전체 프레임을 내려받고 이후에는 브라우저에서 재사용한다.
+원본 그래프와 수집 시점의 일치 여부를 기존 accessor로 검증하고, 새 그래프는 생성하지 않는다.

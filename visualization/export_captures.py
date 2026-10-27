@@ -43,6 +43,7 @@ def export_captures(root, run_id, output, *, geometry_runs=()):
     html = html.replace('href="/style.css"', 'href="./style.css"').replace('href="/captures.css"', 'href="./captures.css"')
     html = html.replace('src="/captures.js"', 'src="./captures.js"')
     html = html.replace('href="/">← 그래프 목록', 'href="./">← 처음으로')
+    html = html.replace('href="/results"', 'href="./index.html"')
     html = re.sub(r'<a id="interactive-graph"[^>]*>.*?</a>', '', html)
     (output / 'index.html').write_text(html, encoding='utf-8')
     record('index.html')
