@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rollout 목록 · Graph 3D</title>
+<link rel="stylesheet" href="/style.css">
+<body class="catalog-page">
+<header class="site-header"><h1>Rollout graph · 3D</h1><span class="muted">저장된 모델 입력 그래프</span></header>
+<main class="catalog">
+  <div class="catalog-intro">
+    <div><h2>Rollout 목록</h2><p class="muted">episode를 선택하면 프레임별 3D 그래프를 볼 수 있습니다.</p></div>
+    <button id="refresh">목록 새로고침</button>
+  </div>
+  <div class="catalog-toolbar">
+    <input id="episode-search" type="search" placeholder="run 또는 episode 검색" aria-label="Rollout 검색">
+    <div class="status-filters" role="group" aria-label="성공 여부 필터">
+      <button type="button" data-result="all" class="active" aria-pressed="true">전체 <span id="count-all"></span></button>
+      <button type="button" data-result="success" aria-pressed="false">성공 <span id="count-success"></span></button>
+      <button type="button" data-result="failure" aria-pressed="false">실패 <span id="count-failure"></span></button>
+      <button type="button" data-result="unknown" aria-pressed="false">미확인 <span id="count-unknown"></span></button>
+    </div>
+  </div>
+  <p id="list-summary" class="muted" role="status">목록을 불러오는 중입니다.</p>
+  <div id="episode-cards" class="episode-grid"></div>
+</main>
+<script src="/list.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rollout graph 3D viewer</title>
+<link rel="stylesheet" href="/style.css">
+<body class="viewer-page">
+<header class="site-header"><a class="back-link" href="/">← 목록</a><h1>Rollout graph · 3D</h1><span class="muted" id="episode"></span><span class="status unknown" id="episode-status">미확인</span></header>
+<main class="viewer-layout">
+  <aside>
+    <h2>Episode</h2>
+    <div id="episode-meta" class="muted"></div>
+    <h3>시간</h3>
+    <div class="row"><strong id="frame-label">준비 중</strong><span class="muted" id="frame-count"></span></div>
+    <input id="timeline" type="range" min="0" max="0" value="0" aria-label="프레임">
+    <div class="control"><button id="prev" aria-label="이전 프레임">◀</button><button class="primary" id="play">재생</button><button id="next" aria-label="다음 프레임">▶</button></div>
+    <h3>표시 좌표계</h3><div class="control" role="group" aria-label="표시 좌표계"><button id="frame-ee" class="primary" aria-pressed="true">EE 상대</button><button id="frame-world" aria-pressed="false">월드 절대</button></div>
+    <h3>노드</h3><div id="node-filters"></div>
+    <h3>엣지</h3><div id="edge-filters"></div>
+    <h3>카메라</h3><button id="reset">현재 프레임에 맞추기</button>
+    <p class="muted">좌클릭 드래그: 회전<br>Shift+드래그 또는 우클릭 드래그: 이동<br>휠: 확대·축소<br>점 클릭: 모델 입력 확인</p>
+  </aside>
+  <section class="stage" aria-label="3D 그래프 뷰"><canvas id="scene" aria-label="회전 가능한 3D 그래프"></canvas><div class="hint" id="coordinate-hint">EE 상대 좌표 · 단위 m · X 빨강 / Y 초록 / Z 파랑</div></section>
+  <aside>
+    <h2>프레임 요약</h2><div id="summary" class="muted"></div>
+    <h3>선택한 노드</h3><div id="inspector" class="empty">점 하나를 클릭하세요.</div>
+    <h3>표현</h3><p class="muted">EE 모드는 저장된 모델 입력 좌표입니다. 월드 모드는 같은 timestep의 TCP pose로 노드 위치를 변환합니다. F5와 edge_attr은 원래 모델 입력인 EE 기준 그대로 표시합니다. 엣지 수는 방향이 있는 입력 기준이며, 그림에서는 왕복 엣지를 한 선으로 겹쳐 그립니다.</p>
+  </aside>
+</main>
+<script src="/app.js" defer></script>
+</html>

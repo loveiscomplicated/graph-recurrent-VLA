@@ -462,6 +462,33 @@ test seeds. Any seed allocation change must be frozen before the first evaluatio
 
 See [Task07 implementation and measured verification](../../docs/visual-graph-integration/07_stop_the_clock_rollout.md).
 
+### 3D graph viewer for saved rollouts
+
+Task07 saves the exact per-observation graph tensors passed to the model as
+`episodes/<episode>/graph_XXXX.npz`, and same-time TCP world poses in
+`observations.npz`. The read-only frontend in [`visualization/`](../../visualization/)
+browses saved episodes without rerunning Vision, the simulator, or the policy:
+
+```bash
+.venv/bin/python -m visualization.server
+```
+
+Open `http://127.0.0.1:8765/`. The separate list page shows compatible saved
+episodes as large cards with search and success/failure/unknown filters. Select
+one to open its graph viewer; use the back link to return to the list. Use the
+EE relative / world absolute toggle to switch displayed node positions. World
+positions are computed from the matching observation's TCP world pose; the
+reader checks the first three transformed robot nodes
+against the saved world robot geometry. Drag to rotate, Shift-drag/right-drag
+to pan, scroll to zoom, and use the timeline or play button to inspect time.
+Node and edge type filters reduce clutter; clicking a node shows both positions,
+the original `node_input` F5/availability/validity, source index and directed
+degree. The original F5 and `edge_attr` remain EE-frame model inputs in the
+inspector. The viewer draws bidirectional pairs as one line for clarity while
+reporting the saved directed edge counts. This is visualization of saved inputs
+only; it does not recalculate graph construction or establish model correctness.
+Frames load on demand. See [frontend usage and status semantics](../../visualization/README.md).
+
 ### Checkpoint smoke and explicitly selected evaluation groups
 
 `--mode smoke --checkpoint-manifest <manifest>` runs the same small, excluded

@@ -71,6 +71,11 @@ documented in [recurrent/README.md](recurrent/README.md). On a GPU server run
 
 ## Experiment tracking
 
+To browse saved Graph rollout inputs in 3D, run
+`.venv/bin/python -m visualization.server` and open `http://127.0.0.1:8765/`.
+The [visualization frontend](visualization/README.md) has a separate rollout
+list with outcome filters and an EE/world coordinate toggle in the graph view.
+
 Existing Graph training and evaluation entrypoints now record scalar experiments
 to `experiments/<run_id>/`. W&B is optional; missing authentication selects offline
 mode, and missing SDK keeps local JSON logging. Vessl optionally loads
