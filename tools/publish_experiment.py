@@ -15,6 +15,8 @@ def main(argv=None):
     mode.add_argument('--run-id')
     mode.add_argument('--init-repos', action='store_true', help='explicitly create/reuse private repositories')
     mode.add_argument('--sync-wandb', metavar='RUN_ID', help='retry W&B link sync independently of HF')
+    mode.add_argument('--maintenance-plan', type=Path, help='revision-pinned repository maintenance JSON; dry-run by default')
+    parser.add_argument('--apply', action='store_true', help='apply an explicit maintenance plan')
     parser.add_argument('--experiments-dir', type=Path,
                         default=Path(os.getenv('EXPERIMENTS_DIR', REPO / 'experiments')))
     parser.add_argument('--include', nargs='+', choices=['checkpoint', 'rollouts', 'metrics', 'reports'])
@@ -29,6 +31,8 @@ def main(argv=None):
                         help='override checkpoint or rollouts repository within Graph-Recurrent-VLA')
     parser.add_argument('--retries', type=int, default=2)
     args = parser.parse_args(argv)
+    if args.apply and (not args.maintenance_plan or args.dry_run):
+        parser.error('--apply requires --maintenance-plan and cannot use --dry-run')
     if args.run_id and not args.include:
         parser.error('--run-id requires an explicit --include selection')
     if not args.run_id and args.include:
@@ -47,7 +51,11 @@ def main(argv=None):
                 raise ValueError('unknown repository kind')
             repositories[key] = Repository(repo_id, repositories[key].repo_type)
         validate_repositories(repositories)
-        if args.init_repos:
+        if args.maintenance_plan:
+            from utils.experiment_artifact_maintenance import reconcile
+            report = reconcile(json.loads(args.maintenance_plan.read_text()), apply=args.apply,
+                               receipt=args.maintenance_plan.with_suffix('.receipt.json'))
+        elif args.init_repos:
             report = initialize_repositories(repositories, dry_run=args.dry_run)
         else:
             run_id = args.run_id or args.sync_wandb

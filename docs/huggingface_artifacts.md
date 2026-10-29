@@ -379,6 +379,45 @@ python -m tools.publish_experiment --sync-wandb RUN_ID
 W&B 인증 누락 또는 네트워크 실패에도 HF commit/receipt는 유지된다. 나중에 위 명령만 재실행한다.
 W&B에 아직 run이 없으면 기존 offline sync 절차를 먼저 수행한다.
 
+## 기존 원격 자료의 명시적 정리
+
+`utils.experiment_artifact_maintenance`는 공통 인증·해시·실패 처리를 재사용하여
+현재 revision의 파일 목록과 manifest 참조를 조사하고 명시적 정리 계획을 적용한다.
+대상은 기존 Model/Rollouts 저장소, `experiment-backups` Dataset과
+`task09c-captures` Space 네 곳이다. 새 저장소·run ID를 만들거나 공개 범위를 바꾸지 않는다.
+
+```bash
+python -m tools.publish_experiment --maintenance-plan maintenance-plan.json
+python -m tools.publish_experiment --maintenance-plan maintenance-plan.json --apply
+```
+
+기본 호출과 `--dry-run`은 로컬 계획·추가 파일 해시만 검증하며 네트워크를 호출하지 않는다.
+`--apply`는 별도 옵션이며 `--dry-run`과 함께 사용할 수 없다. 원격 조사 자체는
+`inventory(repo_id, repo_type)`로 수행하는 읽기 전용 작업이다.
+
+계획 JSON은 `schema_version: 1`, `repositories` 목록을 갖는다. 각 저장소 항목은
+`repo_id`, `repo_type`, `revision`, `private`, `additions`, `deletions`,
+`protected_paths`를 기록한다. Addition은 `path`, `source`, `sha256`, deletion은
+원본 `path`·`size`·`sha256` 또는 `git_sha1`, `retained_path`, `reference_count: 0`,
+`reason`을 요구한다. 명시적 개별 파일만 다루며 디렉터리·glob 삭제는 지원하지 않는다.
+
+실제 삭제 시 현재 manifest·backup manifest·Space bundle의 참조를 다시 확인하고,
+보존 사본의 해시와 크기도 검사한다. 서로 다른 실행이나 백업이 참조하는 동일 파일은
+보존한다. `/artifacts/`·`/manifests/`의 기존 불변 자료를 maintenance addition으로
+덮어쓸 수 없다. 기존 실험 UUID와 해시 경로는 유지하고 README/catalog로 탐색을 개선한다.
+
+저장소마다 `parent_commit`을 지정한 단일 commit으로 적용한다. Revision이나 공개 범위가
+바뀌면 적용을 중단한다. 재실행 시 이미 반영된 파일은 건너뛰며 저장소별 성공·실패와
+복구 기준 revision은 계획 파일 옆의 `.receipt.json`에 즉시 저장한다.
+Git history 재작성, LFS 영구 삭제, 저장 용량 회수는 이 기능의 범위가 아니다.
+
+회수된 실험의 서버 절대경로를 고칠 때는 원본 metadata를 보존하고 별도 게시 준비
+디렉터리에 같은 run ID의 기록을 복사한다. 게시할 파일만 명시적으로 연결하고,
+원래 경로·게시 경로·SHA 대응과 원본 기록을 함께 보관한다. `--include checkpoint`는
+등록된 모든 checkpoint를 선택하므로 Best/Last만 게시할 때는 준비 기록에도 그 파일만
+등록한다. 상위 비교가 `running`이거나 실패했어도 완료된 child 실행으로 게시할 수 있으며,
+상위 상태를 임의로 성공 처리하지 않고 실패·복구와 comparison 연결을 함께 기록한다.
+
 ## 현재 제약과 확장 제안
 
 로컬 `metadata.json`에는 `source_run_id`, `wandb_url`, dataset hash 등 `record()`한 정보를
