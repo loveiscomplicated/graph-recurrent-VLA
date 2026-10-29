@@ -30,3 +30,14 @@ State clearly when a backend or device was not executed on the current host.
 - Check the current branch's implementation before using an API. If an interface
   is missing, report the gap and consider a shared extension before adding a
   parallel implementation. Update the corresponding docs when interfaces change.
+
+## Research report location
+
+- Collect final experiment, analysis, and diagnostic Markdown reports in
+  `docs/visual-graph-integration/`, using the task identifier in the filename.
+  Save the full report there, not only a summary or a link to `outputs/`.
+- Raw artifacts, CSVs, figures, static HTML, and execution logs may remain in
+  their experiment output directory. If a report is generated in `outputs/`,
+  also copy its full content into `docs/visual-graph-integration/` and adjust
+  relative artifact links so they resolve from the documentation directory.
+- Link to the report in `docs/visual-graph-integration/` in completion messages.
