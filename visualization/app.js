@@ -252,14 +252,14 @@
       const detail=await getEpisode(id);
       if(token!==episodeToken) return;
       data=detail;
-      variant=data.variants?(new URLSearchParams(location.search).get('variant') || data.default_variant):null;
+      variant=data.variants?(new URLSearchParams(location.search).get('variant') || document.documentElement.dataset.defaultVariant || data.default_variant):null;
       if(data.variants && !data.variants.some(v=>v.id===variant))variant=data.default_variant;
       $('variant-controls').hidden=!data.variants; $('status-controls').hidden=!data.variants;
       if(data.variants){
         $('graph-variant').replaceChildren(...data.variants.map(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.label;return o;}));
         $('graph-variant').value=variant;
         $('variant-note').textContent=variant.startsWith('O')?'Oracle · GT를 사용하는 평가 조건입니다.':'저장된 센서 기반 그래프 · 물체당 최대 128개 노드';
-        $('capture-link').href=(staticRoot?'./index.html':'/captures')+'?episode='+encodeURIComponent(data.episode.capture_id);
+        $('capture-link').href=(staticRoot?'./captures.html':'/captures')+'?episode='+encodeURIComponent(data.episode.capture_id);
       }
       frames=data.timesteps; index=0; selected=-1;
       $('episode').textContent=data.episode.id;
@@ -275,9 +275,14 @@
   }
   function start() {
     resize(); new ResizeObserver(resize).observe(canvas);
-    const id=new URLSearchParams(location.search).get('episode');
+    const requested=new URLSearchParams(location.search).get('episode');
+    if(staticRoot && requested && requested.includes('/collection/')) {
+      location.replace('./captures.html'+location.search); return;
+    }
+    if(document.documentElement.dataset.defaultCoordinate==='world') setCoordinate('world');
+    const id=requested || document.documentElement.dataset.defaultEpisode;
     if (id) openEpisode(id);
-    else location.replace(staticRoot?'./index.html'+location.search:'/');
+    else location.replace(staticRoot?'./captures.html'+location.search:'/');
   }
   start();
 })();

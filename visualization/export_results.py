@@ -1,6 +1,6 @@
 """Build a graph/capture home with a separate Korean results catalogue.
 
-The existing capture viewer stays at index.html and captures.html. No experiment is run
+The interactive graph viewer is the landing page. No experiment is run
 or automatically published; the explicit selection uses the shared publisher.
 """
 
@@ -10,6 +10,7 @@ import json
 import os
 import re
 from pathlib import Path
+from html import escape
 
 from utils.experiment_artifacts import encoded
 from visualization.export_captures import export_captures
@@ -31,20 +32,19 @@ def add_static_auth(html):
 
 
 def arrange_navigation(output, files):
-    """Keep the established graph/capture screen first; results are secondary."""
+    """Connect the capture and results screens to the graph landing page."""
     output = Path(output)
     capture = (output / 'captures.html').read_text()
     capture = capture.replace('href="./index.html">실험 결과 모아보기',
                               'href="./results.html">실험 결과 모아보기')
     capture = capture.replace('<button id="video-seek">현재 프레임에 맞추기</button>', '<button id="video-seek">현재 프레임에 맞추기</button><a id="interactive-graph" class="back-link">인터랙티브 3D 열기 →</a>')
     capture = add_static_auth(capture)
-    for name in ('index.html', 'captures.html'):
-        (output / name).write_text(capture)
-        files[name] = dict(source=str(output / name), role='result')
+    (output / 'captures.html').write_text(capture)
+    files['captures.html'] = dict(source=str(output / 'captures.html'), role='result')
     results = (FRONTEND / 'results.html').read_text()
     results = results.replace('<html lang="ko">', '<html lang="ko" data-results-data="./data/results.json">')
     results = results.replace('href="/results.css"', 'href="./results.css"').replace('src="/results.js"', 'src="./results.js"')
-    results = results.replace('href="/results"', 'href="./results.html"').replace('href="/captures"', 'href="./index.html"')
+    results = results.replace('href="/results"', 'href="./results.html"').replace('href="/captures"', 'href="./captures.html"')
     (output / 'results.html').write_text(add_static_auth(results))
     files['results.html'] = dict(source=str(output / 'results.html'), role='result')
 
@@ -74,14 +74,16 @@ def export_results(root, output, capture_run, geometry_runs):
         save(name, (FRONTEND / name).read_bytes())
     save('results-unavailable.html', add_static_auth((FRONTEND / 'results_unavailable.html').read_text()).encode())
     arrange_navigation(output, files)
-    save('data/results.json', encoded(public_catalog(catalog, prefix='./reports/', capture_url='./index.html', static=True)))
+    save('data/results.json', encoded(public_catalog(catalog, prefix='./reports/', capture_url='./captures.html', static=True)))
     viewer = (FRONTEND / 'viewer.html').read_text()
     viewer = viewer.replace('<html lang="ko">', '<html lang="ko" data-viewer-data="./data/graphs">')
     viewer = viewer.replace('href="/style.css"', 'href="./style.css"').replace('src="/app.js"', 'src="./app.js"')
-    viewer = viewer.replace('href="/">← 목록', 'href="./index.html">← 수집 데이터')
+    viewer = viewer.replace('href="/">← 목록', 'href="./captures.html">← 수집 데이터')
+    viewer = viewer.replace('</header>', '<a class="back-link" href="./results.html">실험 결과 모아보기 →</a></header>', 1)
     save('viewer.html', add_static_auth(viewer).encode())
     save('app.js', (FRONTEND / 'app.js').read_bytes())
     graph_count = 0
+    default_episode = None
     for capture_episode in json.loads((output / 'data/captures.json').read_text())['episodes']:
         media_path = output / 'data' / capture_episode['id'] / 'media.json'
         for run in json.loads(media_path.read_text())['runs']:
@@ -89,6 +91,8 @@ def export_results(root, output, capture_run, geometry_runs):
             _, records, info = persistent_episode(root, episode_id, check_complete=True)
             if info['capture_id'] != capture_episode['id']:
                 raise ValueError('viewer geometry does not match selected capture')
+            if default_episode is None and any(v['id'] == 'O3' for v in info['variants']):
+                default_episode = episode_id
             base = 'data/graphs/' + episode_id
             detail = dict(episode=info, node_types=NODE_TYPES,
                           edge_types=['Surface / Raw EDE', *EDGE_TYPES[1:]],
@@ -101,6 +105,13 @@ def export_results(root, output, capture_run, geometry_runs):
                           for record in records}
                 save(base + '/' + variant_id + '.json', encoded(frames), role='dependency')
                 graph_count += len(frames)
+
+    if default_episode is None:
+        raise ValueError('landing page requires a complete O3 geometry episode')
+    landing = viewer.replace('data-viewer-data="./data/graphs"',
+        'data-viewer-data="./data/graphs" data-default-coordinate="world" '
+        'data-default-variant="O3" data-default-episode="' + escape(default_episode, quote=True) + '"')
+    save('index.html', add_static_auth(landing).encode())
 
     for key, source in sorted(catalog['resources'].items()):
         target = Path('reports') / key
@@ -116,15 +127,15 @@ def export_results(root, output, capture_run, geometry_runs):
                                bytes=len(body)))
     save('results_export_manifest.json', encoded(dict(schema_version=1,
         hosting_run_id=capture_run, topics=len(catalog['groups']), reports=catalog['reports'],
-        entrypoints=dict(home='index.html', results='results.html', capture_alias='captures.html'),
+        entrypoints=dict(home='index.html', results='results.html', captures='captures.html', viewer='viewer.html'),
         available_reports=catalog['available_reports'], dependencies=provenance,
         unavailable_links=catalog['issues'], policy='original reports read-only; selected web resources; running runs excluded')))
     readme = ('---\ntitle: Task09-C · 수집 데이터 확인\nemoji: 🔎\ncolorFrom: blue\ncolorTo: purple\n'
               'sdk: static\napp_file: index.html\npinned: false\n---\n\n'
-              '# 수집 데이터·그래프 비교\n\n첫 화면은 Task09-C 수집 데이터·FPS 비교이며, 실험 결과 모아보기는 results.html에서 엽니다.\n'
+              '# 수집 데이터·그래프 비교\n\n첫 화면은 월드 좌표 O3 인터랙티브 그래프이며, 수집 데이터는 captures.html, 실험 결과는 results.html에서 엽니다.\n'
               '실험 결과를 재계산하지 않습니다. 원본 run identity는 results_export_manifest.json에 보존합니다.\n')
     save('README.md', readme.encode())
-    selection['description'] = 'Graph/capture home with a linked Korean results catalogue'
+    selection['description'] = 'Interactive O3 graph home with linked captures and Korean results'
     selection_path = output.parent / (output.name + '-selection.json')
     selection_path.write_bytes(encoded(selection))
     return dict(output=str(output), selection=str(selection_path), topics=len(catalog['groups']),

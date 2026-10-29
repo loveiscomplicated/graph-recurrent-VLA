@@ -62,14 +62,14 @@ class ResultsTest(unittest.TestCase):
             '<a href="./index.html">실험 결과 모아보기 →</a>')
         files = {}
         arrange_navigation(output, files)
-        home = (output / 'index.html').read_text()
-        self.assertIn('id="capture-videos"', home)
-        self.assertIn('href="./results.html">실험 결과 모아보기', home)
-        self.assertNotIn('id="result-list"', home)
+        capture = (output / 'captures.html').read_text()
+        self.assertIn('id="capture-videos"', capture)
+        self.assertIn('href="./results.html">실험 결과 모아보기', capture)
+        self.assertNotIn('id="result-list"', capture)
         results = (output / 'results.html').read_text()
         self.assertIn('id="result-list"', results)
-        self.assertIn('href="./index.html"', results)
-        self.assertEqual(set(files), {'index.html', 'captures.html', 'results.html'})
+        self.assertIn('href="./captures.html"', results)
+        self.assertEqual(set(files), {'captures.html', 'results.html'})
 
     def test_html_assets_navigation_redaction_and_source_preservation(self):
         catalog = build_catalog(self.root)

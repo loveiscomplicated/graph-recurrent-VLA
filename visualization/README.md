@@ -237,8 +237,8 @@ FPS 배포 검증: 신규 MP4 6개 전 프레임 디코딩(734프레임), 기존
 
 로컬 서버의 `/results`에서 **실험 결과 모아보기**를 연다. 기존 `/`의 3D rollout
 목록과 `/captures`는 유지하며 두 화면의 헤더에서도 결과 목록으로 이동할 수 있다.
-정적 배포의 루트 `index.html`은 기존 수집·그래프/FPS 화면이며, **실험 결과 모아보기**
-메뉴로 `results.html`의 목록을 연다. `captures.html`도 같은 수집 화면의 별칭으로 유지한다.
+정적 배포의 루트 `index.html`은 월드 절대 좌표와 O3 조건으로 열리는 인터랙티브 3D 뷰어다.
+상단 링크로 `captures.html`의 수집·그래프/FPS 화면 또는 `results.html`의 결과 목록을 연다.
 보고서의 **← 결과 목록**은 `results.html`로 돌아온다. 기존 `?episode=...` 북마크도 유지한다.
 
 `results_catalog.json`은 보고서 파일별 한국어 제목·소제목·주제·Task와 대표 실행을
@@ -285,9 +285,9 @@ symlink·저장소 밖 경로는 로컬 report API에서도 제공하지 않는�
 불변 확인. 첫 목록 배치는 Chrome에서 확인했고, 검색/필터는 별도 동작 검사로
 확인했다. Simulator/GPU/학습을 실행하지 않았다.
 
-현재 배포 revision: `eb8632b235a9bd653c845b32f5a2a698fbd2f87f`.
+기존 결과 목록 배포 revision: `eb8632b235a9bd653c845b32f5a2a698fbd2f87f`.
 기존 비공개 [Space](https://huggingface.co/spaces/Graph-Recurrent-VLA/task09c-captures)의
-첫 화면은 기존 수집·그래프 비교 UI로 유지한다. 실험 결과 모아보기는 헤더 링크로
+수집·그래프 비교 UI를 제공한다. 실험 결과 모아보기는 헤더 링크로
 `results.html`에서 연다. 기존 3개 에피소드·54개 비교 영상과 한국어 결과 목록은 유지한다.
 
 원격 API 검증: RUNNING/private 상태, 선택 게시 파일 2,081개의 크기·Git/LFS hash
