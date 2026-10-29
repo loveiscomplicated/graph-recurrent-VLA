@@ -122,7 +122,7 @@ def build_catalog(root, repo=None):
     def order(group):
         match = re.match(r'(\d+)(?:-([A-Z]+))?', group['task'])
         return (int(match[1]) if match else 6, match[2] or '' if match else '', group['title'])
-    groups.sort(key=order, reverse=True)
+    groups.sort(key=order)
     resources = {}
     pending = [repo / entry['path'] for entry in source_entries.values() if entry['available']]
     issues = []
