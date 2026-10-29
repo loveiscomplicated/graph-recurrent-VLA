@@ -35,7 +35,7 @@ async function setup(search='') {
   get('result-search').value='';get('result-search').listeners.input();
   const memory=get('category-filters').children.find(b=>b.dataset.category==='memory');
   get('category-filters').listeners.click({target:{closest:()=>memory}});
-  assert.equal(get('result-list').children.length,3);
+  assert.equal(get('result-list').children.length,data.groups.filter(g=>g.category==='memory').length);
   get('result-search').value='검색 결과가 없는 문장';get('result-search').listeners.input();
   assert.match(get('result-list').children[0].textContent,/조건에 맞는 결과가 없습니다/);
   const restored=await setup('?q=Raw+EDE');

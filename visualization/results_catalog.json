@@ -1,4 +1,8 @@
 {
+  "plan_a_geometry_suitability.html": {"task":"09-D","category":"memory","title":"현재 두 카메라 관측은 기하 정보를 얼마나 남길까","subtitle":"Plan A의 카메라 gate·점 표현·GNN 정보를 같은 조건에서 비교했습니다. 판정은 CONDITIONAL이며 정책 성공 평가는 포함하지 않습니다."},
+  "plan_b_box_persistence.html": {"task":"09-E","category":"memory","title":"Box 표면을 누적하면 가림과 이동에 강해질까","subtitle":"Box 지속성 후보 둘을 정지·가림·이동·Oracle 조건에서 평가했습니다. 두 후보 모두 기하 Gate를 통과하지 못해 NO-GO로 기록했습니다."},
+  "research_report.html": {"task":"10","category":"learning","title":"Plan A 그래프로 행동을 학습한 최종 결과","subtitle":"E0/E1의 같은 학습 예산과 Best·Last × Test12 평가를 비교합니다. 최종 48회에서 Insertion은 모두 0이며 원래 pipeline 실패와 복구 평가를 구분합니다.","preferred_run":"1dcfae7b29f04c2e91a6f9da146f34c1","notice":"완료된 복구 평가 · 단일 학습 seed"},
+  "10b_policy_failure_diagnosis.html": {"task":"10-B","category":"control","title":"학습 오차가 줄어도 조작에 실패하는 이유","subtitle":"저장 관측의 행동 오차, 기하 개입과 짧은 분기를 비교합니다. 유효한 k0 분기와 입력 동일성 검사로 차단된 k25를 구분합니다.","preferred_run":"8a703a0c05784031a5fa8d3f10c8c9b4","notice":"실패 진단 · 실행 범위와 한계 포함"},
   "persistent_geometry_graph_benchmark.html": {"task":"09-C","category":"memory","title":"다중 카메라와 누적 지도의 기하 정보 보존","subtitle":"가림·물체 이동·로봇 제거 조건에서 현재 관측, 누적 지도와 GT 대조군을 비교한 최종 진단입니다."},
   "readout_geometry_probe.html": {"task":"09-B","category":"memory","title":"압축된 그래프 표현에 물체 위치가 남아 있을까","subtitle":"고정된 readout에서 위치를 복원하는 선형·MLP 탐침으로 정보 보존과 일반화의 한계를 확인합니다."},
   "object_geometry_sensitivity.html": {"task":"09-A","category":"memory","title":"물체의 위치를 바꾸면 제어 명령도 달라질까","subtitle":"같은 로봇 상태에서 물체 기하를 바꿔 그래프 입력과 정책 출력의 반응을 살펴봅니다."},
