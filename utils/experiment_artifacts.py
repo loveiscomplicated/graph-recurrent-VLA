@@ -41,6 +41,8 @@ def validate_repositories(repositories):
     for key, repo in repositories.items():
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*', repo.repo_id):
             raise ValueError('repository IDs must use namespace/repository format')
+        if repo.repo_id.split('/')[0] != ORGANIZATION:
+            raise ValueError('artifact repositories must be in Graph-Recurrent-VLA')
         if repo.repo_type != DEFAULT_REPOSITORIES[key].repo_type:
             raise ValueError('repository type does not match artifact kind')
 
