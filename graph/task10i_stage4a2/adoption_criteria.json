@@ -1,0 +1,79 @@
+{
+  "status": "FROZEN",
+  "version": "task10i-stage4a2-adoption-v1",
+  "registered_utc": "2026-11-01 08:50:34 UTC",
+  "registration_boundary": "Historical exploration and Development36 B0/A summary observed; C/BC historical audit ongoing; Internal30 and new Final unopened. Applies to one Development-selected challenger, frozen before Internal, with no test-driven selection or tuning.",
+  "unit": "physical parent; paired frame values -> episode means -> parent means; R/D branches of a parent are not independent",
+  "reference": "EXACT_GT only; unsupported frames excluded and counted; no approximate reference upgrade",
+  "bootstrap": {"replicates": 10000, "seed": 1011202643, "interval": [0.025, 0.975], "resample": "paired physical parent"},
+  "primary": {
+    "name": "graph_relevant_correct_mask_availability",
+    "slots": [["base_camera", 0], ["hand_camera", 0], ["base_camera", 1]],
+    "per_slot_frame": "GT visible pixels>=8; success iff prediction nonempty, pixel precision>=0.9 and IoU>=0.5; empty prediction is failed availability, with its precision still undefined",
+    "aggregation": "mean within eligible frames of each episode/slot, mean episodes within parent/slot, equal-weight available slots within parent; pair only the same eligible observations; no Wrist Box",
+    "minimum_absolute_improvement": 0.015,
+    "minimum_relative_error_reduction": 0.05,
+    "ci95_lower_delta_must_exceed": 0.0,
+    "zero_baseline_error": "no primary headroom; cannot establish improvement on this stratum"
+  },
+  "downstream": {
+    "name": "correct_source_3d_coverage",
+    "radius_m": 0.004,
+    "definition": "fraction of current GT actor surface samples with finite depth supported within radius by a selected point whose actual current source pixel belongs to that actor; Peg Main+Wrist, Box Main only",
+    "aggregation": "paired episode/parent means per object, then equal-weight available Peg and Box per parent",
+    "minimum_absolute_improvement": 0.003,
+    "ci95_lower_delta_minimum": 0.0
+  },
+  "safety": {
+    "apply_per_graph_relevant_slot_or_object": true,
+    "precision_conditional_paired_defined_ci95_lower_delta_minimum": -0.005,
+    "visible_wrong_mask_rate_ci95_upper_delta_maximum": 0.005,
+    "visible_wrong_mask_definition": "prediction nonempty and precision<0.8 among GT visible>=8; a separate event metric, never an imputed precision",
+    "false_pixels_per_visible_GT_pixel_ci95_upper_delta_maximum": 0.01,
+    "graph_robot_point_fraction_ci95_upper_delta_maximum": 0.005,
+    "graph_background_point_fraction_ci95_upper_delta_maximum": 0.005,
+    "graph_wrong_object_point_fraction_ci95_upper_delta_maximum": 0.005,
+    "graph_correct_representative_fraction_ci95_lower_delta_minimum": -0.005,
+    "peg_end_coverage_ci95_lower_delta_minimum": -0.01,
+    "box_observed_rim_coverage_ci95_lower_delta_minimum": -0.01,
+    "correct_boundary_coverage_ci95_lower_delta_minimum": -0.01,
+    "false_object_presence_ci95_upper_delta_maximum": 0.005,
+    "both_visible_camera_t0_peg_missing_ci95_upper_delta_maximum": 0.02,
+    "healthy_tracking_damage_ci95_upper_rate_maximum": 0.01,
+    "healthy_tracking_damage_definition": "on exact GT-visible slot-frames where B0 satisfies correct-mask availability, candidate loses that availability; paired episode/parent rate, never used as an inference trigger",
+    "undefined_precision": "reported separately by condition with actual counts; pooled-pixel precision and FP event metrics must also be shown",
+    "undefined_or_no_support_stratum": "cannot claim safety verified; report INCONCLUSIVE for that constraint",
+    "hard_contract_violations_allowed": 0
+  },
+  "runtime": {
+    "measurement": "observer-free live B0 and challenger, separate model/memory resets, same hardware/runtime/input ordering; synchronize CUDA; include actual detector, feature, SAM, correction, geometry and Graph; no shared cross-condition inference cache credit",
+    "mean_end_to_end_ratio_maximum": 1.5,
+    "p95_end_to_end_ratio_maximum": 1.75,
+    "peak_GPU_allocated_GiB_maximum": 22.0,
+    "report_all": ["mean", "p95", "module calls/episode", "module calls/control-step", "reanchor overhead", "GPU allocated/reserved peak"],
+    "20Hz": "cannot claim 20Hz closed-loop; measured per-frame <=50ms alone does not validate policy/simulator scheduling"
+  },
+  "evaluation_order": [
+    "Select at most one challenger using Development only; freeze source/config/criteria hash before Internal30",
+    "Internal30 once; source/config cannot be tuned in response and retain independent-test status",
+    "Freeze final source/config and permitted scope before new normal/stress capture and performance evaluation",
+    "Final normal and stress metrics reported separately; no Final-driven retuning or same-Final rerun as new test"
+  ],
+  "decision": {
+    "GO": "Primary and downstream gains plus safety/runtime constraints verified on untouched final normal and stress strata; only offline perception/cache handoff, no production replacement authorization",
+    "CONDITIONAL_GO": "Same benefit/safety requirements verified for a narrower scope explicitly registered before opening Final; no overall pipeline GO",
+    "TRADEOFF_UNRESOLVED": "Verified benefit accompanied by a material safety/surface/runtime deterioration; no Stage4B full recache authorization",
+    "NO_GO": "No verified practical benefit or a clear safety violation; no Stage4B full recache authorization",
+    "INCONCLUSIVE": "Exact reference, effective parent sample or necessary support missing so evaluation cannot establish the registered result; no Stage4B full recache authorization"
+  },
+  "sample_review": {
+    "minimum_normal_parents": 32,
+    "minimum_stress_parents": 12,
+    "claim": "Operational minimum only; paired parent uncertainty determines evidence. Rare t0 failure reduction is secondary because baseline headroom may be zero or too small.",
+    "zero_failures_one_sided_95pct_upper_normal32": 0.08936819898626476,
+    "zero_failures_one_sided_95pct_upper_stress12": 0.22092219194555585,
+    "normal_approx_80pct_power_effect_for_n32": "(1.96+0.84)*paired_parent_SD/sqrt(32); SD estimated on Development, not Final",
+    "precision_or_rare_failure_limit": "Zero observed errors among32 parents cannot demonstrate a population error probability below1%; do not equate operational sample size with sufficiency"
+  },
+  "forbidden_followups": ["production overwrite", "Stage4B full recache", "GNN-GRU training", "publishing", "paid instance creation", "test-driven threshold updates"]
+}
