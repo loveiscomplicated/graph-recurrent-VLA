@@ -1,0 +1,21 @@
+{
+  "description": "Reconstruct baseline filter audit on saved 512 inputs to create difficult-case strata for separate 768/1024 comparisons.",
+  "screen_size": 512,
+  "evaluation_sizes": [768, 1024],
+  "mask_arm": "actual",
+  "mask_repeat": 0,
+  "modes": ["full", "confirmed_only", "off"],
+  "stratification": {
+    "failure": "Any relevant camera/object: correctly masked object pixels removed >=16 and >=1% of correct masked pixels, OR robot pixels remaining >=64 and >=20% of raw robot pixels; OR previously recorded exact-frame near-finger removal >=10% with at least 5 reference pixels. Failure takes precedence.",
+    "success": "No failure and any relevant camera/object has >=128 robot pixels in its raw mask, filter removes >=90%, and correct-pixel loss <=max(16,1% of the correct raw support).",
+    "ordinary": "All other successfully audited scenes; includes little robot contamination or borderline cases.",
+    "relevant_camera_objects": ["base_camera/Peg", "base_camera/Box", "hand_camera/Peg"],
+    "per_stratum_cap": 15,
+    "per_parent_cap": 3,
+    "selection": "First allocate one scene per parent in deterministic SHA-256 ordering, then round-robin across parents up to per-parent cap; retain previously audited exact-frame failure before other failure scenes. Strata assigned using only frozen 512 audit and prior 128 audit before comparisons. No replacement based on alternative results."
+  },
+  "warmups_per_mode": 1,
+  "timed_repeats_per_mode": 3,
+  "torch_threads": 4,
+  "truth_barrier": "512 truth is explicitly used for scenario stratification only; freeze every 768/1024 policy output before loading its actor labels for evaluation."
+}

@@ -230,6 +230,8 @@ __marimo__/
 /docs/visual-graph-integration.zip
 # Locally generated archive of the visual-graph integration docs
 /docs/visual-graph-integration/아카이브.zip
+# Locally generated research context bundles
+/research_context_update/*.zip
 
 # Experiment tracking artifacts and local credentials
 /experiments/

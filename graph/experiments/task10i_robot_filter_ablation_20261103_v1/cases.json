@@ -1,0 +1,21 @@
+{
+  "description": "Preselected saved actual masks; paired robot-filter ablation; no inference or rollout",
+  "scenes": [
+    "10i_s1_0686_t000",
+    "10i_s1_0686_t080",
+    "10i_s1_0844_t080",
+    "10i_s1_0044_t000",
+    "10i_s1_0134_t078",
+    "10i_s1_0924_t000",
+    "10i_s1_0531_track_t012",
+    "seed98202_t000"
+  ],
+  "sizes": [512, 768, 1024],
+  "mask_arm": "actual",
+  "mask_repeat": 0,
+  "modes": ["full", "confirmed_only", "off"],
+  "warmups_per_mode": 1,
+  "timed_repeats_per_mode": 3,
+  "torch_threads": 4,
+  "truth_barrier": "Freeze every attempted Graph and mask before loading actor labels for scoring"
+}

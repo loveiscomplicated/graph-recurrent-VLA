@@ -18,7 +18,9 @@ F1 GNN best/last, Robot-only best/last, G의 선택된 A/B/C checkpoint를 기�
 | plan_a_retained | COMPLETE | [snapshot](https://huggingface.co/datasets/Graph-Recurrent-VLA/experiment-backups/tree/e0d958295cefa26da43d69c9698253b9b6e29bb9/graph/plan_a_retained/3788798a719f4ec4a66c224ca42f5d63) |
 | task10f_recovery_inputs | 전송 대기/진행 중 | — |
 | legacy_reproduction_inputs | 전송 대기/진행 중 | — |
-| task10f1_data | 전송 대기/진행 중 | — |
+| task10f1_data | COMPLETE — 2026-11-02 보완 | [snapshot](https://huggingface.co/datasets/Graph-Recurrent-VLA/experiment-backups/tree/e25cd68cb4813b637e56a4815b77a8ae216a8922/graph/task10f1_data/a803354bff8f414492456af4c0b43bce) |
+
+2026-11-02 보완: Stage3 train·validation의 누락 의존 자료 게시와 복원 검증을 완료했다. [데이터 다운로드·복원 안내](https://huggingface.co/datasets/Graph-Recurrent-VLA/experiment-backups/tree/b73b0d728cf64c20bdd084375f6b00a6aa8a130a/graph/task10i_stage3_dataset_completion_20261102)와 [전체 완료 보고서](10i_stage3_hf_dependency_completion_20261102.md)를 따른다. 나머지 과거 게시 작업 전체의 완료를 뜻하지 않는다.
 
 ## 완료된 로컬 검증
 

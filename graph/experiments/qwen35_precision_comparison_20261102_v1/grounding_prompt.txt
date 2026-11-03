@@ -1,0 +1,53 @@
+You are locating physical task objects in a single RGB image of a robot performing peg insertion.
+
+TASK CONTEXT
+The manipulation task has two different physical objects: an insertable workpiece and a receiving fixture. The robot is intended to grasp and move the workpiece, align it with the receiving fixture's opening, and insert it. Your task is to locate these two objects directly in the complete image. No candidate regions are provided.
+
+TARGET 1: PEG
+- PEG means the physical workpiece that is grasped, moved, and inserted into the receiving opening.
+- "Peg" describes its role in the task. It is not a requirement that the object look like a cylindrical pin. A block, bar, or other non-cylindrical component can be the PEG.
+- The PEG may be resting on a surface, held between the gripper fingers, approaching the fixture, or partly inserted. Its role does not change when the robot grasps it.
+- Locate the actual workpiece, not the robot finger, gripper body, shadow, or nearby fixture.
+- If the gripper holds the workpiece, separate the visible workpiece from the fingers touching it. Do not include the fingers just because they touch or surround the workpiece.
+
+TARGET 2: BOX
+- BOX means the physical receiving fixture containing the opening into which the PEG is inserted.
+- "Box" describes the receiving role. It is not a requirement that it look like an ordinary cardboard container.
+- Locate the visible fixture body that contains the receiving opening, not just the empty opening or the hole's interior.
+- The opening can be small, viewed at an angle, or partly occluded. If the visible fixture can still be identified reliably, locate its visible body.
+- Do not label the insertable workpiece as BOX merely because the workpiece has a block-like shape.
+
+HOW TO DISTINGUISH THE TWO TARGETS
+Use the visible scene and the insertion relationship: which physical component is inserted, and which physical fixture receives it? Use shape, boundaries, the opening, contact with the gripper, and the overall scene as visual evidence. No fixed color, material, size, orientation, or image position identifies either role.
+
+The robot arm, gripper, and fingers belong to the manipulator. They are not either target. The support surface, background, shadows, highlights, and empty spaces are not either target. Do not substitute one of these regions when the requested target cannot be located.
+
+The PEG and BOX are distinct physical objects. Identify each separately. Do not assign the same object to both roles merely to fill both output entries. Their image boxes may overlap when the physical objects overlap in the view, for example during insertion; overlap alone is not an error and does not make them the same object.
+
+VISIBILITY AND OCCLUSION
+Use only what can be localized from this image. Do not infer an object's position from an assumed usual arrangement or from what ought to be present in a peg-insertion task.
+
+A partially visible target can still be located. If a gripper or fixture occludes part of the PEG, include the visible PEG pixels without expanding the box to an imagined full length. If the image border cuts off an object, enclose only the part inside the image. If several visible pieces clearly belong to the same partly occluded object, one box should enclose those visible pieces.
+
+Return null for a target when it is fully hidden, outside the image, not distinguishable from another object, or cannot be localized reliably. Failure to locate one target does not require returning null for the other target. Do not invent a box just because two target entries are requested.
+
+BOUNDING BOX DEFINITION
+For each target, find its leftmost, topmost, rightmost, and bottommost visible extent in the complete original image. Return a tight, axis-aligned rectangle around that visible target. Include the target's visible body, not only its most distinctive small patch. Exclude surrounding background and robot parts as far as a rectangular box permits. Do not add an arbitrary margin.
+
+COORDINATE SYSTEM
+- The complete image uses normalized coordinates from 0 to 1000 in each axis.
+- x increases from the left edge, 0, to the right edge, 1000.
+- y increases from the top edge, 0, to the bottom edge, 1000.
+- Every box is [x1, y1, x2, y2]: left, top, right, bottom.
+- Require 0 <= x1 < x2 <= 1000 and 0 <= y1 < y2 <= 1000.
+- Give numeric coordinates for the complete image, not pixel coordinates for an internal resized image and not coordinates relative to a crop.
+
+OUTPUT CONTRACT
+Return one JSON array containing exactly two objects, in PEG then BOX order. Each object must have only the keys "label" and "bbox_2d". The label must be "PEG" or "BOX". The bbox_2d value must be four numeric coordinates or null.
+
+Use this structure, replacing the coordinate placeholders with your own predictions or replacing the entire coordinate list with null:
+[{"label": "PEG", "bbox_2d": [x1, y1, x2, y2]}, {"label": "BOX", "bbox_2d": [x1, y1, x2, y2]}]
+
+Before answering, check that each non-null box encloses the object with the requested role, that it refers to the full image, that the coordinates are in the required order and range, and that neither box is merely the robot or background.
+
+Output only the JSON array. Do not output coordinate placeholder names, explanations, confidence scores, additional objects, or any other text.

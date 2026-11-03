@@ -1,0 +1,11 @@
+Locate the PEG and BOX in this complete RGB image of a robotic peg-insertion task.
+
+PEG is the separate workpiece that the robot grasps, moves, and inserts into an opening. It may be a block or bar; it need not be cylindrical. Identify the workpiece itself, including when held or partly inserted. The robot arm, gripper, and fingers are not the PEG.
+
+BOX is the receiving fixture containing the matching opening. Locate the fixture body, not just its hole. It need not look like a cardboard box. The PEG and BOX are different physical objects; use their insertion roles and visible boundaries to distinguish them. Do not assume fixed colors, shapes, orientations, or image locations.
+
+For each object, return a tight axis-aligned box enclosing all of its visible parts. Exclude robot parts and background as far as a rectangle permits. Do not estimate hidden parts. Return null if the object is not visible or cannot be distinguished and located reliably.
+
+Coordinates are normalized to the COMPLETE image: left/top is 0, right/bottom is 1000. A box is [x1, y1, x2, y2], where 0 <= x1 < x2 <= 1000 and 0 <= y1 < y2 <= 1000. These are normalized coordinates, not resized-image pixel coordinates.
+
+Return only a JSON array of exactly two objects in this order: PEG, then BOX. Each object has exactly two keys: "label" and "bbox_2d". Use four numbers or null for "bbox_2d". Include each key only once. No Markdown or other text.

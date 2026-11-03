@@ -1,0 +1,25 @@
+{
+  "purpose": "Known-case diagnostic, GT and old predictions explicitly used for stratified selection; not held-out accuracy",
+  "groups": {
+    "peg_wrong": [
+      "10i_s1_0275_F1_hand_camera_native512_peg_rank000",
+      "10i_s1_0305_F1_hand_camera_native512_peg_rank000"
+    ],
+    "peg_correct": [
+      "10i_s1_0275_F0_hand_camera_native512_peg_rank000",
+      "10i_s1_0305_F0_hand_camera_native512_peg_rank000"
+    ],
+    "robot_wrong": [
+      "10i_s1_0275_F1_hand_camera_native512_box_rank000",
+      "10i_s1_0197_F1_base_camera_native512_box_rank006"
+    ],
+    "robot_correct": [
+      "10i_s1_0197_F0_hand_camera_native512_box_rank001",
+      "10i_s1_0197_F1_base_camera_native512_box_rank008"
+    ],
+    "box_correct": [
+      "10i_s1_0197_F0_base_camera_native512_box_rank000",
+      "10i_s1_0197_F0_hand_camera_native512_box_rank000"
+    ]
+  }
+}
