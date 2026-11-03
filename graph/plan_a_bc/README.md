@@ -72,14 +72,23 @@ The result API stays on its input device. Default SF now continues through
 priority, object IDs and merged source provenance stay on GPU.
 `budget_tensor(records,128)` performs the final per-object FPS on GPU, preserving
 persistent-ID string seed/ties, short-input order, features and merged sources.
-The explicit `numpy_records` compatibility readback is after final FPS,
-immediately before the still-CPU Graph builder.
+Final FPS now feeds `build_graph_tensor` directly: CUDA neighbor queries, surface
+gates, free-space depth gathers, robot/Peg–Box interactions and Graph tensors.
+The same `TensorViews` snapshot is reused through Graph construction.
+`CurrentGeometry.build` returns `(CUDA Graph, TensorRecords, gate)` on this default
+path. Graph IDs are `packet['node_ids_encoded']` camera/pixel tensors and common
+identity metadata; audit counts are device scalars. `numpy_graph(graph)` and
+`numpy_records(records)` are explicit CPU archival/inspection adapters. Cache
+writing and diagnostic rollout dumps call them after construction; model input
+packing retains CUDA tensors. Explicit CPU perception keeps CPU Graph/list output.
 Explicit CPU perception and historical standalone PlanA retain the NumPy path.
 See the [paired GPU measurement and verification](../../docs/visual-graph-integration/10i_view_consistency_cuda_20261103.md).
 
 `PlanA.represent(..., ('SF',), tensor_records=True)` returns a `TensorRecords`
 table with tensor-valued measurements and ragged source IDs. It requires the
-tensor SF-only path. Existing calls without the flag retain Python-list output
+tensor SF-only path. Optional `views=TensorViews` shares the current depth and
+calibration snapshot; `PlanA.graph(tensor_records, data, cameras, views=views)`
+requires that snapshot. Existing calls without the flag retain Python-list output
 through the explicit post-dedup adapter. The kernel preserves the original
 strict-radius, nontransitive greedy representative rule and stable source order;
 it never averages XYZ/F5. See the
@@ -100,12 +109,17 @@ diagnostic route. Historical frozen source copies/caches retain their recorded
 implementation. Standalone `PlanA` retains its historical packet builder unless
 one is passed explicitly.
 
-Sampling evidence and Shape-First now also run on CUDA: ordered external
+Sampling evidence and Shape-First also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.
 The default adapter keeps view-checked observations,3mm-deduplicated records and
-final128-point FPS on GPU, downloading only for subsequent CPU Graph construction. Python still controls
+final128-point FPS, edges and Graph tensors on GPU. Python still controls
 launches and reads convergence/cardinality scalars. The robot
-filter, gate, sampling policy, point cap and graph-edge policy are unchanged.
+filter and gate are outside this Graph change; sampling policy, point cap and
+graph thresholds are unchanged. The bounded CUDA KD query preserves the tested
+SciPy1.18.1/Linux neighbor policy, including cutoff ties. Other CPU standard
+libraries/versions may choose different equal-distance neighbors; the new CUDA
+path has no CPU KD-tree fallback. See the
+[Graph CUDA report](../../docs/visual-graph-integration/10i_graph_cuda_58752018_20261103.md).
 No dense XYZ or CPU feature raster is rebuilt in this default path.
 See the [GPU sampling report](../../docs/visual-graph-integration/10i_shape_first_cuda_58752018_20261103.md)
 and [preceding geometry integration](../../docs/visual-graph-integration/10i_graph_perception_default_20261103.md).
@@ -114,7 +128,7 @@ The sampling API `sample_cuda(...)` itself now returns CUDA tensors, including
 selected features and provenance, and downloads only when `device='cpu'` is
 requested. Standalone `make_packet` retains NumPy compatibility output; default
 `CurrentGeometry` uses CUDA packets and keeps records resident through dedup.
-Final FPS stays on GPU; Graph assembly remains a CPU consumer. See the
+Final FPS and Graph assembly stay on GPU. See the
 [output-device comparison](../../docs/visual-graph-integration/10i_shape_first_device_output_58752018_20261103.md).
 
 Independent opt-in experiment. This package consumes the **frozen09-D v2**

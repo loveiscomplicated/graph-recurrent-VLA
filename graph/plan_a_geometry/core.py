@@ -189,16 +189,21 @@ class PlanA:
             conditions[condition]=cm
         return dict(filters=filters,clean=clean,conditions=conditions,gate=gate)
 
-    def represent(self,cameras,prepared,condition,representations=('SF','L','H'),*,tensor_records=False):
+    def represent(self,cameras,prepared,condition,representations=('SF','L','H'),*,tensor_records=False,views=None):
         if tensor_records and (self.tensor_packet_builder is None or tuple(representations)!=('SF',)):
             raise ValueError('resident records require the tensor SF-only path')
         cm=prepared['conditions'][condition];observed=[];sf=[];legacy=[];surface_candidates=[];stages={};packets={}
-        tensor_views=None; tensor_observed=[]
+        tensor_views=views; tensor_observed=[]
+        if views is not None and (self.tensor_packet_builder is None or views.coordinate_frame!=self.coordinate_frame):
+            raise ValueError('resident views require matching tensor perception/frame')
         if self.tensor_packet_builder is not None:
             import torch
             from graph.persistent_geometry.tensor_fusion import (prepare_tensor_views, observations_from_tensor_packet,
                 consistent_views_tensor)
-            tensor_views=prepare_tensor_views(cameras,cm,coordinate_frame=self.coordinate_frame)
+            if tensor_views is None:
+                tensor_views=prepare_tensor_views(cameras,cm,coordinate_frame=self.coordinate_frame)
+            if tensor_views.identity != (cameras[0].episode,cameras[0].timestep,cameras[0].timestamp,tuple(cameras[0].tcp_pose)):
+                raise ValueError('stale tensor view snapshot')
         for c in sorted(cameras,key=lambda c: c.camera!=self.main):
             if tensor_views is None:
                 packet,_=(self.packet_builder or make_packet)(c,cm[c.camera])
@@ -251,8 +256,14 @@ class PlanA:
         pools=dict(SF=sf,L=legacy,H=hybrid)
         return {name:pools[name] for name in representations},dict(SF=sa,L=la,H=ha),stages,packets
 
-    def graph(self,records,data,cameras):
-        graph=build_graph(records,data['robot_world_geometry'],data['tcp_pose'],int(data['timestep']),
+    def graph(self,records,data,cameras,*,views=None):
+        from graph.persistent_geometry.tensor_records import TensorRecords
+        if isinstance(records,TensorRecords):
+            from graph.persistent_geometry.tensor_graph import build_graph_tensor
+            if views is None:raise ValueError('resident Graph requires current tensor views')
+            graph=build_graph_tensor(records,data['robot_world_geometry'],data['tcp_pose'],int(data['timestep']),views=views)
+        else:
+            graph=build_graph(records,data['robot_world_geometry'],data['tcp_pose'],int(data['timestep']),
             cameras=cameras,point_cap=None,include_observation_status=False,coordinate_frame=self.coordinate_frame)
         # 09-C tensor schema retained; temporal/status extras disabled explicitly.
         graph.packet.update(schema_id='task09d_current_surface21_v1',persistent_geometry=False,

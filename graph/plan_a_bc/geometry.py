@@ -175,31 +175,49 @@ class CurrentGeometry:
         prepared = (self.system.prepare(cameras,data,masks,surfaces) if clean_masks is None else
             self.system.prepare(cameras,data,masks,surfaces,clean_masks=clean_masks))
         resident = self.system.tensor_packet_builder is not None
-        pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident)
+        views=None
+        if resident:
+            from graph.persistent_geometry.tensor_fusion import prepare_tensor_views
+            views=prepare_tensor_views(cameras,prepared['conditions']['C3'],coordinate_frame=self.coordinate_frame)
+        pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident,views=views)
         records = pools['SF']
         if resident:
-            from graph.persistent_geometry.tensor_records import budget_tensor,numpy_records
-            records = numpy_records(budget_tensor(records,128))  # Only the subsequent Graph is still CPU.
+            from graph.persistent_geometry.tensor_records import budget_tensor
+            records = budget_tensor(records,128)
         else:
             records = budget(records,128)
-        graph = self.system.graph(records,data,cameras)
+        graph = (self.system.graph(records,data,cameras,views=views) if resident else self.system.graph(records,data,cameras))
         return self._finish(graph,records,prepared['gate'],data)
 
     def _finish(self,graph,records,gate,data):
         t=int(data['timestep']);episode=str(data['episode'])
-        for r in records:
-            if not r['currently_observed'] or r['last_seen_timestep']!=t:
-                raise ValueError('noncurrent point')
-            for e,ts,c,p in r['source_observation_ids']:
-                if e!=episode or ts!=t: raise ValueError('future/history/foreign source')
-                if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
-                if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
+        from graph.persistent_geometry.tensor_records import TensorRecords
+        if isinstance(records,TensorRecords):
+            import torch
+            if records.episode!=episode or records.timestep!=t:raise ValueError('noncurrent tensor records')
+            if records.coordinate_frame!=self.coordinate_frame:raise ValueError('record/config coordinate frame mismatch')
+            if self.coordinate_frame=='ee' and records.reference_ee_pose!=tuple(data['tcp_pose']):raise ValueError('record EE reference')
+            owners=torch.repeat_interleave(records.object_id,records.source_offsets[1:]-records.source_offsets[:-1])
+            if bool(((records.source_camera<0)|(records.source_camera>=len(records.camera_names))).any()):raise ValueError('foreign source camera')
+            allowed=torch.tensor([name=='base_camera' for name in records.camera_names],device=records.device)
+            if bool(((owners==1)&~allowed[records.source_camera]).any()):raise ValueError('Wrist Box source')
+            if 'hand_camera' in records.camera_names and not gate['accepted'] and bool((records.source_camera==records.camera_names.index('hand_camera')).any()):
+                raise ValueError('rejected Wrist source')
+        else:
+            for r in records:
+                if not r['currently_observed'] or r['last_seen_timestep']!=t:
+                    raise ValueError('noncurrent point')
+                for e,ts,c,p in r['source_observation_ids']:
+                    if e!=episode or ts!=t: raise ValueError('future/history/foreign source')
+                    if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
+                    if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
         graph.packet['perception_backend']=self.perception_backend
         graph.packet['view_consistency_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None else 'numpy_cpu')
         graph.packet['records_dedup_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None
             else 'existing_cpu')
         graph.packet['final_fps_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None
             else 'existing_cpu')
+        graph.packet.setdefault('graph_backend','existing_cpu')
         if graph.packet.get('coordinate_frame') != FRAME_NAMES[self.coordinate_frame]:
             raise ValueError('Graph/config coordinate frame mismatch')
         validate_graph(graph)

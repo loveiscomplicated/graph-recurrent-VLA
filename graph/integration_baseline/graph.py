@@ -146,14 +146,17 @@ def pack_graphs(graphs, frame_map=None):
         raise ValueError('unsupported Graph coordinate frame')
     if frame_map is None:
         frame_map = [(0, i) for i in range(len(graphs))]
-    mapping = torch.as_tensor(frame_map, dtype=torch.long)
+    device=graphs[0].node_input.device
+    if any(getattr(g,k).device!=device for g in graphs for k in ('node_input','node_type','edge_index','edge_attr','edge_type')):
+        raise ValueError('graphs must share one tensor device')
+    mapping = torch.as_tensor(frame_map, dtype=torch.long,device=device)
     if mapping.shape != (len(graphs), 2) or (mapping < 0).any() or len(torch.unique(mapping, dim=0)) != len(graphs):
         raise ValueError('unique nonnegative sequence/frame mapping required')
     ptr = np.r_[0, np.cumsum([len(g.node_type) for g in graphs])]
     edges = torch.cat([g.edge_index + int(ptr[i]) for i, g in enumerate(graphs)], dim=1)
-    node_graph = torch.repeat_interleave(torch.arange(len(graphs)), torch.tensor(np.diff(ptr)))
+    node_graph = torch.repeat_interleave(torch.arange(len(graphs),device=device), torch.tensor(np.diff(ptr),device=device))
     if edges.numel() and not torch.equal(node_graph[edges[0]], node_graph[edges[1]]):
         raise ValueError('cross-graph edge')
     return PackedGraphs(*(torch.cat([getattr(g, key) for g in graphs], dim=0) for key in ('node_input', 'node_type')),
                         edges, torch.cat([g.edge_attr for g in graphs]), torch.cat([g.edge_type for g in graphs]),
-                        node_graph, torch.tensor(ptr), mapping)
+                        node_graph, torch.tensor(ptr,device=device), mapping)

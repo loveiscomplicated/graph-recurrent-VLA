@@ -21,8 +21,9 @@ The existing `make_packet` default continues returning NumPy packets.
 to keep packet arrays resident through the Torch view check, tensor record
 construction and greedy3mm deduplication. The stage output stays on GPU.
 Final per-object128-point FPS now also runs on GPU via `budget_tensor`.
-An explicit post-FPS compatibility conversion feeds the subsequent CPU Graph;
-see the [FPS API](../../graph/experiments/final_fps_cuda_58752018_20261103_v1/README.md).
+The same tensor view snapshot now feeds GPU edge/Graph construction directly;
+CPU output uses explicit `numpy_graph` / `numpy_records` archival adapters.
+The default Graph and record return values stay on CUDA. See the [FPS API](../../graph/experiments/final_fps_cuda_58752018_20261103_v1/README.md).
 This does not change the direct compatibility `make_packet` return type.
 
 ### Peg/Box groups in selected packets

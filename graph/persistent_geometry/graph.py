@@ -39,16 +39,22 @@ def farthest_rows(xyz, ids, count):
 
 
 def free_space_violation(world_samples, cameras, tolerance=.006, *, coordinate_frame='world'):
+    """Query only projected raw-depth pixels, with the existing float64 mm rule.
+
+    No image-wide depth getter or cross-call cache: each query observes the
+    current signed-int16 sensor values, including invalid/overflow samples.
+    """
     bad = np.zeros(len(world_samples), bool)
     for camera in cameras:
         p = transform(world_samples, camera_from_frame(camera, coordinate_frame))
         k = camera.intrinsic
         uv = np.floor(p[:, :2]/np.maximum(p[:, 2, None], 1e-12)*np.array([k[0, 0], k[1, 1]])+k[:2, 2]).astype(int)
-        h, w = camera.depth.shape
+        h, w = camera.depth_raw_mm.shape
         inside = (p[:, 2] > 0) & (uv[:, 0] >= 0) & (uv[:, 0] < w) & (uv[:, 1] >= 0) & (uv[:, 1] < h)
         rows = np.flatnonzero(inside)
         u, v = uv[rows].T
-        z = camera.depth[v, u]
+        raw = camera.depth_raw_mm[v, u]
+        z = np.where(raw > 0, raw.astype(np.float64) / 1000, np.nan)
         bad[rows] |= np.isfinite(z) & (p[rows, 2] < z-tolerance)
     return bad
 

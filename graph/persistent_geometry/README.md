@@ -35,6 +35,13 @@ not change the shared simulator, existing vision defaults, BC datasets, policy
 checkpoints or the production Graph/GNN interface. No GRU or action head is
 constructed by these runners.
 
+Surface-edge free-space checks query the original signed-int16 `depth_raw_mm`
+only at projected pixels. They apply the same float64 mm→m/nonpositive→NaN rule
+without constructing an image-wide depth array for `.shape` or indexing. No
+cross-frame depth cache is kept. Projection, strict6mm threshold, edge order and
+audit remain unchanged. This CPU fix is measured independently of a GPU Graph
+port; see the [implementation and benchmark](../experiments/graph_depth_lookup_58752018_20261103_v1/README.md).
+
 The practical `pipeline.GeometrySystem` accepts synchronized camera observations,
 predicted masks, current robot observations and known robot link geometry. Its
 input whitelist rejects actor poses and segmentation sidecars. `oracle.py`
@@ -176,3 +183,28 @@ geometry or create ghosts. Current observations, historical estimates and GT
 evaluation overlays must remain visibly distinct. The completed benchmark
 report and its artifacts, rather than node count or probe error alone, determine
 which representations have supporting evidence.
+
+## Current-only CUDA Graph
+
+The default `CurrentGeometry` triton_fused path uses `tensor_graph.build_graph_tensor`
+after `budget_tensor(...,128)`. It reuses the current `TensorViews` depth/calibration
+snapshot. Surface neighbor selection, distance/normal/tangency/witness/free-space
+gates, interaction selection, Node21/Edge4 packing and outputs stay on CUDA.
+Small host identity/calibration and three FK robot positions retain the validated
+reference convention; scalar validation/cardinality checks can synchronize.
+
+`Graph.packet['node_ids_encoded']` contains common episode/time/camera-name metadata
+and CUDA camera/pixel tensors in node order. Surface audits are CUDA scalar
+tensors. `tensor_graph.numpy_graph` explicitly returns the legacy CPU tensor and
+string-ID metadata view; `tensor_records.numpy_records` separately exports record
+dictionaries/provenance. These adapters are used for file writing, never by the
+default Graph/model path. Explicit CPU perception and the historical persistent
+map `build_graph` API keep their existing outputs and policy.
+
+The bounded KD implementation targets the executed SciPy1.18.1/Linux compact
+median-tree neighbor policy, including strict cutoff ties, for at most128 points
+per object. It does not import or run CPU KD-tree code. Policy references:
+[SciPy build](https://github.com/scipy/scipy/blob/v1.18.1/scipy/spatial/ckdtree/src/build.cxx),
+[SciPy query](https://github.com/scipy/scipy/blob/v1.18.1/scipy/spatial/ckdtree/src/query.cxx).
+Equal-distance choices can depend on the reference CPU standard library/version.
+See the [executed Graph CUDA report](../../docs/visual-graph-integration/10i_graph_cuda_58752018_20261103.md).

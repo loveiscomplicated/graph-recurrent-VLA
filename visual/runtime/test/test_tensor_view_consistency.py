@@ -149,11 +149,21 @@ class CUDAViewContracts(TorchViewContracts):
                  patch('graph.plan_a_geometry.core.current_records', side_effect=AssertionError('per-point CPU records forbidden')), \
                  patch('graph.plan_a_geometry.core.deduplicate', side_effect=AssertionError('CPU dedup forbidden')), \
                  patch('graph.plan_a_bc.geometry.budget', side_effect=AssertionError('CPU final FPS forbidden')), \
-                 patch('graph.persistent_geometry.tensor_fusion.numpy_observations', side_effect=AssertionError('observation readback forbidden')):
+                 patch('graph.persistent_geometry.tensor_fusion.numpy_observations', side_effect=AssertionError('observation readback forbidden')), \
+                 patch('graph.plan_a_geometry.core.build_graph', side_effect=AssertionError('CPU Graph forbidden')), \
+                 patch('graph.persistent_geometry.tensor_records.numpy_records', side_effect=AssertionError('record readback forbidden')):
                 actual, ar, ag = new.build(cameras, data, [], masks)
             self.assertEqual(actual.packet['view_consistency_backend'], 'torch_cuda')
             self.assertEqual(actual.packet['records_dedup_backend'], 'torch_cuda')
             self.assertEqual(actual.packet['final_fps_backend'], 'torch_cuda')
+            from graph.persistent_geometry.tensor_graph import numpy_graph,FIELDS
+            from graph.persistent_geometry.tensor_records import numpy_records,TensorRecords
+            self.assertIsInstance(ar,TensorRecords)
+            self.assertTrue(all(getattr(actual,k).is_cuda for k in FIELDS))
+            self.assertEqual(actual.packet['graph_backend'],'torch_cuda')
+            actual=numpy_graph(actual);ar=numpy_records(ar)
+            self.assertEqual(actual.packet['node_ids'],expected.packet['node_ids'])
+            self.assertEqual(actual.packet['surface_edge_audit'],expected.packet['surface_edge_audit'])
             self.assertEqual([r['source_observation_ids'] for r in ar], [r['source_observation_ids'] for r in er])
             self.assertEqual(ag, eg)
             for key in ('node_type', 'edge_index', 'edge_type'):

@@ -147,7 +147,9 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 terminated=bool(terminated.item()),truncated=bool(truncated.item()),**measured))
             writer.write(video_frame(cameras,masks,model.variant,spec['seed'],step,t,measured))
             if t==0 or t%25==0 or any(first[k]==t+1 for k in first):
-                npz(folder/f'live_graph_t{t:04d}.npz',{k:getattr(graph,k).numpy() for k in ['node_input','node_type','edge_index','edge_attr','edge_type']})
+                from graph.persistent_geometry.tensor_graph import numpy_graph
+                saved_graph=numpy_graph(graph)  # Explicit diagnostic dump only.
+                npz(folder/f'live_graph_t{t:04d}.npz',{k:getattr(saved_graph,k).numpy() for k in ['node_input','node_type','edge_index','edge_attr','edge_type']})
             if t%25==0:print(f'rollout {model.variant} step={step} seed={spec["seed"]} t={t} progress={statuses}',flush=True)
             if measured['success'] or terminated.item() or truncated.item():
                 termination='success' if measured['success'] else 'termination' if terminated.item() else 'time_limit';break

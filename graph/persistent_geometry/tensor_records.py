@@ -155,8 +155,8 @@ def deduplicate_tensor(records, distance=.003):
 def numpy_records(records):
     """Explicit packed readback into the existing Python record contract.
 
-    For the default Graph this boundary is AFTER final128-point GPU FPS,
-    immediately before the still-CPU Graph builder. Tensor callers can omit it.
+    The default CUDA Graph does not call this adapter. Use it explicitly
+    for legacy inspection or CPU file-writing after the resident graph path.
     """
     from visual.runtime.tensor_packet import numpy_packet
     from .map import current_records

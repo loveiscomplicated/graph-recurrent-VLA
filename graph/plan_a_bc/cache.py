@@ -67,6 +67,10 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
                     mm.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
                     return mm
                 g,records,gate=geometry.build(cameras,data,surfaces,current_masks)
+                from graph.persistent_geometry.tensor_graph import numpy_graph
+                from graph.persistent_geometry.tensor_records import TensorRecords,numpy_records
+                g=numpy_graph(g)  # Explicit archival boundary, after GPU Graph construction.
+                if isinstance(records,TensorRecords):records=numpy_records(records)
                 mm=geometry.last_raw_masks
                 records_by_id={r['persistent_node_id']:r for r in records}
                 ordered=[records_by_id[k] for k in g.packet['node_ids']]

@@ -159,6 +159,9 @@ class CudaDefaultRobotOverlap(unittest.TestCase):
                         torch.testing.assert_close(a[:,3:8],b[:,3:8],rtol=0,atol=2e-5)
                         torch.testing.assert_close(a[:,8:],b[:,8:],rtol=0,atol=0)
                     else:torch.testing.assert_close(a,b,rtol=0,atol=1e-6 if a.is_floating_point() else 0)
+                from graph.persistent_geometry.tensor_records import numpy_records
+                self.assertTrue(actual.node_input.is_cuda)
+                ar=numpy_records(ar);er=numpy_records(er)
                 self.assertEqual([r['source_observation_ids'] for r in ar],[r['source_observation_ids'] for r in er])
                 from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.graph_boundary import GpuMaskBoundary
                 def twice(*args):raise AssertionError('legacy scope filtered a second time')
