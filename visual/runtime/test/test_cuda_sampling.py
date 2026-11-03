@@ -13,6 +13,82 @@ from visual.runtime.test.test_graph_perception import frame
 
 @unittest.skipUnless(torch.cuda.is_available(),'actual CUDA required')
 class CUDASelection(unittest.TestCase):
+    def test_precomputed_seed_bounds_match_all_reference_distances(self):
+        import triton
+        from visual.runtime import cuda_sampling_kernels as kernels
+        rng=np.random.default_rng(28)
+        for n,seeds in ((257,1),(513,75),(1001,137)):
+            points=torch.as_tensor(rng.normal(size=(n,3)).astype(np.float32),device='cuda')
+            initial=torch.as_tensor(rng.choice(n,seeds,replace=False),device='cuda')
+            used=torch.zeros(n,dtype=torch.bool,device='cuda');used[initial]=True
+            g=triton.cdiv(n,128);old=torch.empty(n,dtype=torch.float64,device='cuda');new=torch.empty_like(old)
+            bd=torch.empty(g,dtype=torch.float64,device='cuda');bi=torch.empty(g,dtype=torch.int32,device='cuda')
+            bounds=torch.empty((triton.cdiv(seeds,32),6),dtype=points.dtype,device='cuda')
+            kernels.fps_seed[(g,)](points,initial,used,old,bd,bi,n,seeds,128,32,num_warps=8,enable_fp_fusion=False)
+            kernels.seed_tile_bounds[(triton.cdiv(seeds,32),)](points,initial,bounds,seeds,32,num_warps=1)
+            kernels.fps_seed_bounded[(g,)](points,initial,used,bounds,new,bd,bi,used,n,seeds,128,32,num_warps=4,enable_fp_fusion=False)
+            torch.testing.assert_close(new,old,rtol=0,atol=0)
+
+    def test_long_connected_paths_checkerboard_and_large_solid_mask(self):
+        from visual.runtime.cuda_sampling import external_contour_sources
+        snake=np.zeros((65,97),bool)
+        for j,row in enumerate(range(1,61,4)):
+            snake[row,1:-1]=True
+            if row+4<65:snake[row:row+5,95 if j%2==0 else 1]=True
+        v,u=np.indices((65,97))
+        for raw in (snake,(v+u)%2==0,np.ones((127,193),bool)):
+            expected=reference.outer_contours(raw,raw.copy(),np.ones_like(raw),np.zeros_like(raw))['C']
+            actual=external_contour_sources(torch.as_tensor(raw,device='cuda'),torch.as_tensor(raw,device='cuda'))
+            np.testing.assert_array_equal(actual.cpu().numpy(),expected)
+
+    def test_canonical_walk_ties_revisits_and_long_walk(self):
+        from visual.runtime import cuda_sampling_kernels as kernels
+        rng=np.random.default_rng(417)
+        cases=[np.array([0]),np.array([0,1]),np.array([0,1,2,1]),
+            np.array([0,3,0,2,4,2]),np.r_[0,np.arange(1,2049),np.arange(2047,0,-1)]]
+        for n in (17,255,256,257,1025):
+            walk=rng.integers(0,19,n,dtype=np.int64);walk[0]=0;walk[-1]=3;cases.append(walk)
+        for walk in cases:
+            w=torch.as_tensor(walk,device='cuda');output=torch.empty_like(w)
+            offsets=torch.tensor([0,len(walk)],dtype=torch.int64,device='cuda')
+            lengths=torch.tensor([len(walk)],dtype=torch.int64,device='cuda')
+            kernels.canonical[(1,)](w,offsets,lengths,output,256,num_warps=4)
+            np.testing.assert_array_equal(output.cpu().numpy(),reference.canonical_walk(walk))
+
+    def test_pixel_lookup_matches_set_membership_with_strided_thinning(self):
+        from visual.runtime.cuda_sampling import select_cuda,selection_output
+        f=frame();d=torch.as_tensor(f.depth,device='cuda')
+        m=torch.as_tensor(np.stack(list(f.masks.values())),device='cuda');k=torch.as_tensor(f.intrinsic,device='cuda')
+        p,v=process_cuda(d,m,k);raw=select_cuda(p,v,d,m,k)
+        fast=selection_output(raw)
+        old=selection_output({key:value for key,value in raw.items() if key not in ('source_rows','point_count')})
+        for name in ('candidate_evidence','selected_by_structural_source'):
+            torch.testing.assert_close(fast[name],old[name],rtol=0,atol=0)
+
+    def test_offset_roi_preserves_external_contour_order(self):
+        from visual.runtime.cuda_sampling import external_contour_sources
+        rng=np.random.default_rng(51)
+        for offset in ((0,0),(7,13),(41,57)):
+            raw=np.zeros((80,100),bool)
+            raw[offset[0]:offset[0]+23,offset[1]:offset[1]+31]=rng.random((23,31))>.45
+            observed=raw&(rng.random(raw.shape)>.15)
+            expected=reference.outer_contours(raw,observed,np.ones_like(raw),np.zeros_like(raw))['C']
+            actual=external_contour_sources(torch.as_tensor(raw,device='cuda'),torch.as_tensor(observed,device='cuda'))
+            np.testing.assert_array_equal(actual.cpu().numpy(),expected)
+
+    def test_fps_graph_reuses_shapes_with_fresh_data_and_independent_results(self):
+        from visual.runtime.cuda_sampling import surface_fps,_FPS_PLANS
+        rng=np.random.default_rng(491);previous=[]
+        for n,s in ((5001,17),(6003,19),(5100,18)):
+            xyz=rng.normal(size=(n,3)).astype(np.float32)
+            initial=rng.choice(n,s,replace=False).astype(np.int64)
+            expected=fps_indices(xyz,s+17,initial=initial)
+            result=surface_fps(torch.as_tensor(xyz,device='cuda'),torch.as_tensor(initial,device='cuda'),17)
+            np.testing.assert_array_equal(result.cpu().numpy(),expected)
+            for old,reference in previous:np.testing.assert_array_equal(old.cpu().numpy(),reference)
+            previous.append((result,expected))
+        self.assertLessEqual(len(_FPS_PLANS),8)
+
     def test_default_output_cuda_and_explicit_cpu_device(self):
         from visual.runtime.cuda_sampling import sample_cuda,numpy_selection
         f=frame();depth=torch.as_tensor(f.depth,device='cuda')

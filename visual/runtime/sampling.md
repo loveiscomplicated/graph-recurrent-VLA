@@ -47,6 +47,37 @@ representative, ratio .5/phase0, and additional surface 97/95 policy. FP64 FPS
 retains structural row order and first-source distance ties. Other historical
 sampling arms/ratios remain available through their original NumPy APIs.
 
+The current CUDA path limits external-component/walk processing to the raw
+mask's bounding rectangle plus one background pad and restores original raster
+indices. A GPU scan reads the full mask once to obtain four shape scalars.
+Voxel centroid arithmetic is preserved; nearest representative selection and
+tie handling are fused, and already sorted PCA sources skip redundant sorting.
+Selection provenance reuses the projector's raster-to-compact row map.
+
+FPS seeding uses exact FP64 seed-tile AABB lower bounds to skip distance tiles
+that cannot improve a point block. For at least4096 points and at least16 new
+surface rows, seed/update/argmax work replays through a CUDA Graph. Plans use
+power-of-two point/seed capacity buckets and a device/dtype/stream/count key;
+the process keeps at most8 plans. Each call copies current points and seeds
+and materializes independent outputs. Work buffers are reused; observations
+and selected results are not cached across frames. Smaller calls remain eager.
+
+The first plan/JIT construction costs more than replay and must be separated
+from warm timings. Bucket padding and spatial seed layout affect performance.
+Full depth sorting was retained because the tested dual-kthvalue alternative
+was slower. Component convergence still uses host scalar checks.
+See the [refinement report](../../docs/visual-graph-integration/10i_shape_first_refinement_58752018_20261103.md)
+for before/after timings, rejected variants and exact-output checks.
+
+The next refinement vectorizes canonical-walk minimum searches/copies and skips
+identity comparisons. Component compression writes both roots and flattened
+parents and resets the union flag in one kernel. A CPU convergence check runs
+after each pair of completed union rounds. It still verifies convergence;
+there is no fixed-iteration approximation. FPS plans recompute seed-tile bounds
+once per invocation and share them across point blocks. Entirely inactive
+point blocks skip seed scanning. The prior small eager FPS path is preserved.
+See the [further optimization report](../../docs/visual-graph-integration/10i_shape_first_further_58752018_20261103.md).
+
 `sample_cuda(projected, features, depth, masks, intrinsic)` returns selected
 points, metadata, source IDs and selection provenance as CUDA tensors on the
 sampler's device. Its optional `device='cpu'` explicitly requests CPU tensors;

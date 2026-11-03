@@ -7,6 +7,7 @@ tensors by default; CPU output requires device='cpu'. Historical NumPy
 implementations and the explicit CPU packet adapter remain reference APIs.
 """
 import math
+from collections import OrderedDict
 import torch
 import torch.nn.functional as functional
 import triton
@@ -14,17 +15,71 @@ import triton
 from visual.runtime.geometry import GeometryParameters
 from visual.runtime import cuda_sampling_kernels as kernels
 
+_FPS_PLANS=OrderedDict()
+_FPS_PLAN_LIMIT=8
+
+
+class _FPSPlan:
+    """Shape-bucketed, stream-local CUDA graph; current data is copied per call."""
+    def __init__(self,n,seeds,extra,points):
+        self.points=torch.zeros((n,3),dtype=points.dtype,device=points.device)
+        self.initial=torch.full((seeds,),-1,dtype=torch.int64,device=points.device)
+        self.used=torch.ones(n,dtype=torch.bool,device=points.device)
+        self.bounds=torch.empty((triton.cdiv(seeds,32),6),dtype=points.dtype,device=points.device)
+        self.distance=torch.empty(n,dtype=torch.float64,device=points.device)
+        self.groups=triton.cdiv(n,128)
+        self.best_d=torch.empty(self.groups,dtype=torch.float64,device=points.device)
+        self.best_i=torch.empty(self.groups,dtype=torch.int32,device=points.device)
+        self.output=torch.empty(extra,dtype=torch.int64,device=points.device)
+        def work():
+            kernels.seed_tile_bounds[(triton.cdiv(seeds,32),)](self.points,self.initial,self.bounds,seeds,32,num_warps=1)
+            kernels.fps_seed_bounded[(self.groups,)](self.points,self.initial,self.used,self.bounds,self.distance,
+                self.best_d,self.best_i,self.used,n,seeds,128,32,num_warps=4,enable_fp_fusion=False)
+            for k in range(extra):
+                kernels.fps_choose[(1,)](self.best_d,self.best_i,self.output,k,self.groups,
+                    triton.next_power_of_2(self.groups),num_warps=4)
+                if k+1<extra:
+                    kernels.fps_update[(self.groups,)](self.points,self.distance,self.output,
+                        self.best_d,self.best_i,k,n,128,num_warps=4,enable_fp_fusion=False)
+        # Compile and finish warmup outside capture. Captures contain no host
+        # cardinality decisions and replay on the caller's stream.
+        work();work();torch.cuda.synchronize(points.device)
+        self.graph=torch.cuda.CUDAGraph()
+        with torch.cuda.graph(self.graph):work()
+
+    def run(self,points,initial):
+        self.points[:len(points)].copy_(points)
+        self.initial.fill_(-1);self.initial[:len(initial)].copy_(initial)
+        self.used.fill_(True);self.used[:len(points)].fill_(False);self.used[initial]=True
+        self.graph.replay()
+        # Materialize the result before a later replay overwrites work buffers.
+        return torch.cat((initial,self.output))
+
 
 def external_contour_sources(mask, observed):
     """RETR_EXTERNAL/CHAIN_APPROX_NONE candidate order without CPU contours."""
+    mask=mask.contiguous();h,w=mask.shape
+    bounds=torch.tensor([h,0,w,0],dtype=torch.int32,device=mask.device)
+    kernels.mask_bounds[(triton.cdiv(mask.numel(),256),)](mask,bounds,h,w,256)
+    # Only four shape scalars cross the host boundary; pixels stay on CUDA.
+    v0,v1,u0,u1=bounds.tolist()
+    if v1<=v0 or u1<=u0:return torch.empty(0,dtype=torch.int64,device=mask.device)
+    source=_external_contour_sources(mask[v0:v1,u0:u1],observed[v0:v1,u0:u1].contiguous())
+    return (source//(u1-u0)+v0)*w+source%(u1-u0)+u0
+
+
+def _external_contour_sources(mask, observed):
+    """Local raster walk. One background pad preserves image-edge topology."""
     padded=functional.pad(mask,(1,1,1,1),value=False).contiguous()
     h,w=padded.shape;n=padded.numel();device=mask.device
     parent=torch.arange(n,dtype=torch.int64,device=device)
     roots=torch.empty_like(parent);changed=torch.zeros((),dtype=torch.int32,device=device)
-    for _ in range(n):
-        kernels.compress[(triton.cdiv(n,256),)](parent,roots,n,256)
-        parent.copy_(roots);changed.zero_()
-        kernels.hook[(triton.cdiv(n,256),)](padded,roots,parent,changed,h,w,256)
+    for _ in range((n+1)//2):
+        # Compress also resets the next union's flag; only every second
+        # completed round needs a host convergence check.
+        for _round in range(2):
+            kernels.compress[(triton.cdiv(n,256),)](parent,roots,changed,n,256)
+            kernels.hook[(triton.cdiv(n,256),)](padded,roots,parent,changed,h,w,256)
         if not bool(changed):break
     else:raise RuntimeError('CUDA contour components did not converge')
     index=torch.arange(n,device=device)
@@ -40,7 +95,7 @@ def external_contour_sources(mask, observed):
     error=torch.zeros((),dtype=torch.int32,device=device)
     kernels.trace[(len(starts),)](padded,starts,offsets,walk,lengths,error,h,w,num_warps=1)
     if bool(error):raise RuntimeError('CUDA contour walk exceeded its component reservation')
-    kernels.canonical[(len(starts),)](walk,offsets,lengths,canonical,num_warps=1)
+    kernels.canonical[(len(starts),)](walk,offsets,lengths,canonical,256,num_warps=4)
     positions=torch.nonzero(canonical>=0).flatten();source=canonical[positions]
     good=observed.view(-1)[source];source=source[good];positions=positions[good]
     first=torch.full((mask.numel(),),size,dtype=torch.int64,device=device)
@@ -48,11 +103,12 @@ def external_contour_sources(mask, observed):
     return source[positions==first[source]]
 
 
-def voxel_representatives(source,points,a):
+def voxel_representatives(source,points,a,*,source_sorted=False):
     """Source-ascending centroid-nearest original point; first-source ties."""
     if not len(source):return source.clone()
-    order=torch.argsort(source,stable=True)
-    asc=source[order];xyz=points[order].to(torch.float64)
+    order=None if source_sorted else torch.argsort(source,stable=True)
+    asc=source if source_sorted else source[order]
+    xyz=(points if source_sorted else points[order]).to(torch.float64)
     keys=torch.floor(xyz/a).to(torch.int64)
     permutation=torch.arange(len(asc),device=source.device)
     for axis in (2,1,0):
@@ -60,20 +116,17 @@ def voxel_representatives(source,points,a):
     sorted_keys=keys[permutation]
     first=torch.ones(len(asc),dtype=torch.bool,device=source.device)
     first[1:]=(sorted_keys[1:]!=sorted_keys[:-1]).any(1)
-    group=first.cumsum(0)-1
     starts=torch.nonzero(first).flatten()
     lengths=torch.diff(torch.cat((starts,starts.new_tensor([len(asc)]))))
     ordered=xyz[permutation]
     centroid=torch.segment_reduce(ordered,'mean',lengths=lengths)
-    delta=ordered-centroid[group]
-    distance=(delta[:,0]*delta[:,0]+delta[:,1]*delta[:,1])+delta[:,2]*delta[:,2]
-    minimum=torch.full((len(starts),),float('inf'),dtype=torch.float64,device=source.device)
-    minimum.scatter_reduce_(0,group,distance,reduce='amin',include_self=True)
-    rows=torch.full((len(starts),),len(asc),dtype=torch.int64,device=source.device)
-    rows.scatter_reduce_(0,group,torch.where(distance==minimum[group],permutation,len(asc)),reduce='amin',include_self=True)
-    representatives=asc[rows]
-    # Restore the input order (ascending for PCA, canonical walk for silhouette).
-    return source[torch.isin(source,representatives)]
+    flags=torch.zeros(len(source),dtype=torch.bool,device=source.device)
+    kernels.voxel_choices[(len(starts),)](xyz,permutation,starts,lengths,centroid,flags,32,
+        num_warps=1,enable_fp_fusion=False)
+    if source_sorted:return source[flags]
+    # Preserve canonical contour order without sorting/set-membership again.
+    in_input_order=torch.empty_like(flags);in_input_order[order]=flags
+    return source[in_input_order]
 
 
 def surface_fps(points,initial,additional):
@@ -84,14 +137,23 @@ def surface_fps(points,initial,additional):
     if not len(initial):initial=torch.zeros(1,dtype=torch.int64,device=points.device)
     extra=count-len(initial)
     if not extra:return initial.clone()
+    if n>=4096 and extra>=16:
+        with torch.cuda.device(points.device):
+            key=(points.device,points.dtype,torch.cuda.current_stream().cuda_stream,
+                triton.next_power_of_2(n),triton.next_power_of_2(len(initial)),extra)
+            plan=_FPS_PLANS.pop(key,None)
+            if plan is None:plan=_FPSPlan(key[3],key[4],extra,points)
+            _FPS_PLANS[key]=plan
+            if len(_FPS_PLANS)>_FPS_PLAN_LIMIT:_FPS_PLANS.popitem(last=False)
+            return plan.run(points,initial)
     distance=torch.empty(n,dtype=torch.float64,device=points.device)
     used=torch.zeros(n,dtype=torch.bool,device=points.device);used[initial]=True
     groups=triton.cdiv(n,128)
     best_d=torch.empty(groups,dtype=torch.float64,device=points.device)
     best_i=torch.empty(groups,dtype=torch.int32,device=points.device)
     output=torch.empty(extra,dtype=torch.int64,device=points.device)
-    kernels.fps_seed[(groups,)](points,initial,used,distance,best_d,best_i,n,len(initial),128,32,
-        num_warps=8,enable_fp_fusion=False)
+    kernels.fps_seed_pruned[(groups,)](points,initial,used,distance,best_d,best_i,used,n,len(initial),128,32,
+        num_warps=4,enable_fp_fusion=False)
     for k in range(extra):
         kernels.fps_choose[(1,)](best_d,best_i,output,k,groups,triton.next_power_of_2(groups),num_warps=4)
         if k+1<extra:
@@ -122,6 +184,13 @@ def build_sampling_info_cuda(projected,features,depth,masks,intrinsic,parameters
         depth=depth,masks=masks,intrinsic=intrinsic)
 
 
+def nominal_scale_cuda(xyz,intrinsic):
+    """Retain full sort: dual kthvalue regressed on the measured depth input."""
+    z=xyz[:,2].to(torch.float64).sort().values;n=len(z)
+    median=(z[(n-1)//2]+z[n//2])*.5
+    return median*torch.hypot(2/intrinsic[0,0].to(torch.float64),2/intrinsic[1,1].to(torch.float64))/math.sqrt(3)
+
+
 def shape_first_cuda(info):
     """>20deg candidates, canonical silhouette, .5/phase0, surface 97/95."""
     projected=info['projected'];metadata=info['metadata'];orientation=info['orientation']
@@ -135,10 +204,8 @@ def shape_first_cuda(info):
         sil=external_contour_sources(masks[oid],support) if len(rows) else x.clone()
         c=dict(pca=pca,sil=sil)
         if len(x):
-            z=torch.sort(xyz[:,2].to(torch.float64)).values
-            median=(z[(len(z)-1)//2]+z[len(z)//2])*.5
-            a=median*torch.hypot(2/intrinsic[0,0].to(torch.float64),2/intrinsic[1,1].to(torch.float64))/math.sqrt(3)
-            reps={name:voxel_representatives(s,xyz[torch.searchsorted(x,s)],a) for name,s in c.items()}
+            a=nominal_scale_cuda(xyz,intrinsic)
+            reps={name:voxel_representatives(s,xyz[torch.searchsorted(x,s)],a,source_sorted=name=='pca') for name,s in c.items()}
         else:reps={name:s.clone() for name,s in c.items()}
         thin={name:r[::2] for name,r in reps.items()}
         priority=torch.cat((thin['pca'],thin['sil'][~torch.isin(thin['sil'],thin['pca'])]))
@@ -149,7 +216,12 @@ def shape_first_cuda(info):
         selected[oid]=dict(F=final,P=priority,S=final[len(priority):],xyz=xyz[chosen],T=thin)
         selected_rows.append(rows[chosen])
     gather=torch.cat(selected_rows)
+    source_rows=projected.get('rows')
+    if source_rows is None:
+        from visual.runtime.test.pca_triton import compact_rows
+        source_rows=compact_rows(projected['pixels'],depth.shape)
     return dict(prepared=prep,selected=selected,rows=gather,
+        source_rows=source_rows,point_count=len(projected['points']),
         metadata={name:value[gather] for name,value in metadata.items()},
         valid=torch.stack([(projected['object_id']==i).any() for i in (0,1)]))
 
@@ -175,13 +247,27 @@ def selection_output(result,*,device=None,diagnostic=False):
         for oid,obj in result['selected'].items()}
     output=dict(selected=selected,metadata=dict(result['metadata']),valid=result['valid'])
     # Keep selection provenance on CUDA as well, even after the last FPS row.
-    candidate=[];chosen=[]
-    for oid in (0,1):
-        final=result['selected'][oid]['F']
-        candidate.append(torch.stack([torch.isin(final,result['prepared'][oid]['C'][name]) for name in ('pca','sil')],1))
-        chosen.append(torch.stack([torch.isin(final,result['selected'][oid]['T'][name]) for name in ('pca','sil')],1))
-    output['candidate_evidence']=torch.cat(candidate)
-    output['selected_by_structural_source']=torch.cat(chosen)
+    if 'source_rows' in result:
+        flags=torch.zeros(result['point_count'],dtype=torch.int32,device=result['rows'].device)
+        for oid in (0,1):
+            arrays=[result['prepared'][oid]['C'][name] for name in ('pca','sil')]
+            arrays.extend(result['selected'][oid]['T'][name] for name in ('pca','sil'))
+            maximum=max(map(len,arrays))
+            if maximum:kernels.mark_membership[(triton.cdiv(maximum,128),)](*arrays,result['source_rows'],flags,
+                *map(len,arrays),*[a.stride(0) for a in arrays],128)
+        n=len(result['rows']);candidate=torch.empty((n,2),dtype=torch.bool,device=flags.device)
+        chosen=torch.empty_like(candidate)
+        if n:kernels.gather_membership[(triton.cdiv(n,128),)](flags,result['rows'],candidate,chosen,n,128)
+        output['candidate_evidence']=candidate;output['selected_by_structural_source']=chosen
+    else:
+        # Compatibility with raw selection records produced before row maps.
+        candidate=[];chosen=[]
+        for oid in (0,1):
+            final=result['selected'][oid]['F']
+            candidate.append(torch.stack([torch.isin(final,result['prepared'][oid]['C'][name]) for name in ('pca','sil')],1))
+            chosen.append(torch.stack([torch.isin(final,result['selected'][oid]['T'][name]) for name in ('pca','sil')],1))
+        output['candidate_evidence']=torch.cat(candidate)
+        output['selected_by_structural_source']=torch.cat(chosen)
     if diagnostic:
         output['prepared']={oid:{kind:dict(obj[kind]) for kind in ('C','R')}
             for oid,obj in result['prepared'].items()}
