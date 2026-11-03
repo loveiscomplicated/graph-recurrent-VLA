@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128,
+      "mask_mode": "full"
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512,
+      "mask_mode": "full"
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768,
+      "mask_mode": "full"
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024,
+      "mask_mode": "full"
+    }
+  ]
+}

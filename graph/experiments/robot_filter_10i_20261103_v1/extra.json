@@ -1,0 +1,70 @@
+{
+  "cases": [
+    {
+      "scene": "seed98202_t000",
+      "parent": "seed98202",
+      "cohort": "seed98202",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 128
+    },
+    {
+      "scene": "seed98202_t000",
+      "parent": "seed98202",
+      "cohort": "seed98202",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 512
+    },
+    {
+      "scene": "seed98202_t000",
+      "parent": "seed98202",
+      "cohort": "seed98202",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 768
+    },
+    {
+      "scene": "seed98202_t000",
+      "parent": "seed98202",
+      "cohort": "seed98202",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0844_t000",
+      "parent": "10i_s1_0844",
+      "cohort": "static",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0844_t000",
+      "parent": "10i_s1_0844",
+      "cohort": "static",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0844_t000",
+      "parent": "10i_s1_0844",
+      "cohort": "static",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0844_t000",
+      "parent": "10i_s1_0844",
+      "cohort": "static",
+      "timestep": 0,
+      "stratum": "extra_identity_selected",
+      "size": 1024
+    }
+  ],
+  "eligible_parent_count": 2,
+  "rule": "All prior 26 scenarios for regression at 128/512/768/1024; all 52 high-resolution cases timed; smallest SHA256(scene) two per stratum for small sizes; screen first per stratum plus known large-mask 0924/t80; extra parents: first 6 SHA256(task10i-roi-extra:+parent) absent from prior 18, one minimum-SHA scene per parent, all saved resolutions"
+}

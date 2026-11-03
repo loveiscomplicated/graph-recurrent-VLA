@@ -1,0 +1,517 @@
+{
+  "cases": [
+    {
+      "scene": "10i_s1_0531_track_t006",
+      "parent": "10i_s1_0531",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 6,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0531_track_t006",
+      "parent": "10i_s1_0531",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 6,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0305_track_t001",
+      "parent": "10i_s1_0305",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 1,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0305_track_t001",
+      "parent": "10i_s1_0305",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 1,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0921_t080",
+      "parent": "10i_s1_0921",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0044_t000",
+      "parent": "10i_s1_0044",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0044_t000",
+      "parent": "10i_s1_0044",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0621_t080",
+      "parent": "10i_s1_0621",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0621_t080",
+      "parent": "10i_s1_0621",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0157_t000",
+      "parent": "10i_s1_0157",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0157_t000",
+      "parent": "10i_s1_0157",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0921_t000",
+      "parent": "10i_s1_0921",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0921_t000",
+      "parent": "10i_s1_0921",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0134_t000",
+      "parent": "10i_s1_0134",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0134_t000",
+      "parent": "10i_s1_0134",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0023_t000",
+      "parent": "10i_s1_0023",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0023_t000",
+      "parent": "10i_s1_0023",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0327_t000",
+      "parent": "10i_s1_0327",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0327_t000",
+      "parent": "10i_s1_0327",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0197_track_t008",
+      "parent": "10i_s1_0197",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 8,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0197_track_t008",
+      "parent": "10i_s1_0197",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 8,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0327_t080",
+      "parent": "10i_s1_0327",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0327_t080",
+      "parent": "10i_s1_0327",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0449_t080",
+      "parent": "10i_s1_0449",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0449_t080",
+      "parent": "10i_s1_0449",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0449_t080",
+      "parent": "10i_s1_0449",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0449_t080",
+      "parent": "10i_s1_0449",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0686_t080",
+      "parent": "10i_s1_0686",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0686_t080",
+      "parent": "10i_s1_0686",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0686_t000",
+      "parent": "10i_s1_0686",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0686_t000",
+      "parent": "10i_s1_0686",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0134_t078",
+      "parent": "10i_s1_0134",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 78,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0134_t078",
+      "parent": "10i_s1_0134",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 78,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0924_t000",
+      "parent": "10i_s1_0924",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0924_t000",
+      "parent": "10i_s1_0924",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0362_t000",
+      "parent": "10i_s1_0362",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0362_t000",
+      "parent": "10i_s1_0362",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0767_t000",
+      "parent": "10i_s1_0767",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0767_t000",
+      "parent": "10i_s1_0767",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0275_track_t006",
+      "parent": "10i_s1_0275",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 6,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0275_track_t006",
+      "parent": "10i_s1_0275",
+      "stratum": "ordinary",
+      "cohort": "tracking",
+      "timestep": 6,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0720_t080",
+      "parent": "10i_s1_0720",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0720_t080",
+      "parent": "10i_s1_0720",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0720_t080",
+      "parent": "10i_s1_0720",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0720_t080",
+      "parent": "10i_s1_0720",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0449_t000",
+      "parent": "10i_s1_0449",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0449_t000",
+      "parent": "10i_s1_0449",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    }
+  ],
+  "rule": "Hash(scene) order; alternating size direction; unchanged timed.json membership"
+}

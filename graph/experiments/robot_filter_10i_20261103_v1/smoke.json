@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "task": "Task10-I robot filter optimization",
+  "baseline": "graph_latency_10i_20261103_v2 Candidate(9)",
+  "local_commit": "8a0356f6bdb00bfca6731830c1b8f43b3799ce6e",
+  "selection": "All prior 26 scenarios for regression at 128/512/768/1024; all 52 high-resolution cases timed; smallest SHA256(scene) two per stratum for small sizes; screen first per stratum plus known large-mask 0924/t80; extra parents: first 6 SHA256(task10i-roi-extra:+parent) absent from prior 18, one minimum-SHA scene per parent, all saved resolutions",
+  "depth_atol": 1e-12,
+  "pca_atol": 2e-05,
+  "pca_rtol": 0,
+  "all_other_discrete_and_records": "exact",
+  "warmups": 3,
+  "repeats": 15,
+  "policy_changes": false,
+  "extra_selection_result": 2,
+  "timing_verification": "v1 screen compares all records after each call; v2 captures all record fields once per case/candidate and retains measured-call Graph/source/gate checks; both outside timer; GC enabled"
+}

@@ -1,0 +1,132 @@
+{
+  "cases": [
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0044_t080",
+      "parent": "10i_s1_0044",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0193_t080",
+      "parent": "10i_s1_0193",
+      "stratum": "success",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0193_t000",
+      "parent": "10i_s1_0193",
+      "stratum": "ordinary",
+      "cohort": "static",
+      "timestep": 0,
+      "size": 1024
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 128
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 512
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 768
+    },
+    {
+      "scene": "10i_s1_0924_t080",
+      "parent": "10i_s1_0924",
+      "stratum": "failure",
+      "cohort": "static",
+      "timestep": 80,
+      "size": 1024
+    }
+  ]
+}
