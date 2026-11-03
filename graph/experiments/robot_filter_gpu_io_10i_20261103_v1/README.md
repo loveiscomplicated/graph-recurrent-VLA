@@ -78,21 +78,58 @@ outside the raw mask union are not computed or presented as full-screen results.
 
 ## SAM2 connections
 
+CPU world-shape/ConvexHull/projection-bound preparation now starts **before**
+SAM2 inference. The worker performs only NumPy/SciPy preparation; the predictor
+and all CUDA filtering remain on the caller's existing thread/stream. The join
+occurs after raw masks are produced, before the unchanged GPU filter:
+
+```python
+from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation
+
+with RobotFilterPreparation(robot_filter) as preparation:
+    pending = preparation.submit(cameras, current_fk_surfaces)
+    raw_cuda_by_camera = run_existing_sam2()  # existing inference, main thread
+    clean_cuda_by_camera = preparation.filter(pending, raw_cuda_by_camera)
+```
+
+`image_clean_masks_cuda(..., preparation=preparation)` uses this ordering
+automatically for one camera. `images_clean_masks_cuda` does so for a dictionary
+of predictors/RGB/boxes and synchronized cameras, sharing one prepared geometry
+snapshot across both views. Keep one preparation context to reuse its CPU worker;
+the existing single-call image helper also works with a temporary worker.
+
+Exactly one frame may be outstanding. Raw signed depth, calibration and FK
+geometry are snapshotted before submission to protect against subsequent buffer
+reuse. Hull equations and original link slots/order are unchanged. This async
+path requires standard CPU `CameraObservation`/`LinkSurface` inputs; direct
+`CudaRobotFilter` calls keep their previous custom-camera behavior. Frame join,
+mask identities and source-index mappings remain the caller's responsibility.
+Inference/preparation errors propagate, and cancelled/closed inference drains
+the CPU job instead of reusing it on the next frame. No frame-ahead pose cache
+or GPU-wide synchronization is introduced.
+
 The existing tracker already yields device tensors. Its optional callback now
 runs before the existing CPU RGB-D adapter:
 
 ```python
 from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.sam2_bridge import SAM2RobotFilter
-for index, clean_masks_cuda in tracker.track(
-    state, mask_filter=SAM2RobotFilter(observation_for_frame)
-):
-    ...
+with SAM2RobotFilter(observation_for_frame, robot_filter) as callback:
+    for index, clean_masks_cuda in tracker.track(state, mask_filter=callback):
+        ...
 ```
 
 `observation_for_frame(index)` returns the exactly joined current camera and FK
 surfaces. It must respect the caller's original source-frame/subsampling mapping.
 Tracker IDs remain 1/2; missing objects remain missing. A clean mask must not be
 passed downstream as if it were the original raw mask for gate statistics.
+
+For the normal SAM2 `init_state` state containing `num_frames`, the tracker calls
+`prepare_frame(index)` **before** advancing each forward propagation frame. It
+checks consecutive output indices and cancels pending work on inference error,
+iterator close or early termination. Prompt initialization in `start` is
+unchanged. Custom states without `num_frames` retain post-output filtering;
+they cannot schedule the next current geometry in advance. Other callbacks and
+tracking without a callback retain their existing mask behavior.
 
 Image SAM2's public `predict()` returns NumPy, so `image_masks_cuda()` follows
 its installed `_prep_prompts`/`_predict` calls and skips only final CPU
@@ -131,3 +168,10 @@ mocked SAM2 image/tracking connections, no-readback dispatch guards and gate/raw
 statistics. This verifies the bridge and filter, not real SAM2 inference latency.
 The previous 47.0→13.4ms CPU→CPU result is a different measurement boundary;
 no additional speedup is inferred here.
+
+The overlap change is tested by deterministic thread-order/lifecycle tests,
+mocked image/video SAM2 and exact real-CUDA filter comparisons. A saved two-camera
+fixture at 128/512/768/1024 verifies all diagnostic fields and hull metadata
+bitwise against serial preparation. `verify_preparation.py` measures only CPU
+preparation at512 (warmup3/repeats15). Actual SAM2 latency and end-to-end speedup
+are not inferred from that CPU-only timing or from the historical7.16ms result.

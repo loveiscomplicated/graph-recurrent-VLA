@@ -251,7 +251,7 @@ class CudaRobotFilter:
         return _PreparedSurfaces(tuple(hulls),starts,equations,camera_bounds=camera_bounds,
             packed=packed,camera_groups=camera_groups)
 
-    def filter_cameras(self,cameras,surfaces,masks,**kwargs):
+    def filter_cameras(self,cameras,surfaces,masks,*,prepared=None,**kwargs):
         """Two-camera/live-frame entrypoint; preparation stays inside this call.
 
         No pose state survives the call. Camera depth/calibration and masks stay
@@ -260,7 +260,7 @@ class CudaRobotFilter:
         cameras=tuple(cameras)
         names=[c.camera for c in cameras]
         if len(set(names))!=len(names) or set(names)!=set(masks):raise ValueError('camera identity')
-        prepared=self.prepare_surfaces(surfaces,cameras)
+        prepared=self.prepare_surfaces(surfaces,cameras) if prepared is None else prepared
         return {c.camera:self(c,prepared,masks[c.camera],**kwargs) for c in cameras}
 
     @torch.inference_mode()

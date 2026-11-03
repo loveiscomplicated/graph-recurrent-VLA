@@ -43,11 +43,35 @@ class SAM2RobotFilter:
             from .gpu_filter import CudaRobotFilter
             robot_filter=CudaRobotFilter()
         self.robot_filter=robot_filter
+        from .preparation import RobotFilterPreparation
+        self.preparation=RobotFilterPreparation(robot_filter)
+        self._job=None;self._frame_index=None
+
+    def prepare_frame(self,frame_index):
+        """Called before forward SAM2 propagation by SAM2Tracker.track."""
+        if self._job is not None:raise RuntimeError('previous SAM2 frame has not been filtered')
+        camera,surfaces=self.observation_for_frame(frame_index)
+        self._job=self.preparation.submit((camera,),surfaces);self._frame_index=int(frame_index)
+
+    def cancel_prepared(self):
+        if self._job is not None:self.preparation.discard(self._job)
+        self._job=None;self._frame_index=None
+
+    def close(self):
+        self.cancel_prepared();self.preparation.close()
+
+    def __enter__(self):return self
+    def __exit__(self,*_):self.close()
 
     @torch.inference_mode()
     def __call__(self,frame_index,masks):
+        try:return self._filter(frame_index,masks)
+        except BaseException:
+            self.cancel_prepared();raise
+
+    def _filter(self,frame_index,masks):
         if set(masks)-{1,2}:raise ValueError('unknown tracker object ID')
-        if not masks:return {}
+        if not masks:self.cancel_prepared();return {}
         sample=next(iter(masks.values()))
         if not isinstance(sample,torch.Tensor) or not sample.is_cuda or sample.dtype!=torch.bool:
             raise ValueError('SAM2 CUDA bool masks required')
@@ -55,16 +79,47 @@ class SAM2RobotFilter:
             if not isinstance(mask,torch.Tensor) or mask.device!=sample.device or mask.dtype!=torch.bool or mask.shape!=sample.shape:
                 raise ValueError('unaligned SAM2 CUDA masks')
         raw=torch.stack([masks[i] if i in masks else torch.zeros_like(sample) for i in (1,2)])
-        camera,surfaces=self.observation_for_frame(frame_index)
-        clean=self.robot_filter(camera,surfaces,raw)
+        if self._job is None:self.prepare_frame(frame_index)
+        if self._frame_index!=int(frame_index):
+            self.cancel_prepared();raise ValueError('prepared frame does not match SAM2 output')
+        job=self._job;self._job=None;self._frame_index=None
+        clean=self.preparation.filter(job,{job.cameras[0].camera:raw})[job.cameras[0].camera]
         return {i:clean[i-1] for i in masks}
 
 
 @torch.inference_mode()
-def image_clean_masks_cuda(predictor,rgb,boxes,camera,surfaces,*,robot_filter=None):
-    """Image SAM2 -> filter -> CUDA clean masks; scores remain CUDA tensors."""
+def image_clean_masks_cuda(predictor,rgb,boxes,camera,surfaces,*,robot_filter=None,preparation=None):
+    """Overlap current CPU geometry preparation with image SAM2; then filter."""
+    name=camera.camera
+    clean,scores=images_clean_masks_cuda({name:predictor},{name:rgb},{name:boxes},(camera,),surfaces,
+        robot_filter=robot_filter,preparation=preparation)
+    return clean[name],scores[name]
+
+
+@torch.inference_mode()
+def images_clean_masks_cuda(predictors,rgb,boxes,cameras,surfaces,*,robot_filter=None,preparation=None):
+    """Prepare once for synchronized cameras while their image SAM2 runs.
+
+    Pass a persistent RobotFilterPreparation context to reuse its CPU worker.
+    A temporary context keeps the existing single-call API self-contained.
+    """
+    from .preparation import RobotFilterPreparation
+    cameras=tuple(cameras);names={c.camera for c in cameras}
+    if any(set(mapping)!=names for mapping in (predictors,rgb,boxes)):raise ValueError('SAM2 camera identity')
+    if preparation is not None:
+        if robot_filter is not None and robot_filter is not preparation.robot_filter:raise ValueError('preparation/filter ownership')
+        robot_filter=preparation.robot_filter
     if robot_filter is None:
         from .gpu_filter import CudaRobotFilter
         robot_filter=CudaRobotFilter()
-    raw,scores=image_masks_cuda(predictor,rgb,boxes)
-    return robot_filter(camera,surfaces,raw),scores
+    owned=preparation is None
+    if owned:preparation=RobotFilterPreparation(robot_filter)
+    job=None
+    try:
+        job=preparation.submit(cameras,surfaces)
+        raw={};scores={}
+        for c in cameras:raw[c.camera],scores[c.camera]=image_masks_cuda(predictors[c.camera],rgb[c.camera],boxes[c.camera])
+        return preparation.filter(job,raw),scores
+    finally:
+        if job is not None:preparation.discard(job)
+        if owned:preparation.close()

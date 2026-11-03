@@ -78,27 +78,40 @@ class SAM2Tracker:
 
         Optional ``mask_filter(frame_index, masks)`` runs before any CPU adapter.
         It must return boolean masks with identical IDs, shapes and devices.
+        When it exposes prepare_frame/cancel_prepared and state has num_frames,
+        prepare_frame runs before advancing each forward SAM2 frame. This
+        permits CPU robot geometry to overlap inference; output indices must
+        remain consecutive. The predictor itself stays on this thread.
         Without it the existing tracker behavior is unchanged.
         """
-        for frame_idx, object_ids, logits in self.predictor.propagate_in_video(
-            state, start_frame_idx=start_frame
-        ):
-            masks = {
-                int(object_id): logits[i, 0] > 0
-                for i, object_id in enumerate(object_ids)
-            }
-            if mask_filter is not None:
-                import torch
-                filtered = mask_filter(int(frame_idx), masks)
-                if set(filtered) != set(masks):
-                    raise ValueError('mask_filter changed tracker object IDs')
-                for object_id, mask in filtered.items():
-                    original = masks[object_id]
-                    if (not isinstance(mask, torch.Tensor) or mask.dtype != torch.bool
-                            or mask.shape != original.shape or mask.device != original.device):
-                        raise ValueError('mask_filter must preserve mask shape, dtype and device')
-                masks = filtered
-            yield int(frame_idx), masks
+        prepare=getattr(mask_filter,'prepare_frame',None);cancel=getattr(mask_filter,'cancel_prepared',None)
+        count=state.get('num_frames');expected=int(start_frame)
+        has_preparation=callable(prepare) and callable(cancel)
+        ahead=has_preparation and isinstance(count,int)
+        frames=iter(self.predictor.propagate_in_video(state,start_frame_idx=start_frame))
+        try:
+            while True:
+                if ahead and expected<count:prepare(expected)
+                try:frame_idx,object_ids,logits=next(frames)
+                except StopIteration:break
+                if ahead and int(frame_idx)!=expected:raise ValueError('prepared SAM2 tracking requires consecutive forward frames')
+                masks={int(object_id):logits[i,0]>0 for i,object_id in enumerate(object_ids)}
+                if mask_filter is not None:
+                    import torch
+                    filtered=mask_filter(int(frame_idx),masks)
+                    if set(filtered)!=set(masks):raise ValueError('mask_filter changed tracker object IDs')
+                    for object_id,mask in filtered.items():
+                        original=masks[object_id]
+                        if (not isinstance(mask,torch.Tensor) or mask.dtype!=torch.bool
+                                or mask.shape!=original.shape or mask.device!=original.device):
+                            raise ValueError('mask_filter must preserve mask shape, dtype and device')
+                    masks=filtered
+                expected=int(frame_idx)+1
+                yield int(frame_idx),masks
+        finally:
+            if has_preparation:cancel()
+            close=getattr(frames,'close',None)
+            if close is not None:close()
 
     def reset(self, state: dict) -> None:
         """Release the predictor's per-video tracking state."""
