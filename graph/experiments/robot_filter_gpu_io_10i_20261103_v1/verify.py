@@ -24,8 +24,10 @@ def main():
     output=Path(os.environ['TASK10I_GPU_IO_OUTPUT']);output.mkdir(parents=True,exist_ok=False)
     torch.set_num_threads(4)
     cases=json.loads((OLD/'regression.json').read_text())['cases']+json.loads((OLD/'extra.json').read_text())['cases']
+    full_masks=os.environ.get('TASK10I_GPU_VERIFY_FULL_MASKS')=='1'
+    if full_masks:cases=[dict(scene='10i_s1_0924_t080',size=size,mask_mode='full') for size in (128,512,768,1024)]
     from sam2.sam2_image_predictor import SAM2ImagePredictor
-    config=dict(cases=cases,sam2_execution=False,graph_execution=False,training=False,original_processes_resumed=False,
+    config=dict(cases=cases,full_mask_stress=full_masks,sam2_execution=False,graph_execution=False,training=False,original_processes_resumed=False,
         boundary='CUDA SAM2 mask tensor -> CUDA clean mask; CPU sensor/FK inputs may upload, no mask readback',
         gpu=torch.cuda.get_device_name(0),torch=torch.__version__,cuda=torch.version.cuda,
         sam2_predict_source=inspect.getsource(SAM2ImagePredictor.predict),
@@ -38,10 +40,16 @@ def main():
         for i,case in enumerate(cases):
             geo=geometry();inputs=load_inputs(case['scene'],case['size'],geo)
             masks=masks_for(specs[case['scene']],case['size'],0,'actual')
+            if full_masks:masks={k:np.stack((np.ones_like(v[0]),np.zeros_like(v[1]))) for k,v in masks.items()}
+            device_masks={k:torch.as_tensor(v,device='cuda') for k,v in masks.items()}
+            before={k:v.clone() for k,v in device_masks.items()}
+            filt=CudaRobotFilter()
+            batch=filt.filter_cameras(inputs[0],inputs[2],device_masks,diagnostics=True)
+            filt.filter_cameras(inputs[0],inputs[2],device_masks)
+            with NoReadback():clean_batch=filt.filter_cameras(inputs[0],inputs[2],device_masks)
             for camera in inputs[0]:
                 with Candidate(9):reference=core.classify_robot(camera,inputs[2])
-                device_masks=torch.as_tensor(masks[camera.camera],device='cuda');before=device_masks.clone()
-                filt=CudaRobotFilter();result=filt(camera,inputs[2],device_masks,diagnostics=True)
+                result=batch[camera.camera]
                 good=result['evaluated_pixels'].cpu().numpy()
                 for field in ('confirmed_robot','uncertain','candidate','link_owner','inside_known_link_volume'):
                     np.testing.assert_array_equal(result[field].cpu().numpy()[good],reference[field][good],err_msg=field)
@@ -50,10 +58,9 @@ def main():
                 expected=filtered_masks(masks[camera.camera],reference)[0]
                 np.testing.assert_array_equal(result['clean_masks'].cpu().numpy(),expected)
                 # Input creation/verification readback stays outside this guard.
-                filt(camera,inputs[2],device_masks)
-                with NoReadback():clean=filt(camera,inputs[2],device_masks)
-                assert clean.is_cuda and clean.dtype==torch.bool and clean.shape==device_masks.shape
-                assert torch.equal(clean,result['clean_masks']) and torch.equal(before,device_masks)
+                clean=clean_batch[camera.camera];raw=device_masks[camera.camera]
+                assert clean.is_cuda and clean.dtype==torch.bool and clean.shape==raw.shape
+                assert torch.equal(clean,result['clean_masks']) and torch.equal(before[camera.camera],raw)
                 finite=np.isfinite(a)&np.isfinite(b)
                 rows.append(dict(case=case,camera=camera.camera,mask_sha256=C.array_sha(masks[camera.camera]),
                     clean_sha256=C.array_sha(expected),clean_exact=True,owner_and_pixel_flags_exact=True,

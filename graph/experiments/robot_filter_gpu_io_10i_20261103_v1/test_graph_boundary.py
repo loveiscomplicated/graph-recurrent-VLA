@@ -27,6 +27,12 @@ class BoundaryContracts(unittest.TestCase):
         self.assertEqual(old,[core.PlanA.prepare,core.classify_robot,core.filtered_masks])
         self.assertEqual(actual['gate'],expected['gate'])
         self.assertEqual(actual['gate']['raw_pixels'],36)
+        default_filter=CudaRobotFilter()
+        with patch.object(default_filter,'filter_cameras',wraps=default_filter.filter_cameras) as batch:
+            with GpuMaskBoundary(default_filter):batched=f.system.prepare(f.cameras,f.data,raw,ss)
+            batch.assert_called_once()
+        self.assertEqual(batched['gate'],expected['gate'])
+        for name in expected['clean']:np.testing.assert_array_equal(batched['clean'][name],expected['clean'][name])
         for stage in ('clean','conditions'):
             if stage=='clean':
                 for name in expected[stage]:np.testing.assert_array_equal(actual[stage][name],expected[stage][name])

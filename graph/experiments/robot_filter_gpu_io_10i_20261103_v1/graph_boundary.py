@@ -38,7 +38,9 @@ class GpuMaskBoundary:
             core.synchronized(cameras)
             if {c.camera for c in cameras}!=set(masks):raise ValueError('camera identity')
             # There is no raw-mask host copy before these filter calls.
-            ctx.clean_cuda={c.camera:ctx.robot_filter(c,surfaces,masks[c.camera]) for c in cameras}
+            batch=getattr(ctx.robot_filter,'filter_cameras',None)
+            ctx.clean_cuda=(batch(cameras,surfaces,masks) if batch is not None else
+                {c.camera:ctx.robot_filter(c,surfaces,masks[c.camera]) for c in cameras})
             raw={name:value.detach().cpu().numpy() for name,value in masks.items()}
             clean={name:value.detach().cpu().numpy() for name,value in ctx.clean_cuda.items()}
             ctx._active=clean

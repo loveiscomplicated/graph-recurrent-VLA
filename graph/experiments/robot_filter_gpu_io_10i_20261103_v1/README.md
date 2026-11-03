@@ -14,6 +14,59 @@ from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import Cud
 clean_cuda = CudaRobotFilter()(camera, current_fk_surfaces, raw_cuda)
 ```
 
+For a synchronized frame with both cameras, keep one filter instance and use:
+
+```python
+robot_filter = CudaRobotFilter()
+clean_by_camera = robot_filter.filter_cameras(
+    cameras, current_fk_surfaces, raw_cuda_by_camera
+)
+```
+
+This entrypoint prepares the current world collision hulls once and shares them
+between cameras only within that call. The next call recomputes them from current
+FK, including in-place pose edits. `GpuMaskBoundary` uses this entrypoint by
+default; existing custom single-camera filter callables still work.
+
+Above 128², clipping kernels group links by plane count, load the raw mask union
+on GPU and atomically reduce nearest depth/interior. Diagnostic owners resolve
+equal depths to the first original link in a second pass. Original float64 ray
+GEMM, per-link numerator GEMV and thresholds remain intact. Equation uploads are
+shared only within a frame. A bounded cache (8 entries / 64 MiB) retains only CV
+camera rays keyed by resolution, intrinsic bytes and CUDA device. Current world
+rotation/origin, sensor depth, hulls and masks are always recomputed or reread.
+
+Frame preparation first projects every current world collision shape into each
+camera. A shape whose existing conservative bounds are empty in every camera
+needs no Qhull; its original link slot remains present so owner IDs retain their
+meaning. Camera inverse transforms are validated once per camera. Equations,
+contiguous normals and all camera/group int64 metadata share one frame-local
+upload. These preparations refresh on every call, including when an invisible
+link or moving wrist becomes visible again.
+
+High-resolution filtering now compacts the mask-union pixels inside each link
+bounds on GPU before clipping. Fixed-capacity row lists and CUDA counters avoid
+CPU count readback or dynamic `nonzero`. Only pixel scheduling changes: every
+plane calculation stays float64 and diagnostic owners still use deterministic
+minimum original link IDs after nearest-depth reduction. Row-list order may vary
+between launches; returned decisions do not. Temporary row capacity is the sum
+of projected bounding-box pixels (4 bytes per slot), recreated for each camera.
+`CudaRobotFilter(compact=False)` retains the prior masked-lane path for direct
+comparison. `clip_pixels=32` remains the default; 8/16/64 are diagnostic tuning
+options. The small-resolution grouped path is unchanged.
+
+For the standard `CameraObservation` with signed int16 millimetre depth, the
+filter uploads the original sensor array and converts to float64 metres on GPU.
+One 256KiB table per used CUDA device stores NumPy's exact float64 `/ 1000`
+results for all positive int16 values; zero/negative/overflow values stay invalid.
+The table is a universal unit conversion, independent of pose, calibration and
+frame depth. GPU conversion covers the full image. This temporary depth buffer
+is private to the filter. Custom camera objects retain their `.depth`
+contract, and optional `depth_cuda` remains unchanged. `depth_from_mm=False`
+selects the prior CPU conversion path for comparison. No converted depth is
+cached between frames. At 512², two-camera sensor upload drops from 4 MiB of
+float64 data to 1 MiB of signed int16 data.
+
 `raw_cuda` is bool `[2,H,W]`, Peg then Box. The result is a new bool tensor on the
 same CUDA device. Inputs are not modified. There is no mask `.cpu()`, `.numpy()`,
 `.item()` or dynamic GPU `nonzero` in this filter. Collision hull preparation

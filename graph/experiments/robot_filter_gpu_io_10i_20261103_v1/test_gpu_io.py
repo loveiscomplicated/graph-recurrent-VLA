@@ -80,6 +80,27 @@ class GPUContracts(unittest.TestCase):
         moved=c.world_from_camera.copy();moved[0,3]=.03
         self.compare(SimpleNamespace(**{**vars(c),'world_from_camera':moved}),ss,np.stack((np.ones((h,w),bool),np.zeros((h,w),bool))))
 
+    def test_compaction_order_capacity_and_tiles_preserve_dense_decisions(self):
+        from .gpu_filter import CudaRobotFilter
+        from graph.persistent_geometry.self_filter import LinkSurface
+        from graph.persistent_geometry.tests.test_contracts import cube
+        h,w=129,131
+        c=SimpleNamespace(camera='compact',depth_raw_mm=np.ones((h,w),np.int16),
+            intrinsic=np.array([[500,0,w/2],[0,500,h/2],[0,0,1]],float),world_from_camera=np.eye(4),
+            depth=np.resize([np.nan,1.,1.-.0025,1.-.006,1.+.0005,1.1-.0005],(h,w)))
+        surface=LinkSurface('tie',cube([-1,-1,1],[1,1,1.1]),np.eye(4))
+        surfaces=[surface,surface,LinkSurface('cross',cube([-.1,-.1,-.1],[.1,.1,.1]),np.eye(4))]
+        rng=np.random.default_rng(7)
+        for mode in ('empty','sparse','full'):
+            mask=(rng.random((2,h,w))<.025 if mode=='sparse' else np.full((2,h,w),mode=='full'))
+            mask[1]=False;raw=torch.as_tensor(mask,device='cuda')
+            expected=CudaRobotFilter(compact=False)(c,surfaces,raw,diagnostics=True)
+            for pixels in (8,16,32,64):
+                filt=CudaRobotFilter(clip_pixels=pixels)
+                for _ in range(3):
+                    with NoReadback():actual=filt(c,surfaces,raw,diagnostics=True)
+                    for field in expected:self.assertTrue(torch.equal(actual[field],expected[field]),field)
+
     def test_gpu_depth_input_noncontiguous_masks_and_bad_contracts(self):
         from .gpu_filter import CudaRobotFilter
         f=CudaRobotFilter();c=self.camera;h,w=c.depth_raw_mm.shape
@@ -90,6 +111,60 @@ class GPUContracts(unittest.TestCase):
         for masks in (raw.cpu(),raw.float(),raw[:1]):
             with self.assertRaisesRegex(ValueError,'CUDA bool'):f(c,self.surfaces,masks)
         with self.assertRaisesRegex(ValueError,'float64'):f(c,self.surfaces,raw,depth_cuda=b[0].float())
+
+    def test_signed_mm_gpu_conversion_exhaustive_and_sensor_refresh(self):
+        from .gpu_filter import CudaRobotFilter,_depth_mm
+        # Every signed int16 value, including -32768 overflow and zero.
+        mm=np.arange(-32768,32768,dtype=np.int32).astype(np.int16).reshape(256,256)
+        expected=np.where(mm>0,mm.astype(np.float64)/1000,np.nan)
+        raw=torch.as_tensor(mm,device='cuda');filt=CudaRobotFilter();table=filt._depth_table(raw.device)
+        actual=torch.empty((256,256),device='cuda',dtype=torch.float64)
+        with NoReadback():_depth_mm[(256,)](raw,table,actual,65536)
+        host=actual.cpu().numpy();valid=mm>0
+        np.testing.assert_array_equal(np.isnan(host),np.isnan(expected))
+        np.testing.assert_array_equal(host[valid].view(np.uint64),expected[valid].view(np.uint64))
+        self.assertEqual(table.data_ptr(),filt._depth_table(raw.device).data_ptr())
+        # Live signed sensor data changes every call; no converted-depth cache.
+        c=self.camera;source=torch.as_tensor(np.stack((np.ones(c.depth_raw_mm.shape,bool),np.zeros(c.depth_raw_mm.shape,bool))),device='cuda')
+        fast=CudaRobotFilter();cpu=CudaRobotFilter(depth_from_mm=False)
+        for value in (100,1000,0,-32768,1100):
+            current=replace(c,depth_raw_mm=np.full(c.depth_raw_mm.shape,value,np.int16))
+            a=fast(current,self.surfaces,source,diagnostics=True)
+            b=cpu(current,self.surfaces,source,diagnostics=True)
+            for field in a:self.assertTrue(torch.equal(a[field],b[field]),field)
+        def fail_cpu_depth(_):raise AssertionError('CPU float64 depth conversion used')
+        with patch.object(type(c),'depth',property(fail_cpu_depth)),NoReadback():
+            fast(c,self.surfaces,source)
+
+    def test_batch_prepares_current_pose_once_and_refreshes_next_frame(self):
+        from . import gpu_filter
+        from graph.persistent_geometry.self_filter import LinkSurface
+        from graph.persistent_geometry.tests.test_contracts import cube
+        f=gpu_filter.CudaRobotFilter();c=self.camera
+        second=replace(c,camera='second')
+        raw={x.camera:torch.ones((2,*x.depth_raw_mm.shape),device='cuda',dtype=torch.bool) for x in (c,second)}
+        # These matrices may be edited in place by a live FK producer. The batch
+        # must share only within this invocation, then prepare the updated pose.
+        surfaces=[LinkSurface('moving',cube([-.15,-.2,1],[.1,.2,1.1]),np.eye(4))]
+        with patch.object(gpu_filter,'ConvexHull',wraps=gpu_filter.ConvexHull) as hull:
+            for offset in (0.,10.,0.):
+                surfaces[0].world_from_link[0,3]=offset
+                count=hull.call_count
+                with NoReadback():actual=f.filter_cameras((c,second),surfaces,raw,diagnostics=True)
+                self.assertEqual(hull.call_count-count,len(surfaces) if offset==0. else 0)
+                for cam in (c,second):
+                    expected=f(cam,surfaces,raw[cam.camera],diagnostics=True)
+                    for key in ('clean_masks','predicted_robot_depth','link_owner','inside_known_link_volume'):
+                        self.assertTrue(torch.equal(actual[cam.camera][key],expected[key]))
+        with self.assertRaisesRegex(ValueError,'camera identity'):f.filter_cameras((c,c),surfaces,raw)
+        # Cached CV rays must also refresh when calibration changes in place.
+        changed=replace(c,intrinsic=c.intrinsic.copy())
+        for focal_scale in (1.,2.,1.):
+            changed.intrinsic[:2,:2]=c.intrinsic[:2,:2]*focal_scale
+            actual=f(changed,surfaces,raw[c.camera],diagnostics=True)
+            expected=gpu_filter.CudaRobotFilter()(changed,surfaces,raw[c.camera],diagnostics=True)
+            for key in ('clean_masks','predicted_robot_depth','link_owner'):
+                self.assertTrue(torch.equal(actual[key],expected[key]))
 
     def test_sam2_image_and_tracking_deliver_gpu_clean_masks(self):
         from .sam2_bridge import image_masks_cuda,image_clean_masks_cuda,SAM2RobotFilter
