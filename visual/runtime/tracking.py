@@ -73,8 +73,13 @@ class SAM2Tracker:
             )
         return state
 
-    def track(self, state: dict, start_frame: int = 0) -> Iterator[tuple[int, dict[int, object]]]:
-        """Yield ``(frame_index, {object_id: boolean_mask})`` for each frame."""
+    def track(self, state: dict, start_frame: int = 0, *, mask_filter=None) -> Iterator[tuple[int, dict[int, object]]]:
+        """Yield masks on the predictor device.
+
+        Optional ``mask_filter(frame_index, masks)`` runs before any CPU adapter.
+        It must return boolean masks with identical IDs, shapes and devices.
+        Without it the existing tracker behavior is unchanged.
+        """
         for frame_idx, object_ids, logits in self.predictor.propagate_in_video(
             state, start_frame_idx=start_frame
         ):
@@ -82,6 +87,17 @@ class SAM2Tracker:
                 int(object_id): logits[i, 0] > 0
                 for i, object_id in enumerate(object_ids)
             }
+            if mask_filter is not None:
+                import torch
+                filtered = mask_filter(int(frame_idx), masks)
+                if set(filtered) != set(masks):
+                    raise ValueError('mask_filter changed tracker object IDs')
+                for object_id, mask in filtered.items():
+                    original = masks[object_id]
+                    if (not isinstance(mask, torch.Tensor) or mask.dtype != torch.bool
+                            or mask.shape != original.shape or mask.device != original.device):
+                        raise ValueError('mask_filter must preserve mask shape, dtype and device')
+                masks = filtered
             yield int(frame_idx), masks
 
     def reset(self, state: dict) -> None:

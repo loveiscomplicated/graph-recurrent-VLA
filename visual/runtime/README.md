@@ -74,3 +74,14 @@ points under one combined budget, preserving source pixels and geometric
 evidence. The [measured report](../../docs/visual-graph-integration/03_sampling.md)
 compares general FPS and four candidate-priority conditions. This internal
 NumPy result does not implement final Graph packaging, stale cache or edges.
+
+### SAM2 GPU mask filtering
+
+`SAM2Tracker.track(state, mask_filter=callback)` optionally calls
+`callback(frame_index, masks)` on the predictor's boolean tensor masks before
+any CPU conversion. The callback preserves object IDs, shapes and devices; the
+existing no-callback behavior is unchanged. The explicit CPU boundary remains
+`attach_rgbd`, after filtering. Task 10-I's
+[CUDA robot-filter connection](../../graph/experiments/robot_filter_gpu_io_10i_20261103_v1/README.md)
+returns CUDA clean masks and documents the separate raw-mask boundary required
+by the unchanged Graph gate.
