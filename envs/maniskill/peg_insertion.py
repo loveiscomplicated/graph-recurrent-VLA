@@ -40,6 +40,7 @@ def make_peg_insertion_env(
     sim_backend: str | None = None,
     observation_device: str | torch.device | None = None,
     render_backend: str | None = None,
+    sensor_configs: dict | None = None,
 ):
     """Make the task; ``seed`` also resets its first user episode.
 
@@ -49,6 +50,8 @@ def make_peg_insertion_env(
     the output boundary. It does not select a physics or renderer backend.
     An explicit ``render_backend="cuda"`` can expose native CUDA camera images
     while retaining ``device="cpu"`` physics on a supported Linux GPU host.
+    ``sensor_configs`` forwards ManiSkill's raw camera configuration overrides;
+    omitting it preserves the task's default camera settings.
     """
     if num_envs < 1:
         raise ValueError("num_envs must be positive")
@@ -87,6 +90,8 @@ def make_peg_insertion_env(
         kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode
+    if sensor_configs is not None:
+        kwargs["sensor_configs"] = sensor_configs
     original_cwd = Path.cwd()
     env = None
     try:

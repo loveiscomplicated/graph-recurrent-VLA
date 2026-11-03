@@ -33,8 +33,13 @@ from .model import CachedGraphPolicy,normalizer
 
 def environment(root):
     from mani_skill.utils.registration import TimeLimitWrapper
-    env=TimeLimitWrapper(make_peg_insertion_env(device='cpu',obs_mode='rgb+depth',
-        control_mode='pd_ee_delta_pose',render_backend='cuda',observation_device='cuda').unwrapped,250)
+    from envs.maniskill.observation_device import ObservationDevice
+    task=make_peg_insertion_env(device='cpu',obs_mode='rgb+depth',
+        control_mode='pd_ee_delta_pose',render_backend='cuda',
+        sensor_configs={name:dict(width=512,height=512) for name in ('base_camera','hand_camera')}).unwrapped
+    # Replace the factory horizon first, then retain its shared output adapter.
+    # Unwrapping after ObservationDevice would discard CUDA output for aux data.
+    env=ObservationDevice(TimeLimitWrapper(task,250),'cuda')
     task=env.unwrapped;cfg=read(Path(root)/'inputs/task08_reference_conditions.json')
     controllers={k:asdict(v.config) for k,v in task.agent.controller.controllers.items()}
     if controller_semantics(controllers)!=controller_semantics(cfg['controller_config']):

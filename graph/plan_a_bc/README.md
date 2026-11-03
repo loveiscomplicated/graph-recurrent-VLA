@@ -15,6 +15,10 @@ remain in place. Historical frozen deployments are not modified by this change.
 
 Live `rollout.environment` uses the existing native CUDA renderer with CPU
 PhysX and the shared `envs.maniskill.observation_device.ObservationDevice`.
+Both `base_camera` and `hand_camera` are explicitly rendered at512×512 through
+ManiSkill `sensor_configs`; RGB, raw depth and intrinsic matrices come from that
+resolution directly. This does not resize rendered128 images or change the
+shared factory defaults. See the [512 live verification](../../docs/visual-graph-integration/10i_live_512_20261104.md).
 The output wrapper surrounds the custom250-step horizon, so `.unwrapped` does
 not strip it from reset/step. RGB/depth are already CUDA before this wrapper;
 remaining raw observation tensors move to CUDA through the shared adapter.

@@ -34,7 +34,10 @@ finally:
 ```
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
-`render_mode`, `sim_backend`, `render_backend`, and `observation_device`.
+`render_mode`, `sim_backend`, `render_backend`, `observation_device`, and optional
+`sensor_configs`. Camera overrides are forwarded to ManiSkill, for example
+`sensor_configs={name: dict(width=512, height=512) for name in
+("base_camera", "hand_camera")}`. Omitting the option retains task defaults.
 `seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to

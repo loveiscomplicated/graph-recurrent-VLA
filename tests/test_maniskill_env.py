@@ -9,6 +9,15 @@ from envs.maniskill import get_gt_state, make_peg_insertion_env
 
 
 class FactoryBackendTest(unittest.TestCase):
+    def test_sensor_overrides_are_optional_and_forwarded(self):
+        with patch("envs.maniskill.peg_insertion.gym.make") as make:
+            make_peg_insertion_env()
+        self.assertNotIn("sensor_configs", make.call_args.kwargs)
+        cameras = {name: dict(width=512, height=512) for name in ("base_camera", "hand_camera")}
+        with patch("envs.maniskill.peg_insertion.gym.make") as make:
+            make_peg_insertion_env(sensor_configs=cameras)
+        self.assertEqual(make.call_args.kwargs["sensor_configs"], cameras)
+
     def test_cpu_simulation_uses_cpu_renderer_when_torch_sees_cuda(self):
         with patch("envs.maniskill.peg_insertion.torch.cuda.is_available", return_value=True), \
              patch("envs.maniskill.peg_insertion.gym.make") as make:
