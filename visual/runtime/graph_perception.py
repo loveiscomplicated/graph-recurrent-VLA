@@ -1,8 +1,8 @@
 """Graph default: compact CUDA projection followed by triton_fused PCA5.
 
-Both stages retain compact XYZ on CUDA. The explicit CPU handoff after feature
-calculation adapts to existing Shape-First/packet consumers without rebuilding
-dense XYZ. This module does not perform robot filtering or tracking.
+Compact XYZ/features remain CUDA-resident through GPU Shape-First. Only selected
+rows cross the CPU packet boundary. The old evidence adapter remains available
+for diagnostics. This module does not perform robot filtering or tracking.
 """
 from time import perf_counter
 import numpy as np
@@ -79,6 +79,12 @@ def to_cpu_evidence(frame, prepared, features, parameters=GeometryParameters()):
 
 
 def extract(frame, estimator='pca5', parameters=GeometryParameters()):
+    """Historical CPU-evidence adapter; Graph default uses GPU selection below."""
+    prepared,values=_process_frame(frame,estimator,parameters)
+    return to_cpu_evidence(frame,prepared,values,parameters)
+
+
+def _process_frame(frame,estimator='pca5',parameters=GeometryParameters()):
     import torch
     if estimator!='pca5':raise ValueError('Graph CUDA path requires PCA5')
     if not torch.cuda.is_available():
@@ -86,8 +92,31 @@ def extract(frame, estimator='pca5', parameters=GeometryParameters()):
     depth=torch.as_tensor(np.ascontiguousarray(frame.depth),device='cuda')
     masks=torch.as_tensor(np.stack([frame.masks[i] for i in (0,1)]),device='cuda')
     k=torch.as_tensor(np.ascontiguousarray(frame.intrinsic),device='cuda')
-    prepared,values=process_cuda(depth,masks,k,parameters)
-    return to_cpu_evidence(frame,prepared,values,parameters)
+    return process_cuda(depth,masks,k,parameters)
+
+
+def _selection_packet(frame,episode,result):
+    """CPU packet packaging from selected rows only; selection already finished."""
+    objects=result['selected'];metadata=result['metadata']
+    source=np.concatenate([objects[i]['F'] for i in (0,1)])
+    xyz=np.concatenate([objects[i]['xyz'] for i in (0,1)])
+    oid=np.concatenate([np.full(len(objects[i]['F']),i,np.int64) for i in (0,1)])
+    surface=np.concatenate([np.arange(len(objects[i]['F']))>=len(objects[i]['P']) for i in (0,1)])
+    fields=[dict(name=name,shape=list(a.shape[1:]),dtype=a.dtype.str) for name,a in sorted(metadata.items())]
+    n=len(source)
+    feature_view=np.concatenate([metadata[f['name']].reshape(n,int(np.prod(f['shape'])) if f['shape'] else 1)
+        for f in fields],axis=1).astype(np.float64)
+    available=np.ones((n,len(fields)),bool)
+    evidence=result['candidate_evidence']
+    return dict(episode=episode,camera=frame.camera,source_frame=int(frame.source_frame),
+        coordinate_frame='CV_camera_metres',points=xyz,object_id=oid,
+        feature_fields=fields,geometric_features=feature_view,
+        compact_features={name:dict(positions=np.arange(n,dtype=np.int64),values=a) for name,a in metadata.items()},
+        edge_status='not_implemented',intra_object_edge_index=np.empty((2,0),np.int64),
+        provenance=dict(source_index=source,object_id=oid.copy(),candidate_evidence=evidence,
+            both_evidence=evidence.all(1),selected_by_structural_source=result['selected_by_structural_source'],
+            selection_stage=surface.astype(np.uint8),surface_selected=surface,
+            feature_available=available.all(1),feature_field_available=available))
 
 
 def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
@@ -98,7 +127,27 @@ def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
         camera.intrinsic,camera.world_from_camera,camera.tcp_pose,
         {oid:np.asarray(masks[oid],bool) for oid in (0,1)},camera.timestep,camera.timestamp)
     tick=perf_counter()
-    evidence=(extract(frame) if backend=='triton_fused' else vision.extract_sampling_evidence(frame,estimator='pca5'))
+    if backend=='triton_fused':
+        import torch
+        from visual.runtime.cuda_sampling import sample_cuda,numpy_selection
+        from visual.runtime.vision_packet import complete_selected_vision_packet
+        if not torch.cuda.is_available():raise RuntimeError('Graph default requires CUDA')
+        depth=torch.as_tensor(np.ascontiguousarray(frame.depth),device='cuda')
+        tm=torch.as_tensor(np.stack([frame.masks[i] for i in (0,1)]),device='cuda')
+        k=torch.as_tensor(np.ascontiguousarray(frame.intrinsic),device='cuda')
+        projected,values=process_cuda(depth,tm,k)
+        after_features=perf_counter()
+        # This legacy Graph consumer is explicitly CPU/NumPy. The public
+        # sample_cuda API keeps its result on CUDA unless CPU is requested.
+        result=numpy_selection(sample_cuda(projected,values,depth,tm,k,device='cpu'))
+        selection=_selection_packet(frame,camera.episode,result)
+        packet=complete_selected_vision_packet(selection,frame,result['metadata'],result['valid'])
+        vision.receive_vision_packet(packet)
+        return packet,dict(pca5_evidence_ms=(after_features-tick)*1000,
+            total_offline_graph_ms=(perf_counter()-tick)*1000,
+            projection_backend='torch_cuda_masked',geometry_backend=backend,
+            sampling_backend='torch_triton_cuda',compact_xyz=True)
+    evidence=vision.extract_sampling_evidence(frame,estimator='pca5')
     after_evidence=perf_counter()
     candidates=vision.extract_candidates(evidence,vision.SamplingConfig(),method='S3')
     prepared={};selected={};cases={};g=evidence.frame.geometry

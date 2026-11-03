@@ -166,6 +166,64 @@ def complete_vision_packet(source_packet, evidence, frame, *, mode='continuous',
         if not np.isfinite(v[validity[:, j]]).all() or not np.isnan(v[~validity[:, j]]).all():
             raise ValueError('dense measurement validity/value mismatch: ' + field['name'])
     after_gather = perf_counter()
+    return _complete_selected(source_packet, frame, xyz, diagnostics, values,
+        np.array([evidence.frame.geometry.observed_mask(i).any() for i in (0, 1)], bool),
+        timings=timings, start=start, after_alignment=after_alignment, after_gather=after_gather)
+
+
+def complete_selected_vision_packet(source_packet, frame, measurements, object_valid):
+    """Complete a GPU-selected packet from selected rows, without dense maps.
+
+    The GPU producer retains candidate/selection policy. This boundary validates
+    selected source identities against the original CPU observation and reuses
+    exactly the same EE conversion and v2 packaging as the dense producer.
+    """
+    from graph.vision_input import validate_packet
+    validate_packet(source_packet)
+    if (source_packet.get('schema_version', 1) != 1
+            or source_packet['coordinate_frame'] != 'CV_camera_metres'
+            or source_packet['camera'] != frame.camera
+            or source_packet['source_frame'] != frame.source_frame):
+        raise ValueError('selected source frame/schema mismatch')
+    source=source_packet['provenance']['source_index'];oid=source_packet['object_id']
+    if (source>=frame.depth.size).any():raise ValueError('selected source outside image')
+    z=frame.depth.ravel()[source];v,u=np.divmod(source,frame.depth.shape[1])
+    for obj in (0,1):
+        s=source[oid==obj]
+        if not (frame.masks[obj].ravel()[s]&~frame.masks[1-obj].ravel()[s]).all():
+            raise ValueError('selected source mask/overlap mismatch')
+    if not (np.isfinite(z)&(z>0)).all():raise ValueError('selected invalid depth')
+    k=np.asarray(frame.intrinsic,np.float64)
+    if (k.shape!=(3,3) or not np.isfinite(k).all() or min(k[0,0],k[1,1])<=0
+            or not np.array_equal(k[[0,1,2,2,2],[1,0,0,1,2]],[0,0,0,0,1])):
+        raise ValueError('invalid selected CV calibration')
+    xyz=source_packet['points']
+    original=np.column_stack(((u+.5-k[0,2])*z/k[0,0],(v+.5-k[1,2])*z/k[1,1],z)).astype(np.float32)
+    if not np.array_equal(xyz,original):raise ValueError('selected XYZ/source mismatch')
+    n=len(source)
+    diagnostics={name:np.asarray(measurements[name]).copy() for name in DIAGNOSTIC_DTYPES}
+    values={f['name']:np.asarray(measurements[f['name']]).copy() for f in FEATURE_FIELDS}
+    for name,dtype in DIAGNOSTIC_DTYPES.items():
+        if diagnostics[name].shape!=(n,) or diagnostics[name].dtype!=np.dtype(dtype):
+            raise ValueError('selected diagnostic shape/dtype: '+name)
+    for field in FEATURE_FIELDS:
+        a=values[field['name']]
+        if a.shape!=(n,*field['shape']) or a.dtype.str!=field['dtype']:
+            raise ValueError('selected feature shape/dtype: '+field['name'])
+    validity=np.column_stack([diagnostics[k] for k in ('normal_valid','normal_variation_valid','depth_pair_valid')])
+    for j,field in enumerate(FEATURE_FIELDS):
+        a=values[field['name']]
+        if not np.isfinite(a[validity[:,j]]).all() or not np.isnan(a[~validity[:,j]]).all():
+            raise ValueError('selected measurement validity contradiction')
+    if np.shape(object_valid)!=(2,) or np.asarray(object_valid).dtype!=bool:
+        raise ValueError('selected object validity shape/dtype')
+    return _complete_selected(source_packet,frame,xyz,diagnostics,values,object_valid)
+
+
+def _complete_selected(source_packet, frame, xyz, diagnostics, values, object_valid,
+                       *, timings=None, start=None, after_alignment=None, after_gather=None):
+    n=len(xyz);oid=source_packet['object_id'];mode='continuous'
+    validity=np.column_stack([diagnostics[k] for k in ('normal_valid','normal_variation_valid','depth_pair_valid')])
     transform = camera_to_ee(frame)
     ee64 = xyz.astype(np.float64) @ transform[:3, :3].T + transform[:3, 3]
     nv = diagnostics['normal_valid']
@@ -191,7 +249,7 @@ def complete_vision_packet(source_packet, evidence, frame, *, mode='continuous',
         camera_to_world=np.asarray(frame.cam2world, np.float64).copy(),
         camera_intrinsic=np.asarray(frame.intrinsic, np.float64).copy(),
         image_shape=np.array(frame.depth.shape, np.int64),
-        valid=np.array([evidence.frame.geometry.observed_mask(i).any() for i in (0, 1)], bool),
+        valid=np.asarray(object_valid,bool).copy(),
         edge_status='not_implemented', intra_object_edge_index=np.empty((2, 0), np.int64),
     )
     if timings is not None:

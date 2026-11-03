@@ -39,6 +39,36 @@ of directly indexing `geometry.xyz`. Mask/depth and feature rasters keep their
 original image alignment. This adapter hands off to CPU only after masked CUDA
 projection and compact `triton_fused` normals/features have both completed.
 
+The current Graph default bypasses that CPU-evidence adapter. CUDA entrypoints
+in `cuda_sampling.py` are `build_sampling_info_cuda`, `shape_first_cuda` and
+their composition `select_cuda`. They preserve the current S3 strict >20deg,
+external canonical contour order, nominal voxel scale and centroid-nearest
+representative, ratio .5/phase0, and additional surface 97/95 policy. FP64 FPS
+retains structural row order and first-source distance ties. Other historical
+sampling arms/ratios remain available through their original NumPy APIs.
+
+`sample_cuda(projected, features, depth, masks, intrinsic)` returns selected
+points, metadata, source IDs and selection provenance as CUDA tensors on the
+sampler's device. Its optional `device='cpu'` explicitly requests CPU tensors;
+this selects the output device, while sampling computation still uses CUDA.
+`selection_output` applies the same terminal contract to a raw `select_cuda`
+result. `diagnostic=True` additionally includes full candidate/representative
+source lists on the chosen device. No default output array is downloaded.
+
+`numpy_selection` only converts tensors already on CPU and rejects CUDA tensors.
+`to_cpu_selection` is the compatibility wrapper explicitly requesting CPU output.
+The current NumPy Graph consumer in `graph_perception.make_packet` explicitly
+calls `sample_cuda(..., device='cpu')`; porting final Graph assembly is separate
+from this sampling-output API. See the
+[output-device measurement](../../docs/visual-graph-integration/10i_shape_first_device_output_58752018_20261103.md).
+
+`vision_packet.complete_selected_vision_packet`
+validates selected source identities and reuses the same EE conversion/v2
+packaging as `complete_vision_packet`, without building dense feature rasters.
+Raw depth/masks remain available for source checks. Convergence/cardinality
+scalars still synchronize with Python. See the
+[execution/timing report](../../docs/visual-graph-integration/10i_shape_first_cuda_58752018_20261103.md).
+
 `extract_sampling_evidence(frame, estimator, parameters)` accepts `baseline`,
 `fd2` or `pca5`. The original Task01 estimator is unchanged. Task02 finite
 difference, PCA5 and pair-evidence functions were promoted to runtime modules;

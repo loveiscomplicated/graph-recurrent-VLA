@@ -3,11 +3,16 @@
 현재 Graph `CurrentGeometry`의 기본 경로는 별도
 [`graph_perception.py`](graph_perception.py)의 Torch CUDA mask-only 역투영 →
 compact `triton_fused` PCA5/특징 계산이다. 아래 NumPy baseline API는 유지한다.
-GPU 두 단계 사이에는 CPU 반환이나 전체 XYZ 재구성이 없다. 특징 계산 뒤 기존
-CPU sampling에 넘길 때 `CompactOrganizedGeometry`를 사용한다. `xyz=None`이며
-`points_at(source_pixels)`로 관측 XYZ를, `camera_depth()`로 2D 깊이를 읽는다.
-깊이·mask·정수 raster→compact row map은 2D로 남고, CPU 호환 feature map도
-유지된다. 전체 Graph가 GPU에 상주하는 구현은 아니다.
+기본 경로는 이어서 `cuda_sampling.py`의 sampling 정보 구성·Shape-First 선택까지
+GPU에서 수행한다. 선택된 점과 특징만 CPU packet 조립으로 전달하며 전체 XYZ나
+CPU feature raster를 재구성하지 않는다. 깊이·mask·정수 raster→compact row map은
+2D로 남는다. 전체 Graph가 GPU에 상주하는 구현은 아니다.
+
+기존 CPU-evidence 호환 함수 `graph_perception.extract(frame)`는 진단용으로
+유지한다. 이 함수는 특징 계산 뒤 `CompactOrganizedGeometry(xyz=None)`와 CPU
+feature raster를 반환한다. `points_at(source_pixels)`로 관측 XYZ를,
+`camera_depth()`로 2D 깊이를 읽는다. 현재 Graph 기본 경로는 이 호환 함수를
+호출하지 않는다.
 
 설계 기준은 [`00_interface.md`](../../docs/visual-graph-integration/00_interface.md)다.
 이 모듈은 그 앞단의 관측 geometry·국소 기하 진단만 구현한다. 최종 Tensor,

@@ -9,10 +9,20 @@ diagnostic route. Historical frozen source copies/caches retain their recorded
 implementation. Standalone `PlanA` retains its historical packet builder unless
 one is passed explicitly.
 
-This changes geometry preparation, not the robot filter, gate, sampling policy,
-point cap or graph-edge policy. After both GPU stages, compact points/features
-are copied to the existing CPU selection/packet consumers. No dense XYZ is
-rebuilt. See the [implementation and execution report](../../docs/visual-graph-integration/10i_graph_perception_default_20261103.md).
+Sampling evidence and Shape-First now also run on CUDA: ordered external
+contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.
+Only selected points/features are downloaded for CPU packet assembly. Python
+still controls launches and reads convergence/cardinality scalars. The robot
+filter, gate, sampling policy, point cap and graph-edge policy are unchanged.
+No dense XYZ or CPU feature raster is rebuilt in this default path.
+See the [GPU sampling report](../../docs/visual-graph-integration/10i_shape_first_cuda_58752018_20261103.md)
+and [preceding geometry integration](../../docs/visual-graph-integration/10i_graph_perception_default_20261103.md).
+
+The sampling API `sample_cuda(...)` itself now returns CUDA tensors, including
+selected features and provenance, and downloads only when `device='cpu'` is
+requested. This NumPy Graph adapter explicitly requests CPU output; final Graph
+assembly has not been ported as part of the sampling-output change. See the
+[output-device comparison](../../docs/visual-graph-integration/10i_shape_first_device_output_58752018_20261103.md).
 
 Independent opt-in experiment. This package consumes the **frozen09-D v2**
 `graph.plan_a_geometry` and its preserved dependencies from an isolated source
