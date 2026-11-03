@@ -1,5 +1,12 @@
 # Task09-D Plan A geometry diagnostic
 
+`PlanA.prepare(..., clean_masks=...)` is the current default builder's trusted
+prefiltered-mask handoff. It retains raw masks for the wrist gate and checks
+clean-mask shape/dtype/subset/overlap, without classifying the robot a second
+time. Its `filters[camera]` is explicitly `None`, since it has no full-screen
+robot diagnostics. Standalone calls without `clean_masks` keep the historical
+classifier and complete diagnostic dictionaries.
+
 The current configurable-frame tensor adapter additionally supports
 `represent(..., representations=('SF',), tensor_records=True)`: view checking,
 columnar record construction and greedy3mm deduplication return resident GPU

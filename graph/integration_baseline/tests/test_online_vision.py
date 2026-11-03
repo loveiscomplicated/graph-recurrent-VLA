@@ -116,6 +116,18 @@ class OnlineTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.process(0)
 
+    @unittest.skipUnless(torch.cuda.is_available(),'CUDA host required')
+    def test_optional_cuda_masks_preserve_prefix_results_without_image_readback(self):
+        expected=[self.process(t) for t in range(7)];self.online.reset('ep')
+        original=self.tracker.track
+        def gpu_track(*args,**kwargs):
+            for index,values in original(*args,**kwargs):yield index,{k:v.cuda() for k,v in values.items()}
+        with patch.object(self.tracker,'track',side_effect=gpu_track):
+            for t in range(7):
+                with patch.object(torch.Tensor,'cpu',side_effect=AssertionError('full mask CPU readback before filtering')):
+                    actual,_=self.online.process(np.zeros((4,4,3),np.uint8),'ep',t,mask_device='cuda')
+                self.assertTrue(actual.is_cuda);np.testing.assert_array_equal(actual.cpu().numpy(),expected[t])
+
 
 if __name__ == '__main__':
     unittest.main()

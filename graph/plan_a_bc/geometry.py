@@ -91,12 +91,15 @@ class RobotFK:
 
 
 class CurrentGeometry:
-    def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee'):
+    def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee',robot_filter_backend=None):
         from functools import partial
         from visual.runtime.graph_perception import make_packet,make_packet_cuda
         if perception_backend not in ('triton_fused','cpu'):
             raise ValueError('unknown Graph perception backend')
         self.perception_backend=perception_backend
+        self.robot_filter_backend=('cpu' if perception_backend=='cpu' else 'cuda') if robot_filter_backend is None else robot_filter_backend
+        if self.robot_filter_backend not in ('cpu','cuda'):raise ValueError('unknown robot filter backend')
+        self.robot_preparation=None;self.last_robot_schedule=None;self.last_raw_masks=None
         self.coordinate_frame=check_frame(coordinate_frame)
         self.fk = RobotFK(assets,schema)
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
@@ -131,9 +134,46 @@ class CurrentGeometry:
         if self.mount is None: self.mount = mount
         np.testing.assert_allclose(mount,self.mount,atol=2e-5,rtol=0)
 
+    def close(self):
+        if self.robot_preparation is not None:self.robot_preparation.close();self.robot_preparation=None
+
     def build(self,cameras,data,surfaces,masks):
+        """Build from raw masks or a zero-argument current-frame mask producer.
+
+        Default CUDA filtering starts CPU preparation before invoking a mask
+        producer. Cache/rollout pass their existing SAM2 calls in that producer.
+        Already computed masks are supported, with no retroactive overlap claim.
+        """
+        self.last_raw_masks=None;self.last_robot_schedule=None
         self._check_mount(cameras,surfaces)
-        prepared = self.system.prepare(cameras,data,masks,surfaces)
+        if self.robot_filter_backend=='cuda':
+            if self.robot_preparation is None:
+                import torch
+                if not torch.cuda.is_available():raise RuntimeError('default robot filter requires CUDA; select explicit CPU diagnostics')
+                from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import CudaRobotFilter
+                from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation
+                self.robot_preparation=RobotFilterPreparation(CudaRobotFilter())
+            snapshot={k:(v.copy() if isinstance(v,np.ndarray) else v) for k,v in data.items()}
+            job=self.robot_preparation.submit(cameras,surfaces)
+            self.last_robot_schedule='before_vision' if callable(masks) else 'masks_already_available'
+            try:
+                raw=masks() if callable(masks) else masks
+                import torch
+                gpu={name:(value if isinstance(value,torch.Tensor) and value.is_cuda
+                    else torch.as_tensor(value,device='cuda')) for name,value in raw.items()}
+                clean=self.robot_preparation.filter(job,gpu)
+                cpu_raw={name:(value.detach().cpu().numpy() if isinstance(value,torch.Tensor) else value) for name,value in raw.items()}
+                cpu_clean={name:value.detach().cpu().numpy() for name,value in clean.items()}
+                self.last_raw_masks=cpu_raw
+                return self._build_prepared(job.cameras,snapshot,job.surfaces,cpu_raw,cpu_clean)
+            finally:self.robot_preparation.discard(job)
+        raw=masks() if callable(masks) else masks
+        self.last_robot_schedule='cpu_serial';self.last_raw_masks=raw
+        return self._build_prepared(cameras,data,surfaces,raw)
+
+    def _build_prepared(self,cameras,data,surfaces,masks,clean_masks=None):
+        prepared = (self.system.prepare(cameras,data,masks,surfaces) if clean_masks is None else
+            self.system.prepare(cameras,data,masks,surfaces,clean_masks=clean_masks))
         resident = self.system.tensor_packet_builder is not None
         pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident)
         records = pools['SF']

@@ -34,7 +34,8 @@ def input_identity(root):
     return dict(dataset_sha256=audit['dataset_sha256'],split_sha256=audit['split_sha256'],
         graph_config=cfg['geometry'],frozen_geometry_protocol_sha256=sha(frozen),
         coordinate_frame=check_frame(cfg['geometry'].get('coordinate_frame','ee')),
-        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v2')
+        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v3_robot_overlap',
+        robot_filter_backend='cuda',robot_preparation='before_vision')
 
 
 def cache_episode(root,dataset,entry,detector,tracker,log):
@@ -61,8 +62,12 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
         with h5py.File(dataset/entry['path'],'r') as f:
             for t in range(entry['actions']):
                 tick=time.perf_counter();cameras,data,surfaces=geometry.from_h5(f,t,identity)
-                mm={c.camera:adapters[c.camera].process(c.rgb,identity,t)[0] for c in cameras}
-                g,records,gate=geometry.build(cameras,data,surfaces,mm)
+                mm={}
+                def current_masks():
+                    mm.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
+                    return mm
+                g,records,gate=geometry.build(cameras,data,surfaces,current_masks)
+                mm=geometry.last_raw_masks
                 records_by_id={r['persistent_node_id']:r for r in records}
                 ordered=[records_by_id[k] for k in g.packet['node_ids']]
                 point_offset=len(point_xyz)
@@ -105,11 +110,13 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
             edge_min=int(e.min()),edge_mean=float(e.mean()),edge_max=int(e.max()),
             object_missing_rate=(1-pp.mean(0)).tolist(),conversion_failures=0,readback='PASS',
             tracker_episode_reset='PASS',wall_seconds=time.perf_counter()-started,completed_at=now())
+        row.update(robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule)
         write(receipt,row,immutable=True);log.link_output(receipt,kind='metrics');return row
     except BaseException as exc:
         write(folder/'failure.json',dict(status='FAIL',completed_graphs=len(actions),exception=type(exc).__name__,message=str(exc)))
         raise
     finally:
+        geometry.close()
         for v in adapters.values():v.close()
 
 

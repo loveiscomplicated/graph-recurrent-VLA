@@ -1,5 +1,39 @@
 # Plan A cached graph BC with periodic live rollout
 
+The normal cache and live-rollout paths now start robot CPU preparation before
+their current-frame SAM2 calls. `CurrentGeometry` defaults to CUDA robot filtering
+for `triton_fused`, with a persistent `RobotFilterPreparation` worker. No opt-in
+flag or experiment helper context is required. The callers supply a zero-argument
+mask producer to `build`; the builder submits the current snapshot, invokes the
+producer, then consumes the preparation and runs the GPU filter once.
+
+```python
+geometry = CurrentGeometry(assets, schema)
+try:
+    def masks_for_current_frame():
+        return {c.camera: adapters[c.camera].process(
+            c.rgb, episode, timestep, mask_device='cuda')[0] for c in cameras}
+    graph, records, gate = geometry.build(cameras, data, surfaces, masks_for_current_frame)
+finally:
+    geometry.close()
+```
+
+SAM2 raw masks stay on CUDA until filtering. The unchanged CPU wrist gate still
+receives both original raw masks and clean masks, so its raw-pixel denominator
+is preserved. `geometry.last_raw_masks` provides that CPU raw-mask view for cache
+artifacts/video; it is not an already-clean mask. `last_robot_schedule` reports
+`before_vision` in these default frontends. Passing a ready mask dictionary is
+still supported and reports `masks_already_available`; SAM2 has already finished
+in that case. `robot_filter_backend='cpu'` explicitly selects the historical
+filter for diagnostics; `perception_backend='cpu'` selects it automatically.
+Full-screen filter diagnostics remain available through standalone `PlanA.prepare`;
+the prepared-clean fast path explicitly has no full filter diagnostic dictionary.
+
+Cache identity is now `graphs_common_coordinate_frame_v3_robot_overlap` and records
+the backend/schedule. Existing v2 caches are rejected rather than silently reused
+or overwritten. Original frozen experiment sources/runs are not resumed or migrated.
+See the [default-path implementation report](../../docs/visual-graph-integration/10i_robot_overlap_default_20261103.md).
+
 Choose the common geometry frame explicitly:
 
 ```python
@@ -20,7 +54,7 @@ mixed frames and stale EE reference poses are rejected.
 
 Set `geometry.coordinate_frame` to `"world"` or `"ee"` in a new experiment's
 `config.json` for matching cache creation and live rollout. Cache identity now
-records the effective frame and uses `graphs_common_coordinate_frame_v2`;
+records the effective frame and uses `graphs_common_coordinate_frame_v3_robot_overlap`;
 old caches are not reused. New diagnostic arrays are `point_xyz`, `point_f5`
 and a `coordinate_frame` scalar, rather than labelling EE points `point_world`.
 Current records expose `xyz`, `normal`, `coordinate_frame`, and for EE,

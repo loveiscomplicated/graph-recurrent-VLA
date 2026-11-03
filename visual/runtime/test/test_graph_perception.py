@@ -38,8 +38,10 @@ class CPUContracts(unittest.TestCase):
             default=CurrentGeometry('unused',{})
             cpu=CurrentGeometry('unused',{},perception_backend='cpu')
         self.assertEqual(default.perception_backend,'triton_fused')
+        self.assertEqual(default.robot_filter_backend,'cuda')
         self.assertEqual(default.system.packet_builder.keywords['backend'],'triton_fused')
         self.assertEqual(cpu.system.packet_builder.keywords['backend'],'cpu')
+        self.assertEqual(cpu.robot_filter_backend,'cpu')
 
     def test_missing_cuda_has_no_silent_cpu_fallback(self):
         from visual.runtime.graph_perception import extract
@@ -95,7 +97,7 @@ class CUDAContracts(unittest.TestCase):
         prepared=dict(conditions={'C3':fixture.masks},gate=dict(accepted=True))
         link=LinkSurface('camera_link',cube([0,0,0],[.01,.01,.01]),np.eye(4))
         with patch('graph.plan_a_bc.geometry.RobotFK'):
-            gpu=CurrentGeometry('unused',{})
+            gpu=CurrentGeometry('unused',{},robot_filter_backend='cpu')
             cpu=CurrentGeometry('unused',{},perception_backend='cpu')
         # The integration input is already prepared. Robot filtering is outside
         # this change and is neither modified nor invoked by this contract.

@@ -138,8 +138,8 @@ class CUDAViewContracts(TorchViewContracts):
             tcp_pose=cameras[0].tcp_pose, robot_world_geometry=robot(cameras[0]), robot76=np.zeros(76))
         for frame in ('world', 'ee'):
             with patch('graph.plan_a_bc.geometry.RobotFK'):
-                new = CurrentGeometry('unused', {}, coordinate_frame=frame)
-                old = CurrentGeometry('unused', {}, coordinate_frame=frame)
+                new = CurrentGeometry('unused', {}, coordinate_frame=frame,robot_filter_backend='cpu')
+                old = CurrentGeometry('unused', {}, coordinate_frame=frame,robot_filter_backend='cpu')
             old.system.tensor_packet_builder = None
             for geo in (new, old):
                 geo._check_mount = lambda *args: None

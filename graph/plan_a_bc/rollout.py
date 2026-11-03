@@ -116,8 +116,12 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
         for t in range(cfg['smoke_horizon'] if smoke else cfg['horizon']):
             token=physics.token();tick=time.perf_counter()
             cameras,data,surfaces=sensors(env,obs,identity,t,norm.schema)
-            masks={c.camera:adapters[c.camera].process(c.rgb,identity,t)[0] for c in cameras}
-            graph,_,gate=geometry.build(cameras,data,surfaces,masks)
+            masks={}
+            def current_masks():
+                masks.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
+                return masks
+            graph,_,gate=geometry.build(cameras,data,surfaces,current_masks)
+            masks=geometry.last_raw_masks
             packed=pack_graphs([graph],[(0,0)]).to(next(model.parameters()).device)
             state=torch.from_numpy(data['robot76'][None]).to(next(model.parameters()).device)
             with torch.inference_mode():
@@ -138,6 +142,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 if v and first[k] is None:first[k]=t+1
             trace.append(dict(timestep=t,action=action[-1].tolist(),encoded_action=numpy(raw)[0].tolist(),
                 inference_seconds=duration,nodes=len(graph.node_type),edges=graph.edge_index.shape[1],
+                robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule,
                 missing_objects=[not bool((graph.node_type==k).any()) for k in (3,4)],gate=gate,
                 terminated=bool(terminated.item()),truncated=bool(truncated.item()),**measured))
             writer.write(video_frame(cameras,masks,model.variant,spec['seed'],step,t,measured))
@@ -148,6 +153,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 termination='success' if measured['success'] else 'termination' if terminated.item() else 'time_limit';break
         complete=True
     finally:
+        geometry.close()
         writer.release();physics.close()
         for adapter in adapters.values():adapter.close()
         env.close()

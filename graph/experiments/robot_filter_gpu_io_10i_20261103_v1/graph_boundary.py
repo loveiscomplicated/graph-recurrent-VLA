@@ -29,10 +29,15 @@ class GpuMaskBoundary:
         original_prepare=core.PlanA.prepare
         original_classifier=core.classify_robot;original_filter=core.filtered_masks
         ctx=self
-        def prepare(system,cameras,data,masks,surfaces):
+        def prepare(system,cameras,data,masks,surfaces,**kwargs):
             ctx.clean_cuda={}
+            if kwargs.get('clean_masks') is not None:
+                # CurrentGeometry's default already filtered once. This legacy
+                # diagnostic scope only exposes its clean-mask capture here.
+                ctx.clean_cuda={name:torch.as_tensor(value,device='cuda') for name,value in kwargs['clean_masks'].items()}
+                return original_prepare(system,cameras,data,masks,surfaces,**kwargs)
             if not any(isinstance(m,torch.Tensor) and m.is_cuda for m in masks.values()):
-                return original_prepare(system,cameras,data,masks,surfaces)
+                return original_prepare(system,cameras,data,masks,surfaces,**kwargs)
             if not all(isinstance(m,torch.Tensor) and m.is_cuda for m in masks.values()):
                 raise ValueError('mixed CPU/CUDA camera masks are not supported')
             core.synchronized(cameras)

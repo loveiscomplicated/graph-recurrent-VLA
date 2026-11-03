@@ -68,7 +68,14 @@ class OnlineVisionAdapter:
             self.directory = None
 
     @torch.inference_mode()
-    def process(self, rgb, episode_identity, timestep):
+    def process(self, rgb, episode_identity, timestep, *, mask_device='cpu'):
+        """Existing causal vision, with optional CUDA raw masks for robot filtering.
+
+        CPU remains the legacy output default. Current PlanA cache/live frontends
+        request CUDA so no dense mask is downloaded before their GPU filter.
+        Only the existing two pixel-count scalars are read for the record.
+        """
+        if mask_device not in ('cpu','cuda'):raise ValueError('mask_device must be cpu or cuda')
         if episode_identity != self.identity or timestep != len(self.rgb):
             raise ValueError('online vision episode/timestep discontinuity; explicit reset required')
         rgb = np.asarray(rgb)
@@ -109,7 +116,8 @@ class OnlineVisionAdapter:
                     if i+1 in new:
                         self.found[name] = dict(initial[name], decision_observation=timestep,
                                                 prefix_length=timestep+1)
-        masks = np.zeros((2, *rgb.shape[:2]), bool)
+        masks = (np.zeros((2, *rgb.shape[:2]), bool) if mask_device=='cpu' else
+            torch.zeros((2,*rgb.shape[:2]),device='cuda',dtype=torch.bool))
         for group, state in self.states.items():
             state['num_frames'] = timestep+1
             iterator = self.tracker.track(state, start_frame=timestep)
@@ -120,13 +128,13 @@ class OnlineVisionAdapter:
             if frame != timestep or set(values) != set(group):
                 raise ValueError('SAM2 current frame/object identity mismatch')
             for oid in group:
-                mask = values[oid].detach().cpu().numpy()
-                if mask.dtype != bool or mask.shape != rgb.shape[:2]:
+                mask = (values[oid].detach().cpu().numpy() if mask_device=='cpu' else values[oid].detach().to(masks.device))
+                if mask.dtype != (bool if mask_device=='cpu' else torch.bool) or mask.shape != rgb.shape[:2]:
                     raise ValueError('SAM2 mask dtype/shape mismatch')
                 masks[oid-1] = mask
         record = dict(timestep=timestep, prefix_length=len(self.images),
                       elapsed_ms=(perf_counter()-tick)*1000,
-                      mask_pixels=masks.sum(axis=(1, 2)).tolist(),
+                      mask_pixels=(masks.sum(axis=(1,2)).tolist() if mask_device=='cpu' else masks.sum(dim=(1,2)).tolist()),
                       new_object_ids=list(new), detector_calls=self.detector_calls,
                       initialization_scan_events=self.scan_events,
                       tracking_groups=[list(g) for g in self.states])

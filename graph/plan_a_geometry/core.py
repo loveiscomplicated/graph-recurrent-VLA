@@ -152,18 +152,33 @@ class PlanA:
             from visual.runtime.graph_perception import make_packet as common_packet
             self.packet_builder=partial(common_packet,coordinate_frame=coordinate_frame)
 
-    def prepare(self,cameras,data,masks,surfaces):
+    def prepare(self,cameras,data,masks,surfaces,*,clean_masks=None):
+        """Join raw masks and optional already-filtered masks before the gate.
+
+        Supplied clean masks are the CurrentGeometry filter result. Full robot
+        diagnostics are unavailable in this private fast path; no second robot
+        classification is performed. Standalone calls retain full diagnostics.
+        """
         synchronized(cameras)
         allowed={'robot76','robot_world_geometry','tcp_pose','qpos','robot_link_world','timestep','timestamp','episode'}
         allowed.update(c.camera+'/'+k for c in cameras for k in ('rgb','depth_raw_mm','intrinsic','extrinsic_cv','cam2world_gl'))
         if set(data)-allowed:raise ValueError('forbidden non-sensor input')
         if len(cameras)!=2 or {c.camera for c in cameras}!={self.main,self.wrist} or set(masks)!={self.main,self.wrist}:raise ValueError('camera identity')
         if str(data['episode'])!=cameras[0].episode or int(data['timestep'])!=cameras[0].timestep:raise ValueError('sensor identity join')
+        if clean_masks is not None and set(clean_masks)!=set(masks):raise ValueError('clean camera identity')
         by={c.camera:c for c in cameras}; filters={};clean={}
         for c in cameras:
             if np.shape(masks[c.camera])!=(2,*c.depth.shape):raise ValueError('mask alignment')
-            filters[c.camera]=classify_robot(c,surfaces)
-            clean[c.camera],_=filtered_masks(masks[c.camera],filters[c.camera])
+            if clean_masks is None:
+                filters[c.camera]=classify_robot(c,surfaces)
+                clean[c.camera],_=filtered_masks(masks[c.camera],filters[c.camera])
+            else:
+                raw=np.asarray(masks[c.camera]);value=np.asarray(clean_masks[c.camera])
+                if (raw.dtype!=bool or value.dtype!=bool or value.shape!=raw.shape
+                        or (value&~raw).any() or value[:,raw[0]&raw[1]].any()):
+                    raise ValueError('clean mask alignment/subset/overlap')
+                filters[c.camera]=None # explicitly not a full-screen diagnostic result
+                clean[c.camera]=value.copy()
         accepted,gate=wrist_gate(by[self.wrist],masks[self.wrist],clean[self.wrist],cameras,clean,self.protocol['gate'])
         conditions={}
         for condition in ('C0','C1','C2','C3'):
