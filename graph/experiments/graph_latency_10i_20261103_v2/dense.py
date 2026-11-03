@@ -51,9 +51,11 @@ class Endpoints:
         return self.maps
 
 
-def extract(frame,estimator='pca5',parameters=GeometryParameters()):
+def extract(frame,estimator='pca5',parameters=GeometryParameters(),*,mask_only=False):
     if estimator!='pca5':raise ValueError('this private adapter requires PCA5')
-    geometry=build_geometry(frame)  # Retain original float32 XYZ exactly.
+    # Opt-in backprojection experiment: object XYZ retains original float32
+    # values; background Z remains available to the depth-feature kernels.
+    geometry=build_geometry(frame,mask_only=mask_only)
     xyz=torch.as_tensor(np.ascontiguousarray(geometry.xyz),device='cuda')
     vd=torch.as_tensor(np.ascontiguousarray(geometry.valid_depth),device='cuda')
     objects={};pairs={}

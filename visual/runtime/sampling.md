@@ -46,6 +46,15 @@ remain independent evidence. RGB, GT segmentation, poses, dimensions and hidden
 surfaces are not candidate/sampling inputs. Missing current masks return no
 points; no previous observation is reused.
 
+`visual.runtime.pca.build_geometry(frame, mask_only=True)` is an opt-in
+backprojection variant. It calculates X/Y only at valid pixels in the union of
+the two raw masks, retaining original source indices and float32 coordinates.
+The original full-image behaviour remains the default. The organized output
+still retains all valid Z values for depth comparisons with background
+neighbours; outside the masks, X/Y are NaN. Use `observed_mask(object_id)` to
+gather object XYZ. This option does not reduce the raster allocation or sample
+points before normal estimation.
+
 ## Allocation and selection
 
 1. Count the unambiguous observed pixels of Peg and Box. Reserve each configured

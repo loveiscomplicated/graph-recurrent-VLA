@@ -20,8 +20,14 @@ from visual.runtime.rgbd import BOX, PEG
 from visual.runtime.normal_estimators import _assign, _empty, _jump
 
 
-def build_geometry(frame):
-    """Dense broadcasting of the original backprojection, same operation order."""
+def build_geometry(frame, *, mask_only=False):
+    """Original backprojection; optionally calculate XY only inside raw masks.
+
+    The opt-in path retains the original raster and all valid camera-Z values:
+    boundary features still compare object depth with background neighbours.
+    Unprojected background X/Y are NaN and must not be used as object points.
+    Object coordinates retain the original arithmetic and float32 rounding.
+    """
     depth = np.asarray(frame.depth)
     k = np.asarray(frame.intrinsic, dtype=np.float64)
     if depth.ndim != 2 or not min(depth.shape) or not np.issubdtype(depth.dtype, np.floating):
@@ -40,10 +46,22 @@ def build_geometry(frame):
     valid = np.isfinite(depth) & (depth > 0)
     z = np.where(valid, depth, 0)
     xyz = np.empty((*depth.shape, 3), np.float32)
-    xyz[..., 0] = (np.arange(depth.shape[1])[None, :]+.5-k[0, 2])*z/k[0, 0]
-    xyz[..., 1] = (np.arange(depth.shape[0])[:, None]+.5-k[1, 2])*z/k[1, 1]
     xyz[..., 2] = z
-    if not np.isfinite(xyz).all():
+    if mask_only:
+        xyz[..., :2] = np.nan
+        v, u = np.nonzero(valid & (masks[PEG] | masks[BOX]))
+        selected_z = depth[v, u]
+        points = np.empty((len(v), 3), np.float32)
+        points[:, 0] = (u+.5-k[0, 2])*selected_z/k[0, 0]
+        points[:, 1] = (v+.5-k[1, 2])*selected_z/k[1, 1]
+        points[:, 2] = selected_z
+        xyz[v, u] = points
+        representable = np.isfinite(xyz[..., 2]).all() and np.isfinite(points).all()
+    else:
+        xyz[..., 0] = (np.arange(depth.shape[1])[None, :]+.5-k[0, 2])*z/k[0, 0]
+        xyz[..., 1] = (np.arange(depth.shape[0])[:, None]+.5-k[1, 2])*z/k[1, 1]
+        representable = np.isfinite(xyz).all()
+    if not representable:
         raise ValueError('depth/intrinsic must yield representable float32 XYZ')
     xyz[~valid] = np.nan
     return OrganizedGeometry(xyz, valid, masks, masks[PEG] & masks[BOX])

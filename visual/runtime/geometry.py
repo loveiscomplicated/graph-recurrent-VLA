@@ -37,8 +37,10 @@ class OrganizedGeometry:
     """CV-camera XYZ in metres; invalid depth has three NaNs, never a point.
 
     ``xyz[v, u]`` corresponds to source pixel centre ``(u+.5, v+.5)``.
-    Finite background geometry is retained, but only ``observed_mask(id)`` may
-    be used as that object's points. Overlapping tracker masks are preserved
+    Default builders retain finite background XYZ. The opt-in PCA builder's
+    ``mask_only=True`` mode retains background Z but leaves its unprojected X/Y
+    as NaN. Only ``observed_mask(id)`` may be used as that object's points.
+    Overlapping tracker masks are preserved
     and marked ambiguous; those pixels are excluded from BOTH object supports.
     """
 
