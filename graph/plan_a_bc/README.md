@@ -35,9 +35,11 @@ depth/mask/calibration tensors are prepared once and shared across camera calls.
 World/EE, strict4mm depth support and source/structural flags are preserved.
 The result API stays on its input device. Default SF now continues through
 `current_records_tensor` and `deduplicate_tensor`: measured XYZ/F5, structural
-priority, object IDs and merged source provenance stay on GPU. The explicit
-`numpy_records` compatibility readback is after3mm deduplication, immediately
-before the still-CPU final128-point FPS and Graph consumers.
+priority, object IDs and merged source provenance stay on GPU.
+`budget_tensor(records,128)` performs the final per-object FPS on GPU, preserving
+persistent-ID string seed/ties, short-input order, features and merged sources.
+The explicit `numpy_records` compatibility readback is after final FPS,
+immediately before the still-CPU Graph builder.
 Explicit CPU perception and historical standalone PlanA retain the NumPy path.
 See the [paired GPU measurement and verification](../../docs/visual-graph-integration/10i_view_consistency_cuda_20261103.md).
 
@@ -66,8 +68,8 @@ one is passed explicitly.
 
 Sampling evidence and Shape-First now also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.
-The default adapter keeps view-checked observations and3mm-deduplicated records
-on GPU, downloading only for the subsequent CPU final FPS. Python still controls
+The default adapter keeps view-checked observations,3mm-deduplicated records and
+final128-point FPS on GPU, downloading only for subsequent CPU Graph construction. Python still controls
 launches and reads convergence/cardinality scalars. The robot
 filter, gate, sampling policy, point cap and graph-edge policy are unchanged.
 No dense XYZ or CPU feature raster is rebuilt in this default path.
@@ -78,7 +80,7 @@ The sampling API `sample_cuda(...)` itself now returns CUDA tensors, including
 selected features and provenance, and downloads only when `device='cpu'` is
 requested. Standalone `make_packet` retains NumPy compatibility output; default
 `CurrentGeometry` uses CUDA packets and keeps records resident through dedup.
-Final FPS and Graph assembly remain CPU consumers. See the
+Final FPS stays on GPU; Graph assembly remains a CPU consumer. See the
 [output-device comparison](../../docs/visual-graph-integration/10i_shape_first_device_output_58752018_20261103.md).
 
 Independent opt-in experiment. This package consumes the **frozen09-D v2**

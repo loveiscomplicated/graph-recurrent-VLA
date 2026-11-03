@@ -5,6 +5,7 @@ numpy_records compatibility adapter. No observation arrays leave the device in
 current_records_tensor or deduplicate_tensor.
 """
 from dataclasses import dataclass, replace
+from functools import lru_cache
 import math
 import numpy as np
 import torch
@@ -154,8 +155,8 @@ def deduplicate_tensor(records, distance=.003):
 def numpy_records(records):
     """Explicit packed readback into the existing Python record contract.
 
-    For the default Graph this boundary is AFTER 3mm deduplication, immediately
-    before the still-CPU final128-point FPS. Tensor callers need not invoke it.
+    For the default Graph this boundary is AFTER final128-point GPU FPS,
+    immediately before the still-CPU Graph builder. Tensor callers can omit it.
     """
     from visual.runtime.tensor_packet import numpy_packet
     from .map import current_records
@@ -185,3 +186,104 @@ def numpy_records(records):
             zip(arrays['source_camera'][a:b], arrays['source_pixels'][a:b])]
         result.append(row)
     return result
+
+
+@lru_cache(maxsize=8)
+def _identity_prefixes(camera_names, device):
+    # Static identity metadata only. No current point, pose, mask or sensor cache.
+    names = [str(name).encode('utf-8')+b':' for name in camera_names]
+    width = max(map(len,names))
+    prefix = torch.tensor([list(name)+[0]*(width-len(name)) for name in names],
+                          dtype=torch.uint8,device=device)
+    lengths = torch.tensor(list(map(len,names)),dtype=torch.int64,device=device)
+    powers = torch.tensor([10**i for i in range(19)],dtype=torch.int64,device=device)
+    return prefix,lengths,powers,width,(width+19+6)//7
+
+
+def _identity_ranks(records):
+    """Full persistent-ID string order; decimal pixel order differs from numeric."""
+    n = len(records)
+    if records.device.type == 'cpu':
+        cameras = records.camera_id.tolist(); pixels = records.pixels.tolist()
+        order = sorted(range(n),key=lambda i: records.camera_names[cameras[i]]+':'+str(pixels[i]))
+        order = torch.tensor(order,dtype=torch.int64,device=records.device)
+    else:
+        from . import tensor_records_kernels as kernels
+        import triton
+        prefix,lengths,powers,width,limbs = _identity_prefixes(records.camera_names,str(records.device))
+        keys = torch.empty((n,limbs),dtype=torch.int64,device=records.device)
+        kernels.identity_keys[(triton.cdiv(n*limbs,128),)](records.pixels,records.camera_id,
+            prefix,lengths,powers,keys,n,width,limbs,128)
+        order = torch.arange(n,device=records.device)
+        for limb in range(limbs-1,-1,-1):
+            order = order[torch.argsort(keys[order,limb],stable=True)]
+    ranks = torch.empty(n,dtype=torch.int64,device=records.device)
+    ranks[order] = torch.arange(n,device=records.device)
+    return ranks
+
+
+def _take_records(records, rows):
+    """Gather representative fields and complete ragged provenance on device."""
+    fields = {name:getattr(records,name)[rows] for name in (
+        'xyz','normals','normal_valid','f5','feature_valid','object_id','structural','camera_id','pixels')}
+    starts = records.source_offsets[rows]
+    lengths = records.source_offsets[rows+1]-starts
+    offsets = torch.cat((records.source_offsets.new_zeros(1),lengths.cumsum(0)))
+    groups = torch.repeat_interleave(torch.arange(len(rows),device=records.device),lengths)
+    sources = starts[groups]+torch.arange(len(groups),device=records.device)-offsets[groups]
+    return replace(records,**fields,source_camera=records.source_camera[sources],
+        source_pixels=records.source_pixels[sources],source_offsets=offsets)
+
+
+@torch.inference_mode()
+def budget_tensor(records, count=128):
+    """Ordinary per-object final FPS, exactly mirroring budget(records,count).
+
+    Keeps short clouds in original input order. Otherwise the seed and ties use
+    persistent-ID STRING order, with float64 distances and no structural anchors.
+    Array inputs/outputs stay on their explicit CPU or CUDA device. Dynamic object
+    compaction/provenance allocation can synchronize; iterations do not read back.
+    """
+    if not isinstance(count,(int,np.integer)) or count < 0:
+        raise ValueError('nonnegative integer point count required')
+    check_frame(records.coordinate_frame)
+    if records.coordinate_frame == 'ee':
+        from visual.runtime.vision_packet import pose_matrix
+        pose_matrix(records.reference_ee_pose)
+    elif records.reference_ee_pose is not None:
+        raise ValueError('World records must not declare an EE reference')
+    if records.device.type not in ('cpu','cuda'):
+        raise ValueError('explicit CPU or CUDA record device required')
+    if len(records) and not bool(torch.isfinite(records.xyz).all() & (records.pixels >= 0).all()):
+        raise ValueError('finite XYZ and nonnegative source pixels required')
+    rows = [torch.nonzero(records.object_id == oid).flatten() for oid in (0,1)]
+    ranks = _identity_ranks(records) if count and any(len(r) > count for r in rows) else None
+    selected = []
+    for group in rows:
+        if not count:
+            selected.append(group[:0]);continue
+        if len(group) <= count:
+            selected.append(group);continue
+        xyz = records.xyz[group].contiguous(); rank = ranks[group].contiguous()
+        if records.device.type == 'cuda':
+            from . import tensor_records_kernels as kernels
+            import triton
+            width = min(2048,triton.next_power_of_2(len(group)))
+            chosen = torch.empty(count,dtype=torch.int64,device=records.device)
+            scratch = torch.empty(len(group) if len(group) > width else 0,
+                                  dtype=torch.float64,device=records.device)
+            kernels.final_fps[(1,)](xyz,rank,chosen,scratch,len(group),int(count),width,enable_fp_fusion=False)
+        else:
+            current = int(torch.argmin(rank)); chosen = []
+            distance = torch.full((len(group),),torch.inf,dtype=torch.float64,device=records.device)
+            for step in range(count):
+                chosen.append(current)
+                if step+1 < count:
+                    delta = xyz-xyz[current]
+                    d = (delta[:,0]*delta[:,0]+delta[:,1]*delta[:,1])+delta[:,2]*delta[:,2]
+                    distance = torch.minimum(distance,d); distance[chosen] = -1
+                    candidates = distance == distance.max()
+                    current = int(torch.argmin(torch.where(candidates,rank,torch.iinfo(torch.int64).max)))
+            chosen = torch.tensor(chosen,dtype=torch.int64,device=records.device)
+        selected.append(group[chosen])
+    return _take_records(records,torch.cat(selected))

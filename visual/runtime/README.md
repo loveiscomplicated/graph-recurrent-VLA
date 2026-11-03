@@ -20,8 +20,9 @@ The existing `make_packet` default continues returning NumPy packets.
 `CurrentGeometry` now uses `make_packet_cuda` in its default triton_fused path
 to keep packet arrays resident through the Torch view check, tensor record
 construction and greedy3mm deduplication. The stage output stays on GPU.
-An explicit post-dedup compatibility conversion feeds the subsequent CPU final
-FPS/Graph; see the [record API](../../graph/experiments/records_dedup_cuda_58752018_20261103_v1/README.md).
+Final per-object128-point FPS now also runs on GPU via `budget_tensor`.
+An explicit post-FPS compatibility conversion feeds the subsequent CPU Graph;
+see the [FPS API](../../graph/experiments/final_fps_cuda_58752018_20261103_v1/README.md).
 This does not change the direct compatibility `make_packet` return type.
 
 ### Peg/Box groups in selected packets
