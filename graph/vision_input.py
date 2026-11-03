@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import copy
 
 import numpy as np
+from visual.runtime.object_groups import object_slices_match
 
 # Evaluation contract only. The receiver trusts the Vision candidate algorithm;
 # it checks supplied row algebra without Qhull or collinearity reconstruction.
@@ -25,6 +26,10 @@ def _array(value, dtype, shape, name):
 
 def validate_packet(packet):
     """Validate this experiment's explicit schema, never infer missing metadata."""
+    import torch
+    if isinstance(packet.get('points'),torch.Tensor):
+        from visual.runtime.tensor_packet import validate_packet as validate_tensor
+        return validate_tensor(packet)
     version = packet.get('schema_version', 1)
     if type(version) is not int or version not in (1, 2):
         raise ValueError('unsupported packet schema_version')
@@ -40,6 +45,8 @@ def validate_packet(packet):
     oid = _array(packet['object_id'], np.int64, (n,), 'object_id')
     if not np.isin(oid, [0, 1]).all():
         raise ValueError('unknown object_id')
+    if not object_slices_match(packet):
+        raise ValueError('object_slices disagrees with object_id')
     p = packet['provenance']
     source = _array(p['source_index'], np.int64, (n,), 'source_index')
     if (source < 0).any() or len(set(zip(oid.tolist(), source.tolist()))) != n:
@@ -290,6 +297,10 @@ class VisionInput:
 
 def receive_vision_packet(packet, *, robot_positions=None):
     """Preserve supplied point rows; optionally prepend three supplied robot rows."""
+    import torch
+    if isinstance(packet.get('points'),torch.Tensor):
+        from visual.runtime.tensor_packet import receive_packet
+        return receive_packet(packet,robot_positions=robot_positions)
     validate_packet(packet)
     saved = copy.deepcopy(packet)
     n = len(saved['points'])

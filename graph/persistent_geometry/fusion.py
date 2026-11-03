@@ -3,6 +3,7 @@ import numpy as np
 
 from visual.runtime.rgbd import TrackedRGBDFrame
 from visual.runtime.vision_packet import pose_matrix
+from visual.runtime.object_groups import object_rows, object_slices_match
 from graph.integration_baseline.vision import packet_from_frame
 
 from .contracts import SurfaceObservation, synchronized, transform
@@ -11,13 +12,14 @@ from .contracts import SurfaceObservation, synchronized, transform
 def observations_from_packet(packet, camera):
     if packet['camera'] != camera.camera or packet['source_frame'] != camera.timestep:
         raise ValueError('packet/sensor identity mismatch')
+    if not object_slices_match(packet):
+        raise ValueError('object_slices disagrees with object_id')
     world_from_ee = pose_matrix(camera.tcp_pose)
     result = []
-    for oid in (0, 1):
-        rows = packet['object_id'] == oid
+    for oid, rows in enumerate(object_rows(packet)):
         f5 = np.asarray(packet['geometric_features'][rows]).copy()
         valid = packet['feature_field_valid'][rows].copy()
-        normals = np.zeros((int(rows.sum()), 3))
+        normals = np.zeros((len(f5), 3))
         normals[valid[:, 0]] = f5[valid[:, 0], :3] @ world_from_ee[:3, :3].T
         f5[:, :3] = np.where(valid[:, :1], normals, np.nan)
         observation = SurfaceObservation(camera.episode, camera.timestep, camera.camera, oid,

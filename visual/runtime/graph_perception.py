@@ -11,8 +11,23 @@ from visual.runtime.geometry import (CompactOrganizedGeometry, GeometryFrame,
     GeometryParameters, GeometricFeatures)
 from visual.runtime.rgbd import TrackedRGBDFrame
 from visual.runtime.sampling import SamplingEvidence
+from visual.runtime.object_groups import object_slices
 
 DEFAULT_BACKEND = 'triton_fused'
+
+
+def make_packet_cuda(camera,masks,*,depth_cuda=None,intrinsic_cuda=None,transform_cuda=None):
+    """Existing PCA5/Shape-First semantics through a CUDA v2 packet return."""
+    import torch
+    from visual.runtime.cuda_sampling import sample_cuda
+    from visual.runtime.tensor_packet import selected_packet
+    if not isinstance(masks,torch.Tensor) or not masks.is_cuda:raise ValueError('CUDA masks required')
+    device=masks.device
+    depth=(torch.as_tensor(camera.depth.astype(np.float32),device=device) if depth_cuda is None else depth_cuda.to(torch.float32))
+    k=torch.as_tensor(camera.intrinsic,device=device) if intrinsic_cuda is None else intrinsic_cuda
+    projected,values=process_cuda(depth,masks,k)
+    result=sample_cuda(projected,values,depth,masks,k)
+    return selected_packet(camera,result,depth,masks,k,transform_cuda=transform_cuda)
 
 
 def prepare_cuda(depth, masks, intrinsic):
@@ -110,6 +125,7 @@ def _selection_packet(frame,episode,result):
     evidence=result['candidate_evidence']
     return dict(episode=episode,camera=frame.camera,source_frame=int(frame.source_frame),
         coordinate_frame='CV_camera_metres',points=xyz,object_id=oid,
+        object_slices=object_slices(len(objects[0]['F']),len(objects[1]['F'])),
         feature_fields=fields,geometric_features=feature_view,
         compact_features={name:dict(positions=np.arange(n,dtype=np.int64),values=a) for name,a in metadata.items()},
         edge_status='not_implemented',intra_object_edge_index=np.empty((2,0),np.int64),
@@ -159,6 +175,7 @@ def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
         selected[oid]=vision.shape_first.select_object(prepared[oid],.5,0,vision.shape_first.SURFACE[oid])
         cases[oid]=dict(saved_flat=obj.flat_index,saved_features=obj.metadata)
     selection,_=vision.shape_first.make_packet(frame.source_frame,prepared,selected,cases)
+    selection['object_slices']=object_slices(len(selected[0]['F']),len(selected[1]['F']))
     selection.update(episode=camera.episode,camera=frame.camera)
     packet=vision.complete_vision_packet(selection,evidence,frame)
     vision.receive_vision_packet(packet)

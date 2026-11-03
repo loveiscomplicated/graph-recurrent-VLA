@@ -1,3 +1,21 @@
+### Peg/Box groups in selected packets
+
+`make_packet` (including explicit CPU selection) and `make_packet_cuda` preserve
+mask identities `Peg=0` and `Box=1` through Shape-First. Their flat packet rows
+remain in Peg-then-Box order and now carry
+`object_slices=((0, peg_count), (peg_count, total_count))`. Empty groups have equal
+start/stop values. These are host integer metadata derived from the existing
+per-object result lengths, with no point-array copy or CUDA readback.
+
+`object_groups.object_rows(packet)` returns slices into every aligned row array.
+The packet receiver checks range coverage and agreement with `object_id`;
+`observations_from_packet` uses the ranges directly and keeps its existing World
+coordinate conversion. The optional CUDA consumer uses them before view checks
+as well. Points, F5, source pixels and selection provenance retain their order.
+Legacy packets without this optional field retain the existing ID-based path,
+including interleaved rows. See the
+[implementation verification](../../docs/visual-graph-integration/10i_object_groups_20261103.md).
+
 ### Continuous Grounding DINO camera video
 
 The runtime visualization runner uses every RGB frame from an episode NPZ. It

@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 from time import perf_counter
 import numpy as np
+from visual.runtime.object_groups import object_rows
 
 
 # Fixed before Task04 data validation. Calibration matrices were stored float32:
@@ -188,8 +189,8 @@ def complete_selected_vision_packet(source_packet, frame, measurements, object_v
     source=source_packet['provenance']['source_index'];oid=source_packet['object_id']
     if (source>=frame.depth.size).any():raise ValueError('selected source outside image')
     z=frame.depth.ravel()[source];v,u=np.divmod(source,frame.depth.shape[1])
-    for obj in (0,1):
-        s=source[oid==obj]
+    for obj, rows in enumerate(object_rows(source_packet)):
+        s=source[rows]
         if not (frame.masks[obj].ravel()[s]&~frame.masks[1-obj].ravel()[s]).all():
             raise ValueError('selected source mask/overlap mismatch')
     if not (np.isfinite(z)&(z>0)).all():raise ValueError('selected invalid depth')
@@ -252,6 +253,8 @@ def _complete_selected(source_packet, frame, xyz, diagnostics, values, object_va
         valid=np.asarray(object_valid,bool).copy(),
         edge_status='not_implemented', intra_object_edge_index=np.empty((2, 0), np.int64),
     )
+    if 'object_slices' in source_packet:
+        packet['object_slices'] = copy.deepcopy(source_packet['object_slices'])
     if timings is not None:
         timings.update(source_alignment_ms=(after_alignment-start)*1000,
                        feature_gather_ms=(after_gather-after_alignment)*1000,
