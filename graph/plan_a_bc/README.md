@@ -1,5 +1,19 @@
 # Plan A cached graph BC with periodic live rollout
 
+Current `CurrentGeometry(assets, schema)` defaults to
+`perception_backend='triton_fused'`: Torch CUDA projects only valid,
+non-overlapping object-mask pixels, then compact Triton PCA5 normals/features
+consume those CUDA points directly. CUDA and Triton are required; there is no
+implicit CPU fallback. `perception_backend='cpu'` explicitly selects the NumPy
+diagnostic route. Historical frozen source copies/caches retain their recorded
+implementation. Standalone `PlanA` retains its historical packet builder unless
+one is passed explicitly.
+
+This changes geometry preparation, not the robot filter, gate, sampling policy,
+point cap or graph-edge policy. After both GPU stages, compact points/features
+are copied to the existing CPU selection/packet consumers. No dense XYZ is
+rebuilt. See the [implementation and execution report](../../docs/visual-graph-integration/10i_graph_perception_default_20261103.md).
+
 Independent opt-in experiment. This package consumes the **frozen09-D v2**
 `graph.plan_a_geometry` and its preserved dependencies from an isolated source
 directory. A clean HEAD checkout alone does not provide that opt-in source.

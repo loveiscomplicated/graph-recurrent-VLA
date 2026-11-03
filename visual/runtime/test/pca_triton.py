@@ -11,23 +11,45 @@ from triton.language.extra.cuda import libdevice
 
 @triton.jit
 def _pca5(XYZ, SUPPORT, CENTRES, NORMALS, VALID, COV, FALLBACK,
+          PIXELS, OBJECTS, ROWS, COMPACT:tl.constexpr,
           H:tl.constexpr, W:tl.constexpr, ABS:tl.constexpr, REL:tl.constexpr):
     pid=tl.program_id(0)
-    cv=tl.load(CENTRES+pid*2);cu=tl.load(CENTRES+pid*2+1)
+    if COMPACT:
+        source=tl.load(PIXELS+pid);cv=source//W;cu=source%W
+        oid=tl.load(OBJECTS+pid)
+    else:
+        cv=tl.load(CENTRES+pid*2);cu=tl.load(CENTRES+pid*2+1)
     k=tl.arange(0,32);r=k//5;c=k%5
     v=cv+r-2;u=cu+c-2
     inside=(k<25)&(v>=0)&(v<H)&(u>=0)&(u<W)
     index=v*W+u
-    available=tl.load(SUPPORT+index,inside,other=0)
-    x=tl.load(XYZ+index*3,inside,other=0).to(tl.float64)
-    y=tl.load(XYZ+index*3+1,inside,other=0).to(tl.float64)
-    z=tl.load(XYZ+index*3+2,inside,other=0).to(tl.float64)
     right_inside=inside&(c<4)&(u+1<W)
     down_inside=inside&(r<4)&(v+1<H)
-    rs=tl.load(SUPPORT+index+1,right_inside,other=0)
-    ds=tl.load(SUPPORT+index+W,down_inside,other=0)
-    rz=tl.load(XYZ+(index+1)*3+2,right_inside,other=0).to(tl.float64)
-    dz=tl.load(XYZ+(index+W)*3+2,down_inside,other=0).to(tl.float64)
+    if COMPACT:
+        row=tl.load(ROWS+index,inside,other=-1)
+        available=inside&(row>=0)
+        available=available&(tl.load(OBJECTS+row,available,other=-1)==oid)
+        rr=tl.load(ROWS+index+1,right_inside,other=-1)
+        dr=tl.load(ROWS+index+W,down_inside,other=-1)
+        rs=right_inside&(rr>=0);ds=down_inside&(dr>=0)
+        rs=rs&(tl.load(OBJECTS+rr,rs,other=-1)==oid)
+        ds=ds&(tl.load(OBJECTS+dr,ds,other=-1)==oid)
+        rz=tl.load(XYZ+rr*3+2,rs,other=0).to(tl.float64)
+        dz=tl.load(XYZ+dr*3+2,ds,other=0).to(tl.float64)
+        x=tl.load(XYZ+row*3,available,other=0).to(tl.float64)
+        y=tl.load(XYZ+row*3+1,available,other=0).to(tl.float64)
+        z=tl.load(XYZ+row*3+2,available,other=0).to(tl.float64)
+        centre_row=pid
+    else:
+        available=tl.load(SUPPORT+index,inside,other=0)
+        x=tl.load(XYZ+index*3,inside,other=0).to(tl.float64)
+        y=tl.load(XYZ+index*3+1,inside,other=0).to(tl.float64)
+        z=tl.load(XYZ+index*3+2,inside,other=0).to(tl.float64)
+        rs=tl.load(SUPPORT+index+1,right_inside,other=0)
+        ds=tl.load(SUPPORT+index+W,down_inside,other=0)
+        rz=tl.load(XYZ+(index+1)*3+2,right_inside,other=0).to(tl.float64)
+        dz=tl.load(XYZ+(index+W)*3+2,down_inside,other=0).to(tl.float64)
+        centre_row=cv*W+cu
     right_ok=available&rs&right_inside&(tl.abs(z-rz)<=ABS+REL*tl.minimum(z,rz))
     down_ok=available&ds&down_inside&(tl.abs(z-dz)<=ABS+REL*tl.minimum(z,dz))
     bits=1<<k
@@ -38,9 +60,9 @@ def _pca5(XYZ, SUPPORT, CENTRES, NORMALS, VALID, COV, FALLBACK,
         reached=reached|((reached&right)<<1)|((reached>>1)&right)|((reached&down)<<5)|((reached>>5)&down)
     component=(k<25)&((reached&bits)!=0)
     count=tl.sum(component.to(tl.int32),0)
-    cx=tl.load(XYZ+(cv*W+cu)*3).to(tl.float64)
-    cy=tl.load(XYZ+(cv*W+cu)*3+1).to(tl.float64)
-    cz=tl.load(XYZ+(cv*W+cu)*3+2).to(tl.float64)
+    cx=tl.load(XYZ+centre_row*3).to(tl.float64)
+    cy=tl.load(XYZ+centre_row*3+1).to(tl.float64)
+    cz=tl.load(XYZ+centre_row*3+2).to(tl.float64)
     dx=tl.where(component,x-cx,0);dy=tl.where(component,y-cy,0);ddz=tl.where(component,z-cz,0)
     den=tl.maximum(count,1).to(tl.float64)
     mx=tl.sum(dx,0)/den;my=tl.sum(dy,0)/den;mz=tl.sum(ddz,0)/den
@@ -83,10 +105,10 @@ def _pca5(XYZ, SUPPORT, CENTRES, NORMALS, VALID, COV, FALLBACK,
     good=(count>=6)&rank&~fallback
     flip=nx*cx+ny*cy+nz*cz>0
     sign=tl.where(flip,-1.,1.)
-    tl.store(NORMALS+(cv*W+cu)*3,nx*sign,good)
-    tl.store(NORMALS+(cv*W+cu)*3+1,ny*sign,good)
-    tl.store(NORMALS+(cv*W+cu)*3+2,nz*sign,good)
-    tl.store(VALID+cv*W+cu,good)
+    tl.store(NORMALS+centre_row*3,nx*sign,good)
+    tl.store(NORMALS+centre_row*3+1,ny*sign,good)
+    tl.store(NORMALS+centre_row*3+2,nz*sign,good)
+    tl.store(VALID+centre_row,good)
     tl.store(FALLBACK+pid,fallback)
 
 
@@ -99,7 +121,8 @@ def fused_normals(xyz,support,parameters):
     if not len(centres):return normals,valid
     covariance=torch.empty((len(centres),3,3),dtype=torch.float64,device=xyz.device)
     fallback=torch.empty((len(centres),),dtype=torch.bool,device=xyz.device)
-    _pca5[(len(centres),)](xyz,support,centres,normals,valid,covariance,fallback,h,w,
+    _pca5[(len(centres),)](xyz,support,centres,normals,valid,covariance,fallback,
+                           support,support,support,False,h,w,
                            parameters.depth_jump_abs_m,parameters.depth_jump_rel,num_warps=1,enable_fp_fusion=False)
     idx=fallback.nonzero().flatten()
     if len(idx):
@@ -116,11 +139,18 @@ def fused_normals(xyz,support,parameters):
 
 @triton.jit
 def _features(XYZ,VD,MASK,SUPPORT,NORMALS,NV,JM,PV,DISC,MB,VB,IB,VAR,VV,COUNT,
+              PIXELS,OBJECTS,ROWS,DEPTH,N:tl.constexpr,COMPACT:tl.constexpr,
               H:tl.constexpr,W:tl.constexpr,ABS:tl.constexpr,REL:tl.constexpr,B:tl.constexpr):
-    i=tl.program_id(0)*B+tl.arange(0,B);inside=i<H*W
-    v=i//W;u=i%W
-    vd=tl.load(VD+i,inside,other=0);mask=tl.load(MASK+i,inside,other=0)
-    support=tl.load(SUPPORT+i,inside,other=0);nv=tl.load(NV+i,inside,other=0)
+    i=tl.program_id(0)*B+tl.arange(0,B);inside=i<N
+    if COMPACT:
+        source=tl.load(PIXELS+i,inside,other=0);oid=tl.load(OBJECTS+i,inside,other=0)
+        mask=inside;support=inside;vd=inside
+    else:
+        source=i
+        vd=tl.load(VD+i,inside,other=0);mask=tl.load(MASK+i,inside,other=0)
+        support=tl.load(SUPPORT+i,inside,other=0)
+    v=source//W;u=source%W
+    nv=tl.load(NV+i,inside,other=0)
     z=tl.where(vd,tl.load(XYZ+i*3+2,inside,other=0),0.)
     nx=tl.where(nv,tl.load(NORMALS+i*3,inside,other=0),0.)
     ny=tl.where(nv,tl.load(NORMALS+i*3+1,inside,other=0),0.)
@@ -131,10 +161,21 @@ def _features(XYZ,VD,MASK,SUPPORT,NORMALS,NV,JM,PV,DISC,MB,VB,IB,VAR,VV,COUNT,
     for direction in tl.static_range(4):
         offset=tl.where(direction==0,-1,tl.where(direction==1,1,tl.where(direction==2,-W,W)))
         available=inside&tl.where(direction==0,u>0,tl.where(direction==1,u+1<W,tl.where(direction==2,v>0,v+1<H)))
-        q=i+offset
-        qvd=tl.load(VD+q,available,other=0);qm=tl.load(MASK+q,available,other=0)
-        qnv=tl.load(NV+q,available,other=0)
-        qz=tl.where(qvd,tl.load(XYZ+q*3+2,available,other=0),0.)
+        q=source+offset
+        if COMPACT:
+            qraw=tl.load(DEPTH+q,available,other=0)
+            qvd=available&(qraw>0)&(qraw<float('inf'))
+            qz=tl.where(qvd,qraw,0.)
+            qm=tl.load(MASK+oid*H*W+q,available,other=0)
+            qr=tl.load(ROWS+q,available,other=-1)
+            own=available&(qr>=0)
+            own=own&(tl.load(OBJECTS+qr,own,other=-1)==oid)
+            qnv=tl.load(NV+qr,own,other=0)
+        else:
+            qr=q
+            qvd=tl.load(VD+q,available,other=0);qm=tl.load(MASK+q,available,other=0)
+            qnv=tl.load(NV+q,available,other=0)
+            qz=tl.where(qvd,tl.load(XYZ+q*3+2,available,other=0),0.)
         dz=tl.abs(z-qz);both_depth=available&vd&qvd
         pv=support&both_depth
         pair_valid=pair_valid|pv
@@ -142,9 +183,9 @@ def _features(XYZ,VD,MASK,SUPPORT,NORMALS,NV,JM,PV,DISC,MB,VB,IB,VAR,VV,COUNT,
         threshold=tl.full((),ABS,tl.float32)+tl.full((),REL,tl.float32)*tl.minimum(z,qz)
         disc=disc|(support&both_depth&(dz>threshold))
         mb=mb|(available&mask&~qm);vb=vb|(available&support&~qvd)
-        qx=tl.where(qnv,tl.load(NORMALS+q*3,available,other=0),0.)
-        qy=tl.where(qnv,tl.load(NORMALS+q*3+1,available,other=0),0.)
-        qnz=tl.where(qnv,tl.load(NORMALS+q*3+2,available,other=0),0.)
+        qx=tl.load(NORMALS+qr*3,available&qnv,other=0)
+        qy=tl.load(NORMALS+qr*3+1,available&qnv,other=0)
+        qnz=tl.load(NORMALS+qr*3+2,available&qnv,other=0)
         cx=ny*qnz-nz*qy;cy=nz*qx-nx*qnz;cz=nx*qy-ny*qx
         length=libdevice.sqrt(cx*cx+cy*cy+cz*cz)
         dot=nx*qx+ny*qy+nz*qnz
@@ -168,6 +209,52 @@ def fused_features(xyz,valid_depth,mask,support,normals,normal_valid,parameters)
         dtype=torch.float32 if name in ('depth_jump_m','normal_variation_rad') else torch.uint8 if name=='normal_neighbor_count' else torch.bool
         result[name]=torch.empty(shape,dtype=dtype,device=xyz.device)
     _features[(triton.cdiv(mask.numel(),256),)](xyz,valid_depth,mask,support,normals,normal_valid,
-              *[result[name] for name in names],*shape,parameters.depth_jump_abs_m,parameters.depth_jump_rel,256,
+              *[result[name] for name in names],support,support,support,xyz,mask.numel(),False,
+              *shape,parameters.depth_jump_abs_m,parameters.depth_jump_rel,256,
               num_warps=4,enable_fp_fusion=False)
+    return result
+
+
+def compact_rows(pixels, shape):
+    """Raster index -> compact point row. This is an integer map, not XYZ."""
+    rows=torch.full(shape,-1,dtype=torch.int64,device=pixels.device)
+    rows.view(-1)[pixels]=torch.arange(len(pixels),device=pixels.device)
+    return rows
+
+
+def fused_normals_compact(points,pixels,objects,rows,parameters):
+    normals=torch.full_like(points,float('nan'))
+    valid=torch.zeros(len(points),dtype=torch.bool,device=points.device)
+    if not len(points):return normals,valid
+    covariance=torch.empty((len(points),3,3),dtype=torch.float64,device=points.device)
+    fallback=torch.empty(len(points),dtype=torch.bool,device=points.device)
+    _pca5[(len(points),)](points,rows,rows,normals,valid,covariance,fallback,
+        pixels,objects,rows,True,*rows.shape,parameters.depth_jump_abs_m,
+        parameters.depth_jump_rel,num_warps=1,enable_fp_fusion=False)
+    idx=fallback.nonzero().flatten()
+    if len(idx):
+        values,basis=torch.linalg.eigh(covariance[idx])
+        threshold=torch.maximum(torch.full_like(values[:,2],1e-16),values[:,2]*1e-8)
+        good=(values[:,1]>threshold)&(values[:,1]-values[:,0]>threshold)&torch.isfinite(values).all(1)
+        chosen=idx[good];vectors=basis[good,:,0]
+        vectors/=torch.linalg.vector_norm(vectors,dim=1)[:,None]
+        vectors=torch.where((vectors*points[chosen]).sum(1)[:,None]>0,-vectors,vectors)
+        normals[chosen]=vectors.to(torch.float32);valid[chosen]=True
+    return normals,valid
+
+
+def fused_features_compact(points,pixels,objects,rows,depth,masks,normals,valid,parameters):
+    n=len(points)
+    result=dict(normals=normals,normal_valid=valid)
+    names=['depth_jump_m','depth_pair_valid','depth_discontinuity','mask_boundary',
+        'depth_validity_boundary','image_boundary','normal_variation_rad',
+        'normal_variation_valid','normal_neighbor_count']
+    for name in names:
+        dtype=torch.float32 if name in ('depth_jump_m','normal_variation_rad') else torch.uint8 if name=='normal_neighbor_count' else torch.bool
+        result[name]=torch.empty(n,dtype=dtype,device=points.device)
+    if n:
+        _features[(triton.cdiv(n,256),)](points,rows,masks,rows,normals,valid,
+            *[result[name] for name in names],pixels,objects,rows,depth,n,True,
+            *depth.shape,parameters.depth_jump_abs_m,parameters.depth_jump_rel,256,
+            num_warps=4,enable_fp_fusion=False)
     return result

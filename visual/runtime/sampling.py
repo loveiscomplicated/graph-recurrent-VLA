@@ -206,7 +206,7 @@ def extract_candidates(evidence: SamplingEvidence, config: SamplingConfig, metho
         metadata.update(orientation_score_deg=np.rad2deg(f.normal_variation_rad.ravel()[idx]),
                         orientation_candidate=orientation, depth_only_candidate=depth_only,
                         structural_candidate=orientation | (depth_only if method == 'S4' and config.depth_priority_fraction > 0 else False))
-        result[oid] = ObjectCandidates(idx, g.xyz.reshape(-1, 3)[idx].copy(), metadata)
+        result[oid] = ObjectCandidates(idx, g.points_at(idx).copy(), metadata)
     return result
 
 

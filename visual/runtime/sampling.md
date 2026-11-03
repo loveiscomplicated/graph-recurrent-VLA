@@ -32,6 +32,13 @@ even if one object is absent. A zero budget needs `min_points=(0,0)`.
 
 ## Observation and extraction
 
+The Graph CUDA adapter `graph_perception.extract(frame)` produces the same
+`SamplingEvidence` with compact XYZ. Consumers must call
+`evidence.frame.geometry.points_at(source_pixels)` and `camera_depth()` instead
+of directly indexing `geometry.xyz`. Mask/depth and feature rasters keep their
+original image alignment. This adapter hands off to CPU only after masked CUDA
+projection and compact `triton_fused` normals/features have both completed.
+
 `extract_sampling_evidence(frame, estimator, parameters)` accepts `baseline`,
 `fd2` or `pca5`. The original Task01 estimator is unchanged. Task02 finite
 difference, PCA5 and pair-evidence functions were promoted to runtime modules;

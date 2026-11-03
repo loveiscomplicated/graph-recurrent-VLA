@@ -52,6 +52,35 @@ class OrganizedGeometry:
     def observed_mask(self, object_id: int) -> np.ndarray:
         return self.object_masks[object_id] & self.valid_depth & ~self.overlap_mask
 
+    def points_at(self, source: np.ndarray) -> np.ndarray:
+        return self.xyz.reshape(-1, 3)[source]
+
+    def camera_depth(self) -> np.ndarray:
+        return self.xyz[..., 2]
+
+
+@dataclass(frozen=True)
+class CompactOrganizedGeometry(OrganizedGeometry):
+    """Raster masks/depth with compact XYZ; ``xyz`` is deliberately None.
+
+    The source pixels are sorted ascending. Point consumers use points_at;
+    adjacent-depth evidence uses camera_depth without reconstructing XYZ.
+    """
+    source_pixels: np.ndarray
+    source_points: np.ndarray
+    source_depth: np.ndarray
+
+    def points_at(self, source: np.ndarray) -> np.ndarray:
+        source = np.asarray(source)
+        rows = np.searchsorted(self.source_pixels, source)
+        if ((rows >= len(self.source_pixels)).any()
+                or not np.array_equal(self.source_pixels[rows], source)):
+            raise ValueError('requested XYZ is not in compact observed support')
+        return self.source_points[rows]
+
+    def camera_depth(self) -> np.ndarray:
+        return self.source_depth
+
 
 @dataclass(frozen=True)
 class GeometricFeatures:

@@ -1,5 +1,12 @@
 # Task 10-I: Vast58752018 CPU full vs CUDA masked projection
 
+The validated projector has since been promoted to
+`visual.runtime.torch_projection.project`; `masked_torch.py` re-exports that
+function for compatibility. Historical benchmark source snapshots/receipts
+remain the evidence for their original executions. The current Graph default
+integration is documented in
+[`10i_graph_perception_default_20261103.md`](../../../docs/visual-graph-integration/10i_graph_perception_default_20261103.md).
+
 Independent, opt-in projection experiment. The requested instance is enforced by
 `CONTAINER_ID == 58752018`. The original NumPy builder is imported from the
 byte-preserved snapshot taken before the preceding CPU experiment. No production

@@ -47,7 +47,7 @@ def sf_represent(original,dedup_fallback):
         import graph.plan_a_geometry.core as core
         cm=prepared['conditions'][condition];records=[];packets={}
         for camera in sorted(cameras,key=lambda c:c.camera!=system.main):
-            packet,_=core.make_packet(camera,cm[camera.camera]);packets[camera.camera]=packet
+            packet,_=(system.packet_builder or core.make_packet)(camera,cm[camera.camera]);packets[camera.camera]=packet
             obs=core.observations_from_packet(packet,camera);obs,_=core.consistent_views(obs,cameras,cm)
             rows=core.current_records(obs,fuse_views=False)
             structural=set(packet['provenance']['source_index'][~packet['provenance']['surface_selected']].tolist())

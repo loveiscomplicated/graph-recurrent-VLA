@@ -115,7 +115,7 @@ def check_source_alignment(source_packet, evidence, frame):
         s = source[source_packet['object_id'] == oid]
         if not g.observed_mask(oid).ravel()[s].all():
             raise ValueError('source is not observed for this object')
-    xyz = g.xyz.reshape(-1, 3)[source]
+    xyz = g.points_at(source)
     if not np.array_equal(xyz, source_packet['points']):
         raise ValueError('selected original camera XYZ mismatch')
     # Independent source depth/K check at selected pixels (not a second estimator).

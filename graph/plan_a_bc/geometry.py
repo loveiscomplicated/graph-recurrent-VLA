@@ -90,10 +90,16 @@ class RobotFK:
 
 
 class CurrentGeometry:
-    def __init__(self, assets, schema):
+    def __init__(self, assets, schema, *, perception_backend='triton_fused'):
+        from functools import partial
+        from visual.runtime.graph_perception import make_packet
+        if perception_backend not in ('triton_fused','cpu'):
+            raise ValueError('unknown Graph perception backend')
+        self.perception_backend=perception_backend
         self.fk = RobotFK(assets,schema)
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
-        self.system = PlanA('base_camera','hand_camera',frozen)
+        self.system = PlanA('base_camera','hand_camera',frozen,
+            packet_builder=partial(make_packet,backend=perception_backend))
         self.mount = None
 
     def reset(self):
@@ -132,6 +138,7 @@ class CurrentGeometry:
                 if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
                 if c=='hand_camera' and not prepared['gate']['accepted']: raise ValueError('rejected Wrist source')
         graph = self.system.graph(records,data,cameras)
+        graph.packet['perception_backend']=self.perception_backend
         validate_graph(graph)
         return graph,records,prepared['gate']
 

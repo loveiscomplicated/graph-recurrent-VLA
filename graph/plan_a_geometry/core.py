@@ -136,7 +136,9 @@ def budget(records,counts,hybrid=False):
 
 
 class PlanA:
-    def __init__(self,main,wrist,protocol): self.main,self.wrist,self.protocol=main,wrist,protocol
+    def __init__(self,main,wrist,protocol,*,packet_builder=None):
+        self.main,self.wrist,self.protocol=main,wrist,protocol
+        self.packet_builder=packet_builder
 
     def prepare(self,cameras,data,masks,surfaces):
         synchronized(cameras)
@@ -163,7 +165,7 @@ class PlanA:
     def represent(self,cameras,prepared,condition,representations=('SF','L','H')):
         cm=prepared['conditions'][condition];observed=[];sf=[];legacy=[];surface_candidates=[];stages={};packets={}
         for c in sorted(cameras,key=lambda c: c.camera!=self.main):
-            packet,_=make_packet(c,cm[c.camera]);packets[c.camera]=packet
+            packet,_=(self.packet_builder or make_packet)(c,cm[c.camera]);packets[c.camera]=packet
             os=observations_from_packet(packet,c)
             os,_=consistent_views(os,cameras,cm)
             rows=current_records(os,fuse_views=False)
