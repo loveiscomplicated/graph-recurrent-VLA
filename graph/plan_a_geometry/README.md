@@ -1,5 +1,13 @@
 # Task09-D Plan A geometry diagnostic
 
+The current configurable-frame tensor adapter additionally supports
+`represent(..., representations=('SF',), tensor_records=True)`: view checking,
+columnar record construction and greedy3mm deduplication return resident GPU
+`TensorRecords`. Without this flag the tensor adapter explicitly materializes
+the legacy Python records after deduplication. CPU packet builders retain the
+historical path below. See the
+[API and verification](../experiments/records_dedup_cuda_58752018_20261103_v1/README.md).
+
 Independent opt-in package. It uses synchronized current `base_camera` and
 `hand_camera` RGB-D, causal predicted masks, current robot observations and
 per-link collision geometry. Peg may use both cameras; Box uses Main only.

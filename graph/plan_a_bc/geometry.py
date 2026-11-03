@@ -134,8 +134,13 @@ class CurrentGeometry:
     def build(self,cameras,data,surfaces,masks):
         self._check_mount(cameras,surfaces)
         prepared = self.system.prepare(cameras,data,masks,surfaces)
-        pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',))
-        records = budget(pools['SF'],128)
+        resident = self.system.tensor_packet_builder is not None
+        pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident)
+        records = pools['SF']
+        if resident:
+            from graph.persistent_geometry.tensor_records import numpy_records
+            records = numpy_records(records)  # The next, final-FPS stage is still CPU.
+        records = budget(records,128)
         graph = self.system.graph(records,data,cameras)
         return self._finish(graph,records,prepared['gate'],data)
 
@@ -150,6 +155,8 @@ class CurrentGeometry:
                 if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
         graph.packet['perception_backend']=self.perception_backend
         graph.packet['view_consistency_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None else 'numpy_cpu')
+        graph.packet['records_dedup_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None
+            else 'existing_cpu')
         if graph.packet.get('coordinate_frame') != FRAME_NAMES[self.coordinate_frame]:
             raise ValueError('Graph/config coordinate frame mismatch')
         validate_graph(graph)

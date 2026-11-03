@@ -33,11 +33,21 @@ on CUDA through the same-time view check. It uses
 lookup, opposite-mask/depth predicates and compact result tensors. Frame-local
 depth/mask/calibration tensors are prepared once and shared across camera calls.
 World/EE, strict4mm depth support and source/structural flags are preserved.
-The result API stays on its input device. One explicit selected-array readback
-per source camera remains immediately before the existing CPU Python records,
-deduplication and final Graph consumers; this change does not move those stages.
+The result API stays on its input device. Default SF now continues through
+`current_records_tensor` and `deduplicate_tensor`: measured XYZ/F5, structural
+priority, object IDs and merged source provenance stay on GPU. The explicit
+`numpy_records` compatibility readback is after3mm deduplication, immediately
+before the still-CPU final128-point FPS and Graph consumers.
 Explicit CPU perception and historical standalone PlanA retain the NumPy path.
 See the [paired GPU measurement and verification](../../docs/visual-graph-integration/10i_view_consistency_cuda_20261103.md).
+
+`PlanA.represent(..., ('SF',), tensor_records=True)` returns a `TensorRecords`
+table with tensor-valued measurements and ragged source IDs. It requires the
+tensor SF-only path. Existing calls without the flag retain Python-list output
+through the explicit post-dedup adapter. The kernel preserves the original
+strict-radius, nontransitive greedy representative rule and stable source order;
+it never averages XYZ/F5. See the
+[records/dedup API and benchmark](../experiments/records_dedup_cuda_58752018_20261103_v1/README.md).
 
 Standalone `PlanA` without a frame retains the historical diagnostic adapter;
 pass `coordinate_frame` with a matching packet builder to use the unified path.
@@ -56,8 +66,9 @@ one is passed explicitly.
 
 Sampling evidence and Shape-First now also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.
-The default adapter downloads selected, view-checked observations for CPU records. Python
-still controls launches and reads convergence/cardinality scalars. The robot
+The default adapter keeps view-checked observations and3mm-deduplicated records
+on GPU, downloading only for the subsequent CPU final FPS. Python still controls
+launches and reads convergence/cardinality scalars. The robot
 filter, gate, sampling policy, point cap and graph-edge policy are unchanged.
 No dense XYZ or CPU feature raster is rebuilt in this default path.
 See the [GPU sampling report](../../docs/visual-graph-integration/10i_shape_first_cuda_58752018_20261103.md)
@@ -65,8 +76,9 @@ and [preceding geometry integration](../../docs/visual-graph-integration/10i_gra
 
 The sampling API `sample_cuda(...)` itself now returns CUDA tensors, including
 selected features and provenance, and downloads only when `device='cpu'` is
-requested. This NumPy Graph adapter explicitly requests CPU output; final Graph
-assembly has not been ported as part of the sampling-output change. See the
+requested. Standalone `make_packet` retains NumPy compatibility output; default
+`CurrentGeometry` uses CUDA packets and keeps records resident through dedup.
+Final FPS and Graph assembly remain CPU consumers. See the
 [output-device comparison](../../docs/visual-graph-integration/10i_shape_first_device_output_58752018_20261103.md).
 
 Independent opt-in experiment. This package consumes the **frozen09-D v2**

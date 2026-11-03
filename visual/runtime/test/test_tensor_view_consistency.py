@@ -110,10 +110,14 @@ class CUDAViewContracts(TorchViewContracts):
         c, masks = fixture('holes_overlap')
         for frame in ('world', 'ee'):
             packet = make_packet_cuda(c, torch.as_tensor(masks, device='cuda'), coordinate_frame=frame)
-            obs = observations_from_tensor_packet(packet, c)
             views = prepare_tensor_views([c], {c.camera: torch.as_tensor(masks, device='cuda')}, coordinate_frame=frame)
-            with patch.object(torch.Tensor, 'cpu', side_effect=AssertionError('readback forbidden')):
+            with patch.object(torch.Tensor, 'cpu', side_effect=AssertionError('readback forbidden')), \
+                 patch.object(torch.Tensor, 'numpy', side_effect=AssertionError('NumPy conversion forbidden')):
+                obs = observations_from_tensor_packet(packet, c)
                 actual, _ = consistent_views_tensor(obs, views)
+                for o in [*obs, *actual]:
+                    for name in ('xyz','normals','normal_valid','f5','feature_valid','pixels','camera_origin','structural'):
+                        self.assertTrue(getattr(o, name).is_cuda, name)
             host, flags = numpy_observations(actual, include_structural=True)
             source, _ = make_packet(c, masks, coordinate_frame=frame)
             expected = observations_from_packet(source, c, coordinate_frame=frame)
@@ -141,9 +145,13 @@ class CUDAViewContracts(TorchViewContracts):
                 geo._check_mount = lambda *args: None
                 geo.system.prepare = lambda *args: dict(conditions={'C3': masks}, gate=dict(accepted=True))
             expected, er, eg = old.build(cameras, data, [], masks)
-            with patch('graph.plan_a_geometry.core.consistent_views', side_effect=AssertionError('CPU view check forbidden')):
+            with patch('graph.plan_a_geometry.core.consistent_views', side_effect=AssertionError('CPU view check forbidden')), \
+                 patch('graph.plan_a_geometry.core.current_records', side_effect=AssertionError('per-point CPU records forbidden')), \
+                 patch('graph.plan_a_geometry.core.deduplicate', side_effect=AssertionError('CPU dedup forbidden')), \
+                 patch('graph.persistent_geometry.tensor_fusion.numpy_observations', side_effect=AssertionError('observation readback forbidden')):
                 actual, ar, ag = new.build(cameras, data, [], masks)
             self.assertEqual(actual.packet['view_consistency_backend'], 'torch_cuda')
+            self.assertEqual(actual.packet['records_dedup_backend'], 'torch_cuda')
             self.assertEqual([r['source_observation_ids'] for r in ar], [r['source_observation_ids'] for r in er])
             self.assertEqual(ag, eg)
             for key in ('node_type', 'edge_index', 'edge_type'):

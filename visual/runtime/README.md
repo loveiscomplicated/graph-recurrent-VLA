@@ -18,8 +18,10 @@ packet. `graph.vision_input` accepts this measured tensor representation;
 `tensor_packet.numpy_packet` is an explicit packed compatibility readback.
 The existing `make_packet` default continues returning NumPy packets.
 `CurrentGeometry` now uses `make_packet_cuda` in its default triton_fused path
-to keep packet arrays resident through the Torch view check. It explicitly
-downloads selected observations only at the following CPU record boundary.
+to keep packet arrays resident through the Torch view check, tensor record
+construction and greedy3mm deduplication. The stage output stays on GPU.
+An explicit post-dedup compatibility conversion feeds the subsequent CPU final
+FPS/Graph; see the [record API](../../graph/experiments/records_dedup_cuda_58752018_20261103_v1/README.md).
 This does not change the direct compatibility `make_packet` return type.
 
 ### Peg/Box groups in selected packets

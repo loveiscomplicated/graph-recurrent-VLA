@@ -174,13 +174,15 @@ class PlanA:
             conditions[condition]=cm
         return dict(filters=filters,clean=clean,conditions=conditions,gate=gate)
 
-    def represent(self,cameras,prepared,condition,representations=('SF','L','H')):
+    def represent(self,cameras,prepared,condition,representations=('SF','L','H'),*,tensor_records=False):
+        if tensor_records and (self.tensor_packet_builder is None or tuple(representations)!=('SF',)):
+            raise ValueError('resident records require the tensor SF-only path')
         cm=prepared['conditions'][condition];observed=[];sf=[];legacy=[];surface_candidates=[];stages={};packets={}
-        tensor_views=None
+        tensor_views=None; tensor_observed=[]
         if self.tensor_packet_builder is not None:
             import torch
             from graph.persistent_geometry.tensor_fusion import (prepare_tensor_views, observations_from_tensor_packet,
-                consistent_views_tensor, numpy_observations)
+                consistent_views_tensor)
             tensor_views=prepare_tensor_views(cameras,cm,coordinate_frame=self.coordinate_frame)
         for c in sorted(cameras,key=lambda c: c.camera!=self.main):
             if tensor_views is None:
@@ -194,15 +196,12 @@ class PlanA:
                     intrinsic_cuda=view.intrinsic,transform_cuda=view.frame_from_camera)
                 os=observations_from_tensor_packet(packet,c)
                 os,_=consistent_views_tensor(os,tensor_views)
-                # The next stage is the pre-existing CPU Python record builder.
-                # Keep the public tensor result resident until this explicit,
-                # selected-only compatibility boundary, after view checking.
-                os,flags=numpy_observations(os,include_structural=True)
-                structural_pixels={int(p) for o,f in zip(os,flags) for p in o.pixels[f]}
+                tensor_observed.extend(os)
             packets[c.camera]=packet
-            rows=current_records(os,fuse_views=False,coordinate_frame=self.coordinate_frame)
-            for r in rows:r['structural']=key(r)[3] in structural_pixels
-            sf.extend(rows)
+            if tensor_views is None:
+                rows=current_records(os,fuse_views=False,coordinate_frame=self.coordinate_frame)
+                for r in rows:r['structural']=key(r)[3] in structural_pixels
+                sf.extend(rows)
             if any(v in representations for v in ('L','H')):
                 los,points,_=frame_points(c,cm[c.camera],f5=True)
                 if self.coordinate_frame is not None:
@@ -219,7 +218,15 @@ class PlanA:
                     for r in current_records(candidates,fuse_views=False,coordinate_frame=self.coordinate_frame):
                         r['structural']=False;surface_candidates.append(r)
                 stages[c.camera]=points
-        sf,sa=deduplicate(sf,self.protocol['merge_distance_m'])
+        if tensor_views is None:
+            sf,sa=deduplicate(sf,self.protocol['merge_distance_m'])
+        else:
+            from graph.persistent_geometry.tensor_records import current_records_tensor,deduplicate_tensor,numpy_records
+            sf,sa=deduplicate_tensor(current_records_tensor(tensor_observed,coordinate_frame=self.coordinate_frame),
+                                     self.protocol['merge_distance_m'])
+            if tensor_records:
+                return dict(SF=sf),dict(SF=sa),stages,packets
+            sf=numpy_records(sf)  # Explicit legacy API compatibility, after GPU dedup.
         legacy,la=deduplicate(legacy,self.protocol['merge_distance_m'])
         legacy=budget(legacy,1024)
         # Preserve structural candidates before any erosion/SOR of surface pool.
