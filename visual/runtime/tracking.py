@@ -73,6 +73,32 @@ class SAM2Tracker:
             )
         return state
 
+    def start_frames(self,images,image_shape,boxes,frame_idx=0):
+        """Initialize the installed SAM2 video-state contract from resident frames.
+
+        Mirrors SAM2VideoPredictor.init_state after its image-loader boundary.
+        No directory loader, JPEG encoding, predictor patch or future RGB input.
+        """
+        import torch
+        from collections import OrderedDict
+        if not 0<=frame_idx<len(images):raise ValueError('observed prompt frame required')
+        device=torch.device(self.predictor.device);sample=images[frame_idx]
+        if sample.device!=torch.empty(0,device=device).device or sample.shape!=(3,self.predictor.image_size,self.predictor.image_size):
+            raise ValueError('SAM2 resident normalized image/device mismatch')
+        state=dict(images=images,num_frames=len(images),offload_video_to_cpu=False,offload_state_to_cpu=False,
+            video_height=int(image_shape[0]),video_width=int(image_shape[1]),device=device,storage_device=device,
+            point_inputs_per_obj={},mask_inputs_per_obj={},cached_features={},constants={},
+            obj_id_to_idx=OrderedDict(),obj_idx_to_id=OrderedDict(),obj_ids=[],
+            output_dict_per_obj={},temp_output_dict_per_obj={},frames_tracked_per_obj={})
+        self.predictor._get_image_feature(state,frame_idx=0,batch_size=1)
+        try:
+            for object_id,box in boxes.items():
+                coords=np.asarray(box,dtype=np.float32)
+                if coords.shape!=(4,) or not np.isfinite(coords).all():raise ValueError('finite XYXY box required')
+                self.predictor.add_new_points_or_box(state,frame_idx=frame_idx,obj_id=int(object_id),box=coords)
+        except BaseException:self.predictor.reset_state(state);raise
+        return state
+
     def track(self, state: dict, start_frame: int = 0, *, mask_filter=None) -> Iterator[tuple[int, dict[int, object]]]:
         """Yield masks on the predictor device.
 

@@ -251,7 +251,7 @@ class CudaRobotFilter:
         return _PreparedSurfaces(tuple(hulls),starts,equations,camera_bounds=camera_bounds,
             packed=packed,camera_groups=camera_groups)
 
-    def filter_cameras(self,cameras,surfaces,masks,*,prepared=None,**kwargs):
+    def filter_cameras(self,cameras,surfaces,masks,*,camera_tensors=None,prepared=None,**kwargs):
         """Two-camera/live-frame entrypoint; preparation stays inside this call.
 
         No pose state survives the call. Camera depth/calibration and masks stay
@@ -261,11 +261,12 @@ class CudaRobotFilter:
         names=[c.camera for c in cameras]
         if len(set(names))!=len(names) or set(names)!=set(masks):raise ValueError('camera identity')
         prepared=self.prepare_surfaces(surfaces,cameras) if prepared is None else prepared
-        return {c.camera:self(c,prepared,masks[c.camera],**kwargs) for c in cameras}
+        return {c.camera:self(c,prepared,masks[c.camera],**kwargs,
+            **({} if camera_tensors is None else camera_tensors[c.camera])) for c in cameras}
 
     @torch.inference_mode()
     def __call__(self,camera,surfaces,masks,*,depth_cuda=None,diagnostics=False,
-                 tolerance_m=.0025,uncertainty_band_m=.006):
+                 tolerance_m=.0025,uncertainty_band_m=.006,world_cuda=None):
         h,w=camera.depth_raw_mm.shape
         if not isinstance(masks,torch.Tensor) or not masks.is_cuda or masks.dtype!=torch.bool or tuple(masks.shape)!=(2,h,w):
             raise ValueError('CUDA bool masks [2,H,W] required')
@@ -273,6 +274,8 @@ class CudaRobotFilter:
         if depth_cuda is not None and (not isinstance(depth_cuda,torch.Tensor) or depth_cuda.device!=device
                 or depth_cuda.dtype!=torch.float64 or tuple(depth_cuda.shape)!=(h,w)):
             raise ValueError('depth_cuda must be float64 metres [H,W] on the mask device')
+        if world_cuda is not None and (world_cuda.device!=device or world_cuda.dtype!=torch.float64 or tuple(world_cuda.shape)!=(4,4)):
+            raise ValueError('world_cuda must be float64 [4,4] on the mask device')
         with torch.cuda.device(device):
             def gpu(a):return torch.as_tensor(np.ascontiguousarray(a),device=device)
             masks=masks.contiguous()
@@ -282,7 +285,7 @@ class CudaRobotFilter:
                 depth=torch.empty((h,w),device=device,dtype=torch.float64)
                 _depth_mm[(triton.cdiv(h*w,256),)](raw_depth,self._depth_table(device),depth,h*w)
             else:depth=gpu(camera.depth)
-            world=gpu(camera.world_from_camera.astype(np.float64))
+            world=gpu(camera.world_from_camera.astype(np.float64)) if world_cuda is None else world_cuda
             rays=self._camera_rays(camera,device)
             direction=rays@world[:3,:3].T
             prepared=surfaces if isinstance(surfaces,_PreparedSurfaces) else self.prepare_surfaces(surfaces,(camera,))

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 
 from graph.integration_baseline.graph import Graph, pack_graphs
-from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
+from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
 from graph.integration_baseline.rollout_stop_clock import compare_saved_sequence
 from visual.runtime.live_grounding import LiveGrounding, policy_identity
 from visual.runtime.tracking import SAM2Tracker
@@ -29,14 +29,17 @@ def make_vision(device,dino,sam):
 
 
 def input_identity(root):
+    from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
     cfg=read(root/'config.json');audit=read(root/'dataset_audit.json')
     frozen=Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json'
+    cuda=torch.cuda.is_available()
     return dict(dataset_sha256=audit['dataset_sha256'],split_sha256=audit['split_sha256'],
         graph_config=cfg['geometry'],frozen_geometry_protocol_sha256=sha(frozen),
         coordinate_frame=check_frame(cfg['geometry'].get('coordinate_frame','ee')),
         frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v4_terra_primary',
         grounding=policy_identity(),
-        robot_filter_backend='cuda',robot_preparation='before_vision')
+        wrist_gate_policy='cuda_if_available_else_cpu',wrist_gate_backend=default_wrist_gate_backend(),
+        robot_filter_backend='cuda' if cuda else 'cpu',robot_preparation='before_vision' if cuda else 'cpu_serial')
 
 
 def cache_episode(root,dataset,entry,detector,tracker,log):
@@ -72,7 +75,8 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
                 from graph.persistent_geometry.tensor_records import TensorRecords,numpy_records
                 g=numpy_graph(g)  # Explicit archival boundary, after GPU Graph construction.
                 if isinstance(records,TensorRecords):records=numpy_records(records)
-                mm=geometry.last_raw_masks
+                from visual.runtime.tensor_packet import numpy_packet
+                mm=numpy_packet(geometry.last_raw_masks)  # Explicit cache artifact boundary.
                 records_by_id={r['persistent_node_id']:r for r in records}
                 ordered=[records_by_id[k] for k in g.packet['node_ids']]
                 point_offset=len(point_xyz)
@@ -115,7 +119,8 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
             edge_min=int(e.min()),edge_mean=float(e.mean()),edge_max=int(e.max()),
             object_missing_rate=(1-pp.mean(0)).tolist(),conversion_failures=0,readback='PASS',
             tracker_episode_reset='PASS',wall_seconds=time.perf_counter()-started,completed_at=now())
-        row.update(robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule)
+        row.update(robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule,
+            wrist_gate_backend=geometry.last_wrist_gate_backend)
         if callable(getattr(detector,'status',None)):row['grounding']=detector.status()
         write(receipt,row,immutable=True);log.link_output(receipt,kind='metrics');return row
     except BaseException as exc:

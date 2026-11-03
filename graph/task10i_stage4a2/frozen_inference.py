@@ -23,6 +23,21 @@ def array_digest(value):
     return h.hexdigest()
 
 
+def geometry_artifacts(graph, provenance, episode, timestep):
+    """Explicit archival boundary after current Graph/gate inference."""
+    from graph.persistent_geometry.tensor_graph import numpy_graph
+    from graph.persistent_geometry.tensor_records import TensorRecords,numpy_records
+    if isinstance(provenance,TensorRecords):provenance=numpy_records(provenance)
+    for r in provenance:
+        assert len(r['source_observation_ids'])>0
+        assert all(str(e)==episode and step==timestep and not(r['object_id']==1 and c!='base_camera')
+            for e,step,c,p in r['source_observation_ids'])
+    graph=numpy_graph(graph)
+    return dict(timestep=timestep,wrist_gate_backend=graph.packet['wrist_gate_backend'],
+        tensors={k:array_digest(getattr(graph,k).numpy()) for k in
+            ('node_input','node_type','edge_index','edge_attr','edge_type')})
+
+
 class TimedDetector:
     def __init__(self,detector):self.detector=detector;self.calls=[];self.context={}
     def __call__(self,rgb,prompt):
@@ -43,6 +58,7 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
     from visual.runtime.tracking import SAM2Tracker
     from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
     from graph.plan_a_bc.geometry import CurrentGeometry,validate_graph
+    from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
     from graph.task10i_stage4a.development_perception import Memo
     from graph.task10i_stage4a.perframe_cache import install
     from .preprocessing_audit import LosslessAdapter
@@ -64,6 +80,7 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
         runtime_inputs=Path('/workspace/task10g_f1_abc_20261031/full/inputs')
         specification=dict(condition=condition,expected_sha256=sha(expected),engineering=engineering,
             geometry_cache=geometry_cache,lazy_matching=lazy_matching,GT_forward_input=False,
+            wrist_gate_policy='cuda_if_available_else_cpu',wrist_gate_backend=default_wrist_gate_backend(),
             source={str(p.relative_to(source)):sha(p) for directory in ('graph','visual/runtime','utils')
                     for p in (source/directory).rglob('*.py')},model_identity=identity,
             installed_sam_files={str(p):sha(p) for p in installed_sam.rglob('*') if p.is_file() and p.suffix in ('.py','.yaml')},
@@ -165,7 +182,9 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                                 torch.cuda.synchronize();start=time.perf_counter()
                                 di=len(detector.calls);si=len(sam_times);fi=len(features.calls) if features is not None else 0
                                 ss=len(sam_stages);ff=len(feature_events)
-                                cameras,data,surfaces=geometry.from_h5(raw,t,episode)
+                                # Correction/DINO/SAM2 keep their original host RGB-D
+                                # contract; geometry uploads current inputs for its GPU gate.
+                                cameras,data,surfaces=geometry.from_h5(raw,t,episode,tensor_images=False)
                                 values={};found={}
                                 for camera in cameras:
                                     detector.context=dict(episode_id=episode,camera=camera.camera,decision_timestep=t,condition=condition)
@@ -182,16 +201,12 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                                 correction_end=time.perf_counter()
                                 graph,provenance,gate=geometry.build(cameras,data,surfaces,values)
                                 validate_graph(graph);torch.cuda.synchronize();end=time.perf_counter()
-                                for r in provenance:
-                                    assert len(r['source_observation_ids'])>0
-                                    assert all(str(e)==episode and step==t and not(r['object_id']==1 and c!='base_camera')
-                                        for e,step,c,p in r['source_observation_ids'])
-                                graphs.append(dict(timestep=t,tensors={k:array_digest(getattr(graph,k).numpy()) for k in
-                                    ('node_input','node_type','edge_index','edge_attr','edge_type')}))
+                                graphs.append(geometry_artifacts(graph,provenance,episode,t))
                                 masks.append(np.packbits(np.stack([values[c] for c in CAMERAS]).ravel()))
                                 if policy is not None:internal_baseline.append(np.packbits(np.stack([baseline_snapshot[c] for c in CAMERAS]).ravel()))
                                 feature_calls=features.calls[fi:] if features is not None else []
                                 timings.append(dict(timestep=t,end_to_end_ms=1000*(end-start),
+                                    wrist_gate_backend=geometry.last_wrist_gate_backend,
                                     baseline_and_input_ms=1000*(baseline_end-start),
                                     correction_ms=1000*(correction_end-baseline_end),graph_ms=1000*(end-correction_end),
                                     dino_ms=sum(v['total_ms'] for v in detector.calls[di:]),dino_calls=len(detector.calls)-di,
@@ -222,6 +237,7 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                                     ('state_machine.json',{str(k):v.events for k,v in policy.slots.items()})]:write(folder/filename,value)
                         if features is not None:write(folder/'feature_calls.json',features.calls)
                         receipt=dict(episode=episode,parent_id=entry['parent_id'],frames=len(masks),condition=condition,
+                            wrist_gate_policy='cuda_if_available_else_cpu',wrist_gate_backend=geometry.last_wrist_gate_backend,
                             source_config_sha256=sha(frozen),raw_sha256=entry['raw_sha256'],GT_forward_input=False,
                             geometry_cache=geometry_cache,lazy_matching=lazy_matching,actual_dino_calls=len(detector.calls),
                             actual_sam_calls=len(sam_times),actual_dinov2_calls=sum(v['model_forward'] for v in features.calls) if features else 0,
@@ -231,6 +247,7 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                         write(folder/'receipt.json',receipt);progress.append(receipt);write(root/'progress.json',progress)
                         print('frozen live',condition,len(progress),'/',manifest['episodes'],episode,len(masks),flush=True)
                     finally:
+                        geometry.close()
                         if policy is not None:policy.close()
                         for adapter in adapters.values():adapter.close()
                         memo.cache.clear();torch.cuda.empty_cache()

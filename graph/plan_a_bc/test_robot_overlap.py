@@ -24,21 +24,22 @@ class DefaultRobotOverlap(unittest.TestCase):
             root=Path(tmp)
             (root/'config.json').write_text(json.dumps(dict(geometry={},source_sha256={})))
             (root/'dataset_audit.json').write_text(json.dumps(dict(dataset_sha256='dataset',split_sha256='split')))
-            ident=input_identity(root)
+            with patch('torch.cuda.is_available',return_value=True):ident=input_identity(root)
             self.assertEqual(ident['robot_filter_backend'],'cuda');self.assertEqual(ident['robot_preparation'],'before_vision')
             self.assertEqual(ident['grounding']['primary'],'gpt-6.1-terra')
             self.assertEqual(ident['cache_version'],'graphs_common_coordinate_frame_v4_terra_primary')
+            self.assertEqual(ident['wrist_gate_backend'],'torch_cuda')
             for version in ('graphs_common_coordinate_frame_v2','graphs_common_coordinate_frame_v3_robot_overlap'):
                 old={**ident,'cache_version':version}
                 (root/'cache_manifest.json').write_text(json.dumps(dict(identity=old,episodes=[])))
-                with self.assertRaisesRegex(ValueError,'identity mismatch'):CachedDataset(root)
+                with patch('torch.cuda.is_available',return_value=True),self.assertRaisesRegex(ValueError,'identity mismatch'):CachedDataset(root)
 
     def test_default_submits_before_vision_and_discards_on_vision_error(self):
         from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation
         fixture=geometry_fixtures.Contracts();fixture.setUp();started=Event()
         class Filter:
             def prepare_surfaces(self,*_):started.set();return None
-        with patch('graph.plan_a_bc.geometry.RobotFK'):
+        with patch('graph.plan_a_bc.geometry.RobotFK'),patch('torch.cuda.is_available',return_value=True):
             geometry=CurrentGeometry('unused',{})
         self.assertEqual(geometry.robot_filter_backend,'cuda')
         geometry._check_mount=lambda *args:None
@@ -74,7 +75,7 @@ class DefaultRobotOverlap(unittest.TestCase):
                 return np.zeros((2,4,4),bool),{}
             def close(self):pass
         class Geometry:
-            coordinate_frame='ee';robot_filter_backend='cuda';last_robot_schedule='before_vision'
+            coordinate_frame='ee';robot_filter_backend='cuda';last_robot_schedule='before_vision';last_wrist_gate_backend='torch_cuda'
             def __init__(self,*args,**kwargs):pass
             def from_h5(self,f,t,identity):return [SimpleNamespace(camera=n,rgb=np.zeros((4,4,3),np.uint8)) for n in ('base_camera','hand_camera')],dict(robot76=np.zeros(76)),[]
             def build(self,cameras,data,surfaces,provider):
@@ -103,7 +104,7 @@ class DefaultRobotOverlap(unittest.TestCase):
                 return np.zeros((2,*rgb.shape[:2]),bool),{}
             def close(self):pass
         class Geometry:
-            robot_filter_backend='cuda';last_robot_schedule='before_vision'
+            robot_filter_backend='cuda';last_robot_schedule='before_vision';last_wrist_gate_backend='torch_cuda'
             def __init__(self,*args,**kwargs):pass
             def build(self,cameras,data,surfaces,provider):
                 test.assertTrue(callable(provider));events.append('inside_build')
@@ -154,7 +155,7 @@ class CudaDefaultRobotOverlap(unittest.TestCase):
                         patch('graph.plan_a_geometry.core.classify_robot',side_effect=AssertionError('second robot filter')):
                     actual,ar,ag=candidate.build(fixture.cameras,fixture.data,surfaces,sam2)
                 self.assertEqual(candidate.last_robot_schedule,'before_vision');self.assertEqual(ag,eg)
-                for name in raw:np.testing.assert_array_equal(candidate.last_raw_masks[name],raw[name])
+                for name in raw:np.testing.assert_array_equal(candidate.last_raw_masks[name].cpu().numpy(),raw[name])
                 for key in ('node_input','node_type','edge_index','edge_attr','edge_type'):
                     a,b=getattr(actual,key),getattr(expected,key)
                     if key=='node_input':
@@ -170,6 +171,7 @@ class CudaDefaultRobotOverlap(unittest.TestCase):
                 def twice(*args):raise AssertionError('legacy scope filtered a second time')
                 with GpuMaskBoundary(twice) as capture:
                     again,_,_=candidate.build(fixture.cameras,fixture.data,surfaces,device_raw)
-                    self.assertEqual(set(capture.clean_cuda),set(raw))
+                    # Resident gate/Graph bypass the legacy NumPy prepare hook.
+                    self.assertFalse(capture.clean_cuda)
                 torch.testing.assert_close(again.node_input,actual.node_input,rtol=0,atol=2e-5)
             finally:candidate.close();reference.close();started.clear()

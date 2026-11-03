@@ -15,6 +15,24 @@ def transform(points, matrix):
     return np.asarray(points, dtype=float) @ matrix[:3, :3].T + matrix[:3, 3]
 
 
+def validate_camera_metadata(camera):
+    """Small host identity/calibration checks shared by CPU and tensor images."""
+    k = np.asarray(camera.intrinsic)
+    if (k.shape != (3, 3) or not np.isfinite(k).all() or k[0, 0] <= 0
+            or k[1, 1] <= 0 or not np.allclose(k[2], [0, 0, 1])
+            or k[0, 1] != 0 or k[1, 0] != 0):
+        raise ValueError('CV intrinsic')
+    cv = np.vstack((camera.extrinsic_cv, [0, 0, 0, 1]))
+    validate_transform(cv.astype(float))
+    gl = validate_transform(np.asarray(camera.cam2world_gl, float))
+    # Independent conventions stored by the installed camera API.
+    if not np.allclose(np.linalg.inv(cv), gl @ np.diag([1, -1, -1, 1]), atol=2e-5, rtol=0):
+        raise ValueError('CV/GL camera calibration disagreement')
+    pose_matrix(camera.tcp_pose)
+    if not np.isfinite(camera.timestamp):
+        raise ValueError('timestamp')
+
+
 @dataclass(frozen=True)
 class CameraObservation:
     episode: str
@@ -36,20 +54,7 @@ class CameraObservation:
             raise ValueError('RGB/depth alignment')
         if self.depth_raw_mm.dtype != np.int16:
             raise ValueError('original signed int16 millimetres required')
-        k = np.asarray(self.intrinsic)
-        if (k.shape != (3, 3) or not np.isfinite(k).all() or k[0, 0] <= 0
-                or k[1, 1] <= 0 or not np.allclose(k[2], [0, 0, 1])
-                or k[0, 1] != 0 or k[1, 0] != 0):
-            raise ValueError('CV intrinsic')
-        cv = np.vstack((self.extrinsic_cv, [0, 0, 0, 1]))
-        validate_transform(cv.astype(float))
-        gl = validate_transform(np.asarray(self.cam2world_gl, float))
-        # Independent conventions stored by the installed camera API.
-        if not np.allclose(np.linalg.inv(cv), gl @ np.diag([1, -1, -1, 1]), atol=2e-5, rtol=0):
-            raise ValueError('CV/GL camera calibration disagreement')
-        pose_matrix(self.tcp_pose)
-        if not np.isfinite(self.timestamp):
-            raise ValueError('timestamp')
+        validate_camera_metadata(self)
         return self
 
     @property

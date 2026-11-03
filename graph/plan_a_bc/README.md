@@ -13,6 +13,16 @@ Per-camera `vision_trace.json` and episode/cache receipts record actual backend,
 fallback reason and request counts. Existing ExperimentLogger identity rules
 remain in place. Historical frozen deployments are not modified by this change.
 
+Live `rollout.environment` uses the existing native CUDA renderer with CPU
+PhysX and the shared `envs.maniskill.observation_device.ObservationDevice`.
+The output wrapper surrounds the custom250-step horizon, so `.unwrapped` does
+not strip it from reset/step. RGB/depth are already CUDA before this wrapper;
+remaining raw observation tensors move to CUDA through the shared adapter.
+`rollout.sensors` keeps images in `TensorCameraObservation` on CUDA, cloning
+current image buffers on-device for ownership. Small robot/calibration metadata
+still uses the host validation/FK contract. See the
+[live output verification](../../docs/visual-graph-integration/10i_live_gpu_observation_output_20261104.md).
+
 The normal cache and live-rollout paths now start robot CPU preparation before
 their current-frame SAM2 calls. `CurrentGeometry` defaults to CUDA robot filtering
 for `triton_fused`, with a persistent `RobotFilterPreparation` worker. No opt-in
@@ -31,20 +41,30 @@ finally:
     geometry.close()
 ```
 
-SAM2 raw masks stay on CUDA until filtering. The unchanged CPU wrist gate still
-receives both original raw masks and clean masks, so its raw-pixel denominator
-is preserved. `geometry.last_raw_masks` provides that CPU raw-mask view for cache
-artifacts/video; it is not an already-clean mask. `last_robot_schedule` reports
+SAM2 raw masks stay on CUDA through filtering and the wrist gate. Both live
+rollout and Task10-I `frozen_inference` select the validated CUDA wrist gate
+whenever `torch.cuda.is_available()` is true. Only unavailable CUDA selects the
+existing CPU gate; GPU dependency/runtime errors propagate without a CPU retry.
+The raw-pixel denominator is preserved. `geometry.last_raw_masks` retains the
+original raw masks on their processing device; cache/video use explicit
+`numpy_packet` export. It is not an already-clean mask. `last_robot_schedule` reports
 `before_vision` in these default frontends. Passing a ready mask dictionary is
 still supported and reports `masks_already_available`; SAM2 has already finished
 in that case. `robot_filter_backend='cpu'` explicitly selects the historical
 filter for diagnostics; `perception_backend='cpu'` selects it automatically.
+That explicit CPU graph/filter selection still uses the CUDA wrist gate when
+CUDA is available. `geometry.wrist_gate_backend` records the selected gate and
+`last_wrist_gate_backend`/`graph.packet['wrist_gate_backend']` record the last
+executed gate (`torch_cuda` or `existing_cpu`). Legacy NumPy correction/prepare
+calls export only the accepted gate mask back to their host contract.
 Full-screen filter diagnostics remain available through standalone `PlanA.prepare`;
 the prepared-clean fast path explicitly has no full filter diagnostic dictionary.
 
 Cache identity is now `graphs_common_coordinate_frame_v4_terra_primary` and records
 the grounding policy plus geometry backend/schedule. Existing v2/v3 caches are rejected rather than silently reused
 or overwritten. Original frozen experiment sources/runs are not resumed or migrated.
+Cache identity additionally includes the wrist-gate policy and effective backend;
+earlier caches missing those fields require a new cache output directory.
 See the [default-path implementation report](../../docs/visual-graph-integration/10i_robot_overlap_default_20261103.md).
 
 Choose the common geometry frame explicitly:
@@ -113,14 +133,24 @@ The shared persistent-map prototype remains World-only. The implementation and
 CPU/CUDA verification are in the
 [coordinate-frame report](../../docs/visual-graph-integration/10i_coordinate_frames_20261103.md).
 
-Current `CurrentGeometry(assets, schema)` defaults to
-`perception_backend='triton_fused'`: Torch CUDA projects only valid,
+Current `CurrentGeometry(assets, schema)` uses
+`perception_backend='triton_fused'` when CUDA is available: Torch CUDA projects only valid,
 non-overlapping object-mask pixels, then compact Triton PCA5 normals/features
-consume those CUDA points directly. CUDA and Triton are required; there is no
-implicit CPU fallback. `perception_backend='cpu'` explicitly selects the NumPy
+consume those CUDA points directly. When CUDA is unavailable the default geometry
+selects CPU perception, robot filtering and wrist gate. An available CUDA runtime
+requires its dependencies and never falls back after an execution error.
+`perception_backend='cpu'` explicitly selects the NumPy
 diagnostic route. Historical frozen source copies/caches retain their recorded
 implementation. Standalone `PlanA` retains its historical packet builder unless
 one is passed explicitly.
+
+`from_h5(..., tensor_images=False)` keeps host RGB-D for the existing Task10-I
+correction/DINO/SAM2 interface while its geometry/gate uses CUDA. Frozen inference
+exports GPU Graph/TensorRecords explicitly after inference for provenance and
+fingerprints. Its same-frame memo preserves the gate policy and precleaned-mask
+keyword. Existing model/renderer device requirements are independent of this
+geometry fallback. See the
+[gate default integration report](../../docs/visual-graph-integration/10i_wrist_gate_default_integration_20261104.md).
 
 Sampling evidence and Shape-First also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.

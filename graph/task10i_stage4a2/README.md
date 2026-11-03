@@ -9,6 +9,17 @@
 
 # Task10-I Stage4A-2
 
+The current checkout's `frozen_inference` now shares the live entrypoint's
+CUDA-first wrist gate through `CurrentGeometry`: unavailable CUDA selects the
+CPU gate; CUDA/import/runtime failures do not trigger a CPU retry. Correction
+candidates and memoized `PlanA.prepare` use the same policy. Host RGB-D remains
+available to the original correction/model adapters, and Graph/provenance
+exports are explicit after inference. Source config, frame timings, Graph
+fingerprints and receipts record the gate backend. This authorized code change
+does not resume historical paused jobs or modify their frozen snapshots; new
+source/config requires a new output root. See the
+[integration report](../../docs/visual-graph-integration/10i_wrist_gate_default_integration_20261104.md).
+
 Independent research implementation. No production modules, original datasets,
 checkpoints, previous Stage4A decisions, publishing or policy training are changed.
 

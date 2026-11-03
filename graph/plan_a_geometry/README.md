@@ -7,6 +7,14 @@ time. Its `filters[camera]` is explicitly `None`, since it has no full-screen
 robot diagnostics. Standalone calls without `clean_masks` keep the historical
 classifier and complete diagnostic dictionaries.
 
+`PlanA(..., wrist_gate_backend='auto')` selects the existing CUDA wrist gate when
+CUDA is available and the original CPU gate only when it is unavailable. CUDA
+errors propagate. `CurrentGeometry` sets this policy for both live and Task10-I
+frozen inference, including NumPy correction-candidate calls. Standalone `PlanA`
+retains its historical `wrist_gate_backend='cpu'` reference by default. Prepared
+results expose the actual `wrist_gate_backend` separately from the unchanged
+gate trace. The automatic NumPy path explicitly exports the accepted CUDA mask.
+
 The current configurable-frame tensor adapter additionally supports
 `represent(..., representations=('SF',), tensor_records=True)`: view checking,
 columnar record construction and greedy3mm deduplication return resident GPU

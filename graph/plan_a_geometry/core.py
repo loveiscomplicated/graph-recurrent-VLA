@@ -140,8 +140,10 @@ def budget(records,counts,hybrid=False):
 
 
 class PlanA:
-    def __init__(self,main,wrist,protocol,*,packet_builder=None,coordinate_frame=None,tensor_packet_builder=None):
+    def __init__(self,main,wrist,protocol,*,packet_builder=None,coordinate_frame=None,tensor_packet_builder=None,wrist_gate_backend='cpu'):
         self.main,self.wrist,self.protocol=main,wrist,protocol
+        if wrist_gate_backend not in ('cpu','auto'):raise ValueError('unknown wrist gate policy')
+        self.wrist_gate_backend=wrist_gate_backend
         self.packet_builder=packet_builder
         self.coordinate_frame=None if coordinate_frame is None else check_frame(coordinate_frame)
         self.tensor_packet_builder=tensor_packet_builder
@@ -179,7 +181,12 @@ class PlanA:
                     raise ValueError('clean mask alignment/subset/overlap')
                 filters[c.camera]=None # explicitly not a full-screen diagnostic result
                 clean[c.camera]=value.copy()
-        accepted,gate=wrist_gate(by[self.wrist],masks[self.wrist],clean[self.wrist],cameras,clean,self.protocol['gate'])
+        gate_fn=wrist_gate;gate_backend='existing_cpu'
+        if self.wrist_gate_backend=='auto':
+            from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend,wrist_gate_cuda_numpy
+            gate_backend=default_wrist_gate_backend()
+            if gate_backend=='torch_cuda':gate_fn=wrist_gate_cuda_numpy
+        accepted,gate=gate_fn(by[self.wrist],masks[self.wrist],clean[self.wrist],cameras,clean,self.protocol['gate'])
         conditions={}
         for condition in ('C0','C1','C2','C3'):
             cm={name:m.copy() for name,m in clean.items()}
@@ -187,7 +194,7 @@ class PlanA:
             if condition in ('C2','C3'):cm[self.wrist][1]=False
             if condition=='C3':cm[self.wrist][0]=accepted
             conditions[condition]=cm
-        return dict(filters=filters,clean=clean,conditions=conditions,gate=gate)
+        return dict(filters=filters,clean=clean,conditions=conditions,gate=gate,wrist_gate_backend=gate_backend)
 
     def represent(self,cameras,prepared,condition,representations=('SF','L','H'),*,tensor_records=False,views=None):
         if tensor_records and (self.tensor_packet_builder is None or tuple(representations)!=('SF',)):

@@ -15,7 +15,7 @@ import torch
 
 from envs.maniskill import make_peg_insertion_env,get_gt_state
 from graph.integration_baseline.graph import pack_graphs
-from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
+from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
 from graph.integration_baseline.bc08_codec import ActionCodec
 from graph.integration_baseline.rollout_stop_clock import (PhysicsAudit,controller_audit,
     validate_controller_command,reset_diagnostics,controller_semantics,numpy)
@@ -34,7 +34,7 @@ from .model import CachedGraphPolicy,normalizer
 def environment(root):
     from mani_skill.utils.registration import TimeLimitWrapper
     env=TimeLimitWrapper(make_peg_insertion_env(device='cpu',obs_mode='rgb+depth',
-        control_mode='pd_ee_delta_pose').unwrapped,250)
+        control_mode='pd_ee_delta_pose',render_backend='cuda',observation_device='cuda').unwrapped,250)
     task=env.unwrapped;cfg=read(Path(root)/'inputs/task08_reference_conditions.json')
     controllers={k:asdict(v.config) for k,v in task.agent.controller.controllers.items()}
     if controller_semantics(controllers)!=controller_semantics(cfg['controller_config']):
@@ -49,12 +49,13 @@ def sensors(env,obs,identity,t,schema):
     if state_schema(fields)!=schema:raise ValueError('live Robot76 schema changed')
     for name in ('qpos','qvel'):
         np.testing.assert_array_equal(numpy(obs['agent'][name])[0],fields[name])
+    from graph.persistent_geometry.tensor_camera import TensorCameraObservation
     cameras=[]
     for name in ('base_camera','hand_camera'):
         c=obs['sensor_data'][name];p=obs['sensor_param'][name]
-        cameras.append(CameraObservation(identity,t,name,t/20,numpy(c['rgb'])[0],
-            numpy(c['depth'])[0,...,0],numpy(p['intrinsic_cv'])[0],numpy(p['extrinsic_cv'])[0],
-            numpy(p['cam2world_gl'])[0],fields['tcp_pose'].copy()))
+        cameras.append(TensorCameraObservation(identity,t,name,t/20,c['rgb'][0].clone(),
+            c['depth'][0,...,0].clone(),numpy(p['intrinsic_cv'])[0],numpy(p['extrinsic_cv'])[0],
+            numpy(p['cam2world_gl'])[0],fields['tcp_pose'].copy()).validate())
     surfaces=robot_surfaces(env)
     data=dict(episode=np.array(identity),timestep=np.int64(t),timestamp=np.float64(t/20),
         robot76=flatten_state(fields,schema),robot_world_geometry=pads,tcp_pose=fields['tcp_pose'],
@@ -83,7 +84,7 @@ def evaluation_measure(env,initial_z,cfg):
 def video_frame(cameras,masks,variant,seed,step,t,metrics):
     views=[]
     for c in cameras:
-        rgb=c.rgb.copy()
+        rgb=numpy(c.rgb).copy()
         for oid,color in [(0,np.array([255,70,70])),(1,np.array([70,255,90]))]:
             selected=masks[c.camera][oid];rgb[selected]=(rgb[selected]*.6+color*.4).astype(np.uint8)
         view=cv2.resize(rgb,(384,384),interpolation=cv2.INTER_NEAREST)
@@ -121,7 +122,8 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 masks.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
                 return masks
             graph,_,gate=geometry.build(cameras,data,surfaces,current_masks)
-            masks=geometry.last_raw_masks
+            from visual.runtime.tensor_packet import numpy_packet
+            masks=numpy_packet(geometry.last_raw_masks)  # Explicit video artifact boundary only.
             packed=pack_graphs([graph],[(0,0)]).to(next(model.parameters()).device)
             state=torch.from_numpy(data['robot76'][None]).to(next(model.parameters()).device)
             with torch.inference_mode():
@@ -143,6 +145,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
             trace.append(dict(timestep=t,action=action[-1].tolist(),encoded_action=numpy(raw)[0].tolist(),
                 inference_seconds=duration,nodes=len(graph.node_type),edges=graph.edge_index.shape[1],
                 robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule,
+                wrist_gate_backend=geometry.last_wrist_gate_backend,
                 missing_objects=[not bool((graph.node_type==k).any()) for k in (3,4)],gate=gate,
                 terminated=bool(terminated.item()),truncated=bool(truncated.item()),**measured))
             writer.write(video_frame(cameras,masks,model.variant,spec['seed'],step,t,measured))

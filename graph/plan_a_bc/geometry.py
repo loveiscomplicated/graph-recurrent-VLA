@@ -93,26 +93,33 @@ class RobotFK:
 class CurrentGeometry:
     def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee',robot_filter_backend=None):
         from functools import partial
+        import torch
+        from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
         from visual.runtime.graph_perception import make_packet,make_packet_cuda
         if perception_backend not in ('triton_fused','cpu'):
             raise ValueError('unknown Graph perception backend')
+        # The default geometry must remain usable when CUDA is absent. An
+        # available CUDA runtime is never replaced after an execution error.
+        if perception_backend=='triton_fused' and not torch.cuda.is_available():perception_backend='cpu'
         self.perception_backend=perception_backend
+        self.wrist_gate_backend=default_wrist_gate_backend()
         self.robot_filter_backend=('cpu' if perception_backend=='cpu' else 'cuda') if robot_filter_backend is None else robot_filter_backend
         if self.robot_filter_backend not in ('cpu','cuda'):raise ValueError('unknown robot filter backend')
-        self.robot_preparation=None;self.last_robot_schedule=None;self.last_raw_masks=None
+        self.robot_preparation=None;self.last_robot_schedule=None;self.last_raw_masks=None;self.last_wrist_gate_backend=None
         self.coordinate_frame=check_frame(coordinate_frame)
         self.fk = RobotFK(assets,schema)
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
         self.system = PlanA('base_camera','hand_camera',frozen,
             packet_builder=partial(make_packet,backend=perception_backend,
                                    coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame,
-            tensor_packet_builder=partial(make_packet_cuda,coordinate_frame=self.coordinate_frame) if perception_backend=='triton_fused' else None)
+            tensor_packet_builder=partial(make_packet_cuda,coordinate_frame=self.coordinate_frame) if perception_backend=='triton_fused' else None,
+            wrist_gate_backend='auto')
         self.mount = None
 
     def reset(self):
         self.mount = None
 
-    def from_h5(self, f, t, episode):
+    def from_h5(self, f, t, episode, *, tensor_images=True):
         robot = f['robot_state'][t]; tcp = f['tcp_pose'][t]; pads = f['robot_world_geometry'][t]
         self.fk.verify_robot(robot,pads,tcp)
         cameras = [CameraObservation(str(episode),int(t),name,float(f['timestamp'][t]),
@@ -123,6 +130,9 @@ class CurrentGeometry:
         data = dict(episode=np.array(str(episode)),timestep=np.int64(t),timestamp=np.float64(t/20),
             robot76=robot,robot_world_geometry=pads,tcp_pose=tcp,qpos=robot[:9],
             robot_link_world=np.stack([s.world_from_link for s in surfaces]))
+        if tensor_images and self.system.tensor_packet_builder is not None:
+            from graph.persistent_geometry.tensor_camera import tensor_camera
+            cameras=[tensor_camera(c) for c in cameras]
         return cameras,data,surfaces
 
     def _check_mount(self,cameras,surfaces):
@@ -144,15 +154,15 @@ class CurrentGeometry:
         producer. Cache/rollout pass their existing SAM2 calls in that producer.
         Already computed masks are supported, with no retroactive overlap claim.
         """
-        self.last_raw_masks=None;self.last_robot_schedule=None
+        self.last_raw_masks=None;self.last_robot_schedule=None;self.last_wrist_gate_backend=None
         self._check_mount(cameras,surfaces)
         if self.robot_filter_backend=='cuda':
             if self.robot_preparation is None:
                 import torch
                 if not torch.cuda.is_available():raise RuntimeError('default robot filter requires CUDA; select explicit CPU diagnostics')
                 from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import CudaRobotFilter
-                from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation
-                self.robot_preparation=RobotFilterPreparation(CudaRobotFilter())
+                from .tensor_ingress import TensorRobotPreparation
+                self.robot_preparation=TensorRobotPreparation(CudaRobotFilter())
             snapshot={k:(v.copy() if isinstance(v,np.ndarray) else v) for k,v in data.items()}
             job=self.robot_preparation.submit(cameras,surfaces)
             self.last_robot_schedule='before_vision' if callable(masks) else 'masks_already_available'
@@ -162,23 +172,26 @@ class CurrentGeometry:
                 gpu={name:(value if isinstance(value,torch.Tensor) and value.is_cuda
                     else torch.as_tensor(value,device='cuda')) for name,value in raw.items()}
                 clean=self.robot_preparation.filter(job,gpu)
-                cpu_raw={name:(value.detach().cpu().numpy() if isinstance(value,torch.Tensor) else value) for name,value in raw.items()}
-                cpu_clean={name:value.detach().cpu().numpy() for name,value in clean.items()}
-                self.last_raw_masks=cpu_raw
-                return self._build_prepared(job.cameras,snapshot,job.surfaces,cpu_raw,cpu_clean)
+                self.last_raw_masks=gpu
+                return self._build_prepared(job.cameras,snapshot,job.surfaces,gpu,clean,depths=self.robot_preparation.depths)
             finally:self.robot_preparation.discard(job)
         raw=masks() if callable(masks) else masks
         self.last_robot_schedule='cpu_serial';self.last_raw_masks=raw
         return self._build_prepared(cameras,data,surfaces,raw)
 
-    def _build_prepared(self,cameras,data,surfaces,masks,clean_masks=None):
-        prepared = (self.system.prepare(cameras,data,masks,surfaces) if clean_masks is None else
-            self.system.prepare(cameras,data,masks,surfaces,clean_masks=clean_masks))
+    def _build_prepared(self,cameras,data,surfaces,masks,clean_masks=None,*,depths=None):
         resident = self.system.tensor_packet_builder is not None
         views=None
-        if resident:
-            from graph.persistent_geometry.tensor_fusion import prepare_tensor_views
-            views=prepare_tensor_views(cameras,prepared['conditions']['C3'],coordinate_frame=self.coordinate_frame)
+        if resident and clean_masks is not None:
+            from graph.persistent_geometry.tensor_gate import prepare_tensor_gate
+            prepared,views=prepare_tensor_gate(cameras,data,masks,clean_masks,self.system.protocol,
+                coordinate_frame=self.coordinate_frame,depths=depths)
+        else:
+            prepared=(self.system.prepare(cameras,data,masks,surfaces) if clean_masks is None else
+                self.system.prepare(cameras,data,masks,surfaces,clean_masks=clean_masks))
+            if resident:
+                from graph.persistent_geometry.tensor_fusion import prepare_tensor_views
+                views=prepare_tensor_views(cameras,prepared['conditions']['C3'],coordinate_frame=self.coordinate_frame)
         pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident,views=views)
         records = pools['SF']
         if resident:
@@ -187,6 +200,8 @@ class CurrentGeometry:
         else:
             records = budget(records,128)
         graph = (self.system.graph(records,data,cameras,views=views) if resident else self.system.graph(records,data,cameras))
+        self.last_wrist_gate_backend=prepared['wrist_gate_backend']
+        graph.packet['wrist_gate_backend']=self.last_wrist_gate_backend
         return self._finish(graph,records,prepared['gate'],data)
 
     def _finish(self,graph,records,gate,data):
