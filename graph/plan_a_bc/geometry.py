@@ -9,6 +9,7 @@ from graph.persistent_geometry.contracts import CameraObservation, synchronized
 from graph.persistent_geometry.self_filter import LinkSurface
 from graph.plan_a_geometry.core import PlanA, budget
 from visual.runtime.vision_packet import pose_matrix
+from visual.runtime.coordinate_frames import check_frame, FRAME_NAMES
 from .common import read, sha
 
 
@@ -90,16 +91,18 @@ class RobotFK:
 
 
 class CurrentGeometry:
-    def __init__(self, assets, schema, *, perception_backend='triton_fused'):
+    def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee'):
         from functools import partial
         from visual.runtime.graph_perception import make_packet
         if perception_backend not in ('triton_fused','cpu'):
             raise ValueError('unknown Graph perception backend')
         self.perception_backend=perception_backend
+        self.coordinate_frame=check_frame(coordinate_frame)
         self.fk = RobotFK(assets,schema)
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
         self.system = PlanA('base_camera','hand_camera',frozen,
-            packet_builder=partial(make_packet,backend=perception_backend))
+            packet_builder=partial(make_packet,backend=perception_backend,
+                                   coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame)
         self.mount = None
 
     def reset(self):
@@ -118,37 +121,47 @@ class CurrentGeometry:
             robot_link_world=np.stack([s.world_from_link for s in surfaces]))
         return cameras,data,surfaces
 
-    def build(self,cameras,data,surfaces,masks):
+    def _check_mount(self,cameras,surfaces):
         synchronized(cameras)
-        t = int(data['timestep']); episode = str(data['episode'])
         wrist = next(c for c in cameras if c.camera=='hand_camera')
         # Fixed link-to-camera mount; current link FK is recomputed at every t.
         link = next(s for s in surfaces if s.link=='camera_link')
         mount = np.linalg.inv(link.world_from_link)@wrist.world_from_camera
         if self.mount is None: self.mount = mount
         np.testing.assert_allclose(mount,self.mount,atol=2e-5,rtol=0)
+
+    def build(self,cameras,data,surfaces,masks):
+        self._check_mount(cameras,surfaces)
         prepared = self.system.prepare(cameras,data,masks,surfaces)
         pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',))
         records = budget(pools['SF'],128)
+        graph = self.system.graph(records,data,cameras)
+        return self._finish(graph,records,prepared['gate'],data)
+
+    def _finish(self,graph,records,gate,data):
+        t=int(data['timestep']);episode=str(data['episode'])
         for r in records:
             if not r['currently_observed'] or r['last_seen_timestep']!=t:
                 raise ValueError('noncurrent point')
             for e,ts,c,p in r['source_observation_ids']:
                 if e!=episode or ts!=t: raise ValueError('future/history/foreign source')
                 if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
-                if c=='hand_camera' and not prepared['gate']['accepted']: raise ValueError('rejected Wrist source')
-        graph = self.system.graph(records,data,cameras)
+                if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
         graph.packet['perception_backend']=self.perception_backend
+        if graph.packet.get('coordinate_frame') != FRAME_NAMES[self.coordinate_frame]:
+            raise ValueError('Graph/config coordinate frame mismatch')
         validate_graph(graph)
-        return graph,records,prepared['gate']
+        return graph,records,gate
 
 
 def validate_graph(g):
     import torch
     n = len(g.node_type); e = g.edge_index.shape[1]
+    if g.packet.get('coordinate_frame', 'EE_metres') not in FRAME_NAMES.values():
+        raise ValueError('Graph coordinate frame')
     if g.node_input.shape!=(n,21) or g.edge_attr.shape!=(e,4) or g.edge_index.shape!=(2,e):
         raise ValueError('Graph21/Edge4 shape')
-    if not torch.equal(g.node_type[:3],torch.arange(3)): raise ValueError('named robot nodes')
+    if not torch.equal(g.node_type[:3],torch.arange(3,device=g.node_type.device)): raise ValueError('named robot nodes')
     if (g.node_input[:,14:]!=0).any(): raise ValueError('temporal extras')
     if g.edge_type.shape!=(e,) or (e and (g.edge_index.min()<0 or g.edge_index.max()>=n)):
         raise ValueError('invalid edge endpoints')

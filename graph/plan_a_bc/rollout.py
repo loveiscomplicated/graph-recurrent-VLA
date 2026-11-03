@@ -101,7 +101,9 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
     actual_reset=reset_diagnostics(env)
     if spec.get('reset_group') and actual_reset!=spec['reset_group']:
         env.close();raise ValueError('evaluation seed reset identity changed')
-    geometry=CurrentGeometry(root/'inputs',norm.schema);adapters={c:OnlineVisionAdapter(detector,tracker) for c in ('base_camera','hand_camera')}
+    geometry=CurrentGeometry(root/'inputs',norm.schema,
+        coordinate_frame=read(root/'config.json')['geometry'].get('coordinate_frame','ee'))
+    adapters={c:OnlineVisionAdapter(detector,tracker) for c in ('base_camera','hand_camera')}
     identity=f'{model.variant}:step{step}:seed{spec["seed"]}'
     for adapter in adapters.values():adapter.reset(identity)
     hidden=None;physics=PhysicsAudit(env);audit=controller_audit(env)
@@ -185,7 +187,8 @@ def preflight(root,device):
             if seed!=30003 and first in {e['reset_group'] for e in original.values()}:raise ValueError('dev reset group leakage')
             records.append(dict(seed=seed,reset_group=first,repeat_equal=True))
         # Verify actual installed robot collisions/URDF before offline FK is used.
-        schema=read(root/'normalizer.json')['schema'];geometry=CurrentGeometry(root/'inputs',schema)
+        schema=read(root/'normalizer.json')['schema'];geometry=CurrentGeometry(root/'inputs',schema,
+            coordinate_frame=cfg['geometry'].get('coordinate_frame','ee'))
         cameras,data,surfaces=sensors(env,obs,'runtime',0,schema)
         calculated=geometry.fk.surfaces(data['robot76'])
         if [s.link for s in calculated]!=[s.link for s in surfaces]:raise ValueError('installed robot shapes changed')

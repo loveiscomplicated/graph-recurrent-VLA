@@ -83,6 +83,8 @@ class PersistentMap:
                                 event=kind, **detail))
 
     def update(self, episode, timestep, observations, *, cameras=()):
+        if any(o.coordinate_frame != 'world' for o in observations):
+            raise ValueError('persistent map accepts World observations only')
         if episode != self.episode:
             if timestep != 0:
                 raise ValueError('explicit episode boundary at timestep zero required')
@@ -296,10 +298,22 @@ class PersistentMap:
         return rows
 
 
-def current_records(observations, *, fuse_views=True):
+def current_records(observations, *, fuse_views=True, coordinate_frame=None):
     """One-frame fusion using the same surfel duplicate rule, without memory."""
     if not observations:
         return []
+    from .coordinates import validate_record_frames
+    from visual.runtime.coordinate_frames import check_frame
+    if coordinate_frame is not None:
+        check_frame(coordinate_frame)
+        if any(o.coordinate_frame != coordinate_frame for o in observations):
+            raise ValueError('observation/record coordinate frame mismatch')
+        if coordinate_frame == 'ee' and len({tuple(o.reference_ee_pose) for o in observations}) > 1:
+            raise ValueError('mixed EE reference poses in observations')
+    elif any(o.coordinate_frame != 'world' for o in observations):
+        raise ValueError('EE observations require explicit current-record coordinate_frame')
+    if fuse_views and coordinate_frame == 'ee':
+        raise ValueError('persistent-map fusion requires World observations')
     if not fuse_views:
         rows = []
         for observation in observations:
@@ -313,6 +327,16 @@ def current_records(observations, *, fuse_views=True):
                     last_f5=observation.f5[i].copy(), last_feature_valid=observation.feature_valid[i].copy(),
                     removed=False, status=CURRENTLY_OBSERVED, world_xyz=observation.xyz[i].copy(),
                     world_normal=observation.normals[i].copy(), pose_confidence=1.))
+        if coordinate_frame is not None:
+            poses = {o.camera: o.reference_ee_pose for o in observations}
+            for row in rows:
+                row['xyz'] = row.pop('world_xyz')
+                row['normal'] = row.pop('world_normal')
+                row.pop('object_local_xyz'); row.pop('object_local_normal')
+                row['coordinate_frame'] = coordinate_frame
+                if coordinate_frame == 'ee':
+                    row['reference_ee_pose'] = poses[row['last_observed_camera']]
+            validate_record_frames(rows, coordinate_frame)
         return rows
     first = observations[0]
     memory = PersistentMap()

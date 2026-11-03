@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from .vision_packet import FEATURE_FIELDS, DIAGNOSTIC_DTYPES, NUMERIC_CONTRACT, camera_to_ee,validate_transform,pose_matrix
 from .object_groups import object_slices,object_slices_match
+from .coordinate_frames import check_frame, camera_to_frame, packet_frame, feature_fields, FRAME_NAMES
 
 _NUMPY={torch.float32:np.dtype('float32'),torch.float64:np.dtype('float64'),
     torch.int64:np.dtype('int64'),torch.int32:np.dtype('int32'),
@@ -44,7 +45,8 @@ def numpy_packet(packet):
 
 
 @torch.inference_mode()
-def selected_packet(camera,result,depth,masks,intrinsic,*,transform_cuda=None):
+def selected_packet(camera,result,depth,masks,intrinsic,*,transform_cuda=None,coordinate_frame='ee'):
+    check_frame(coordinate_frame)
     objects=result['selected'];meta=result['metadata'];device=depth.device
     source=torch.cat([objects[i]['F'] for i in (0,1)])
     xyz=torch.cat([objects[i]['xyz'] for i in (0,1)])
@@ -52,7 +54,7 @@ def selected_packet(camera,result,depth,masks,intrinsic,*,transform_cuda=None):
     surface=torch.cat([torch.arange(len(objects[i]['F']),device=device)>=len(objects[i]['P']) for i in (0,1)])
     n=len(source)
     frame=SimpleNamespace(tcp_pose=camera.tcp_pose,cam2world=camera.world_from_camera)
-    transform_np=camera_to_ee(frame)
+    transform_np=camera_to_frame(frame,coordinate_frame)
     if transform_cuda is None:transform_cuda=torch.as_tensor(transform_np,device=device)
     transform=transform_cuda.to(torch.float64)
     values={f['name']:meta[f['name']].clone() for f in FEATURE_FIELDS}
@@ -69,17 +71,18 @@ def selected_packet(camera,result,depth,masks,intrinsic,*,transform_cuda=None):
         selection_stage=surface.to(torch.uint8),surface_selected=surface,
         feature_available=artifact_available.all(1),feature_field_available=artifact_available)
     packet=dict(schema_version=2,feature_mode='continuous',episode=camera.episode,camera=camera.camera,
-        source_frame=int(camera.timestep),frame_idx=int(camera.timestep),timestamp=camera.timestamp,coordinate_frame='EE_metres',
+        source_frame=int(camera.timestep),frame_idx=int(camera.timestep),timestamp=camera.timestamp,coordinate_frame=FRAME_NAMES[coordinate_frame],
         points=(xyz.to(torch.float64)@transform[:3,:3].T+transform[:3,3]).to(torch.float32),
         camera_points=xyz.clone(),object_id=oid,object_slices=object_slices(len(objects[0]['F']),len(objects[1]['F'])),
         geometric_features=torch.cat([values['normals'],values['normal_variation_rad'][:,None],values['depth_jump_m'][:,None]],1).to(torch.float64),
-        feature_fields=deepcopy(FEATURE_FIELDS),compact_features={f['name']:dict(positions=torch.arange(n,device=device),values=values[f['name']].clone()) for f in FEATURE_FIELDS},
+        feature_fields=feature_fields(coordinate_frame),compact_features={f['name']:dict(positions=torch.arange(n,device=device),values=values[f['name']].clone()) for f in FEATURE_FIELDS},
         feature_available=available.all(1),feature_field_available=available,feature_valid=validity.all(1),feature_field_valid=validity,
         feature_diagnostics=diagnostics,provenance=provenance,source_artifact_feature_fields=fields,
-        T_EE_from_camera=transform_np,observation_ee_pose=np.asarray(camera.tcp_pose,np.float64).copy(),
+        T_frame_from_camera=transform_np,observation_ee_pose=np.asarray(camera.tcp_pose,np.float64).copy(),
         camera_to_world=np.asarray(camera.world_from_camera,np.float64).copy(),camera_intrinsic=np.asarray(camera.intrinsic,np.float64).copy(),
         image_shape=np.asarray(depth.shape,np.int64),valid=result['valid'].clone(),
         edge_status='not_implemented',intra_object_edge_index=torch.empty((2,0),device=device,dtype=torch.int64))
+    if coordinate_frame=='ee':packet['T_EE_from_camera']=transform_np.copy()
     # One aggregate device decision, never a selected-array host copy.
     v,u=source//depth.shape[1],source%depth.shape[1];z=depth.flatten()[source].to(torch.float64);k=intrinsic.to(torch.float64)
     original=torch.stack(((u.to(torch.float64)+.5-k[0,2])*z/k[0,0],(v.to(torch.float64)+.5-k[1,2])*z/k[1,1],z),1).to(torch.float32)
@@ -92,7 +95,8 @@ def selected_packet(camera,result,depth,masks,intrinsic,*,transform_cuda=None):
 def validate_packet(packet):
     """v2 measured-feature tensor contract, including source and invalidity."""
     p=packet;xyz=p['points'];device=xyz.device;n=len(xyz)
-    if p.get('schema_version')!=2 or p.get('coordinate_frame')!='EE_metres' or p.get('feature_mode')!='continuous':raise ValueError('tensor packet requires continuous EE v2')
+    frame=packet_frame(p)
+    if p.get('schema_version')!=2 or p.get('feature_mode')!='continuous':raise ValueError('tensor packet requires continuous v2')
     for k in ('episode','camera'):
         if not isinstance(p.get(k),str) or not p[k]:raise ValueError('packet identity')
     if type(p.get('source_frame')) is not int or p['source_frame']<0:raise ValueError('source frame')
@@ -106,7 +110,7 @@ def validate_packet(packet):
     for name in ('candidate_evidence','selected_by_structural_source'):check(q[name],torch.bool,(n,2))
     for name in ('both_evidence','surface_selected'):check(q[name],torch.bool,(n,))
     check(q['object_id'],torch.int64,(n,));check(q['selection_stage'],torch.uint8,(n,))
-    if p['edge_status']!='not_implemented' or p['feature_fields']!=FEATURE_FIELDS:raise ValueError('tensor packet feature/edge contract')
+    if p['edge_status']!='not_implemented' or p['feature_fields']!=feature_fields(frame):raise ValueError('tensor packet feature/edge contract')
     image=np.asarray(p['image_shape'])
     if image.dtype!=np.int64 or image.shape!=(2,) or (image<=0).any():raise ValueError('source image shape')
     oid=p['object_id'];valid=p['feature_field_valid'];fa=p['feature_field_available'];features=p['geometric_features']
@@ -150,10 +154,13 @@ def validate_packet(packet):
         a=np.asarray(p[name])
         if a.shape!=shape or a.dtype!=np.float64:raise ValueError('calibration shape/dtype')
         return a
-    t=validate_transform(array('T_EE_from_camera',(4,4)));world=validate_transform(array('camera_to_world',(4,4)))
-    expected=np.linalg.inv(pose_matrix(array('observation_ee_pose',(7,))))@world
+    key='T_frame_from_camera' if 'T_frame_from_camera' in p else 'T_EE_from_camera'
+    t=validate_transform(array(key,(4,4)));world=validate_transform(array('camera_to_world',(4,4)))
+    pose=pose_matrix(array('observation_ee_pose',(7,)))
+    expected=np.linalg.inv(pose)@world if frame=='ee' else world
     eps=NUMERIC_CONTRACT['reference_eps_factor']*np.finfo(np.float64).eps
     if not np.allclose(t,expected,rtol=eps,atol=eps):raise ValueError('source transform mismatch')
+    if 'T_EE_from_camera' in p and (frame!='ee' or not np.array_equal(t,p['T_EE_from_camera'])):raise ValueError('EE transform alias/frame mismatch')
     k=array('camera_intrinsic',(3,3))
     if not np.isfinite(k).all() or k[0,0]<=0 or k[1,1]<=0 or k[0,1]!=0 or k[1,0]!=0 or not np.array_equal(k[2],[0,0,1]):raise ValueError('camera intrinsic')
     tt=torch.as_tensor(t,device=device);reference=p['camera_points'].to(torch.float64)@tt[:3,:3].T+tt[:3,3]

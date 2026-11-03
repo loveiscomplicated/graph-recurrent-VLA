@@ -3,7 +3,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 
-def surface_edges(xyz,normals,normal_valid,object_id,reference,cameras=(),k=8,radius=.02):
+def surface_edges(xyz,normals,normal_valid,object_id,reference,cameras=(),k=8,radius=.02,coordinate_frame='world'):
     from graph.integration_baseline.graph import bidirectional
     from graph.persistent_geometry.graph import free_space_violation
     candidates=set()
@@ -26,7 +26,7 @@ def surface_edges(xyz,normals,normal_valid,object_id,reference,cameras=(),k=8,ra
     for oid in (0,1):
         rows=np.flatnonzero(object_id[a]==oid)
         if len(rows):witness[rows]=(cKDTree(reference[oid]).query(samples[rows].reshape(-1,3))[0].reshape(-1,3)>.004).any(1)
-    free=free_space_violation(samples.reshape(-1,3),cameras).reshape(-1,3).any(1)
+    free=free_space_violation(samples.reshape(-1,3),cameras,coordinate_frame=coordinate_frame).reshape(-1,3).any(1)
     audit.update(candidates=int(eligible.sum()),rejected_normal=int((eligible&bad_normal).sum()),
         rejected_witness=int((eligible&~bad_normal&witness).sum()),
         rejected_free_space=int((eligible&~bad_normal&~witness&free).sum()))

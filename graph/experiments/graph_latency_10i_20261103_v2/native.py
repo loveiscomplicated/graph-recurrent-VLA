@@ -34,9 +34,11 @@ def pointer(a):return ctypes.c_void_p(a.ctypes.data)
 
 def deduplicate(records,distance=.003,*,fallback,owned=False):
     from graph.plan_a_geometry.core import key
+    from graph.persistent_geometry.coordinates import record_xyz, validate_record_frames
+    validate_record_frames(records)
     if not records:return fallback(records,distance)
     ordered=sorted(records,key=lambda r:(r['object_id'],not r.get('structural',False),key(r)))
-    xyz=np.ascontiguousarray([r['world_xyz'] for r in ordered],dtype=np.float64)
+    xyz=np.ascontiguousarray([record_xyz(r) for r in ordered],dtype=np.float64)
     if (not np.isfinite(distance) or distance<=0 or not np.isfinite(xyz).all()
             or np.max(np.abs(xyz))/distance>=2.**62):return fallback(records,distance)
     objects=np.ascontiguousarray([r['object_id'] for r in ordered],dtype=np.int64)

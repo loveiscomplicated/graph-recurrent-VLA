@@ -11,6 +11,8 @@ from graph.integration_baseline.robot import geometry_in_ee
 
 from . import SCHEMA_ID, EDGE_POLICY
 from .contracts import transform
+from .coordinates import record_xyz, record_normal, validate_record_frames
+from visual.runtime.coordinate_frames import check_frame, camera_from_frame, FRAME_NAMES
 from .map import CURRENTLY_OBSERVED, PERSISTENT_ESTIMATED, LOW_CONFIDENCE, INVALID_REMOVED
 
 EXTRA_FIELDS = ('currently_observed', 'persistent_estimated', 'low_confidence',
@@ -36,10 +38,10 @@ def farthest_rows(xyz, ids, count):
     return np.asarray(selected)
 
 
-def free_space_violation(world_samples, cameras, tolerance=.006):
+def free_space_violation(world_samples, cameras, tolerance=.006, *, coordinate_frame='world'):
     bad = np.zeros(len(world_samples), bool)
     for camera in cameras:
-        p = transform(world_samples, np.linalg.inv(camera.world_from_camera))
+        p = transform(world_samples, camera_from_frame(camera, coordinate_frame))
         k = camera.intrinsic
         uv = np.floor(p[:, :2]/np.maximum(p[:, 2, None], 1e-12)*np.array([k[0, 0], k[1, 1]])+k[:2, 2]).astype(int)
         h, w = camera.depth.shape
@@ -51,7 +53,8 @@ def free_space_violation(world_samples, cameras, tolerance=.006):
     return bad
 
 
-def surface_edges(xyz, normals, normal_valid, object_id, reference, cameras=(), *, k=8, radius=.02):
+def surface_edges(xyz, normals, normal_valid, object_id, reference, cameras=(), *, k=8, radius=.02,
+                  coordinate_frame='world'):
     """Distance/normal/tangency gates plus intermediate surface witnesses.
 
     This conservative policy can disconnect creases. Its audits report that
@@ -87,7 +90,7 @@ def surface_edges(xyz, normals, normal_valid, object_id, reference, cameras=(), 
                 if (reference_tree.query(samples)[0] > .004).any():
                     audit['rejected_witness'] += 1
                     continue
-                if free_space_violation(samples, cameras).any():
+                if free_space_violation(samples, cameras, coordinate_frame=coordinate_frame).any():
                     audit['rejected_free_space'] += 1
                     continue
                 pairs.add((a, b))
@@ -95,22 +98,35 @@ def surface_edges(xyz, normals, normal_valid, object_id, reference, cameras=(), 
 
 
 def build_graph(records, robot_world, tcp_pose, timestep, *, cameras=(), point_cap=128,
-                include_observation_status=True):
+                include_observation_status=True, coordinate_frame=None):
+    if coordinate_frame is not None:
+        check_frame(coordinate_frame)
+        if any(not np.array_equal(c.tcp_pose,tcp_pose) for c in cameras):
+            raise ValueError('Graph/camera EE reference mismatch')
+    elif any('coordinate_frame' in r for r in records):
+        raise ValueError('frame-aware records require an explicit coordinate_frame')
+    validate_record_frames(records, coordinate_frame or 'world', tcp_pose)
     records = [r for r in records if r['status'] != INVALID_REMOVED]
     selected = []
     for oid in (0, 1):
         rows = [r for r in records if r['object_id'] == oid]
         if rows:
             cap=point_cap[oid] if isinstance(point_cap,dict) else point_cap
-            chosen = farthest_rows([r['world_xyz'] for r in rows], [r['persistent_node_id'] for r in rows],
+            chosen = farthest_rows([record_xyz(r) for r in rows], [r['persistent_node_id'] for r in rows],
                                    len(rows) if cap is None else cap)
             selected.extend(rows[i] for i in chosen)
     object_id = np.array([r['object_id'] for r in selected], np.int64)
-    world = np.array([r['world_xyz'] for r in selected]).reshape(-1, 3)
-    inverse_ee = np.linalg.inv(pose_matrix(tcp_pose))
-    xyz = transform(world, inverse_ee)
-    robots = geometry_in_ee(robot_world,tcp_pose)
-    normals_world = np.array([r['world_normal'] for r in selected]).reshape(-1, 3)
+    world = np.array([record_xyz(r) for r in selected]).reshape(-1, 3)
+    inverse_ee = np.linalg.inv(pose_matrix(tcp_pose)) if coordinate_frame is None else None
+    xyz = transform(world, inverse_ee) if coordinate_frame is None else world.copy()
+    if coordinate_frame == 'world':
+        robots = np.asarray(robot_world)
+        if robots.shape != (3, 3) or not np.isfinite(robots).all() or not np.allclose(robots[0], pose_matrix(tcp_pose)[:3, 3], rtol=0, atol=1e-7):
+            raise ValueError('same-time World robot geometry mismatch')
+        robots = robots.astype(np.float32)
+    else:
+        robots = geometry_in_ee(robot_world,tcp_pose)
+    normals_world = np.array([record_normal(r) for r in selected]).reshape(-1, 3)
     normal_valid = np.array([r['normal_valid'] for r in selected], bool)
     features = np.zeros((len(selected), 5), np.float32)
     available = np.zeros((len(selected), 3), bool)
@@ -127,7 +143,7 @@ def build_graph(records, robot_world, tcp_pose, timestep, *, cameras=(), point_c
                     current and row['last_feature_valid'][1],
                     current and row['last_feature_valid'][2]]
         normal=row['last_f5'][:3] if measured_normal else normals_world[i]
-        features[i, :3] = normal @ inverse_ee[:3, :3].T
+        features[i, :3] = normal @ inverse_ee[:3, :3].T if coordinate_frame is None else normal
         if current:
             features[i, 3:] = np.where(valid[i, 1:], row['last_f5'][3:], 0)
         features[i, :3] *= valid[i, 0]
@@ -142,8 +158,9 @@ def build_graph(records, robot_world, tcp_pose, timestep, *, cameras=(), point_c
     inputs[:, :3] = positions
     inputs[3:, 3:14] = np.column_stack((features, available, valid))
     inputs[3:, 14:] = extras
-    reference = {oid: np.array([r['world_xyz'] for r in records if r['object_id'] == oid]).reshape(-1, 3) for oid in (0, 1)}
-    intra, audit = surface_edges(world, normals_world, normal_valid, object_id, reference, cameras)
+    reference = {oid: np.array([record_xyz(r) for r in records if r['object_id'] == oid]).reshape(-1, 3) for oid in (0, 1)}
+    intra, audit = surface_edges(world, normals_world, normal_valid, object_id, reference, cameras,
+                                 coordinate_frame=coordinate_frame or 'world')
     ids = np.arange(len(selected), dtype=np.int64)
     ro = bidirectional(nearest_robot_pairs(positions, object_id, ids, 4))
     pb = bidirectional(global_peg_box_pairs(xyz.astype(np.float32), object_id, ids, 16)+3)
@@ -153,7 +170,11 @@ def build_graph(records, robot_world, tcp_pose, timestep, *, cameras=(), point_c
                     node_ids=[r['persistent_node_id'] for r in selected], surface_edge_audit=audit,
                     timestep=timestep, point_cap_per_object=point_cap,
                     point_budget_policy='stable_identity_seeded_farthest_v1',
-                    status_features=include_observation_status)
+                    status_features=include_observation_status,
+                    coordinate_frame=FRAME_NAMES[coordinate_frame or 'ee'],
+                    normal_frame=coordinate_frame or 'ee')
+    if coordinate_frame == 'ee':
+        metadata['reference_ee_pose'] = np.asarray(tcp_pose, float).tolist()
     if not np.isfinite(inputs).all():
         raise ValueError('nonfinite network features')
     return Graph(torch.from_numpy(inputs), torch.from_numpy(np.r_[np.arange(3), object_id+3]),

@@ -139,6 +139,11 @@ class PackedGraphs:
 def pack_graphs(graphs, frame_map=None):
     if not graphs:
         raise ValueError('at least one graph required')
+    frames = {g.packet.get('coordinate_frame', 'EE_metres') for g in graphs}
+    if len(frames) != 1:
+        raise ValueError('cannot batch World and EE graphs together')
+    if not frames <= {'World_metres', 'EE_metres'}:
+        raise ValueError('unsupported Graph coordinate frame')
     if frame_map is None:
         frame_map = [(0, i) for i in range(len(graphs))]
     mapping = torch.as_tensor(frame_map, dtype=torch.long)

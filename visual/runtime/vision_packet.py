@@ -10,6 +10,7 @@ import copy
 from time import perf_counter
 import numpy as np
 from visual.runtime.object_groups import object_rows
+from visual.runtime.coordinate_frames import camera_to_frame, check_frame, feature_fields, FRAME_NAMES
 
 
 # Fixed before Task04 data validation. Calibration matrices were stored float32:
@@ -134,7 +135,8 @@ def check_source_alignment(source_packet, evidence, frame):
     return xyz
 
 
-def complete_vision_packet(source_packet, evidence, frame, *, mode='continuous', timings=None):
+def complete_vision_packet(source_packet, evidence, frame, *, mode='continuous', timings=None,
+                           coordinate_frame='ee'):
     """Gather existing dense measurements into an independent v2 packet.
 
     Edges are explicitly not implemented at this Feature stage. A separate,
@@ -169,10 +171,11 @@ def complete_vision_packet(source_packet, evidence, frame, *, mode='continuous',
     after_gather = perf_counter()
     return _complete_selected(source_packet, frame, xyz, diagnostics, values,
         np.array([evidence.frame.geometry.observed_mask(i).any() for i in (0, 1)], bool),
-        timings=timings, start=start, after_alignment=after_alignment, after_gather=after_gather)
+        timings=timings, start=start, after_alignment=after_alignment, after_gather=after_gather,
+        coordinate_frame=coordinate_frame)
 
 
-def complete_selected_vision_packet(source_packet, frame, measurements, object_valid):
+def complete_selected_vision_packet(source_packet, frame, measurements, object_valid, *, coordinate_frame='ee'):
     """Complete a GPU-selected packet from selected rows, without dense maps.
 
     The GPU producer retains candidate/selection policy. This boundary validates
@@ -218,18 +221,21 @@ def complete_selected_vision_packet(source_packet, frame, measurements, object_v
             raise ValueError('selected measurement validity contradiction')
     if np.shape(object_valid)!=(2,) or np.asarray(object_valid).dtype!=bool:
         raise ValueError('selected object validity shape/dtype')
-    return _complete_selected(source_packet,frame,xyz,diagnostics,values,object_valid)
+    return _complete_selected(source_packet,frame,xyz,diagnostics,values,object_valid,
+                              coordinate_frame=coordinate_frame)
 
 
 def _complete_selected(source_packet, frame, xyz, diagnostics, values, object_valid,
-                       *, timings=None, start=None, after_alignment=None, after_gather=None):
+                       *, timings=None, start=None, after_alignment=None, after_gather=None,
+                       coordinate_frame='ee'):
+    check_frame(coordinate_frame)
     n=len(xyz);oid=source_packet['object_id'];mode='continuous'
     validity=np.column_stack([diagnostics[k] for k in ('normal_valid','normal_variation_valid','depth_pair_valid')])
-    transform = camera_to_ee(frame)
-    ee64 = xyz.astype(np.float64) @ transform[:3, :3].T + transform[:3, 3]
+    transform = camera_to_frame(frame, coordinate_frame)
+    target64 = xyz.astype(np.float64) @ transform[:3, :3].T + transform[:3, 3]
     nv = diagnostics['normal_valid']
     values['normals'][nv] = (values['normals'][nv].astype(np.float64) @ transform[:3, :3].T).astype(np.float32)
-    points = ee64.astype(np.float32)
+    points = target64.astype(np.float32)
     after_transform = perf_counter()
     availability = np.ones((n, 3), bool)
     compact = {f['name']: dict(positions=np.arange(n, dtype=np.int64), values=values[f['name']].copy())
@@ -237,27 +243,31 @@ def _complete_selected(source_packet, frame, xyz, diagnostics, values, object_va
     packet = dict(
         schema_version=2, feature_mode=mode, episode=source_packet['episode'],
         camera=frame.camera, source_frame=int(frame.source_frame), frame_idx=frame.frame_idx,
-        timestamp=frame.timestamp, coordinate_frame='EE_metres',
+        timestamp=frame.timestamp, coordinate_frame=FRAME_NAMES[coordinate_frame],
         points=points, camera_points=xyz.copy(), object_id=oid.copy(),
         geometric_features=np.column_stack([values['normals'], values['normal_variation_rad'],
                                             values['depth_jump_m']]).astype(np.float64),
-        feature_fields=copy.deepcopy(FEATURE_FIELDS), compact_features=compact,
+        feature_fields=feature_fields(coordinate_frame), compact_features=compact,
         feature_available=availability.all(1), feature_field_available=availability,
         feature_valid=validity.all(1), feature_field_valid=validity,
         feature_diagnostics=diagnostics, provenance=copy.deepcopy(source_packet['provenance']),
         source_artifact_feature_fields=copy.deepcopy(source_packet['feature_fields']),
-        T_EE_from_camera=transform, observation_ee_pose=np.asarray(frame.tcp_pose, np.float64).copy(),
+        T_frame_from_camera=transform, observation_ee_pose=np.asarray(frame.tcp_pose, np.float64).copy(),
         camera_to_world=np.asarray(frame.cam2world, np.float64).copy(),
         camera_intrinsic=np.asarray(frame.intrinsic, np.float64).copy(),
         image_shape=np.array(frame.depth.shape, np.int64),
         valid=np.asarray(object_valid,bool).copy(),
         edge_status='not_implemented', intra_object_edge_index=np.empty((2, 0), np.int64),
     )
+    if coordinate_frame == 'ee':
+        packet['T_EE_from_camera'] = transform.copy()  # Legacy EE schema alias.
     if 'object_slices' in source_packet:
         packet['object_slices'] = copy.deepcopy(source_packet['object_slices'])
     if timings is not None:
         timings.update(source_alignment_ms=(after_alignment-start)*1000,
                        feature_gather_ms=(after_gather-after_alignment)*1000,
-                       ee_transform_ms=(after_transform-after_gather)*1000,
+                       coordinate_transform_ms=(after_transform-after_gather)*1000,
                        packet_packaging_ms=(perf_counter()-after_transform)*1000)
+        if coordinate_frame == 'ee':
+            timings['ee_transform_ms'] = timings['coordinate_transform_ms']
     return packet

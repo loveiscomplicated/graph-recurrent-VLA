@@ -8,6 +8,8 @@ from graph.persistent_geometry.contracts import synchronized, transform
 from graph.persistent_geometry.self_filter import classify_robot
 from graph.persistent_geometry.fusion import make_packet, observations_from_packet, filtered_masks, consistent_views
 from graph.persistent_geometry.map import current_records
+from graph.persistent_geometry.coordinates import record_xyz, validate_record_frames, observation_in_frame
+from visual.runtime.coordinate_frames import check_frame
 from graph.persistent_geometry.graph import build_graph, farthest_rows
 from legacy_fps.adapter import frame_points
 
@@ -93,14 +95,15 @@ def key(r):
 
 def deduplicate(records, distance=.003):
     """Keep real representative measurements; never average unrelated F5/UV."""
+    validate_record_frames(records)
     out=[]; buckets={}; duplicates=0
     for r in sorted(records,key=lambda x:(x['object_id'],not x.get('structural',False),key(x))):
-        cell=tuple(np.floor(r['world_xyz']/distance).astype(int)); oid=r['object_id']
+        cell=tuple(np.floor(record_xyz(r)/distance).astype(int)); oid=r['object_id']
         candidates=[]
         for x in (-1,0,1):
             for y in (-1,0,1):
                 for z in (-1,0,1): candidates.extend(buckets.get((oid,cell[0]+x,cell[1]+y,cell[2]+z),[]))
-        hits=[i for i in candidates if np.linalg.norm(out[i]['world_xyz']-r['world_xyz'])<distance]
+        hits=[i for i in candidates if np.linalg.norm(record_xyz(out[i])-record_xyz(r))<distance]
         if hits:
             representative=out[min(hits)]
             representative['source_observation_ids'].extend(r['source_observation_ids'])
@@ -114,9 +117,10 @@ def deduplicate(records, distance=.003):
 
 
 def select(records, count, *, anchors=False):
+    validate_record_frames(records)
     if count is None or len(records)<=count: return list(records)
     if count==0:return []
-    xyz=np.array([r['world_xyz'] for r in records]); ids=np.array([r['persistent_node_id'] for r in records])
+    xyz=np.array([record_xyz(r) for r in records]); ids=np.array([r['persistent_node_id'] for r in records])
     structural=np.flatnonzero([r.get('structural',False) for r in records]) if anchors else np.empty(0,int)
     if len(structural)>count:
         chosen=structural[farthest_rows(xyz[structural],ids[structural],count)]
@@ -136,9 +140,14 @@ def budget(records,counts,hybrid=False):
 
 
 class PlanA:
-    def __init__(self,main,wrist,protocol,*,packet_builder=None):
+    def __init__(self,main,wrist,protocol,*,packet_builder=None,coordinate_frame=None):
         self.main,self.wrist,self.protocol=main,wrist,protocol
         self.packet_builder=packet_builder
+        self.coordinate_frame=None if coordinate_frame is None else check_frame(coordinate_frame)
+        if coordinate_frame is not None and packet_builder is None:
+            from functools import partial
+            from visual.runtime.graph_perception import make_packet as common_packet
+            self.packet_builder=partial(common_packet,coordinate_frame=coordinate_frame)
 
     def prepare(self,cameras,data,masks,surfaces):
         synchronized(cameras)
@@ -166,22 +175,26 @@ class PlanA:
         cm=prepared['conditions'][condition];observed=[];sf=[];legacy=[];surface_candidates=[];stages={};packets={}
         for c in sorted(cameras,key=lambda c: c.camera!=self.main):
             packet,_=(self.packet_builder or make_packet)(c,cm[c.camera]);packets[c.camera]=packet
-            os=observations_from_packet(packet,c)
+            os=observations_from_packet(packet,c,coordinate_frame=self.coordinate_frame)
             os,_=consistent_views(os,cameras,cm)
-            rows=current_records(os,fuse_views=False)
+            rows=current_records(os,fuse_views=False,coordinate_frame=self.coordinate_frame)
             structural_pixels=set(packet['provenance']['source_index'][~packet['provenance']['surface_selected']].tolist())
             for r in rows:r['structural']=key(r)[3] in structural_pixels
             sf.extend(rows)
             if any(v in representations for v in ('L','H')):
                 los,points,_=frame_points(c,cm[c.camera],f5=True)
+                if self.coordinate_frame is not None:
+                    los=[observation_in_frame(o,c,self.coordinate_frame) for o in los]
                 los,_=consistent_views(los,cameras,cm)
-                lr=current_records(los,fuse_views=False)
+                lr=current_records(los,fuse_views=False,coordinate_frame=self.coordinate_frame)
                 for r in lr:r['structural']=False
                 legacy.extend(lr)
                 if 'H' in representations:
                     candidates=sor_surface_observations(c,cm[c.camera],points)
+                    if self.coordinate_frame is not None:
+                        candidates=[observation_in_frame(o,c,self.coordinate_frame) for o in candidates]
                     candidates,_=consistent_views(candidates,cameras,cm)
-                    for r in current_records(candidates,fuse_views=False):
+                    for r in current_records(candidates,fuse_views=False,coordinate_frame=self.coordinate_frame):
                         r['structural']=False;surface_candidates.append(r)
                 stages[c.camera]=points
         sf,sa=deduplicate(sf,self.protocol['merge_distance_m'])
@@ -196,7 +209,7 @@ class PlanA:
 
     def graph(self,records,data,cameras):
         graph=build_graph(records,data['robot_world_geometry'],data['tcp_pose'],int(data['timestep']),
-            cameras=cameras,point_cap=None,include_observation_status=False)
+            cameras=cameras,point_cap=None,include_observation_status=False,coordinate_frame=self.coordinate_frame)
         # 09-C tensor schema retained; temporal/status extras disabled explicitly.
         graph.packet.update(schema_id='task09d_current_surface21_v1',persistent_geometry=False,
             current_only=True,temporal_features_disabled=True,point_budget_policy='task09d_variant_selection_before_graph')

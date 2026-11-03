@@ -15,6 +15,8 @@ from visual.runtime.tracking import SAM2Tracker
 from utils.experiment_logger import ExperimentLogger
 from .common import read,write,sha,npz,digest,tree_identity,now
 from .geometry import CurrentGeometry,validate_graph
+from graph.persistent_geometry.coordinates import record_xyz
+from visual.runtime.coordinate_frames import check_frame, FRAME_NAMES
 
 
 GRAPH_KEYS=('node_input','node_type','edge_index','edge_attr','edge_type')
@@ -31,7 +33,8 @@ def input_identity(root):
     frozen=Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json'
     return dict(dataset_sha256=audit['dataset_sha256'],split_sha256=audit['split_sha256'],
         graph_config=cfg['geometry'],frozen_geometry_protocol_sha256=sha(frozen),
-        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_before_trainable_encoder_v1')
+        coordinate_frame=check_frame(cfg['geometry'].get('coordinate_frame','ee')),
+        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v2')
 
 
 def cache_episode(root,dataset,entry,detector,tracker,log):
@@ -44,14 +47,15 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
         return r
     folder.mkdir(parents=True,exist_ok=False)
     if sha(dataset/entry['path'])!=entry['sha256']: raise ValueError('original episode changed')
-    schema=read(root/'normalizer.json')['schema'];geometry=CurrentGeometry(root/'inputs',schema)
+    schema=read(root/'normalizer.json')['schema']
+    geometry=CurrentGeometry(root/'inputs',schema,coordinate_frame=ident['coordinate_frame'])
     adapters={name:OnlineVisionAdapter(detector,tracker) for name in ('base_camera','hand_camera')}
     identity=str(entry['episode_id'])
     for v in adapters.values():
         v.reset(identity)
         if v.states or v.found or v.rgb or v.records: raise ValueError('tracker reset leak')
     nodes=[0];edges=[0]; values={k:[] for k in GRAPH_KEYS}; actions=[];robots=[];presence=[];masks=[];gates=[]
-    source_point=[];source_camera=[];source_pixel=[];point_world=[];point_f5=[];point_valid=[];point_graph_node=[];point_frame=[];point_structural=[]
+    source_point=[];source_camera=[];source_pixel=[];point_xyz=[];point_f5=[];point_valid=[];point_graph_node=[];point_frame=[];point_structural=[]
     costs=[];started=time.perf_counter()
     try:
         with h5py.File(dataset/entry['path'],'r') as f:
@@ -61,9 +65,9 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
                 g,records,gate=geometry.build(cameras,data,surfaces,mm)
                 records_by_id={r['persistent_node_id']:r for r in records}
                 ordered=[records_by_id[k] for k in g.packet['node_ids']]
-                point_offset=len(point_world)
+                point_offset=len(point_xyz)
                 for j,r in enumerate(ordered):
-                    point_world.append(r['world_xyz']);point_f5.append(r['last_f5']);point_valid.append(r['last_feature_valid'])
+                    point_xyz.append(record_xyz(r));point_f5.append(r['last_f5']);point_valid.append(r['last_feature_valid'])
                     point_graph_node.append(nodes[-1]+3+j);point_frame.append(t);point_structural.append(r.get('structural',False))
                     for _,_,camera,pixel in r['source_observation_ids']:
                         source_point.append(point_offset+j);source_camera.append(0 if camera=='base_camera' else 1);source_pixel.append(pixel)
@@ -79,7 +83,8 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
             robot76=np.asarray(robots,np.float32),action7=np.asarray(actions,np.float32),
             presence2=np.asarray(presence,bool),timestep=np.arange(entry['actions'],dtype=np.int64),
             timestamp=np.arange(entry['actions'],dtype=np.float64)/20,episode_id=np.int64(entry['episode_id']),
-            mask_bits=np.stack(masks),point_world=np.asarray(point_world,np.float64).reshape(-1,3),
+            mask_bits=np.stack(masks),point_xyz=np.asarray(point_xyz,np.float64).reshape(-1,3),
+            coordinate_frame=np.array(FRAME_NAMES[geometry.coordinate_frame]),
             point_f5=np.asarray(point_f5,np.float64).reshape(-1,5),point_valid=np.asarray(point_valid,bool).reshape(-1,3),
             point_graph_node=np.asarray(point_graph_node,np.int64),point_frame=np.asarray(point_frame,np.int64),
             point_structural=np.asarray(point_structural,bool),source_point=np.asarray(source_point,np.int64),
@@ -111,7 +116,8 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
 def graph_at(arrays,t):
     lo,hi=arrays['node_ptr'][t:t+2];a,b=arrays['edge_ptr'][t:t+2]
     values={k:torch.from_numpy(np.array(arrays[k][:,a:b] if k=='edge_index' else arrays[k][a:b] if k.startswith('edge_') else arrays[k][lo:hi],copy=True)) for k in GRAPH_KEYS}
-    return Graph(**values,packet={},timings_ms={})
+    frame=str(arrays['coordinate_frame']) if 'coordinate_frame' in arrays else 'EE_metres'
+    return Graph(**values,packet=dict(coordinate_frame=frame),timings_ms={})
 
 
 class CachedDataset:
@@ -127,6 +133,9 @@ class CachedDataset:
             with np.load(path,allow_pickle=False) as z:
                 # Input graph only; never store frozen encoder/readout/GRU states.
                 self.arrays[e['episode_id']]={k:z[k].copy() for k in (*GRAPH_KEYS,'node_ptr','edge_ptr','robot76','action7','presence2','timestep')}
+                self.arrays[e['episode_id']]['coordinate_frame']=z['coordinate_frame'].copy()
+                if str(z['coordinate_frame']) != FRAME_NAMES[self.identity['coordinate_frame']]:
+                    raise ValueError('cached Graph/config coordinate frame mismatch')
 
     def batch(self,ids,start,length,device):
         graphs=[];mapping=[];robots=[]

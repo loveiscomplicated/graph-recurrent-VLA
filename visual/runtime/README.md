@@ -1,3 +1,17 @@
+### Selected packet coordinate frames
+
+`make_packet(..., coordinate_frame='world'|'ee')` and
+`make_packet_cuda(..., coordinate_frame='world'|'ee')` select the common frame
+after camera-local sampling. The default is `ee`. World mode transforms directly
+from the source camera to World, and EE mode directly to the current TCP frame.
+Both points and measured normals use the choice; `feature_fields` declares the
+normal frame. `T_frame_from_camera` names the actual transform. EE packets also
+retain `T_EE_from_camera` as a checked legacy alias. Source `camera_points`
+remain camera-local provenance, while variation and source-camera depth-jump
+keep their existing scalar definitions. Packet receivers validate the chosen
+frame/calibration, not just the label. See the
+[common-frame API](../../graph/plan_a_bc/README.md).
+
 ### Peg/Box groups in selected packets
 
 `make_packet` (including explicit CPU selection) and `make_packet_cuda` preserve
@@ -9,8 +23,8 @@ per-object result lengths, with no point-array copy or CUDA readback.
 
 `object_groups.object_rows(packet)` returns slices into every aligned row array.
 The packet receiver checks range coverage and agreement with `object_id`;
-`observations_from_packet` uses the ranges directly and keeps its existing World
-coordinate conversion. The optional CUDA consumer uses them before view checks
+`observations_from_packet` uses the ranges directly; the configured common-frame
+path retains the packet frame without another point conversion. The optional CUDA consumer uses them before view checks
 as well. Points, F5, source pixels and selection provenance retain their order.
 Legacy packets without this optional field retain the existing ID-based path,
 including interleaved rows. See the

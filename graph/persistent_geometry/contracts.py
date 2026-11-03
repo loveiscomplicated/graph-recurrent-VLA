@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from visual.runtime.vision_packet import pose_matrix, validate_transform
+from visual.runtime.coordinate_frames import check_frame
 
 
 def transform(points, matrix):
@@ -91,20 +92,28 @@ class SurfaceObservation:
     timestep: int
     camera: str
     object_id: int
-    xyz: np.ndarray                  # world metres
-    normals: np.ndarray              # world unit vectors, zero when missing
+    xyz: np.ndarray                  # coordinate_frame metres
+    normals: np.ndarray              # coordinate_frame unit vectors, zero when missing
     normal_valid: np.ndarray
-    f5: np.ndarray                   # world normal, current variation/jump
+    f5: np.ndarray                   # coordinate_frame normal, current variation/jump
     feature_valid: np.ndarray        # [N,3]
     pixels: np.ndarray               # current source raster indices, NOT IDs
     camera_origin: np.ndarray
+    coordinate_frame: str = 'world'
+    reference_ee_pose: tuple | None = None
 
     def validate(self):
+        check_frame(self.coordinate_frame)
+        if self.coordinate_frame == 'ee':
+            pose_matrix(self.reference_ee_pose)
+        elif self.reference_ee_pose is not None:
+            raise ValueError('World observation must not declare an EE reference')
         n = len(self.xyz)
         if (self.object_id not in (0, 1) or not self.episode or not self.camera
                 or self.timestep < 0 or self.xyz.shape != (n, 3)
                 or self.normals.shape != (n, 3) or self.normal_valid.shape != (n,)
                 or self.f5.shape != (n, 5) or self.feature_valid.shape != (n, 3)
+                or self.camera_origin.shape != (3,) or not np.isfinite(self.camera_origin).all()
                 or self.pixels.shape != (n,) or self.pixels.dtype.kind not in 'iu'
                 or len(np.unique(self.pixels)) != n or (self.pixels < 0).any()
                 or not np.isfinite(self.xyz).all() or not np.isfinite(self.normals).all()):

@@ -94,7 +94,7 @@ def protocol(task08_plan, dataset_manifest, split_manifest, source_hash):
     if set(dev) & {e['seed'] for e in episodes}: raise ValueError('dev leakage')
     return dict(version='plan_a_cached_graph_bc_v1', created_at=now(), seed=42,
         source_sha256=source_hash, source_reference='09-D c7c1934765394dc4866e6564a6dbc7ec frozen v2',
-        geometry=dict(condition='C3', representation='SF', point_cap_per_object=128,
+        geometry=dict(condition='C3', representation='SF', point_cap_per_object=128, coordinate_frame='ee',
             persistent=False, temporal_extra_features=0, node_dimension=21, edge_dimension=4,
             geometry_configuration='exact frozen09D protocol.json, unmodified'),
         model=dict(d=64, L=2, gru_hidden=144, gru_layers=1, enc_hidden=128),

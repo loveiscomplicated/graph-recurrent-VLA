@@ -12,12 +12,14 @@ from visual.runtime.geometry import (CompactOrganizedGeometry, GeometryFrame,
 from visual.runtime.rgbd import TrackedRGBDFrame
 from visual.runtime.sampling import SamplingEvidence
 from visual.runtime.object_groups import object_slices
+from visual.runtime.coordinate_frames import check_frame
 
 DEFAULT_BACKEND = 'triton_fused'
 
 
-def make_packet_cuda(camera,masks,*,depth_cuda=None,intrinsic_cuda=None,transform_cuda=None):
+def make_packet_cuda(camera,masks,*,depth_cuda=None,intrinsic_cuda=None,transform_cuda=None,coordinate_frame='ee'):
     """Existing PCA5/Shape-First semantics through a CUDA v2 packet return."""
+    check_frame(coordinate_frame)
     import torch
     from visual.runtime.cuda_sampling import sample_cuda
     from visual.runtime.tensor_packet import selected_packet
@@ -27,7 +29,7 @@ def make_packet_cuda(camera,masks,*,depth_cuda=None,intrinsic_cuda=None,transfor
     k=torch.as_tensor(camera.intrinsic,device=device) if intrinsic_cuda is None else intrinsic_cuda
     projected,values=process_cuda(depth,masks,k)
     result=sample_cuda(projected,values,depth,masks,k)
-    return selected_packet(camera,result,depth,masks,k,transform_cuda=transform_cuda)
+    return selected_packet(camera,result,depth,masks,k,transform_cuda=transform_cuda,coordinate_frame=coordinate_frame)
 
 
 def prepare_cuda(depth, masks, intrinsic):
@@ -135,9 +137,10 @@ def _selection_packet(frame,episode,result):
             feature_available=available.all(1),feature_field_available=available))
 
 
-def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
+def make_packet(camera, masks, *, backend=DEFAULT_BACKEND, coordinate_frame='ee'):
     """Existing Shape-First/F5 packet semantics with the new Graph default."""
     from graph.integration_baseline import vision
+    check_frame(coordinate_frame)
     if backend not in ('cpu','triton_fused'):raise ValueError('unknown Graph perception backend')
     frame=TrackedRGBDFrame(camera.timestep,camera.camera,camera.rgb,camera.depth.astype(np.float32),
         camera.intrinsic,camera.world_from_camera,camera.tcp_pose,
@@ -157,7 +160,7 @@ def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
         # sample_cuda API keeps its result on CUDA unless CPU is requested.
         result=numpy_selection(sample_cuda(projected,values,depth,tm,k,device='cpu'))
         selection=_selection_packet(frame,camera.episode,result)
-        packet=complete_selected_vision_packet(selection,frame,result['metadata'],result['valid'])
+        packet=complete_selected_vision_packet(selection,frame,result['metadata'],result['valid'],coordinate_frame=coordinate_frame)
         vision.receive_vision_packet(packet)
         return packet,dict(pca5_evidence_ms=(after_features-tick)*1000,
             total_offline_graph_ms=(perf_counter()-tick)*1000,
@@ -177,7 +180,7 @@ def make_packet(camera, masks, *, backend=DEFAULT_BACKEND):
     selection,_=vision.shape_first.make_packet(frame.source_frame,prepared,selected,cases)
     selection['object_slices']=object_slices(len(selected[0]['F']),len(selected[1]['F']))
     selection.update(episode=camera.episode,camera=frame.camera)
-    packet=vision.complete_vision_packet(selection,evidence,frame)
+    packet=vision.complete_vision_packet(selection,evidence,frame,coordinate_frame=coordinate_frame)
     vision.receive_vision_packet(packet)
     return packet,dict(pca5_evidence_ms=(after_evidence-tick)*1000,
         total_offline_graph_ms=(perf_counter()-tick)*1000,

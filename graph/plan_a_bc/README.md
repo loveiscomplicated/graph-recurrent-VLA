@@ -1,5 +1,38 @@
 # Plan A cached graph BC with periodic live rollout
 
+Choose the common geometry frame explicitly:
+
+```python
+geometry = CurrentGeometry(assets, schema, coordinate_frame='world')  # absolute World
+geometry = CurrentGeometry(assets, schema, coordinate_frame='ee')     # current TCP, default
+```
+
+After camera-local projection/PCA/Shape-First, points and normals are transformed
+directly into the selected frame once. Packet, same-time observations, 3mm
+deduplication, final FPS and Graph stay in that frame. The three robot nodes and
+edge directions use it too. View/free-space tests compose frame-to-camera
+matrices for projection without moving the stored cloud back through World.
+Raw camera calibration, source camera points and robot sensor inputs remain
+explicit audit inputs; scalar source-camera depth-jump retains its original
+measurement definition. Both `triton_fused` and explicit CPU perception support
+the choice. `ee` uses the current observation's TCP pose;
+mixed frames and stale EE reference poses are rejected.
+
+Set `geometry.coordinate_frame` to `"world"` or `"ee"` in a new experiment's
+`config.json` for matching cache creation and live rollout. Cache identity now
+records the effective frame and uses `graphs_common_coordinate_frame_v2`;
+old caches are not reused. New diagnostic arrays are `point_xyz`, `point_f5`
+and a `coordinate_frame` scalar, rather than labelling EE points `point_world`.
+Current records expose `xyz`, `normal`, `coordinate_frame`, and for EE,
+`reference_ee_pose`. Packet/Graph labels are `World_metres` / `EE_metres`.
+World and EE graphs cannot be packed into one batch.
+
+Standalone `PlanA` without a frame retains the historical diagnostic adapter;
+pass `coordinate_frame` with a matching packet builder to use the unified path.
+The shared persistent-map prototype remains World-only. The implementation and
+CPU/CUDA verification are in the
+[coordinate-frame report](../../docs/visual-graph-integration/10i_coordinate_frames_20261103.md).
+
 Current `CurrentGeometry(assets, schema)` defaults to
 `perception_backend='triton_fused'`: Torch CUDA projects only valid,
 non-overlapping object-mask pixels, then compact Triton PCA5 normals/features

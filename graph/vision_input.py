@@ -216,9 +216,11 @@ def _validate_v2_features(packet, n, source, oid, availability):
         FEATURE_FIELDS, DIAGNOSTIC_DTYPES, NUMERIC_CONTRACT,
         validate_transform, pose_matrix, float32_tolerance,
     )
+    from visual.runtime.coordinate_frames import packet_frame, feature_fields
+    frame = packet_frame(packet)
     if packet.get('feature_mode') != 'continuous':
         raise ValueError('v2 supports continuous mode only')
-    if packet['coordinate_frame'] != 'EE_metres' or packet['feature_fields'] != FEATURE_FIELDS:
+    if packet['feature_fields'] != feature_fields(frame):
         raise ValueError('v2 feature/frame schema mismatch')
     validity = _array(packet['feature_field_valid'], bool, (n, 3), 'feature_field_valid')
     valid = _array(packet['feature_valid'], bool, (n,), 'feature_valid')
@@ -265,22 +267,27 @@ def _validate_v2_features(packet, n, source, oid, availability):
     camera = _array(packet['camera_points'], np.float32, (n, 3), 'camera_points')
     if not np.isfinite(camera).all() or (camera[:, 2] <= 0).any():
         raise ValueError('invalid camera points')
-    transform = _array(packet['T_EE_from_camera'], np.float64, (4, 4), 'T_EE_from_camera')
+    key = 'T_frame_from_camera' if 'T_frame_from_camera' in packet else 'T_EE_from_camera'
+    transform = _array(packet[key], np.float64, (4, 4), key)
     validate_transform(transform)
     c2w = _array(packet['camera_to_world'], np.float64, (4, 4), 'camera_to_world')
     validate_transform(c2w)
     pose = _array(packet['observation_ee_pose'], np.float64, (7,), 'observation_ee_pose')
-    reference_transform = np.linalg.inv(pose_matrix(pose)) @ c2w
+    world_from_ee = pose_matrix(pose)
+    reference_transform = np.linalg.inv(world_from_ee) @ c2w if frame == 'ee' else c2w
     eps = NUMERIC_CONTRACT['reference_eps_factor'] * np.finfo(np.float64).eps
     if not np.allclose(transform, reference_transform, rtol=eps, atol=eps):
         raise ValueError('source observation transform mismatch')
+    if 'T_EE_from_camera' in packet:
+        if frame != 'ee' or not np.array_equal(transform, packet['T_EE_from_camera']):
+            raise ValueError('EE transform alias/frame mismatch')
     k = _array(packet['camera_intrinsic'], np.float64, (3, 3), 'camera_intrinsic')
     if (not np.isfinite(k).all() or k[0, 0] <= 0 or k[1, 1] <= 0
             or k[0, 1] != 0 or k[1, 0] != 0 or not np.array_equal(k[2], [0, 0, 1])):
         raise ValueError('invalid source camera intrinsic')
     reference = camera.astype(np.float64) @ transform[:3, :3].T + transform[:3, 3]
     if (np.abs(packet['points'].astype(np.float64)-reference) > float32_tolerance(reference)).any():
-        raise ValueError('EE point transform exceeds fixed float32 tolerance')
+        raise ValueError('point transform exceeds fixed float32 tolerance')
 
 
 @dataclass(frozen=True)

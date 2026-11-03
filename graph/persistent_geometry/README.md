@@ -1,5 +1,16 @@
 # Task09-C independent geometry diagnostic
 
+The historical persistent-map contract remains World-only. Current-only callers
+can now explicitly select a common `world` or current-`ee` frame through
+`CurrentGeometry(..., coordinate_frame=...)`; see the
+[current adapter](../plan_a_bc/README.md). `SurfaceObservation.coordinate_frame`
+defaults to `world`; EE observations carry `reference_ee_pose`. Use
+`current_records(..., fuse_views=False, coordinate_frame=...)` for these current
+observations. Frame-aware records expose `xyz`/`normal` with explicit metadata;
+they do not place EE coordinates under `world_xyz`. Mixing frames or EE reference
+poses is rejected, and the persistent map rejects EE observations. Legacy
+World observations/records and standalone diagnostics retain their old defaults.
+
 Opt-in feasibility implementation for RGB-D geometry, object-local surfels,
 multi-view association, surface graphs and diagnostic geometry encoders. It does
 not change the shared simulator, existing vision defaults, BC datasets, policy
