@@ -140,10 +140,13 @@ def budget(records,counts,hybrid=False):
 
 
 class PlanA:
-    def __init__(self,main,wrist,protocol,*,packet_builder=None,coordinate_frame=None):
+    def __init__(self,main,wrist,protocol,*,packet_builder=None,coordinate_frame=None,tensor_packet_builder=None):
         self.main,self.wrist,self.protocol=main,wrist,protocol
         self.packet_builder=packet_builder
         self.coordinate_frame=None if coordinate_frame is None else check_frame(coordinate_frame)
+        self.tensor_packet_builder=tensor_packet_builder
+        if tensor_packet_builder is not None and coordinate_frame is None:
+            raise ValueError('tensor observations require an explicit common coordinate_frame')
         if coordinate_frame is not None and packet_builder is None:
             from functools import partial
             from visual.runtime.graph_perception import make_packet as common_packet
@@ -173,12 +176,31 @@ class PlanA:
 
     def represent(self,cameras,prepared,condition,representations=('SF','L','H')):
         cm=prepared['conditions'][condition];observed=[];sf=[];legacy=[];surface_candidates=[];stages={};packets={}
+        tensor_views=None
+        if self.tensor_packet_builder is not None:
+            import torch
+            from graph.persistent_geometry.tensor_fusion import (prepare_tensor_views, observations_from_tensor_packet,
+                consistent_views_tensor, numpy_observations)
+            tensor_views=prepare_tensor_views(cameras,cm,coordinate_frame=self.coordinate_frame)
         for c in sorted(cameras,key=lambda c: c.camera!=self.main):
-            packet,_=(self.packet_builder or make_packet)(c,cm[c.camera]);packets[c.camera]=packet
-            os=observations_from_packet(packet,c,coordinate_frame=self.coordinate_frame)
-            os,_=consistent_views(os,cameras,cm)
+            if tensor_views is None:
+                packet,_=(self.packet_builder or make_packet)(c,cm[c.camera])
+                os=observations_from_packet(packet,c,coordinate_frame=self.coordinate_frame)
+                os,_=consistent_views(os,cameras,cm)
+                structural_pixels=set(packet['provenance']['source_index'][~packet['provenance']['surface_selected']].tolist())
+            else:
+                view=tensor_views.by_name[c.camera]
+                packet=self.tensor_packet_builder(c,view.mask,depth_cuda=view.depth.to(dtype=torch.float32),
+                    intrinsic_cuda=view.intrinsic,transform_cuda=view.frame_from_camera)
+                os=observations_from_tensor_packet(packet,c)
+                os,_=consistent_views_tensor(os,tensor_views)
+                # The next stage is the pre-existing CPU Python record builder.
+                # Keep the public tensor result resident until this explicit,
+                # selected-only compatibility boundary, after view checking.
+                os,flags=numpy_observations(os,include_structural=True)
+                structural_pixels={int(p) for o,f in zip(os,flags) for p in o.pixels[f]}
+            packets[c.camera]=packet
             rows=current_records(os,fuse_views=False,coordinate_frame=self.coordinate_frame)
-            structural_pixels=set(packet['provenance']['source_index'][~packet['provenance']['surface_selected']].tolist())
             for r in rows:r['structural']=key(r)[3] in structural_pixels
             sf.extend(rows)
             if any(v in representations for v in ('L','H')):

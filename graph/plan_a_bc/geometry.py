@@ -93,7 +93,7 @@ class RobotFK:
 class CurrentGeometry:
     def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee'):
         from functools import partial
-        from visual.runtime.graph_perception import make_packet
+        from visual.runtime.graph_perception import make_packet,make_packet_cuda
         if perception_backend not in ('triton_fused','cpu'):
             raise ValueError('unknown Graph perception backend')
         self.perception_backend=perception_backend
@@ -102,7 +102,8 @@ class CurrentGeometry:
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
         self.system = PlanA('base_camera','hand_camera',frozen,
             packet_builder=partial(make_packet,backend=perception_backend,
-                                   coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame)
+                                   coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame,
+            tensor_packet_builder=partial(make_packet_cuda,coordinate_frame=self.coordinate_frame) if perception_backend=='triton_fused' else None)
         self.mount = None
 
     def reset(self):
@@ -148,6 +149,7 @@ class CurrentGeometry:
                 if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
                 if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
         graph.packet['perception_backend']=self.perception_backend
+        graph.packet['view_consistency_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None else 'numpy_cpu')
         if graph.packet.get('coordinate_frame') != FRAME_NAMES[self.coordinate_frame]:
             raise ValueError('Graph/config coordinate frame mismatch')
         validate_graph(graph)

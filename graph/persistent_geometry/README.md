@@ -11,6 +11,24 @@ they do not place EE coordinates under `world_xyz`. Mixing frames or EE referenc
 poses is rejected, and the persistent map rejects EE observations. Legacy
 World observations/records and standalone diagnostics retain their old defaults.
 
+The default current Graph adapter uses the Torch implementation in
+`tensor_fusion.py` for selected-observation view checks. Prepare fresh
+`TensorViews` with `prepare_tensor_views(cameras, masks, coordinate_frame=...)`,
+then call `consistent_views_tensor(observations, views)`. Observation arrays,
+keep decisions and conflict-count tensors remain on the chosen device. A
+validated CUDA packet can enter via `observations_from_tensor_packet`;
+`tensor_observations` is an explicit upload for NumPy compatibility.
+`numpy_observations` explicitly downloads compact selected results, optionally
+returning aligned structural flags for the existing Python record builder.
+Only static identity/calibration metadata is validated on CPU; depth conversion
+and point-dependent math use Torch. The NumPy `consistent_views` remains the
+reference/CPU diagnostic and existing pre-sampling gate dependency.
+Tensor observation XYZ/normals/F5/origin use float64, source pixels int64 and
+validity/structural flags bool. These match the existing packet-derived NumPy
+observations. Compatibility upload canonicalizes other accepted NumPy dtypes.
+Audit `count` is shape metadata; `unknown_conflict` remains an int64 tensor until
+the caller explicitly materializes it for logging.
+
 Opt-in feasibility implementation for RGB-D geometry, object-local surfels,
 multi-view association, surface graphs and diagnostic geometry encoders. It does
 not change the shared simulator, existing vision defaults, BC datasets, policy

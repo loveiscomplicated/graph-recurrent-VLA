@@ -27,6 +27,18 @@ Current records expose `xyz`, `normal`, `coordinate_frame`, and for EE,
 `reference_ee_pose`. Packet/Graph labels are `World_metres` / `EE_metres`.
 World and EE graphs cannot be packed into one batch.
 
+The default `triton_fused` adapter now keeps selected packets and observations
+on CUDA through the same-time view check. It uses
+`graph.persistent_geometry.tensor_fusion`: Torch projection, signed-mm depth
+lookup, opposite-mask/depth predicates and compact result tensors. Frame-local
+depth/mask/calibration tensors are prepared once and shared across camera calls.
+World/EE, strict4mm depth support and source/structural flags are preserved.
+The result API stays on its input device. One explicit selected-array readback
+per source camera remains immediately before the existing CPU Python records,
+deduplication and final Graph consumers; this change does not move those stages.
+Explicit CPU perception and historical standalone PlanA retain the NumPy path.
+See the [paired GPU measurement and verification](../../docs/visual-graph-integration/10i_view_consistency_cuda_20261103.md).
+
 Standalone `PlanA` without a frame retains the historical diagnostic adapter;
 pass `coordinate_frame` with a matching packet builder to use the unified path.
 The shared persistent-map prototype remains World-only. The implementation and
@@ -44,7 +56,7 @@ one is passed explicitly.
 
 Sampling evidence and Shape-First now also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.
-Only selected points/features are downloaded for CPU packet assembly. Python
+The default adapter downloads selected, view-checked observations for CPU records. Python
 still controls launches and reads convergence/cardinality scalars. The robot
 filter, gate, sampling policy, point cap and graph-edge policy are unchanged.
 No dense XYZ or CPU feature raster is rebuilt in this default path.

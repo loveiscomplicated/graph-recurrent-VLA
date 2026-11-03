@@ -12,6 +12,16 @@ keep their existing scalar definitions. Packet receivers validate the chosen
 frame/calibration, not just the label. See the
 [common-frame API](../../graph/plan_a_bc/README.md).
 
+`graph_perception.make_packet_cuda(camera, masks, depth_cuda=..., intrinsic_cuda=...,
+transform_cuda=...)` retains the existing PCA5/Shape-First selection in a CUDA v2
+packet. `graph.vision_input` accepts this measured tensor representation;
+`tensor_packet.numpy_packet` is an explicit packed compatibility readback.
+The existing `make_packet` default continues returning NumPy packets.
+`CurrentGeometry` now uses `make_packet_cuda` in its default triton_fused path
+to keep packet arrays resident through the Torch view check. It explicitly
+downloads selected observations only at the following CPU record boundary.
+This does not change the direct compatibility `make_packet` return type.
+
 ### Peg/Box groups in selected packets
 
 `make_packet` (including explicit CPU selection) and `make_packet_cuda` preserve
