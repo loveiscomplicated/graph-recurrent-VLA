@@ -1,5 +1,18 @@
 # Plan A cached graph BC with periodic live rollout
 
+The current cache/live frontends use **Terra Standard as the primary grounder**
+and Grounding DINO when `OPENAI_API_KEY` is missing/blank or Terra returns
+HTTP401/403. Environment values take precedence over the repository-root `.env`.
+Terra jointly discovers Peg/Box in the current RGB and supplies SAM2 box prompts;
+it runs only at initialization/missing-object scans. DINO is loaded lazily on
+fallback. Startup, requests/results, authentication fallback and fallback model
+loading are printed through the `[live-grounding]` logger. Other API/response
+errors stop with sanitized diagnostics. See the [runtime contract](../../visual/runtime/README.md)
+and [verification report](../../docs/visual-graph-integration/10i_live_terra_primary_20261103.md).
+Per-camera `vision_trace.json` and episode/cache receipts record actual backend,
+fallback reason and request counts. Existing ExperimentLogger identity rules
+remain in place. Historical frozen deployments are not modified by this change.
+
 The normal cache and live-rollout paths now start robot CPU preparation before
 their current-frame SAM2 calls. `CurrentGeometry` defaults to CUDA robot filtering
 for `triton_fused`, with a persistent `RobotFilterPreparation` worker. No opt-in
@@ -29,8 +42,8 @@ filter for diagnostics; `perception_backend='cpu'` selects it automatically.
 Full-screen filter diagnostics remain available through standalone `PlanA.prepare`;
 the prepared-clean fast path explicitly has no full filter diagnostic dictionary.
 
-Cache identity is now `graphs_common_coordinate_frame_v3_robot_overlap` and records
-the backend/schedule. Existing v2 caches are rejected rather than silently reused
+Cache identity is now `graphs_common_coordinate_frame_v4_terra_primary` and records
+the grounding policy plus geometry backend/schedule. Existing v2/v3 caches are rejected rather than silently reused
 or overwritten. Original frozen experiment sources/runs are not resumed or migrated.
 See the [default-path implementation report](../../docs/visual-graph-integration/10i_robot_overlap_default_20261103.md).
 
@@ -54,7 +67,7 @@ mixed frames and stale EE reference poses are rejected.
 
 Set `geometry.coordinate_frame` to `"world"` or `"ee"` in a new experiment's
 `config.json` for matching cache creation and live rollout. Cache identity now
-records the effective frame and uses `graphs_common_coordinate_frame_v3_robot_overlap`;
+records the effective frame and uses `graphs_common_coordinate_frame_v4_terra_primary`;
 old caches are not reused. New diagnostic arrays are `point_xyz`, `point_f5`
 and a `coordinate_frame` scalar, rather than labelling EE points `point_world`.
 Current records expose `xyz`, `normal`, `coordinate_frame`, and for EE,
@@ -147,7 +160,7 @@ observation. It preserves individual collision shapes, including finger pads.
 split. It reproduces Task08 Full B action statistics exactly and reuses the
 preserved Train96 Robot76 normalizer from `initial.pt`. No original files change.
 `cache.py` reveals RGB frames sequentially through the original causal streaming
-DINO/SAM2 adapter. It stores all pre-GNN graph tensors, Robot76, native Action7,
+Terra-primary/SAM2 adapter with DINO authentication fallback. It stores all pre-GNN graph tensors, Robot76, native Action7,
 node/edge pointers, pixel/F5 provenance, current masks and gate traces. Object
 absence remains empty. T+1 terminal observations have no action label. Dataset,
 geometry and source identities are required for cache reuse. Test graph creation

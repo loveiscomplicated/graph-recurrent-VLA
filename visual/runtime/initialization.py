@@ -47,6 +47,11 @@ def assign(peg_candidates, box_candidates):
 
 def detect_initial(frames, detector, prompts=None):
     """Return each object's selected box, score and source-frame index."""
+    # Joint grounders provide boxes directly, without DINO candidate scores,
+    # area rejection, or historical-prefix rescanning.
+    initialize = getattr(detector, "initialize", None)
+    if callable(initialize):
+        return initialize(frames, prompts=prompts)
     prompts = PROMPTS if prompts is None else prompts
     first = {name: candidates(detector, frames[0], prompts[name]) for name in PROMPTS}
     peg, box = assign(first["peg"], first["box"])

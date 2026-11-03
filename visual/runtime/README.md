@@ -1,3 +1,65 @@
+### Live grounding: Terra primary, DINO authentication fallback
+
+`graph.plan_a_bc.rollout.evaluate` and `graph.plan_a_bc.cache.make_vision` now use
+`live_grounding.LiveGrounding`. The default is GPT-6.1 Terra Standard:
+`service_tier='default'`, `reasoning.effort='high'`, image `detail='original'`,
+`max_output_tokens=5120`, `store=False`. The adopted appearance prompt is reused
+from the independent Terra experiment; the runtime does not import experiment
+launchers, output directories, GT, or evaluation code.
+
+Credentials use process `OPENAI_API_KEY` first, then the repository-root `.env`
+through the existing `utils.experiment_logger.load_env_file` (no environment
+override, independent of the working directory). Install the updated root
+requirements or use the updated Visual uv lock; `.env` loading needs
+`python-dotenv`. An explicitly blank process variable remains blank. No key
+value, HTTP authorization header, raw response body, or provider exception text
+is written to logs or results.
+
+Missing/blank keys select Grounding DINO. A Terra HTTP401/403 switches this
+detector instance to DINO for its remaining lifetime. DINO weights are loaded
+only when its first scan is needed. Timeout, connection,429/5xx, unavailable
+model, wrong service tier, malformed JSON/coordinates, refusal, and incomplete
+responses produce a sanitized error and stop that call. They do not trigger an
+authentication fallback. There are no automatic HTTP retries.
+
+Terra jointly returns at most one Peg/Box box (or null) from the **current RGB**.
+Strict normalized0–1000 coordinates scale separately to the actual width/height;
+no clipping/repair, confidence score, DINO area rejection, or DINO joint assignment
+is applied. SAM2 receives those boxes directly. At t0 and every five processed
+frames while an object is missing, the current frame can initialize it. Existing
+SAM2 object states remain intact. Once both are initialized, no more grounding
+calls are made. Tracking-loss recovery remains outside this runner's scope.
+The DINO fallback preserves its previous candidate and two-consistent-scan rules.
+If authentication fails after an earlier Terra scan, that camera's DINO prefix
+starts at the failure frame. Other cameras and new episodes retain separate
+prefixes, while backend authentication state and the RGB result cache are shared.
+A bounded64-image cache reuses results for identical RGB, including causal
+readback probes; it stores boxes only and never provides prior frames to the API.
+
+`[live-grounding]` INFO/WARNING/ERROR messages are emitted to stderr even without
+root logging configuration and also propagate to configured log handlers:
+`SELECT` includes the active backend and credential source; `REQUEST`/`RESULT`
+include image size, latency and found/null objects; `FALLBACK` states the exact
+reason; `LOAD`/`READY` confirm the fallback model load. `status()` and per-frame
+`OnlineVisionAdapter.records[*]['grounding']` expose backend, fallback reason and
+API/DINO/cache counts without credentials. `detector_calls` counts joint scans
+for this grounder; the nested counters distinguish actual network/cache work.
+Plan A writes per-camera `vision_trace.json` and actual grounding status in each
+cache receipt/live episode result, retaining the existing ExperimentLogger.
+
+```python
+from visual.runtime.live_grounding import LiveGrounding
+from visual.runtime.initialization import detect_initial
+
+grounder = LiveGrounding(device='cuda', model_id='/path/to/dino/fallback')
+initial = detect_initial([current_rgb], grounder)
+print(grounder.status())  # public backend/reason/counters only
+```
+
+Direct `GDino`, historical/frozen experiments, and the explicitly DINO runtime
+visualization commands below retain their model selection. Implementation and
+executed scope: [Task10-I live grounding report](../../docs/visual-graph-integration/10i_live_terra_primary_20261103.md).
+
 ### Selected packet coordinate frames
 
 `make_packet(..., coordinate_frame='world'|'ee')` and

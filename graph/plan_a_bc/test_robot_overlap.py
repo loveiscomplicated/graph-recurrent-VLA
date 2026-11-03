@@ -26,9 +26,12 @@ class DefaultRobotOverlap(unittest.TestCase):
             (root/'dataset_audit.json').write_text(json.dumps(dict(dataset_sha256='dataset',split_sha256='split')))
             ident=input_identity(root)
             self.assertEqual(ident['robot_filter_backend'],'cuda');self.assertEqual(ident['robot_preparation'],'before_vision')
-            old={**ident,'cache_version':'graphs_common_coordinate_frame_v2'}
-            (root/'cache_manifest.json').write_text(json.dumps(dict(identity=old,episodes=[])))
-            with self.assertRaisesRegex(ValueError,'identity mismatch'):CachedDataset(root)
+            self.assertEqual(ident['grounding']['primary'],'gpt-6.1-terra')
+            self.assertEqual(ident['cache_version'],'graphs_common_coordinate_frame_v4_terra_primary')
+            for version in ('graphs_common_coordinate_frame_v2','graphs_common_coordinate_frame_v3_robot_overlap'):
+                old={**ident,'cache_version':version}
+                (root/'cache_manifest.json').write_text(json.dumps(dict(identity=old,episodes=[])))
+                with self.assertRaisesRegex(ValueError,'identity mismatch'):CachedDataset(root)
 
     def test_default_submits_before_vision_and_discards_on_vision_error(self):
         from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation
@@ -93,7 +96,7 @@ class DefaultRobotOverlap(unittest.TestCase):
         test=self;events=[];fixture=geometry_fixtures.Contracts();fixture.setUp()
         data={**fixture.data,'robot76':np.zeros(76,np.float32)}
         class Adapter:
-            def __init__(self,*_):pass
+            def __init__(self,*_):self.records=[]
             def reset(self,*_):pass
             def process(self,rgb,identity,t,*,mask_device):
                 test.assertEqual(events[-1],'inside_build');test.assertEqual(mask_device,'cuda')

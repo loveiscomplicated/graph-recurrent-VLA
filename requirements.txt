@@ -6,3 +6,6 @@ torch>=2.2
 pin>=3.0
 # PNG frame output in examples/render_episode.py.
 Pillow>=10
+# Live Terra grounding; credentials can also be supplied through the environment.
+requests>=2.32,<3
+python-dotenv>=1.0,<2

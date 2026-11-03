@@ -10,7 +10,7 @@ import torch
 from graph.integration_baseline.graph import Graph, pack_graphs
 from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
 from graph.integration_baseline.rollout_stop_clock import compare_saved_sequence
-from visual.runtime.grounding import GDino
+from visual.runtime.live_grounding import LiveGrounding, policy_identity
 from visual.runtime.tracking import SAM2Tracker
 from utils.experiment_logger import ExperimentLogger
 from .common import read,write,sha,npz,digest,tree_identity,now
@@ -23,7 +23,7 @@ GRAPH_KEYS=('node_input','node_type','edge_index','edge_attr','edge_type')
 
 
 def make_vision(device,dino,sam):
-    detector=GDino(device=device,model_id=str(dino))
+    detector=LiveGrounding(device=device,model_id=str(dino))
     tracker=SAM2Tracker(device=device,checkpoint=sam)
     return detector,tracker
 
@@ -34,7 +34,8 @@ def input_identity(root):
     return dict(dataset_sha256=audit['dataset_sha256'],split_sha256=audit['split_sha256'],
         graph_config=cfg['geometry'],frozen_geometry_protocol_sha256=sha(frozen),
         coordinate_frame=check_frame(cfg['geometry'].get('coordinate_frame','ee')),
-        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v3_robot_overlap',
+        frozen_source_sha256=cfg['source_sha256'],cache_version='graphs_common_coordinate_frame_v4_terra_primary',
+        grounding=policy_identity(),
         robot_filter_backend='cuda',robot_preparation='before_vision')
 
 
@@ -115,13 +116,17 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
             object_missing_rate=(1-pp.mean(0)).tolist(),conversion_failures=0,readback='PASS',
             tracker_episode_reset='PASS',wall_seconds=time.perf_counter()-started,completed_at=now())
         row.update(robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule)
+        if callable(getattr(detector,'status',None)):row['grounding']=detector.status()
         write(receipt,row,immutable=True);log.link_output(receipt,kind='metrics');return row
     except BaseException as exc:
-        write(folder/'failure.json',dict(status='FAIL',completed_graphs=len(actions),exception=type(exc).__name__,message=str(exc)))
+        failure=dict(status='FAIL',completed_graphs=len(actions),exception=type(exc).__name__,message=str(exc))
+        if callable(getattr(detector,'status',None)):failure['grounding']=detector.status()
+        write(folder/'failure.json',failure)
         raise
     finally:
         geometry.close()
         for v in adapters.values():v.close()
+        write(folder/'vision_trace.json',{name:adapter.records for name,adapter in adapters.items()},immutable=True)
 
 
 def graph_at(arrays,t):
@@ -171,7 +176,7 @@ def run(root,dataset,dino,sam,device, *, pilot=False,final_test=False):
     entries.sort(key=lambda e:order[e['episode_id']])
     if pilot:entries=entries[:2]
     if not pilot and not final_test and not (root/'cache_pilot_verification.json').exists():raise ValueError('pilot gate required')
-    with ExperimentLogger(team='integration',model='plan_a_graph_cache',seed=42,config={'comparison_uuid':root.name,'pilot':pilot,'final_test':final_test,'device':device},root=root/'stage_runs',job_type='prepare') as log:
+    with ExperimentLogger(team='integration',model='plan_a_graph_cache',seed=42,config={'comparison_uuid':root.name,'pilot':pilot,'final_test':final_test,'device':device,'grounding':policy_identity()},root=root/'stage_runs',job_type='prepare') as log:
         if pilot:
             checkdir=root/'vision_contract';checkdir.mkdir(exist_ok=False)
             first=entries[0]

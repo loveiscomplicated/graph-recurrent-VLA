@@ -22,7 +22,7 @@ from graph.integration_baseline.rollout_stop_clock import (PhysicsAudit,controll
 from graph.integration_baseline.robot import robot_observation,state_schema,flatten_state
 from graph.persistent_geometry.contracts import CameraObservation
 from graph.persistent_geometry.self_filter import robot_surfaces
-from visual.runtime.grounding import GDino
+from visual.runtime.live_grounding import LiveGrounding, policy_identity
 from visual.runtime.tracking import SAM2Tracker
 from visual.runtime.vision_packet import pose_matrix
 from utils.experiment_logger import ExperimentLogger
@@ -164,6 +164,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
             hole_pose=np.asarray([r['hole_pose'] for r in trace]),gripper_qpos=np.asarray([r['gripper_qpos'] for r in trace]),
             robot_timestep=np.arange(len(robot)),object_post_action_timestep=np.arange(len(trace))+1))
         write(folder/'trace.json',trace,immutable=True)
+        write(folder/'vision_trace.json',{name:adapter.records for name,adapter in adapters.items()},immutable=True)
         row=dict(status='SMOKE_COMPLETE' if smoke and complete else 'COMPLETE' if complete else 'ERROR',
             variant=model.variant,step=step,seed=spec['seed'],group=spec['group'],episode_id=spec.get('episode_id',spec['seed']),
             reset_group=actual_reset,episode_length=len(trace),termination_reason=termination,
@@ -176,6 +177,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
             denominator_eligible=complete and not smoke,wall_seconds=time.perf_counter()-started,
             physics_calls=physics.count,expert_cache_used=False,current_RGBD=True,
             video_path=str(folder/'rollout.mp4'),video_sha256=sha(folder/'rollout.mp4'))
+        if callable(getattr(detector,'status',None)):row['grounding']=detector.status()
         write(folder/'episode.json',row,immutable=True)
     return row
 
@@ -221,7 +223,7 @@ def evaluate(root,run,checkpoint,device, *, final_kind=None,pretraining_smoke=Fa
     norm=normalizer(root);codec=ActionCodec(cp['codec']);model=CachedGraphPolicy(norm.schema,cp['variant'],**cfg['model']).to(device)
     model.load_state_dict(cp['model']);model.eval()
     if tensor_identity(model.state_dict())!=tensor_identity(cp['model']):raise ValueError('wrong evaluated weights')
-    runtime=read(root/'runtime_paths.json');detector=GDino(device=device,model_id=runtime['dino']);tracker=SAM2Tracker(device=device,checkpoint=runtime['sam'])
+    runtime=read(root/'runtime_paths.json');detector=LiveGrounding(device=device,model_id=runtime['dino']);tracker=SAM2Tracker(device=device,checkpoint=runtime['sam'])
     step=cp['progress']['step'];smoke=step==500 or pretraining_smoke
     reset={e['seed']:e['reset_group'] for e in read(root/'runtime_verification.json')['seeds']}
     if final_kind:
@@ -236,7 +238,7 @@ def evaluate(root,run,checkpoint,device, *, final_kind=None,pretraining_smoke=Fa
     if folder.exists():raise FileExistsError('evaluation is immutable; explicit recovery required')
     with ExperimentLogger(team='integration',model=f'plan_a_{cp["variant"]}_rollout',seed=42,
         config=dict(comparison_uuid=root.name,checkpoint_sha256=sha(checkpoint),checkpoint_step=step,
-            seeds=specs,smoke=smoke,final_kind=final_kind),root=root/'evaluation_runs',job_type='evaluate') as log:
+            seeds=specs,smoke=smoke,final_kind=final_kind,grounding=policy_identity()),root=root/'evaluation_runs',job_type='evaluate') as log:
         rows=[]
         for spec in specs:
             row=run_episode(root,folder/f'seed{spec["seed"]}',model,norm,codec,detector,tracker,spec,step,smoke=smoke)

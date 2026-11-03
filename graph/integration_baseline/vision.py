@@ -35,6 +35,8 @@ def causal_masks(rgb, detector, tracker, callback=None):
     evaluation + accepting only current-frame decisions removes that leakage.
     SAM2 iterators propagate forwards only; no backward/post-hoc refinement.
     """
+    bind = getattr(detector, 'new_stream', None)
+    if callable(bind):detector = bind()
     found, states = {}, {}
     records = []
     masks = np.zeros((len(rgb), 2, *rgb.shape[1:3]), bool)

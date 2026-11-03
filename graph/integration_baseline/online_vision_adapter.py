@@ -41,12 +41,16 @@ class ObservedFrames:
 class OnlineVisionAdapter:
     """One call per newly observed RGB; no episode video/length input exists."""
     def __init__(self, detector, tracker):
-        self.detector, self.tracker = detector, tracker
+        bind = getattr(detector, 'new_stream', None)
+        self.detector = bind() if callable(bind) else detector
+        self.tracker = tracker
         self.directory = None
         self.states = {}
         self.reset(None)
 
     def reset(self, episode_identity):
+        reset_initialization = getattr(self.detector, 'reset_initialization', None)
+        if callable(reset_initialization):reset_initialization()
         for state in self.states.values():
             self.tracker.reset(state)
         if self.directory is not None:
@@ -98,7 +102,10 @@ class OnlineVisionAdapter:
         new = {}
         if timestep % SCAN_EVERY == 0 and len(self.found) < 2:
             self.scan_events += 1
-            initial = detect_initial(self.rgb, detect)
+            joint = callable(getattr(self.detector, 'initialize', None))
+            if joint:
+                self.detector_calls += 1
+            initial = detect_initial(self.rgb, self.detector if joint else detect)
             new = {i+1: initial[name]['box'] for i, name in enumerate(('peg', 'box'))
                    if name not in self.found and initial[name]['frame'] == timestep}
             if new:
@@ -138,5 +145,7 @@ class OnlineVisionAdapter:
                       new_object_ids=list(new), detector_calls=self.detector_calls,
                       initialization_scan_events=self.scan_events,
                       tracking_groups=[list(g) for g in self.states])
+        if callable(getattr(self.detector, 'status', None)):
+            record['grounding'] = self.detector.status()
         self.records.append(record)
         return masks, record
