@@ -9,12 +9,12 @@ live `task.backend` reported `sim_backend="physx_cpu"`,
 SAPIEN + PhysX, not MuJoCo. The registered task has a 100-step time limit.
 
 Linux Reach BC validation also executed this shared factory with Torch 2.8.0+cpu
-on Vast.ai 55512455. CPU simulation now always selects `sapien_cpu` host image
+on Vast.ai 55512455. CPU simulation defaults to `sapien_cpu` host image
 readback, including when Torch can see CUDA; this avoids requesting a Vulkan
 `cuda:0` renderer when only a CPU Vulkan device such as lavapipe is available.
 Vulkan still needs a supported physical device. Shared CPU/RGB tests passed
-on the CPU-only host (8 tests including GT nodes). The CUDA-visible Linux path
-still needs verification on the target server.
+on the CPU-only host (8 tests including GT nodes). An explicit CUDA observation
+output and CUDA camera renderer were subsequently checked on RTX3090; see below.
 The Graph subtask source wrapper separately preserves its recorded environment
 configuration; SAPIEN 3.0.3 source-render and host-readback regression suites must
 run in separate processes because render-device selection is process-global.
@@ -34,12 +34,55 @@ finally:
 ```
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
-`render_mode`, and `sim_backend`. `seed` resets one episode during creation;
+`render_mode`, `sim_backend`, `render_backend`, and `observation_device`.
+`seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to
 `physx_cuda`. Explicit `sim_backend` must agree with `device`. On this installed
 version, CPU allows `num_envs=1` only. CUDA/vectorized execution has not been
 run on this host.
+
+### CUDA observation output with CPU physics
+
+On a Linux host with working CUDA/Vulkan camera interop, use:
+
+```python
+env = make_peg_insertion_env(
+    device="cpu",                  # physx_cpu remains the physics backend
+    render_backend="cuda",         # native CUDA RGB/depth, no host image readback
+    observation_device="cuda",     # upload remaining raw CPU observation tensors
+    obs_mode="rgb+depth",
+)
+try:
+    observation, info = env.reset(seed=0)
+finally:
+    env.close()
+```
+
+This was executed on RTX3090 for both `reset` and one `step`: physics/device
+remained `physx_cpu`/CPU; renderer was `sapien_cuda`; RGB/depth were already CUDA
+**before** the output wrapper. Raw qpos and calibration originated on CPU and
+were uploaded once. All observation array leaves returned on CUDA with their
+original shape/dtype, including uint8 RGB and signed int16 millimetre depth.
+Already resident CUDA tensors are not copied. No feature processing is added.
+Rewards, flags, `info`, direct GT access and the action interface retain the
+simulator's existing behavior. This option applies to reset/step observations.
+
+`observation_device="cuda"` alone also works with the default CPU renderer: it
+uploads the CPU images at the output boundary. Use the explicit CUDA renderer
+above to avoid image GPU→CPU→GPU readback. Existing callers without the new
+arguments keep the previous backends and output devices. macOS has no CUDA on
+the checked host. CPU/CUDA render smoke tests must run in separate processes:
+
+```bash
+python -m unittest tests.test_observation_device -v
+python -m unittest tests.test_observation_device_native_gpu -v
+python examples/check_env.py --device cpu --render-backend cuda \
+  --observation-device cuda --obs-mode rgb+depth
+```
+
+The implementation and verification scope are recorded in
+[Task10-I output-boundary report](../../docs/visual-graph-integration/10i_simulator_observation_cuda_20261103.md).
 
 ## Observations and stepping
 
