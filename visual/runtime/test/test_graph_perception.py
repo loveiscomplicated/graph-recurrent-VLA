@@ -95,7 +95,8 @@ class CUDAContracts(unittest.TestCase):
         from graph.persistent_geometry.self_filter import LinkSurface
         from graph.persistent_geometry.tests.test_contracts import cube
         fixture=Contracts();fixture.setUp()
-        prepared=dict(conditions={'C3':fixture.masks},gate=dict(accepted=True))
+        prepared=dict(conditions={'C3':fixture.masks},gate=dict(accepted=True),
+            wrist_gate_backend='fixture_prepared')
         link=LinkSurface('camera_link',cube([0,0,0],[.01,.01,.01]),np.eye(4))
         with patch('graph.plan_a_bc.geometry.RobotFK'):
             gpu=CurrentGeometry('unused',{},robot_filter_backend='cpu')
@@ -106,6 +107,11 @@ class CUDAContracts(unittest.TestCase):
         a,ar,ag=gpu.build(fixture.cameras,fixture.data,[link],fixture.masks)
         b,br,bg=cpu.build(fixture.cameras,fixture.data,[link],fixture.masks)
         self.assertEqual(a.packet['perception_backend'],'triton_fused')
+        self.assertTrue(a.node_input.is_cuda)
+        self.assertTrue(ar.xyz.is_cuda)
+        from graph.geometry.tensor_graph import numpy_graph
+        from graph.geometry.tensor_records import numpy_records
+        a=numpy_graph(a);ar=numpy_records(ar)
         for name in ('node_type','edge_index','edge_type','edge_attr'):
             np.testing.assert_array_equal(getattr(a,name).numpy(),getattr(b,name).numpy(),err_msg=name)
         np.testing.assert_allclose(a.node_input.numpy(),b.node_input.numpy(),atol=2e-5,rtol=0)
