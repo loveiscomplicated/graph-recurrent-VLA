@@ -37,9 +37,10 @@ class CPUContracts(unittest.TestCase):
         with patch('graph.plan_a_bc.geometry.RobotFK'):
             default=CurrentGeometry('unused',{})
             cpu=CurrentGeometry('unused',{},perception_backend='cpu')
-        self.assertEqual(default.perception_backend,'triton_fused')
-        self.assertEqual(default.robot_filter_backend,'cuda')
-        self.assertEqual(default.system.packet_builder.keywords['backend'],'triton_fused')
+        expected='triton_fused' if torch.cuda.is_available() else 'cpu'
+        self.assertEqual(default.perception_backend,expected)
+        self.assertEqual(default.robot_filter_backend,'cuda' if torch.cuda.is_available() else 'cpu')
+        self.assertEqual(default.system.packet_builder.keywords['backend'],expected)
         self.assertEqual(cpu.system.packet_builder.keywords['backend'],'cpu')
         self.assertEqual(cpu.robot_filter_backend,'cpu')
 

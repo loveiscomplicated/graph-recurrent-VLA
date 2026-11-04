@@ -324,19 +324,7 @@ def segment_spacing(t_reference, covered, t_nodes, *, order_verified):
                       'No continuous coverage/visibility interpolation. Gaps use all actual node projections; tails use nodes within the reference span.')
 
 
-def feature_rows(case, flat):
-    """Only the exact baseline condition's saved feature rows are available.
-
-    Compact available-only arrays avoid placeholders masquerading as features.
-    """
-    lookup = {int(f): i for i,f in enumerate(case['saved_flat'])}
-    positions = np.array([i for i,f in enumerate(flat) if int(f) in lookup], dtype=np.int64)
-    source_rows = np.array([lookup[int(flat[i])] for i in positions], dtype=np.int64)
-    features = {name: value[source_rows].copy() for name,value in case['saved_features'].items()}
-    available = np.isin(np.arange(len(flat)), positions)
-    for name, value in features.items():
-        np.testing.assert_array_equal(value, case['saved_features'][name][source_rows])
-    return available, positions, features
+from graph.perception.vision_packet import feature_rows
 
 
 def score_case(case, chosen, context, frame, labels, specs, transform):

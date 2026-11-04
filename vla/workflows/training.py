@@ -11,13 +11,13 @@ import numpy as np
 import torch
 
 from utils.experiment_logger import ExperimentLogger
-from graph.integration_baseline.bc08_codec import ActionCodec,controller_commands
-from graph.integration_baseline.robot import RobotNormalizer
-from graph.prototype.v2.state import StateNormalizer
-from graph.integration_baseline.direct_train import seed_all,rng_state,restore_rng,memory
+from vla.action_codec import ActionCodec, controller_commands
+from vla.data.robot import RobotNormalizer
+from vla.data.normalization import StateStatistics as StateNormalizer
+from vla.workflows.randomness import seed_all, rng_state, restore_rng, memory
 from vla.data.graph_cache import CachedDataset
-from vla.data.files import read,write,sha,digest,tensor_identity,checkpoint_load,append_csv,npz,now
-from vla.integration.live_policy import CachedGraphPolicy,gradient_report,normalizer
+from vla.data.files import read, write, sha, digest, tensor_identity, checkpoint_load, append_csv, npz, now
+from vla.integration.live_policy import CachedGraphPolicy, gradient_report, normalizer
 from vla.workflows.components import components_from_config
 from vla.state import map_state, detach_state, slice_state, stack_states
 

@@ -14,7 +14,7 @@ class Candidate(FastGraph):
             original=core.deduplicate
             self.patch(core,'deduplicate',lambda r,distance=.003:native.deduplicate(r,distance,fallback=original))
         if self.stage>=2:
-            from visual.runtime.test import run_voxel_structural_sampling as voxel
+            from graph.perception import voxel
             import graph.persistent_geometry.graph as gm
             self.patch(voxel,'representatives',native.representatives)
             self.patch(core,'farthest_rows',native.farthest_rows)
@@ -24,12 +24,12 @@ class Candidate(FastGraph):
             self.patch(core,'classify_robot',lambda *a,**kw:robot.classify(self,*a,**kw))
         if self.stage>=4:
             import dense
-            import graph.integration_baseline.vision as vision
+            import graph.perception.offline as vision
             self.patch(vision,'extract_sampling_evidence',dense.extract)
         if self.stage>=5:
             import selection
-            from visual.runtime.test import run_variable_rate_shape_first as sf
-            from visual.runtime.test import run_priority_fps_metric_control as prior
+            from graph.perception import shape_first as sf
+            import graph.perception.vision_packet as prior
             import numpy as np
             def feature_rows(case,flat):
                 # SF's saved_flat is strictly source-ascending; preserve the old
@@ -43,7 +43,7 @@ class Candidate(FastGraph):
             self.patch(prior,'feature_rows',feature_rows)
         if self.stage>=6:
             import packing
-            from visual.runtime.test import run_variable_rate_shape_first as sf
+            from graph.perception import shape_first as sf
             self.patch(sf,'make_packet',packing.selection_packet)
             # Capture the generic fallback before ownership-specialized SF path.
             fallback=core.deduplicate

@@ -12,7 +12,7 @@ import numpy as np
 
 from visualization.data import episode_info, frame_for_step, list_episodes
 from visualization.server import make_handler
-from visual.runtime.vision_packet import pose_matrix
+from graph.perception.vision_packet import pose_matrix
 
 
 class GraphRolloutViewerTest(unittest.TestCase):

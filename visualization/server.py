@@ -11,8 +11,7 @@ from urllib.parse import parse_qs, unquote, urlsplit
 from vla.contracts.graph import EDGE_TYPES, NODE_TYPES
 from visualization.data import episode_info, frame_for_step, graph_steps, list_episodes
 from visualization.captures import capture_episode, capture_frame, list_captures
-from visualization.persistent import (VARIANTS, is_persistent_id, persistent_episode,
-                                      persistent_frame)
+from visualization.persistent import VARIANTS, is_persistent_id, persistent_episode, persistent_frame
 from visualization.media import capture_media, video_file
 from visualization.results import bounded, build_catalog, public_catalog, resource_bytes
 

@@ -13,22 +13,26 @@ import cv2
 import numpy as np
 import torch
 
-from envs.maniskill import make_peg_insertion_env,get_gt_state
-from graph.integration_baseline.graph import pack_graphs
-from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
-from graph.integration_baseline.bc08_codec import ActionCodec
-from graph.integration_baseline.rollout_stop_clock import (PhysicsAudit,controller_audit,
-    validate_controller_command,reset_diagnostics,controller_semantics,numpy)
-from graph.integration_baseline.robot import robot_observation,state_schema,flatten_state
-from graph.persistent_geometry.contracts import CameraObservation
-from graph.persistent_geometry.self_filter import robot_surfaces
+from envs.maniskill import make_peg_insertion_env, get_gt_state
+from vla.contracts.graph import pack_graphs
+from vla.perception.tensor_online import TensorOnlineVisionAdapter as OnlineVisionAdapter
+from vla.action_codec import ActionCodec
+from vla.workflows.live_checks import (PhysicsAudit,
+    controller_audit,
+    validate_controller_command,
+    reset_diagnostics,
+    controller_semantics,
+    numpy)
+from vla.data.robot import robot_observation, state_schema, flatten_state
+from graph.geometry.contracts import CameraObservation
+from graph.geometry.self_filter import robot_surfaces
 from vla.perception.grounding import grounding_from_config, grounding_identity as policy_identity
-from visual.runtime.tracking import SAM2Tracker
-from visual.runtime.vision_packet import pose_matrix
+from vla.perception.tracking import SAM2Tracker
+from graph.perception.vision_packet import pose_matrix
 from utils.experiment_logger import ExperimentLogger
-from vla.data.files import read,write,sha,npz,checkpoint_load,append_csv,tensor_identity,now
+from vla.data.files import read, write, sha, npz, checkpoint_load, append_csv, tensor_identity, now
 from graph.current import CurrentGeometry
-from vla.integration.live_policy import CachedGraphPolicy,normalizer
+from vla.integration.live_policy import CachedGraphPolicy, normalizer
 from vla.workflows.components import components_from_config
 from vla.recording import snapshot_state, state_history_arrays
 
@@ -56,7 +60,7 @@ def sensors(env,obs,identity,t,schema):
     if state_schema(fields)!=schema:raise ValueError('live Robot76 schema changed')
     for name in ('qpos','qvel'):
         np.testing.assert_array_equal(numpy(obs['agent'][name])[0],fields[name])
-    from graph.persistent_geometry.tensor_camera import TensorCameraObservation,tensor_camera
+    from graph.geometry.tensor_camera import TensorCameraObservation, tensor_camera
     cameras=[]
     for name in ('base_camera','hand_camera'):
         c=obs['sensor_data'][name];p=obs['sensor_param'][name]
@@ -137,7 +141,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 masks.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
                 return masks
             graph,_,gate=geometry.build(cameras,data,surfaces,current_masks)
-            from visual.runtime.tensor_packet import numpy_packet
+            from graph.perception.tensor_packet import numpy_packet
             masks=numpy_packet(geometry.last_raw_masks)  # Explicit video artifact boundary only.
             packed=pack_graphs([graph],[(0,0)]).to(next(model.parameters()).device)
             state=torch.from_numpy(data['robot76'][None]).to(next(model.parameters()).device)
@@ -165,7 +169,7 @@ def run_episode(root,folder,model,norm,codec,detector,tracker,spec,step, *, smok
                 terminated=bool(terminated.item()),truncated=bool(truncated.item()),**measured))
             writer.write(video_frame(cameras,masks,model.variant,spec['seed'],step,t,measured))
             if t==0 or t%25==0 or any(first[k]==t+1 for k in first):
-                from graph.persistent_geometry.tensor_graph import numpy_graph
+                from graph.geometry.tensor_graph import numpy_graph
                 saved_graph=numpy_graph(graph)  # Explicit diagnostic dump only.
                 npz(folder/f'live_graph_t{t:04d}.npz',{k:getattr(saved_graph,k).numpy() for k in ['node_input','node_type','edge_index','edge_attr','edge_type']})
             if t%25==0:print(f'rollout {model.variant} step={step} seed={spec["seed"]} t={t} progress={statuses}',flush=True)
@@ -204,7 +208,7 @@ def preflight(root,device):
     root=Path(root).resolve();cfg=read(root/'config.json');frozen=read(root/'seeds_manifest.json')
     env=environment(root);records=[];original={e['seed']:e for e in read(root/'dataset_audit.json')['episodes']}
     try:
-        from graph.integration_baseline.rollout_stop_clock import time_contract
+        from vla.workflows.live_checks import time_contract
         clock=time_contract(env,dict(time_contract_seed=44000))
         # No Test12 reset/evaluation before model selection.
         for seed in [30003]+cfg['evaluation']['dev_seeds']+[44001]:

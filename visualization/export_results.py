@@ -16,7 +16,7 @@ from utils.experiment_artifacts import encoded
 from visualization.export_captures import export_captures
 from visualization.results import FRONTEND, build_catalog, public_catalog, resource_bytes
 from visualization.persistent import persistent_episode, persistent_frame
-from graph.integration_baseline.graph import EDGE_TYPES, NODE_TYPES
+from vla.contracts.graph import EDGE_TYPES, NODE_TYPES
 
 
 def digest(path):

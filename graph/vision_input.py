@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import copy
 
 import numpy as np
-from visual.runtime.object_groups import object_slices_match
+from graph.perception.object_groups import object_slices_match
 
 # Evaluation contract only. The receiver trusts the Vision candidate algorithm;
 # it checks supplied row algebra without Qhull or collinearity reconstruction.
@@ -28,7 +28,7 @@ def validate_packet(packet):
     """Validate this experiment's explicit schema, never infer missing metadata."""
     import torch
     if isinstance(packet.get('points'),torch.Tensor):
-        from visual.runtime.tensor_packet import validate_packet as validate_tensor
+        from graph.perception.tensor_packet import validate_packet as validate_tensor
         return validate_tensor(packet)
     version = packet.get('schema_version', 1)
     if type(version) is not int or version not in (1, 2):
@@ -104,9 +104,9 @@ def validate_packet(packet):
 
 
 def _validate_v2_edges(packet, n, oid, edge):
-    from visual.runtime.intra_object_edges import EDGE_POLICY
-    from visual.runtime.triangle_intra_object_edges import TRIANGLE_POLICY, triangles_to_edges
-    from visual.runtime.extended_delaunay_edges import DE_POLICY, EDE_POLICY
+    from graph.perception.intra_object_edges import EDGE_POLICY
+    from graph.perception.triangle_intra_object_edges import TRIANGLE_POLICY, triangles_to_edges
+    from graph.perception.extended_delaunay_edges import DE_POLICY, EDE_POLICY
     policy = packet.get('edge_policy')
     if policy not in (EDGE_POLICY, TRIANGLE_POLICY, DE_POLICY, EDE_POLICY, RAW_EDE_POLICY):
         raise ValueError('unknown v2 intra-object edge policy')
@@ -174,7 +174,7 @@ def _validate_raw_ede_metadata(packet, n, oid, component, edge):
 
 def _validate_edgewise_metadata(packet, n, oid, component, directed, extended):
     """Evaluation packet algebra/origin geometry; dense RGB-D is helper-owned."""
-    from visual.runtime.extended_delaunay_edges import collinear_order, directed_edges, ORIGINS
+    from graph.perception.extended_delaunay_edges import collinear_order, directed_edges, ORIGINS
     accepted = np.asarray(packet.get('accepted_edge_pairs'))
     origins = packet.get('accepted_edge_origins')
     if (accepted.dtype != np.int64 or accepted.ndim != 2 or accepted.shape[1] != 2
@@ -212,11 +212,13 @@ def _validate_edgewise_metadata(packet, n, oid, component, directed, extended):
 
 def _validate_v2_features(packet, n, source, oid, availability):
     """Measured fields and observation frame only; no encoder/imputation."""
-    from visual.runtime.vision_packet import (
-        FEATURE_FIELDS, DIAGNOSTIC_DTYPES, NUMERIC_CONTRACT,
-        validate_transform, pose_matrix, float32_tolerance,
-    )
-    from visual.runtime.coordinate_frames import packet_frame, feature_fields
+    from graph.perception.vision_packet import (FEATURE_FIELDS,
+        DIAGNOSTIC_DTYPES,
+        NUMERIC_CONTRACT,
+        validate_transform,
+        pose_matrix,
+        float32_tolerance)
+    from graph.perception.coordinate_frames import packet_frame, feature_fields
     frame = packet_frame(packet)
     if packet.get('feature_mode') != 'continuous':
         raise ValueError('v2 supports continuous mode only')
@@ -306,7 +308,7 @@ def receive_vision_packet(packet, *, robot_positions=None):
     """Preserve supplied point rows; optionally prepend three supplied robot rows."""
     import torch
     if isinstance(packet.get('points'),torch.Tensor):
-        from visual.runtime.tensor_packet import receive_packet
+        from graph.perception.tensor_packet import receive_packet
         return receive_packet(packet,robot_positions=robot_positions)
     validate_packet(packet)
     saved = copy.deepcopy(packet)

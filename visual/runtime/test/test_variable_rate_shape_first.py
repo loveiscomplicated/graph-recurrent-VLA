@@ -152,7 +152,8 @@ class SelectionTests(unittest.TestCase):
 
     def test_surface_initial_and_count_existing_API(self):
         prep=fixture()
-        with patch.object(task,'fps_indices',wraps=task.fps_indices) as fps:
+        from graph.perception import shape_first
+        with patch.object(shape_first,'fps_indices',wraps=task.fps_indices) as fps:
             s=task.select_object(prep,.25,0,17)
         self.assertEqual(fps.call_count,1)
         args,kwargs=fps.call_args

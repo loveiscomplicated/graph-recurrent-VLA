@@ -60,32 +60,9 @@ def write(path, value):
     Path(path).write_text(json.dumps(serial(value),ensure_ascii=False,indent=2,allow_nan=False)+'\n')
 
 
-def save_packet(path, packet):
-    """Lossless arrays plus JSON skeleton; no object arrays/pickle."""
-    arrays={}
-    def walk(v, key='packet'):
-        if isinstance(v,np.ndarray):
-            arrays[key]=v
-            return {'__array__':key}
-        if isinstance(v,dict):return {k:walk(x,key+'/'+k) for k,x in v.items()}
-        if isinstance(v,list):return [walk(x,key+'/'+str(i)) for i,x in enumerate(v)]
-        return v
-    skeleton=walk(packet)
-    arrays['schema_json']=np.array(json.dumps(skeleton))
-    np.savez_compressed(path,**arrays)
-    restored=read_packet(path)
-    if packet_digest(restored)!=packet_digest(packet):raise AssertionError('packet readback hash mismatch')
+from vla.data.packet_io import read_packet, save_packet
 
 
-def read_packet(path):
-    with np.load(path,allow_pickle=False) as a:
-        def walk(v):
-            if isinstance(v,dict):
-                if set(v)=={'__array__'}:return a[v['__array__']].copy()
-                return {k:walk(x) for k,x in v.items()}
-            if isinstance(v,list):return [walk(x) for x in v]
-            return v
-        return walk(json.loads(str(a['schema_json'])))
 
 
 def read_selection(frame, ratio, fields):

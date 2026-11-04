@@ -1,9 +1,9 @@
 """Existing Task08 GRU/head, with09-D Graph21 E0 or E1 at the same readout."""
 import torch
-from .policy import IntegrationPolicy
+from vla.integration.policy import IntegrationPolicy
 from gnn.edge_mlp import configure_live_encoder
-from graph.integration_baseline.robot import RobotNormalizer
-from graph.prototype.v2.state import StateNormalizer
+from vla.data.robot import RobotNormalizer
+from vla.data.normalization import StateStatistics as StateNormalizer
 from vla.data.files import read
 from pathlib import Path
 

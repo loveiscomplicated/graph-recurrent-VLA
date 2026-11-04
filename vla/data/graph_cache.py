@@ -12,16 +12,16 @@ import numpy as np
 import torch
 
 from vla.contracts import Graph, pack_graphs
-from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
-from graph.integration_baseline.rollout_stop_clock import compare_saved_sequence
+from vla.perception.tensor_online import TensorOnlineVisionAdapter as OnlineVisionAdapter
+from vla.workflows.live_checks import compare_saved_sequence
 from vla.perception.grounding import grounding_from_config, grounding_identity as policy_identity
-from visual.runtime.tracking import SAM2Tracker
+from vla.perception.tracking import SAM2Tracker
 from utils.experiment_logger import ExperimentLogger
-from vla.data.files import read,write,sha,npz,digest,tree_identity,now
-from graph.current import CurrentGeometry,validate_graph
+from vla.data.files import read, write, sha, npz, digest, tree_identity, now
+from graph.current import CurrentGeometry, validate_graph
 from vla.workflows.components import components_from_config
-from graph.persistent_geometry.coordinates import record_xyz
-from visual.runtime.coordinate_frames import check_frame, FRAME_NAMES
+from graph.geometry.coordinates import record_xyz
+from graph.perception.coordinate_frames import check_frame, FRAME_NAMES
 
 
 GRAPH_KEYS=('node_input','node_type','edge_index','edge_attr','edge_type')
@@ -34,9 +34,9 @@ def make_vision(device,dino,sam,*,config=None):
 
 
 def input_identity(root):
-    from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
+    from graph.geometry.wrist_gate_dispatch import default_wrist_gate_backend
     cfg=read(root/'config.json');audit=read(root/'dataset_audit.json')
-    frozen=Path(__file__).resolve().parents[2]/'graph/plan_a_geometry/protocol.json'
+    frozen=Path(__file__).resolve().parents[2]/'graph/geometry/protocol.json'
     cuda=torch.cuda.is_available()
     return dict(dataset_sha256=audit['dataset_sha256'],split_sha256=audit['split_sha256'],
         graph_config=cfg['geometry'],frozen_geometry_protocol_sha256=sha(frozen),
@@ -76,11 +76,11 @@ def cache_episode(root,dataset,entry,detector,tracker,log):
                     mm.update({c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras})
                     return mm
                 g,records,gate=geometry.build(cameras,data,surfaces,current_masks)
-                from graph.persistent_geometry.tensor_graph import numpy_graph
-                from graph.persistent_geometry.tensor_records import TensorRecords,numpy_records
+                from graph.geometry.tensor_graph import numpy_graph
+                from graph.geometry.tensor_records import TensorRecords, numpy_records
                 g=numpy_graph(g)  # Explicit archival boundary, after GPU Graph construction.
                 if isinstance(records,TensorRecords):records=numpy_records(records)
-                from visual.runtime.tensor_packet import numpy_packet
+                from graph.perception.tensor_packet import numpy_packet
                 mm=numpy_packet(geometry.last_raw_masks)  # Explicit cache artifact boundary.
                 records_by_id={r['persistent_node_id']:r for r in records}
                 ordered=[records_by_id[k] for k in g.packet['node_ids']]

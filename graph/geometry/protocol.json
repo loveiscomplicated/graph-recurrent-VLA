@@ -1,0 +1,91 @@
+{
+  "task": "09-D",
+  "revision": "plan_a_current_surface_v2_contract_corrected",
+  "seed": 42,
+  "final_seeds": [
+    73141,
+    73142
+  ],
+  "excluded_final_seeds": [
+    62091,
+    62092
+  ],
+  "final_access": "collect only after geometry/gate/encoder/probe selection freeze",
+  "development_capture": "/workspace/task09c/development_capture_runs/26c2b180003c417d8464ee60314c95fc",
+  "geometry_interval": 5,
+  "all_frames_camera_audit": true,
+  "point_cap": 128,
+  "native_hybrid_budget": 1024,
+  "merge_distance_m": 0.003,
+  "gate": {
+    "minimum_valid_points": 6,
+    "minimum_valid_depth_fraction": 0.5,
+    "minimum_clean_fraction": 0.25,
+    "component_radius_m": 0.012,
+    "minimum_component_fraction": 0.6,
+    "minimum_local_support_fraction": 0.65,
+    "maximum_component_diameter_m": 0.35,
+    "local_neighbor_radius_m": 0.02,
+    "maximum_identity_conflict_fraction": 0.1,
+    "maximum_main_overlap_distance_m": 0.02,
+    "main_overlap_gate": "only actual overlapping projective surfaces; no main presence requirement"
+  },
+  "selection": {
+    "shape_first_keep_ratio": 0.5,
+    "hybrid_surface": "post-erosion-fallback/pre2048/SOR k16 std2 candidates BEFORE legacy final FPS; structural anchors protected; anchored global FPS",
+    "hybrid_overflow": "stable source-ID-seeded spatial FPS of structural anchors only",
+    "dedup": "greedy structural-priority then stable source-ID representative within3mm; retain representative measured XYZ/F5 and attach other source IDs",
+    "legacy_fused_native_maximum_per_object": 1024
+  },
+  "training": {
+    "updates": 2000,
+    "batch": 16,
+    "lr": 0.001,
+    "weight_decay": 1e-05,
+    "seed": 42,
+    "encoders": [
+      "E0",
+      "E1"
+    ],
+    "variants": [
+      "C0_SF",
+      "C3_SF",
+      "C3_L",
+      "C3_H"
+    ],
+    "selection": "minimum validation geometry loss every50 updates; first tie",
+    "diagnostic_target": "position6 + current visible surface30, same09-C",
+    "geometry_candidate_gate": "exclude only invalid/leaking/nonfinite contracts; empirical suitability separately reported"
+  },
+  "suitability": {
+    "aggregation": "episode macro mean; paired conditions same episode/frame/object/budget; evaluation only after freeze",
+    "peg_coverage_minimum_absolute_gain": 0.05,
+    "box_wrist_sources_maximum": 0,
+    "box_distance_maximum_ratio_to_C0": 1.1,
+    "peg_missing_maximum_absolute_increase": 0.02,
+    "purity_maximum_absolute_drop": 0.03,
+    "boundary_maximum_absolute_drop": 0.05,
+    "gate_correct_wrist_source_minimum_retention": 0.85,
+    "self_filter_correct_object_minimum_preservation": 0.9,
+    "finger_near_correct_object_minimum_preservation": 0.85,
+    "final_position_maximum_ratio_to_C0": 1.1,
+    "final_delta_maximum_ratio_to_C0": 1.1,
+    "minimum_independent_episodes": 2,
+    "GO": "all supported primary perception/geometry/representation criteria pass with nonzero denominators",
+    "CONDITIONAL": "coverage benefit with at least one material failure or unsupported required stratum; do not infer closed-loop success",
+    "NO_GO": "coverage benefit absent or contamination/missing materially worsens on final"
+  },
+  "prohibited": [
+    "persistent_map",
+    "GT_gate",
+    "future_geometry",
+    "policy_training",
+    "GRU",
+    "BC",
+    "policy_rollout",
+    "install",
+    "commit",
+    "publish",
+    "overwrite"
+  ]
+}

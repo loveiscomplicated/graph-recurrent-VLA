@@ -5,7 +5,6 @@ The existing graph videos and graph schema are retained. FPS is a media variant.
 """
 
 import argparse
-import importlib.util
 import json
 from pathlib import Path
 
@@ -19,11 +18,8 @@ from visualization.render_captures import BG, COLORS, font, projection, sha256, 
 
 
 def legacy_module():
-    source = Path(__file__).resolve().parents[1] / 'visual/scripts/pointcloud.py'
-    spec = importlib.util.spec_from_file_location('visual_legacy_pointcloud', source)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module, source
+    from graph.perception import pointcloud
+    return pointcloud, Path(pointcloud.__file__)
 
 
 def extract_frame(sensor, masks, camera, rng, extractor):

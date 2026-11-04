@@ -4,8 +4,8 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from visual.runtime.test import run_variable_rate_shape_first as reference
-from visual.runtime.test import run_voxel_structural_sampling as voxel
+from graph.perception import shape_first as reference
+from graph.perception import voxel
 from visual.runtime.sampling import fps_indices,extract_candidates,SamplingConfig
 from visual.runtime.graph_perception import process_cuda,to_cpu_evidence
 from visual.runtime.test.test_graph_perception import frame

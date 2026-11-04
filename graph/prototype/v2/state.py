@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 import torch
 from .goals import goal_geometry, rotation6
+from vla.data.normalization import StateStatistics
 
 STATE_DIMS={'none':0,'proprio':9,'goal':31}
 
@@ -23,9 +24,7 @@ def shared_features(g,qvel,mode='goal'):
 
 
 @dataclass
-class StateNormalizer:
-    mean:torch.Tensor
-    std:torch.Tensor
+class StateNormalizer(StateStatistics):
 
     @classmethod
     def fit(cls,g,qvel,mode):
@@ -33,4 +32,3 @@ class StateNormalizer:
         return cls(features.mean(0),features.std(0,correction=0).clamp_min(.001))
 
     def apply(self,g,qvel,mode):return (shared_features(g,qvel,mode)-self.mean)/self.std
-    def as_dict(self):return dict(mean=self.mean,std=self.std)

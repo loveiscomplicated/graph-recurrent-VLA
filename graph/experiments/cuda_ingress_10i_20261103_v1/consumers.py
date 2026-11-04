@@ -1,22 +1,4 @@
-"""Reuse existing exact native small-graph operations, scoped to one build.
-
-Task-local contexts already use process-local patches. This context is likewise
-not a concurrent builder API. It does not alter sampling, radii or tie rules.
-"""
-from contextlib import ExitStack
-from unittest.mock import patch
-from graph.experiments.graph_latency_10i_20261103_v2 import native,edges
-
-
-class SmallGraphConsumers(ExitStack):
-    def __enter__(self):
-        super().__enter__()
-        import graph.plan_a_geometry.core as core
-        import graph.persistent_geometry.graph as gm
-        original=core.deduplicate
-        self.enter_context(patch.object(core,'deduplicate',lambda rows,distance=.003:
-            native.deduplicate(rows,distance,fallback=original)))
-        self.enter_context(patch.object(core,'farthest_rows',native.farthest_rows))
-        self.enter_context(patch.object(gm,'farthest_rows',native.farthest_rows))
-        self.enter_context(patch.object(gm,'surface_edges',edges.surface_edges))
-        return self
+"""Compatibility alias; active implementation: graph.backends.resident.consumers."""
+from importlib import import_module as _import_module
+import sys as _sys
+_sys.modules[__name__] = _import_module('graph.backends.resident.consumers')

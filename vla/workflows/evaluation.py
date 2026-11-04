@@ -9,7 +9,7 @@ from vla.data.graph_cache import CachedDataset
 from vla.integration.live_policy import normalizer
 from vla.workflows.components import components_from_config
 from vla.workflows.training import offline
-from graph.integration_baseline.bc08_codec import ActionCodec
+from vla.action_codec import ActionCodec
 
 
 def evaluate(root, checkpoint, *, split='validation', device='cuda'):

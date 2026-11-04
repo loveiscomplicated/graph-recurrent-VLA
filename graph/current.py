@@ -5,11 +5,11 @@ import xml.etree.ElementTree as ET
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from graph.persistent_geometry.contracts import CameraObservation, synchronized
-from graph.persistent_geometry.self_filter import LinkSurface
-from graph.plan_a_geometry.core import PlanA, budget
-from visual.runtime.vision_packet import pose_matrix
-from visual.runtime.coordinate_frames import check_frame, FRAME_NAMES
+from graph.geometry.contracts import CameraObservation, synchronized
+from graph.geometry.self_filter import LinkSurface
+from graph.geometry.core import PlanA, budget
+from graph.perception.vision_packet import pose_matrix
+from graph.perception.coordinate_frames import check_frame, FRAME_NAMES
 from vla.data.files import read, sha
 
 
@@ -94,8 +94,8 @@ class CurrentGeometry:
     def __init__(self, assets, schema, *, perception_backend='triton_fused', coordinate_frame='ee',robot_filter_backend=None):
         from functools import partial
         import torch
-        from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
-        from visual.runtime.graph_perception import make_packet,make_packet_cuda
+        from graph.geometry.wrist_gate_dispatch import default_wrist_gate_backend
+        from graph.perception.graph_perception import make_packet, make_packet_cuda
         if perception_backend not in ('triton_fused','cpu','cuda_resident'):
             raise ValueError('unknown Graph perception backend')
         # The default geometry must remain usable when CUDA is absent. An
@@ -109,7 +109,7 @@ class CurrentGeometry:
         self.robot_preparation=None;self.last_robot_schedule=None;self.last_raw_masks=None;self.last_wrist_gate_backend=None
         self.coordinate_frame=check_frame(coordinate_frame)
         self.fk = RobotFK(assets,schema)
-        frozen = read(Path(__file__).resolve().parent/'plan_a_geometry/protocol.json')
+        frozen = read(Path(__file__).resolve().parent/'geometry/protocol.json')
         self.system = PlanA('base_camera','hand_camera',frozen,
             packet_builder=partial(make_packet,backend='triton_fused' if perception_backend=='cuda_resident' else perception_backend,
                                    coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame,
@@ -117,7 +117,7 @@ class CurrentGeometry:
             wrist_gate_backend='auto')
         self.tensor_geometry=None
         if perception_backend=='cuda_resident':
-            from graph.experiments.cuda_ingress_10i_20261103_v1.pipeline import TensorGeometry
+            from graph.backends.resident.pipeline import TensorGeometry
             self.tensor_geometry=TensorGeometry(self.system)
         self.mount = None
 
@@ -136,7 +136,7 @@ class CurrentGeometry:
             robot76=robot,robot_world_geometry=pads,tcp_pose=tcp,qpos=robot[:9],
             robot_link_world=np.stack([s.world_from_link for s in surfaces]))
         if tensor_images and self.system.tensor_packet_builder is not None:
-            from graph.persistent_geometry.tensor_camera import tensor_camera
+            from graph.geometry.tensor_camera import tensor_camera
             cameras=[tensor_camera(c) for c in cameras]
         return cameras,data,surfaces
 
@@ -187,8 +187,8 @@ class CurrentGeometry:
                 if self.robot_preparation is None:
                     import torch
                     if not torch.cuda.is_available():raise RuntimeError('default robot filter requires CUDA; select explicit CPU diagnostics')
-                    from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import CudaRobotFilter
-                    from graph.plan_a_bc.tensor_ingress import TensorRobotPreparation
+                    from graph.backends.cuda_robot import CudaRobotFilter
+                    from graph.backends.tensor_ingress import TensorRobotPreparation
                     self.robot_preparation=TensorRobotPreparation(CudaRobotFilter())
                 snapshot={k:(v.copy() if isinstance(v,np.ndarray) else v) for k,v in data.items()}
                 job=self.robot_preparation.submit(cameras,surfaces)
@@ -201,7 +201,7 @@ class CurrentGeometry:
                     if mask_transform is None:
                         clean=self.robot_preparation.filter(job,gpu)
                     else:
-                        from graph.plan_a_bc.robot_frame import RobotFilterFrame
+                        from graph.backends.robot_frame import RobotFilterFrame
                         # Correction can propose pixels outside the original masks.
                         # Classify all pixels once, preserving its full-screen evidence.
                         coverage={name:torch.stack((torch.ones_like(value[0]),torch.zeros_like(value[1]))) for name,value in gpu.items()}
@@ -225,19 +225,19 @@ class CurrentGeometry:
         resident = self.system.tensor_packet_builder is not None
         views=None
         if resident and clean_masks is not None:
-            from graph.persistent_geometry.tensor_gate import prepare_tensor_gate
+            from graph.geometry.tensor_gate import prepare_tensor_gate
             prepared,views=prepare_tensor_gate(cameras,data,masks,clean_masks,self.system.protocol,
                 coordinate_frame=self.coordinate_frame,depths=depths)
         else:
             prepared=(self.system.prepare(cameras,data,masks,surfaces) if clean_masks is None else
                 self.system.prepare(cameras,data,masks,surfaces,clean_masks=clean_masks))
             if resident:
-                from graph.persistent_geometry.tensor_fusion import prepare_tensor_views
+                from graph.geometry.tensor_fusion import prepare_tensor_views
                 views=prepare_tensor_views(cameras,prepared['conditions']['C3'],coordinate_frame=self.coordinate_frame)
         pools,_,_,_ = self.system.represent(cameras,prepared,'C3',('SF',),tensor_records=resident,views=views)
         records = pools['SF']
         if resident:
-            from graph.persistent_geometry.tensor_records import budget_tensor
+            from graph.geometry.tensor_records import budget_tensor
             records = budget_tensor(records,128)
         else:
             records = budget(records,128)
@@ -248,7 +248,7 @@ class CurrentGeometry:
 
     def _finish(self,graph,records,gate,data):
         t=int(data['timestep']);episode=str(data['episode'])
-        from graph.persistent_geometry.tensor_records import TensorRecords
+        from graph.geometry.tensor_records import TensorRecords
         if isinstance(records,TensorRecords):
             import torch
             if records.episode!=episode or records.timestep!=t:raise ValueError('noncurrent tensor records')

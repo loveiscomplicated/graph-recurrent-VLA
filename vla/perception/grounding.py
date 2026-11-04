@@ -1,5 +1,5 @@
 """Terra-only is the default; legacy auth fallback remains explicit."""
-from visual.runtime.live_grounding import LiveGrounding, policy_identity
+from vla.perception.live_grounding import LiveGrounding, policy_identity
 
 
 def _auth_fallback(config):
