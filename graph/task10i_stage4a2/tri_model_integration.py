@@ -92,7 +92,8 @@ class CausalCorrection:
             policy='first supported reference frozen; no self-updating bank',GT_used=False,
             origin='accepted_fresh_memory' if key in self.active else 'existing_baseline_prediction'))
 
-    def process(self,cameras,data,surfaces,baseline_masks,ever_found):
+    def process(self,cameras,data,surfaces,baseline_masks,ever_found,*,robot_frame=None):
+        prepare=self.geometry.system.prepare if robot_frame is None else robot_frame.prepare
         synchronized(cameras);t=int(data['timestep']);episode=str(data['episode'])
         if {c.camera for c in cameras}!={'base_camera','hand_camera'}:raise ValueError('two named cameras required')
         if episode!=self.identity or t!=self.last_t+1:raise ValueError('explicit causal episode reset required')
@@ -109,14 +110,14 @@ class CausalCorrection:
             self.tracker.research_context=dict(episode=episode,camera=key[0],object_id=key[1],timestep=t,
                 anchor_t=state.anchor_t,kind='propagate_override')
             state.append(lookup[key[0]].rgb,t);current[key[0]][key[1]]=state.current()
-        prepared=self.geometry.system.prepare(cameras,data,current,surfaces)
+        prepared=prepare(cameras,data,current,surfaces)
         if self.late_baseline_handoff:
             for key in list(self.active):
                 newly_initialized=bool(ever_found.get(key,False)) and not self.baseline_found.get(key,False)
                 if not newly_initialized or not self.early_anchors.get(key,False):continue
                 c,oid=key;camera=lookup[c];slot=self.slots[key]
                 trial={name:m.copy() for name,m in current.items()};trial[c][oid]=original[c][oid]
-                proposed=self.geometry.system.prepare(cameras,data,trial,surfaces)
+                proposed=prepare(cameras,data,trial,surfaces)
                 evidence,clean,center=self.evidence(camera,oid,trial,proposed,t,key)
                 old_clean=prepared['clean'][c][oid]&np.isfinite(camera.depth)
                 overlap=float((old_clean&clean).sum()/old_clean.sum()) if old_clean.any() else 0.
@@ -194,7 +195,7 @@ class CausalCorrection:
                         state=self.anchor_factory(self.tracker,camera.rgb,box,t);all_states.append(state)
                         mask=state.current()
                         trial={name:value.copy() for name,value in current.items()};trial[c][oid]=mask
-                        trial_prepared=self.geometry.system.prepare(cameras,data,trial,surfaces)
+                        trial_prepared=prepare(cameras,data,trial,surfaces)
                         candidate_evidence,candidate_clean,candidate_center=self.evidence(camera,oid,trial,trial_prepared,t,key,self.presence(state))
                         supported=slot.usable(candidate_evidence)
                         temporal=bool(prior is not None and 0<t-prior[0]<=10 and any(box_iou(box,b)>=.5 for b in prior[1]))
@@ -248,7 +249,7 @@ class CausalCorrection:
             # A preceding semantic correction changes overlap support for the
             # next slot; recompute using only the current predicted masks.
             if event['accepted'] or event.get('invalid_mask_suppressed'):
-                prepared=self.geometry.system.prepare(cameras,data,current,surfaces)
+                prepared=prepare(cameras,data,current,surfaces)
             event['result_state']=slot.state.value;self.events.append(event)
         assert np.array_equal(current['hand_camera'][1],original['hand_camera'][1]),'Wrist Box changed'
         assert all(np.array_equal(baseline_masks[c],m) for c,m in original.items()),'baseline masks mutated'

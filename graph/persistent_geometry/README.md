@@ -29,6 +29,33 @@ observations. Compatibility upload canonicalizes other accepted NumPy dtypes.
 Audit `count` is shape metadata; `unknown_conflict` remains an int64 tensor until
 the caller explicitly materializes it for logging.
 
+The live `CurrentGeometry._build_prepared` path calls `prepare_tensor_gate`
+with resident raw/clean masks and optional float64 depths from robot preparation.
+It validates/prepares one current `TensorViews` snapshot. Each prepared camera
+also holds World calibration; `views.world_views()` shares depth, masks and
+intrinsics while selecting those World matrices without uploads. The wrist gate
+always judges World geometry, including its axis-aligned component extent,
+regardless of the selected Graph frame. Graph observations still use the requested
+EE (default) or World frame after gating. Reuse is confined to the same snapshot;
+foreign episode/time/pose identities are rejected by the gate.
+
+The CUDA gate packs all trace statistics into one host readback and checks label
+convergence after up to four integer propagation steps. This preserves the
+original radius predicates, canonical component order, iteration limit and full
+trace. CUDA remains the default whenever available; GPU failures propagate and
+only CUDA absence selects the existing CPU gate. The NumPy compatibility adapter
+uploads each clean mask once and explicitly downloads the accepted mask.
+
+The World gate shares each cell-pair compaction index between both endpoint
+arrays. A stable cell-code sort feeds `unique_consecutive`, counts and the
+original-point inverse mapping; canonical component labels retain their original
+first-point order. CUDA World-point reconstruction uses one FP64 Triton kernel
+with round-to-nearest division and FMA disabled. CUDA label propagation reads
+immutable input labels, atomically reduces into a separate copy, then pointer
+jumps into a separate output buffer. Its per-block change flags check the last
+step of each batch, preserving complete convergence and the original iteration
+limit. The existing CPU gate and explicit CPU test helpers remain available.
+
 Opt-in feasibility implementation for RGB-D geometry, object-local surfels,
 multi-view association, surface graphs and diagnostic geometry encoders. It does
 not change the shared simulator, existing vision defaults, BC datasets, policy

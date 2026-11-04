@@ -243,3 +243,6 @@ __marimo__/
 .secrets/
 wandb.env
 hf.env
+
+# Local, untracked 512 RGB-D corner feasibility prototype
+/local_corner_probe_10i_20261104/

@@ -33,6 +33,13 @@ State clearly when a backend or device was not executed on the current host.
 
 ## Research report location
 
+- For Task10-I main-live optimization, remaining costs, or repository cleanup,
+  start with the [live report index](docs/visual-graph-integration/README.md).
+  The [main-live coverage and cost report](docs/visual-graph-integration/10i_live_nonrobot_coverage_audit_20261104.md)
+  includes the section `주 live에 남은 부가비용 구체화` (mask readback,
+  video encoding, diagnostic export, synchronization, metadata and GPU copies).
+  Its audit excludes robot filtering and the wrist gate. Treat its dated
+  findings as evidence to recheck against current code, not permanent defects.
 - Collect final experiment, analysis, and diagnostic Markdown reports in
   `docs/visual-graph-integration/`, using the task identifier in the filename.
   Save the full report there, not only a summary or a link to `outputs/`.

@@ -18,8 +18,8 @@ CUDA is unavailable; this adapter never catches GPU errors to retry on CPU.
 """
     import torch
     from .tensor_gate import wrist_gate_tensor
-    clean = {name: torch.as_tensor(value, device='cuda') for name, value in clean_all.items()}
-    clean[camera.camera] = torch.as_tensor(clean_masks, device='cuda')
+    clean = {name: torch.as_tensor(clean_masks if name == camera.camera else value, device='cuda')
+             for name, value in clean_all.items()}
     raw = {camera.camera: torch.as_tensor(raw_masks, device='cuda')}
     accepted, trace = wrist_gate_tensor(cameras, raw, clean, cfg, wrist=camera.camera)
     return accepted.cpu().numpy(), trace

@@ -203,6 +203,15 @@ class CudaRobotFilter:
             self._depth_tables[device]=torch.as_tensor(values,device=device)
         return self._depth_tables[device]
 
+    @torch.inference_mode()
+    def depth_tensor(self,raw):
+        """Convert an already resident current signed-mm observation once."""
+        if not isinstance(raw,torch.Tensor) or not raw.is_cuda or raw.dtype!=torch.int16 or raw.ndim!=2:
+            raise ValueError('CUDA int16 depth [H,W] required')
+        raw=raw.contiguous();depth=torch.empty(raw.shape,device=raw.device,dtype=torch.float64)
+        _depth_mm[(triton.cdiv(raw.numel(),256),)](raw,self._depth_table(raw.device),depth,raw.numel())
+        return depth
+
     def _camera_rays(self,camera,device):
         h,w=camera.depth_raw_mm.shape;k_cpu=np.asarray(camera.intrinsic,np.float64)
         key=(h,w,k_cpu.tobytes(),device)
@@ -217,7 +226,7 @@ class CudaRobotFilter:
         return rays
 
     @staticmethod
-    def prepare_surfaces(surfaces,cameras=()):
+    def prepare_surfaces(surfaces,cameras=(),*,executor=None):
         """Explicit current-frame snapshot, shared only by its camera calls."""
         vertices=[s.world_vertices for s in surfaces]
         camera_bounds={}
@@ -228,8 +237,10 @@ class CudaRobotFilter:
                  for i in range(len(vertices))] if camera_bounds else [True]*len(vertices)
         # Retain every original link slot, including invisible shapes. This
         # preserves owner indices and the small-resolution grouped reduction.
-        hulls=[(v,ConvexHull(v).equations if visible[i] else np.empty((0,4),np.float64))
-               for i,v in enumerate(vertices)]
+        def prepare(item):
+            i,v=item
+            return v,ConvexHull(v).equations if visible[i] else np.empty((0,4),np.float64)
+        hulls=list(executor.map(prepare,enumerate(vertices))) if executor is not None else list(map(prepare,enumerate(vertices)))
         starts=np.r_[0,np.cumsum([len(eq) for _,eq in hulls])].astype(np.int64)
         equations=np.concatenate([eq for _,eq in hulls]) if hulls else np.empty((0,4),np.float64)
         # One frame-local upload contains equations, contiguous normals and all

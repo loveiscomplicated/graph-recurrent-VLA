@@ -33,9 +33,9 @@ class LosslessFrames(ObservedFrames):
 class LosslessAdapter(OnlineVisionAdapter):
     def reset(self,episode_identity):
         super().reset(episode_identity);self.images=LosslessFrames()
-    def process(self,rgb,episode_identity,timestep):
+    def process(self,rgb,episode_identity,timestep,*,mask_device='cpu'):
         self.images.pending_rgb=np.asarray(rgb).copy()
-        return super().process(rgb,episode_identity,timestep)
+        return super().process(rgb,episode_identity,timestep,mask_device=mask_device)
 
 
 WINDOWS=[dict(episode='10i_stage3_10i_s1_0924_full_task',last=20),

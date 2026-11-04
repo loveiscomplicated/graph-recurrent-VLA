@@ -92,10 +92,10 @@ def trace_baseline(root):
     original_process = OnlineVisionAdapter.process
     original_single = SAM2VideoPredictor._run_single_frame_inference
 
-    def process(self, rgb, episode_identity, timestep):
+    def process(self, rgb, episode_identity, timestep, **kwargs):
         context.update(episode_id=episode_identity, timestep=timestep,
                        adapter_identity=id(self))
-        return original_process(self, rgb, episode_identity, timestep)
+        return original_process(self, rgb, episode_identity, timestep, **kwargs)
 
     def describe(value):
         if torch.is_tensor(value):

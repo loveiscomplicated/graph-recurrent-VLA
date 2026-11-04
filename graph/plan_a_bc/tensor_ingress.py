@@ -7,7 +7,6 @@ import numpy as np
 import torch
 from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.preparation import RobotFilterPreparation,PendingPreparation
 from graph.persistent_geometry.tensor_camera import TensorCameraObservation,tensor_camera
-from graph.persistent_geometry.tensor_fusion import depth_from_mm
 from graph.persistent_geometry.contracts import synchronized
 from graph.persistent_geometry.self_filter import LinkSurface
 
@@ -26,7 +25,11 @@ class TensorRobotPreparation(RobotFilterPreparation):
             shapes=tuple(LinkSurface(s.link,np.array(s.local_vertices,copy=True),np.array(s.world_from_link,copy=True)) for s in surfaces)
             future=self._executor.submit(self.robot_filter.prepare_surfaces,shapes,snapshots)
             job=PendingPreparation(snapshots,shapes,future);self._pending=job
-        self.depths={c.camera:depth_from_mm(torch.as_tensor(c.depth_raw_mm,device='cuda')) for c in job.cameras}
+        try:
+            self.depths={c.camera:self.robot_filter.depth_tensor(torch.as_tensor(c.depth_raw_mm,device='cuda')) for c in job.cameras}
+        except BaseException:
+            self.discard(job)
+            raise
         return job
 
     def filter(self,job,masks,**kwargs):

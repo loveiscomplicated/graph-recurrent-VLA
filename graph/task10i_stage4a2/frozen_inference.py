@@ -38,6 +38,50 @@ def geometry_artifacts(graph, provenance, episode, timestep):
             ('node_input','node_type','edge_index','edge_attr','edge_type')})
 
 
+def infer_frame(geometry,adapters,cameras,data,surfaces,episode,t,detector,condition,*,policy=None):
+    """Keep SAM2 masks on CUDA and share one robot result with correction."""
+    from visual.runtime.tensor_packet import numpy_packet
+    state=dict(records=[],initializations=[],found={})
+
+    def current_masks():
+        masks={}
+        for camera in cameras:
+            detector.context=dict(episode_id=episode,camera=camera.camera,decision_timestep=t,condition=condition)
+            mask,record=adapters[camera.camera].process(camera.rgb,episode,t,mask_device='cuda')
+            masks[camera.camera]=mask
+            state['records'].append(dict(condition=condition,camera=camera.camera,**record))
+            for model_id in record['new_object_ids']:
+                name=('peg','box')[model_id-1]
+                state['initializations'].append(dict(camera=camera.camera,object_id=model_id-1,timestep=t,
+                    **adapters[camera.camera].found[name]))
+            for oid,name in enumerate(('peg','box')):
+                state['found'][camera.camera,oid]=name in adapters[camera.camera].found
+        state['baseline_masks']=masks
+        state['baseline_end']=time.perf_counter()
+        return masks
+
+    def correction(raw,robot_frame):
+        # The existing correction state machine consumes NumPy masks. This is
+        # its explicit boundary AFTER GPU robot classification, never before it.
+        host=numpy_packet(raw)
+        for value in host.values():value.setflags(write=False)
+        corrected=policy.process(cameras,data,surfaces,host,state['found'],robot_frame=robot_frame)
+        state['correction_end']=time.perf_counter()
+        # Retain original CUDA masks when correction leaves a camera unchanged.
+        return {name:raw[name] if np.array_equal(value,host[name]) else value for name,value in corrected.items()}
+
+    if policy is None:
+        graph,provenance,gate=geometry.build(cameras,data,surfaces,current_masks)
+        state['correction_end']=state['baseline_end']
+    else:
+        graph,provenance,gate=geometry.build(cameras,data,surfaces,current_masks,mask_transform=correction)
+    state['masks']=geometry.last_raw_masks
+    state['robot_filter_backend']=geometry.robot_filter_backend
+    state['robot_preparation']=geometry.last_robot_schedule
+    state['shared_robot_classification']=policy is not None and geometry.robot_filter_backend=='cuda'
+    return graph,provenance,gate,state
+
+
 class TimedDetector:
     def __init__(self,detector):self.detector=detector;self.calls=[];self.context={}
     def __call__(self,rgb,prompt):
@@ -182,30 +226,25 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                                 torch.cuda.synchronize();start=time.perf_counter()
                                 di=len(detector.calls);si=len(sam_times);fi=len(features.calls) if features is not None else 0
                                 ss=len(sam_stages);ff=len(feature_events)
-                                # Correction/DINO/SAM2 keep their original host RGB-D
-                                # contract; geometry uploads current inputs for its GPU gate.
+                                # Preserve recorded JPEG/PNG/model inputs. Only mask
+                                # output and current robot classification move to CUDA.
                                 cameras,data,surfaces=geometry.from_h5(raw,t,episode,tensor_images=False)
-                                values={};found={}
-                                for camera in cameras:
-                                    detector.context=dict(episode_id=episode,camera=camera.camera,decision_timestep=t,condition=condition)
-                                    mask,record=adapters[camera.camera].process(camera.rgb,episode,t)
-                                    values[camera.camera]=mask;records.append(dict(condition=condition,camera=camera.camera,**record))
-                                    for model_id in record['new_object_ids']:
-                                        name=('peg','box')[model_id-1]
-                                        initializations.append(dict(camera=camera.camera,object_id=model_id-1,timestep=t,
-                                            **adapters[camera.camera].found[name]))
-                                    for oid,name in enumerate(('peg','box')):found[camera.camera,oid]=name in adapters[camera.camera].found
-                                baseline_end=time.perf_counter()
-                                baseline_snapshot=values
-                                if policy is not None:values=policy.process(cameras,data,surfaces,values,found)
-                                correction_end=time.perf_counter()
-                                graph,provenance,gate=geometry.build(cameras,data,surfaces,values)
+                                graph,provenance,gate,current=infer_frame(geometry,adapters,cameras,data,surfaces,
+                                    episode,t,detector,condition,policy=policy)
+                                baseline_end=current['baseline_end'];correction_end=current['correction_end']
                                 validate_graph(graph);torch.cuda.synchronize();end=time.perf_counter()
+                                records.extend(current['records']);initializations.extend(current['initializations'])
                                 graphs.append(geometry_artifacts(graph,provenance,episode,t))
+                                from visual.runtime.tensor_packet import numpy_packet
+                                values=numpy_packet(current['masks'])
                                 masks.append(np.packbits(np.stack([values[c] for c in CAMERAS]).ravel()))
-                                if policy is not None:internal_baseline.append(np.packbits(np.stack([baseline_snapshot[c] for c in CAMERAS]).ravel()))
+                                if policy is not None:
+                                    baseline_snapshot=numpy_packet(current['baseline_masks'])
+                                    internal_baseline.append(np.packbits(np.stack([baseline_snapshot[c] for c in CAMERAS]).ravel()))
                                 feature_calls=features.calls[fi:] if features is not None else []
                                 timings.append(dict(timestep=t,end_to_end_ms=1000*(end-start),
+                                    robot_filter_backend=current['robot_filter_backend'],robot_preparation=current['robot_preparation'],
+                                    shared_robot_classification=current['shared_robot_classification'],
                                     wrist_gate_backend=geometry.last_wrist_gate_backend,
                                     baseline_and_input_ms=1000*(baseline_end-start),
                                     correction_ms=1000*(correction_end-baseline_end),graph_ms=1000*(end-correction_end),
@@ -237,6 +276,8 @@ def run(root,expected,condition,geometry_cache=False,lazy_matching=False,enginee
                                     ('state_machine.json',{str(k):v.events for k,v in policy.slots.items()})]:write(folder/filename,value)
                         if features is not None:write(folder/'feature_calls.json',features.calls)
                         receipt=dict(episode=episode,parent_id=entry['parent_id'],frames=len(masks),condition=condition,
+                            robot_filter_backend=geometry.robot_filter_backend,robot_preparation=geometry.last_robot_schedule,
+                            shared_robot_classification=policy is not None and geometry.robot_filter_backend=='cuda',
                             wrist_gate_policy='cuda_if_available_else_cpu',wrist_gate_backend=geometry.last_wrist_gate_backend,
                             source_config_sha256=sha(frozen),raw_sha256=entry['raw_sha256'],GT_forward_input=False,
                             geometry_cache=geometry_cache,lazy_matching=lazy_matching,actual_dino_calls=len(detector.calls),

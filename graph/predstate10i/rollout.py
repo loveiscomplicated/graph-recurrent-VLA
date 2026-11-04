@@ -70,10 +70,13 @@ def episode(old,out,model,norm,codec,detector,tracker,seed,condition,stage,polic
         for t in range(horizon):
             token=physics.token();tick=time.perf_counter()
             cameras,data,surfaces=sensors(env,obs,identity,t,norm.schema)
-            masks={c.camera:adapters[c.camera].process(c.rgb,identity,t)[0] for c in cameras}
-            graph,_,gate=geometry.build(cameras,data,surfaces,masks)
-            inputs={k:getattr(graph,k).numpy() for k in GRAPH_KEYS};inputs['robot76']=data['robot76']
-            rgbd={c.camera:dict(rgb=c.rgb,depth=c.depth_raw_mm,intrinsic=c.intrinsic if hasattr(c,'intrinsic') else numpy(obs['sensor_param'][c.camera]['intrinsic_cv']),extrinsic=numpy(obs['sensor_param'][c.camera]['extrinsic_cv'])) for c in cameras}
+            def current_masks():
+                return {c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras}
+            graph,_,gate=geometry.build(cameras,data,surfaces,current_masks)
+            from visual.runtime.tensor_packet import numpy_packet
+            masks=numpy_packet(geometry.last_raw_masks)
+            inputs={k:numpy(getattr(graph,k)) for k in GRAPH_KEYS};inputs['robot76']=data['robot76']
+            rgbd={c.camera:dict(rgb=numpy(c.rgb),depth=numpy(c.depth_raw_mm),intrinsic=c.intrinsic if hasattr(c,'intrinsic') else numpy(obs['sensor_param'][c.camera]['intrinsic_cv']),extrinsic=numpy(obs['sensor_param'][c.camera]['extrinsic_cv'])) for c in cameras}
             input_hash=nested_hash(inputs);rgbd_hash=nested_hash(rgbd);state_hash=nested_hash(physical(env,expert))
             before_hidden=nested_hash(hidden);pre=evaluation_measure(env,initial_z,cfg)
             phase=expert.phase
@@ -167,6 +170,7 @@ def episode(old,out,model,norm,codec,detector,tracker,seed,condition,stage,polic
             if post['success'] or term.item() or trunc.item():
                 reason='success' if post['success'] else 'termination' if term.item() else 'time_limit';break
     finally:
+        geometry.close()
         writer.release();physics.close();h1.remove();h2.remove()
         for a in adapters.values():a.close()
         detector.cache.clear();env.close();torch.cuda.empty_cache()

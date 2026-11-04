@@ -36,23 +36,29 @@ def install(geometry):
     function.__kwdefaults__=original.__kwdefaults__
     native=types.MethodType(function,geometry.system)
     prepared={};last_frame=[None]
-    def prepare(cameras,data,masks,surfaces,*,clean_masks=None):
+    def prepare(cameras,data,masks,surfaces,*,clean_masks=None,robot_diagnostics=None):
         frame=tuple((c.episode,c.timestep,c.camera,c.timestamp) for c in cameras)
         if frame!=last_frame[0]:last_frame[0]=frame;prepared.clear()
         h=hashlib.sha256(repr(frame).encode())
         h.update(json.dumps(dict(main=geometry.system.main,wrist=geometry.system.wrist,protocol=geometry.system.protocol,
-            wrist_gate_policy=geometry.system.wrist_gate_backend,precleaned=clean_masks is not None),sort_keys=True).encode())
+            wrist_gate_policy=geometry.system.wrist_gate_backend,precleaned=clean_masks is not None,
+            supplied_robot_diagnostics=robot_diagnostics is not None),sort_keys=True).encode())
+        if robot_diagnostics is not None:
+            h.update(json.dumps({name:{k:v for k,v in result.items() if not isinstance(v,np.ndarray)}
+                for name,result in robot_diagnostics.items()},sort_keys=True).encode())
         arrays=[]
         for c in cameras:
             arrays.extend((c.rgb,c.depth_raw_mm,c.intrinsic,c.extrinsic_cv,c.cam2world_gl,c.tcp_pose,masks[c.camera]))
             if clean_masks is not None:arrays.append(clean_masks[c.camera])
+            if robot_diagnostics is not None:
+                arrays.extend(v for k,v in sorted(robot_diagnostics[c.camera].items()) if isinstance(v,np.ndarray))
         for s in surfaces:h.update(s.link.encode());arrays.extend((s.local_vertices,s.world_from_link))
         for k in sorted(data):h.update(k.encode());arrays.append(data[k])
         for array in arrays:
             a=np.asarray(array);h.update(str((a.shape,a.dtype.str)).encode());h.update(a.tobytes())
         key=h.digest()
         if key in prepared:return copy.deepcopy(prepared[key])
-        result=native(cameras,data,masks,surfaces,clean_masks=clean_masks)
+        result=native(cameras,data,masks,surfaces,clean_masks=clean_masks,robot_diagnostics=robot_diagnostics)
         if len(prepared)>=16:prepared.clear()
         prepared[key]=copy.deepcopy(result)
         return result

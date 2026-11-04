@@ -17,7 +17,7 @@ from graph.plan_a_bc.geometry import CurrentGeometry
 from graph.geometry_reach10d.runtime import environment
 from graph.geometry_reach10d.optimizations import DetectionMemo
 from graph.integration_baseline.graph import pack_graphs
-from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
+from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
 from graph.integration_baseline.rollout_stop_clock import PhysicsAudit,controller_audit,validate_controller_command,numpy,reset_diagnostics
 from graph.integration_baseline.direct_train import seed_all
 from graph.integration_baseline.geometry09a import collision_audit
@@ -98,8 +98,11 @@ def episode(root,folder,model,norm,codec,detector,tracker,seed,step,horizon,smok
         for t in range(horizon):
             token=physics.token();tick=time.perf_counter()
             cameras,data,surfaces=sensors(env,obs,identity,t,norm.schema)
-            masks={c.camera:adapters[c.camera].process(c.rgb,identity,t)[0] for c in cameras}
-            graph,_,gate=geometry.build(cameras,data,surfaces,masks)
+            def current_masks():
+                return {c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras}
+            graph,_,gate=geometry.build(cameras,data,surfaces,current_masks)
+            from visual.runtime.tensor_packet import numpy_packet
+            masks=numpy_packet(geometry.last_raw_masks)
             packed=pack_graphs([graph],[(0,0)]).to('cuda');robot=torch.from_numpy(data['robot76'][None]).cuda()
             policy_tick=time.perf_counter();raw,hidden=model.step(packed,robot,norm,hidden)
             command=codec.decode(codec.tag(raw));torch.cuda.synchronize()
@@ -110,7 +113,7 @@ def episode(root,folder,model,norm,codec,detector,tracker,seed,step,horizon,smok
             if a[6]<=0 and not (approach_step is not None and pre_strict['final']):early_close=True
             robots.append(data['robot76'].copy());commands.append(a)
             if t==0:
-                inputs={k:getattr(graph,k).numpy() for k in GRAPH_KEYS};inputs['robot76']=data['robot76']
+                inputs={k:numpy(getattr(graph,k)) for k in GRAPH_KEYS};inputs['robot76']=data['robot76']
                 npz(folder/'initial_student_input.npz',inputs);input_hash=nested_hash(inputs)
             audit.clear();obs,_,term,trunc,info=env.step(command.to(env.unwrapped.device));physics.stepped(token)
             validate_controller_command(a,audit)
@@ -142,6 +145,7 @@ def episode(root,folder,model,norm,codec,detector,tracker,seed,step,horizon,smok
                 reason='success' if measured['success'] else 'termination' if term.item() else 'time_limit';break
         completed=True
     finally:
+        geometry.close()
         writer.release();physics.close();encoder_pre.remove();encoder_post.remove()
         for a in adapters.values():a.close()
         detector.cache.clear();env.close();torch.cuda.empty_cache()

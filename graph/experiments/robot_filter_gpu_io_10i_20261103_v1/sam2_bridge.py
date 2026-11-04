@@ -11,11 +11,34 @@ import torch
 
 
 @torch.inference_mode()
+def set_image_cuda(predictor,rgb):
+    """Installed SAM2 set_image body with its uint8 HWC input already on CUDA.
+
+    The existing scripted Resize/Normalize module is reused. CPU/GPU resize
+    rounding is tested separately; this optional private-API adapter does not
+    claim full-model mask equivalence without a model-level validation run.
+    """
+    if (not isinstance(rgb,torch.Tensor) or rgb.dtype!=torch.uint8 or rgb.ndim!=3 or rgb.shape[2]!=3
+            or not rgb.is_cuda or rgb.device!=torch.device(predictor.device)):
+        raise ValueError('SAM2 requires current CUDA uint8 HWC RGB on predictor device')
+    predictor.reset_predictor();predictor._orig_hw=[tuple(rgb.shape[:2])]
+    image=predictor._transforms.transforms(rgb.permute(2,0,1).to(torch.float32)/255.)[None]
+    backbone=predictor.model.forward_image(image)
+    _,vision_feats,_,_=predictor.model._prepare_backbone_features(backbone)
+    if predictor.model.directly_add_no_mem_embed:vision_feats[-1]=vision_feats[-1]+predictor.model.no_mem_embed
+    feats=[feat.permute(1,2,0).view(1,-1,*size)
+        for feat,size in zip(vision_feats[::-1],predictor._bb_feat_sizes[::-1])][::-1]
+    predictor._features={'image_embed':feats[-1],'high_res_feats':feats[:-1]}
+    predictor._is_image_set=True
+
+
+@torch.inference_mode()
 def image_masks_cuda(predictor,rgb,boxes):
     if len(boxes)!=2:raise ValueError('exactly Peg/Box prompts required')
     device=torch.device(predictor.device)
     if device.type!='cuda':raise ValueError('CUDA SAM2 predictor required')
-    predictor.set_image(rgb)
+    if isinstance(rgb,torch.Tensor):set_image_cuda(predictor,rgb)
+    else:predictor.set_image(rgb)
     h,w=rgb.shape[:2];masks=torch.zeros((2,h,w),device=device,dtype=torch.bool);scores=[None,None]
     for oid,box in enumerate(boxes):
         if box is None:continue

@@ -54,13 +54,20 @@ def sensors(env,obs,identity,t,schema):
     if state_schema(fields)!=schema:raise ValueError('live Robot76 schema changed')
     for name in ('qpos','qvel'):
         np.testing.assert_array_equal(numpy(obs['agent'][name])[0],fields[name])
-    from graph.persistent_geometry.tensor_camera import TensorCameraObservation
+    from graph.persistent_geometry.tensor_camera import TensorCameraObservation,tensor_camera
     cameras=[]
     for name in ('base_camera','hand_camera'):
         c=obs['sensor_data'][name];p=obs['sensor_param'][name]
-        cameras.append(TensorCameraObservation(identity,t,name,t/20,c['rgb'][0].clone(),
-            c['depth'][0,...,0].clone(),numpy(p['intrinsic_cv'])[0],numpy(p['extrinsic_cv'])[0],
-            numpy(p['cam2world_gl'])[0],fields['tcp_pose'].copy()).validate())
+        metadata=(numpy(p['intrinsic_cv'])[0],numpy(p['extrinsic_cv'])[0],
+                  numpy(p['cam2world_gl'])[0],fields['tcp_pose'].copy())
+        if torch.is_tensor(c['rgb']) and c['rgb'].is_cuda:
+            camera=TensorCameraObservation(identity,t,name,t/20,c['rgb'][0].clone(),
+                c['depth'][0,...,0].clone(),*metadata).validate()
+        else:
+            camera=CameraObservation(identity,t,name,t/20,numpy(c['rgb'])[0].copy(),
+                numpy(c['depth'])[0,...,0].copy(),*metadata).validate()
+            if torch.cuda.is_available():camera=tensor_camera(camera)
+        cameras.append(camera)
     surfaces=robot_surfaces(env)
     data=dict(episode=np.array(identity),timestep=np.int64(t),timestamp=np.float64(t/20),
         robot76=flatten_state(fields,schema),robot_world_geometry=pads,tcp_pose=fields['tcp_pose'],

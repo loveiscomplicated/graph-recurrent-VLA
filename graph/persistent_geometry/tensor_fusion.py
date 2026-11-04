@@ -4,14 +4,13 @@ Only small identity/calibration metadata is validated on the host. Selected
 points, depth, masks, keep decisions and returned observations stay on device.
 The NumPy fusion module remains the independent legacy/reference path.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import lru_cache
-from types import SimpleNamespace
 import numpy as np
 import torch
 
 from .contracts import SurfaceObservation, synchronized
-from visual.runtime.coordinate_frames import check_frame, packet_frame, camera_from_frame, camera_to_frame
+from visual.runtime.coordinate_frames import check_frame, packet_frame, world_from_frame
 from visual.runtime.object_groups import object_rows
 
 
@@ -36,6 +35,8 @@ class TensorCamera:
     intrinsic: torch.Tensor
     camera_from_frame: torch.Tensor
     frame_from_camera: torch.Tensor
+    camera_from_world: torch.Tensor | None = None
+    world_from_camera: torch.Tensor | None = None
 
 
 @dataclass(frozen=True)
@@ -44,6 +45,16 @@ class TensorViews:
     coordinate_frame: str
     by_name: dict
     device: torch.device
+
+    def world_views(self):
+        """Same snapshot/masks in World, sharing depth and calibration tensors."""
+        if self.coordinate_frame == 'world':
+            return self
+        if any(c.camera_from_world is None or c.world_from_camera is None for c in self.by_name.values()):
+            raise ValueError('prepared World calibration required')
+        return replace(self, coordinate_frame='world', by_name={name: replace(c,
+            camera_from_frame=c.camera_from_world, frame_from_camera=c.world_from_camera)
+            for name, c in self.by_name.items()})
 
     def check(self, observation):
         if (observation.episode, observation.timestep) != self.identity[:2] or observation.camera not in self.by_name:
@@ -71,6 +82,9 @@ def prepare_tensor_views(cameras, masks, *, coordinate_frame='ee', device='cuda'
     if depths is not None and set(depths) != set(masks):
         raise ValueError('tensor depth/camera identity')
     result = {}
+    from visual.runtime.vision_packet import validate_transform
+    world_from_graph = world_from_frame(frame, cameras[0].tcp_pose)
+    graph_from_world = np.linalg.inv(world_from_graph) if frame == 'ee' else None
     for c in cameras:
         h, w = c.depth_raw_mm.shape
         mask = torch.as_tensor(masks[c.camera], device=device)
@@ -85,11 +99,18 @@ def prepare_tensor_views(cameras, masks, *, coordinate_frame='ee', device='cuda'
                 raise ValueError('resident float64 depth alignment')
         # Frame-to-camera matrix composes the same validated calibration as
         # the reference; no observation points cross to CPU for this work.
-        inverse = camera_from_frame(c, frame)
-        forward = camera_to_frame(SimpleNamespace(tcp_pose=c.tcp_pose, cam2world=c.world_from_camera), frame)
+        world = c.world_from_camera
+        # Invert the original calibration dtype before promotion, exactly as
+        # camera_from_frame does. Share this snapshot with the World gate.
+        camera_from_world = np.linalg.inv(world)
+        world = validate_transform(world)
+        inverse_world = torch.as_tensor(camera_from_world @ np.eye(4), device=device)
+        forward_world = torch.as_tensor(world, device=device)
+        inverse = inverse_world if frame == 'world' else torch.as_tensor(camera_from_world @ world_from_graph, device=device)
+        forward = forward_world if frame == 'world' else torch.as_tensor(validate_transform(graph_from_world @ world), device=device)
         result[c.camera] = TensorCamera(depth, mask,
             torch.as_tensor(np.asarray(c.intrinsic, np.float64), device=device),
-            torch.as_tensor(inverse, device=device), torch.as_tensor(forward, device=device))
+            inverse, forward, inverse_world, forward_world)
     first = cameras[0]
     return TensorViews((first.episode, first.timestep, first.timestamp, tuple(first.tcp_pose)), frame, result, device)
 

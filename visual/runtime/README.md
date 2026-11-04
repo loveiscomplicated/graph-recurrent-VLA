@@ -60,7 +60,7 @@ Direct `GDino`, historical/frozen experiments, and the explicitly DINO runtime
 visualization commands below retain their model selection. Implementation and
 executed scope: [Task10-I live grounding report](../../docs/visual-graph-integration/10i_live_terra_primary_20261103.md).
 
-### Selected packet coordinate frames
+### Selected CUDA packets
 
 `make_packet(..., coordinate_frame='world'|'ee')` and
 `make_packet_cuda(..., coordinate_frame='world'|'ee')` select the common frame
@@ -78,6 +78,8 @@ frame/calibration, not just the label. See the
 transform_cuda=...)` retains the existing PCA5/Shape-First selection in a CUDA v2
 packet. `graph.vision_input` accepts this measured tensor representation;
 `tensor_packet.numpy_packet` is an explicit packed compatibility readback.
+The optional [early-ingress prototype](../../graph/experiments/cuda_ingress_10i_20261103_v1/README.md)
+connects this to current sensor snapshots, robot filtering and graph consumers.
 The existing `make_packet` default continues returning NumPy packets.
 `CurrentGeometry` now uses `make_packet_cuda` in its default triton_fused path
 to keep packet arrays resident through the Torch view check, tensor record

@@ -96,7 +96,7 @@ class CurrentGeometry:
         import torch
         from graph.persistent_geometry.wrist_gate_dispatch import default_wrist_gate_backend
         from visual.runtime.graph_perception import make_packet,make_packet_cuda
-        if perception_backend not in ('triton_fused','cpu'):
+        if perception_backend not in ('triton_fused','cpu','cuda_resident'):
             raise ValueError('unknown Graph perception backend')
         # The default geometry must remain usable when CUDA is absent. An
         # available CUDA runtime is never replaced after an execution error.
@@ -105,15 +105,20 @@ class CurrentGeometry:
         self.wrist_gate_backend=default_wrist_gate_backend()
         self.robot_filter_backend=('cpu' if perception_backend=='cpu' else 'cuda') if robot_filter_backend is None else robot_filter_backend
         if self.robot_filter_backend not in ('cpu','cuda'):raise ValueError('unknown robot filter backend')
+        if perception_backend=='cuda_resident' and self.robot_filter_backend!='cuda':raise ValueError('cuda_resident requires CUDA robot filtering')
         self.robot_preparation=None;self.last_robot_schedule=None;self.last_raw_masks=None;self.last_wrist_gate_backend=None
         self.coordinate_frame=check_frame(coordinate_frame)
         self.fk = RobotFK(assets,schema)
         frozen = read(Path(__file__).resolve().parents[1]/'plan_a_geometry/protocol.json')
         self.system = PlanA('base_camera','hand_camera',frozen,
-            packet_builder=partial(make_packet,backend=perception_backend,
+            packet_builder=partial(make_packet,backend='triton_fused' if perception_backend=='cuda_resident' else perception_backend,
                                    coordinate_frame=self.coordinate_frame),coordinate_frame=self.coordinate_frame,
             tensor_packet_builder=partial(make_packet_cuda,coordinate_frame=self.coordinate_frame) if perception_backend=='triton_fused' else None,
             wrist_gate_backend='auto')
+        self.tensor_geometry=None
+        if perception_backend=='cuda_resident':
+            from graph.experiments.cuda_ingress_10i_20261103_v1.pipeline import TensorGeometry
+            self.tensor_geometry=TensorGeometry(self.system)
         self.mount = None
 
     def reset(self):
@@ -144,40 +149,77 @@ class CurrentGeometry:
         if self.mount is None: self.mount = mount
         np.testing.assert_allclose(mount,self.mount,atol=2e-5,rtol=0)
 
+    def stage_inputs(self,cameras,data,surfaces):
+        """Opt-in early upload, before a caller supplies current CUDA masks."""
+        if self.tensor_geometry is None:raise ValueError('stage_inputs requires cuda_resident backend')
+        self._check_mount(cameras,surfaces)
+        return self.tensor_geometry.stage(cameras,data,surfaces)
+
+    def build_staged(self,frame,masks):
+        """Finish the exact snapshot returned by stage_inputs; no re-upload."""
+        if self.tensor_geometry is None:raise ValueError('build_staged requires cuda_resident backend')
+        graph,records,gate=self.tensor_geometry.build(frame,masks)
+        self.last_wrist_gate_backend='torch_cuda'
+        graph.packet['wrist_gate_backend']=self.last_wrist_gate_backend
+        return self._finish(graph,records,gate,frame.data)
+
     def close(self):
         if self.robot_preparation is not None:self.robot_preparation.close();self.robot_preparation=None
+        if self.tensor_geometry is not None:self.tensor_geometry.ingress.close()
 
-    def build(self,cameras,data,surfaces,masks):
+    def build(self,cameras,data,surfaces,masks,*,mask_transform=None):
         """Build from raw masks or a zero-argument current-frame mask producer.
 
         Default CUDA filtering starts CPU preparation before invoking a mask
         producer. Cache/rollout pass their existing SAM2 calls in that producer.
         Already computed masks are supported, with no retroactive overlap claim.
+        Optional mask_transform(raw_cuda, robot_frame) shares one full current
+        robot classification with correction and the final clean masks.
         """
         self.last_raw_masks=None;self.last_robot_schedule=None;self.last_wrist_gate_backend=None
-        self._check_mount(cameras,surfaces)
-        if self.robot_filter_backend=='cuda':
-            if self.robot_preparation is None:
-                import torch
-                if not torch.cuda.is_available():raise RuntimeError('default robot filter requires CUDA; select explicit CPU diagnostics')
-                from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import CudaRobotFilter
-                from .tensor_ingress import TensorRobotPreparation
-                self.robot_preparation=TensorRobotPreparation(CudaRobotFilter())
-            snapshot={k:(v.copy() if isinstance(v,np.ndarray) else v) for k,v in data.items()}
-            job=self.robot_preparation.submit(cameras,surfaces)
-            self.last_robot_schedule='before_vision' if callable(masks) else 'masks_already_available'
-            try:
-                raw=masks() if callable(masks) else masks
-                import torch
-                gpu={name:(value if isinstance(value,torch.Tensor) and value.is_cuda
-                    else torch.as_tensor(value,device='cuda')) for name,value in raw.items()}
-                clean=self.robot_preparation.filter(job,gpu)
-                self.last_raw_masks=gpu
-                return self._build_prepared(job.cameras,snapshot,job.surfaces,gpu,clean,depths=self.robot_preparation.depths)
-            finally:self.robot_preparation.discard(job)
-        raw=masks() if callable(masks) else masks
-        self.last_robot_schedule='cpu_serial';self.last_raw_masks=raw
-        return self._build_prepared(cameras,data,surfaces,raw)
+        if self.tensor_geometry is not None:
+            if mask_transform is not None:raise ValueError('mask correction requires the default geometry backend')
+            frame=self.stage_inputs(cameras,data,surfaces)
+            return self.build_staged(frame,masks() if callable(masks) else masks)
+        else:
+            self._check_mount(cameras,surfaces)
+            if self.robot_filter_backend=='cuda':
+                if self.robot_preparation is None:
+                    import torch
+                    if not torch.cuda.is_available():raise RuntimeError('default robot filter requires CUDA; select explicit CPU diagnostics')
+                    from graph.experiments.robot_filter_gpu_io_10i_20261103_v1.gpu_filter import CudaRobotFilter
+                    from .tensor_ingress import TensorRobotPreparation
+                    self.robot_preparation=TensorRobotPreparation(CudaRobotFilter())
+                snapshot={k:(v.copy() if isinstance(v,np.ndarray) else v) for k,v in data.items()}
+                job=self.robot_preparation.submit(cameras,surfaces)
+                self.last_robot_schedule='before_vision' if callable(masks) else 'masks_already_available'
+                try:
+                    raw=masks() if callable(masks) else masks
+                    import torch
+                    gpu={name:(value if isinstance(value,torch.Tensor) and value.is_cuda
+                        else torch.as_tensor(value,device='cuda')) for name,value in raw.items()}
+                    if mask_transform is None:
+                        clean=self.robot_preparation.filter(job,gpu)
+                    else:
+                        from .robot_frame import RobotFilterFrame
+                        # Correction can propose pixels outside the original masks.
+                        # Classify all pixels once, preserving its full-screen evidence.
+                        coverage={name:torch.stack((torch.ones_like(value[0]),torch.zeros_like(value[1]))) for name,value in gpu.items()}
+                        diagnostics=self.robot_preparation.filter(job,coverage,diagnostics=True)
+                        frame=RobotFilterFrame(self.system,job.cameras,diagnostics)
+                        try:
+                            raw=mask_transform(gpu,frame)
+                            gpu={name:(value if isinstance(value,torch.Tensor) and value.is_cuda
+                                else torch.as_tensor(value,device='cuda')) for name,value in raw.items()}
+                            clean=frame.clean(gpu)
+                        finally:frame.close()
+                    self.last_raw_masks=gpu
+                    return self._build_prepared(job.cameras,snapshot,job.surfaces,gpu,clean,depths=self.robot_preparation.depths)
+                finally:self.robot_preparation.discard(job)
+            raw=masks() if callable(masks) else masks
+            if mask_transform is not None:raw=mask_transform(raw,None)
+            self.last_robot_schedule='cpu_serial';self.last_raw_masks=raw
+            return self._build_prepared(cameras,data,surfaces,raw)
 
     def _build_prepared(self,cameras,data,surfaces,masks,clean_masks=None,*,depths=None):
         resident = self.system.tensor_packet_builder is not None
@@ -227,7 +269,8 @@ class CurrentGeometry:
                     if r['object_id']==1 and c!='base_camera': raise ValueError('Wrist Box source')
                     if c=='hand_camera' and not gate['accepted']: raise ValueError('rejected Wrist source')
         graph.packet['perception_backend']=self.perception_backend
-        graph.packet['view_consistency_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None else 'numpy_cpu')
+        graph.packet['view_consistency_backend']=('torch_cuda' if self.perception_backend=='cuda_resident'
+            or self.system.tensor_packet_builder is not None else 'numpy_cpu')
         graph.packet['records_dedup_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None
             else 'existing_cpu')
         graph.packet['final_fps_backend']=('torch_cuda' if self.system.tensor_packet_builder is not None

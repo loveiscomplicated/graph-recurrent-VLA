@@ -9,6 +9,18 @@
 
 # Task10-I Stage4A-2
 
+The current checkout now also connects frozen live robot filtering through
+`infer_frame`: original JPEG/PNG/model input remains unchanged, SAM2 requests
+CUDA masks, and current robot preparation is submitted before vision. Correction
+receives one full-screen GPU classification via `robot_frame.prepare`; the final
+CUDA masks reuse it instead of repeating CPU classification and GPU clipping.
+The correction state machine retains its explicit NumPy input boundary after
+classification. Standalone historical diagnostic calls without a robot frame
+retain their CPU reference behavior. Timing/receipts record the filter backend,
+schedule and shared-classification path. No frozen deployment or paused process
+is resumed or overwritten. See the
+[integration report](../../docs/visual-graph-integration/10i_robot_filter_live_completion_20261104.md).
+
 The current checkout's `frozen_inference` now shares the live entrypoint's
 CUDA-first wrist gate through `CurrentGeometry`: unavailable CUDA selects the
 CPU gate; CUDA/import/runtime failures do not trigger a CPU retry. Correction

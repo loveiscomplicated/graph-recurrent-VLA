@@ -3,6 +3,23 @@
 > 기준: 2026-10-29 기존 패키지에 2026-11-03 KST 확인한 로컬 보고서를 증분 반영했다. 각 상태의 관측 시각은 원문을 따른다. `TEAM_CONTEXT.md`와 함께 사용한다. 이 문서는 원문을 대체하는 전체 연구 요약이 아니라 **질문에 맞는 문서를 골라 읽기 위한 안내**다.
 > 아래 모든 경로는 `아카이브.zip`의 루트 기준이다. 예: 아카이브.zip :: `09d_plan_a_geometry_suitability.md`. ZIP 안으로 자동 이동하는 웹 링크를 뜻하지 않는다.
 
+## 현재 레포의 주 live 비용 보고서
+
+아래 ZIP 원문 색인과 별도로, 현재 레포의 Task10-I 주 live 비용·최적화 연결은
+[live 보고서 빠른 찾기](../docs/visual-graph-integration/README.md)를 통해 찾는다.
+특히 [잔여 비용 원문](../docs/visual-graph-integration/10i_live_nonrobot_coverage_audit_20261104.md#주-live에-남은-부가비용-구체화)은
+`마스크 CPU 복사 / 영상 인코딩 / 진단 저장 / GPU 동기화` 검색어에 대응한다.
+이 보고서의 범위는 로봇 필터·손목 gate 제외이며,2026-11-04의 관측과 이후
+갱신 내용을 현재 코드에 대조해 사용한다.
+
+현재 후속 목표와 각 단계 시간표는
+[SAM2 포함50ms 목표·SAM2 외 최적화 현황](../docs/visual-graph-integration/10i_live_50ms_non_sam2_optimization_status_20261104.md)에 정리했다.
+SAM2 원인 조사는 보류하고, 약80ms인 나머지 구간의 추가 최적화 후보를 검토하는 상태다.
+77/83ms는 근사치이며 새 점 수의 Triton 재컴파일 지연과 구분한다.
+GPU 전환 전 CPU 구현과의 추가 비교는
+[CPU 구버전 동일 입력 재측정](../docs/visual-graph-integration/10i_live_preopt_cpu_comparison_58752018_20261104.md)에 있다.
+50ms 현황 문서의 시간표에도 CPU 열과 같은 입력의 GPU 재측정값을 반영했다.
+
 ## 먼저 구분할 최신 기준
 
 | 질문 | 우선 확인할 원문·구간 | 현재 판단 |

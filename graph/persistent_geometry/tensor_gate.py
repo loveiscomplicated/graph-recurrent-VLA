@@ -4,7 +4,40 @@ from dataclasses import replace
 import math
 import torch
 from .tensor_fusion import prepare_tensor_views,consistency_keep
-from . import tensor_gate_kernels as kernels
+
+
+def _component_labels(a,b,nc):
+    labels=torch.arange(nc,device=a.device)
+    if a.is_cuda:
+        from . import tensor_gate_kernels as kernels
+        if not len(a):return labels
+        a=a.contiguous();b=b.contiguous()
+        merged=torch.empty_like(labels);out=torch.empty_like(labels)
+        blocks=(nc+255)//256
+        changed=torch.empty(blocks,device=a.device,dtype=torch.int32)
+        for start in range(0,nc,4):
+            steps=min(4,nc-start)
+            for step in range(steps):
+                # Immutable input labels -> atomic minimum in a separate copy.
+                # Pointer jumping starts only after all edge updates complete.
+                merged.copy_(labels)
+                kernels.label_edges[((len(a)+255)//256,)](labels,a,b,merged,len(a))
+                kernels.label_jump[(blocks,)](merged,labels,out,changed,nc,step==steps-1)
+                labels,out=out,labels
+            if not any(changed.tolist()):return labels
+        raise ValueError('component convergence')
+    for start in range(0,nc,4):
+        steps=min(4,nc-start)
+        for step in range(steps):
+            # A fixed point stays fixed during the remaining batch updates.
+            if step==steps-1:old=labels.clone()
+            roots=torch.minimum(labels[a],labels[b])
+            labels.scatter_reduce_(0,a,roots,reduce='amin')
+            labels.scatter_reduce_(0,b,roots,reduce='amin')
+            labels=labels[labels]
+        if torch.equal(old,labels):return labels
+    raise ValueError('component convergence')
+
 
 def components(x,radius):
     n=len(x)
@@ -12,27 +45,29 @@ def components(x,radius):
     cell=torch.floor((x-x.amin(0))/(radius/2)).long();dims=(cell.amax(0)+1).tolist()
     if math.prod(dims)>=2**62:raise ValueError('cell key overflow')
     stride=torch.tensor([dims[1]*dims[2],dims[2],1],device=x.device);code=(cell*stride).sum(1)
-    keys,inverse,counts=torch.unique(code,sorted=True,return_inverse=True,return_counts=True);nc=len(keys)
+    order=torch.argsort(code,stable=True)
+    sorted_code=code.index_select(0,order)
+    keys,sorted_inverse,counts=torch.unique_consecutive(sorted_code,return_inverse=True,return_counts=True);nc=len(keys)
+    inverse=torch.empty_like(sorted_inverse);inverse.scatter_(0,order,sorted_inverse)
     clique=counts[inverse]>=3
     if nc==1:return torch.zeros(n,device=x.device,dtype=torch.int64),clique
-    order=torch.argsort(code,stable=True);sx=x[order].contiguous();starts=torch.cat((counts.new_zeros(1),counts.cumsum(0)))
+    sx=x.index_select(0,order);starts=torch.cat((counts.new_zeros(1),counts.cumsum(0)))
     coords=torch.stack((keys//stride[0],keys//stride[1]%dims[1],keys%dims[2]),1)
     offsets=torch.tensor([d for d in product(range(-3,4),repeat=3) if d>(0,0,0)],device=x.device)
     neighbor=coords[:,None]+offsets;inside=((neighbor>=0)&(neighbor<torch.tensor(dims,device=x.device))).all(2)
     target=(neighbor*stride).sum(2);j=torch.searchsorted(keys,target).clamp_max(nc-1);valid=inside&(keys[j]==target)
-    a=torch.arange(nc,device=x.device)[:,None].expand_as(j)[valid];b=j[valid]
+    rows=torch.nonzero(valid.flatten()).flatten()
+    a=rows//j.shape[1];b=j.flatten().index_select(0,rows)
     low=torch.full((nc,3),torch.inf,device=x.device,dtype=x.dtype);high=torch.full_like(low,-torch.inf)
     index=inverse[:,None].expand(-1,3);low.scatter_reduce_(0,index,x,reduce='amin');high.scatter_reduce_(0,index,x,reduce='amax')
     gap=torch.maximum(low[a]-high[b],low[b]-high[a]).clamp_min_(0);possible=(gap[:,0]**2+gap[:,1]**2)+gap[:,2]**2<=radius*radius
-    a=a[possible].contiguous();b=b[possible].contiguous()
+    rows=torch.nonzero(possible).flatten();a=a.index_select(0,rows);b=b.index_select(0,rows)
     if len(a):
+        from . import tensor_gate_kernels as kernels
         keep=torch.empty(len(a),device=x.device,dtype=torch.bool)
-        kernels.radius_exists[(len(a),)](sx,starts,a,b,keep,radius*radius,enable_fp_fusion=False);a=a[keep];b=b[keep]
-    labels=torch.arange(nc,device=x.device)
-    for _ in range(nc):
-        old=labels.clone();roots=torch.minimum(labels[a],labels[b]);labels.scatter_reduce_(0,a,roots,reduce='amin');labels.scatter_reduce_(0,b,roots,reduce='amin');labels=labels[labels]
-        if torch.equal(old,labels):break
-    else:raise ValueError('component convergence')
+        kernels.radius_exists[(len(a),)](sx,starts,a,b,keep,radius*radius,enable_fp_fusion=False)
+        rows=torch.nonzero(keep).flatten();a=a.index_select(0,rows);b=b.index_select(0,rows)
+    labels=_component_labels(a,b,nc)
     roots=labels[inverse];first=torch.full((nc,),n,device=x.device,dtype=torch.int64)
     first.scatter_reduce_(0,roots,torch.arange(n,device=x.device),reduce='amin')
     return torch.unique(first[roots],sorted=True,return_inverse=True)[1],clique
@@ -40,17 +75,33 @@ def components(x,radius):
 
 
 def masked_world_points(camera,view,pixels):
+    if view.depth.is_cuda:
+        from . import tensor_gate_kernels as kernels
+        n=len(pixels);xyz=torch.empty((n,3),device=view.depth.device,dtype=torch.float64)
+        if n:
+            k=view.intrinsic;m=view.frame_from_camera
+            kernels.masked_world_points[((n+255)//256,)](view.depth.flatten(),pixels,k,m,xyz,n,view.depth.shape[1],
+                *k.stride(),*m.stride(),pixels.stride(0),enable_fp_fusion=False)
+        return xyz
     z=view.depth.flatten()[pixels];w=view.depth.shape[1];k=view.intrinsic
     u=(pixels%w).to(torch.float64);v=(pixels//w).to(torch.float64)
     xyz=torch.stack(((u+.5-k[0,2])*z/k[0,0],(v+.5-k[1,2])*z/k[1,1],z),1)
-    m=torch.as_tensor(camera.world_from_camera.astype('float64'),device=z.device)
+    m=view.frame_from_camera
     return (xyz[:,0,None]*m[:3,0]+xyz[:,1,None]*m[:3,1])+xyz[:,2,None]*m[:3,2]+m[:3,3]
 
 
 @torch.inference_mode()
 def wrist_gate_tensor(cameras,raw,clean,cfg,*,views=None,wrist='hand_camera'):
-    views=prepare_tensor_views(cameras,clean,coordinate_frame='world',
-        depths=None if views is None else {name:t.depth for name,t in views.by_name.items()})
+    if views is None:
+        views=prepare_tensor_views(cameras,clean,coordinate_frame='world')
+    else:
+        if (any(views.identity!=(c.episode,c.timestep,c.timestamp,tuple(c.tcp_pose)) for c in cameras)
+                or len(cameras)!=len(views.by_name) or {c.camera for c in cameras}!=set(views.by_name)
+                or set(views.by_name)!=set(clean)):
+            raise ValueError('stale gate view snapshot')
+        # The gate always judges World geometry, independently of Graph frame.
+        views=views.world_views()
+        views=replace(views,by_name={name:replace(t,mask=clean[name]) for name,t in views.by_name.items()})
     c=next(c for c in cameras if c.camera==wrist);t=views.by_name[wrist];depth=t.depth
     support=clean[wrist][0]&torch.isfinite(depth);pix=torch.nonzero(support.flatten()).flatten()
     xyz=masked_world_points(c,t,pix);n=len(pix)
@@ -64,12 +115,16 @@ def wrist_gate_tensor(cameras,raw,clean,cfg,*,views=None,wrist='hand_camera'):
         distance=torch.sqrt((d[:,:,0]*d[:,:,0]+d[:,:,1]*d[:,:,1])+d[:,:,2]*d[:,:,2])
         local[rows]=(distance<=cfg['local_neighbor_radius_m']).sum(1)>=3
     allowed=consistency_keep(xyz,0,wrist,views)
-    summary=torch.stack((raw[wrist][0].sum(),(raw[wrist][0]&torch.isfinite(depth)).sum(),largest.sum(),local.sum(),(~allowed).sum())).tolist()
-    raw_n,valid_n,large_n,local_n,conflicts=map(int,summary);fraction=lambda a,b:float(a/b) if b else 0.
-    diameter=0.
-    if large_n:
-        extent=xyz[largest].amax(0)-xyz[largest].amin(0)
-        diameter=float(torch.sqrt((extent[0]*extent[0]+extent[1]*extent[1])+extent[2]*extent[2]))
+    candidate=largest&allowed
+    diameter=xyz.new_zeros(())
+    if n:
+        extent=torch.where(largest[:,None],xyz,-torch.inf).amax(0)-torch.where(largest[:,None],xyz,torch.inf).amin(0)
+        diameter=torch.sqrt((extent[0]*extent[0]+extent[1]*extent[1])+extent[2]*extent[2])
+    # All trace counts and the diameter cross to the host in one packed read.
+    # Float64 represents these image-sized integer counts exactly.
+    summary=torch.stack((raw[wrist][0].sum(),(raw[wrist][0]&torch.isfinite(depth)).sum(),largest.sum(),local.sum(),(~allowed).sum(),candidate.sum(),diameter)).tolist()
+    raw_n,valid_n,large_n,local_n,conflicts,candidate_n=map(int,summary[:6]);diameter=summary[6]
+    fraction=lambda a,b:float(a/b) if b else 0.
     trace=dict(camera=wrist,episode=c.episode,timestep=c.timestep,raw_pixels=raw_n,valid_depth=valid_n,clean_points=n,
         valid_depth_fraction=fraction(valid_n,raw_n),clean_fraction=fraction(n,valid_n),largest_component_fraction=fraction(large_n,n),
         local_support_fraction=fraction(local_n,n),component_diameter_m=diameter,tracker_confidence_available=False,main_required=False,
@@ -84,18 +139,14 @@ def wrist_gate_tensor(cameras,raw,clean,cfg,*,views=None,wrist='hand_camera'):
         (trace['identity_conflict_fraction']>cfg['maximum_identity_conflict_fraction'],'cross_camera_identity_conflict')):
         if reject:reasons.append(name)
     accepted=torch.zeros_like(support)
-    if not reasons:accepted.flatten()[pix[largest&allowed]]=True
-    trace.update(accepted=not reasons,reasons=reasons,accepted_points=int(accepted.sum()),
+    if not reasons:accepted.flatten()[pix]=candidate
+    trace.update(accepted=not reasons,reasons=reasons,accepted_points=candidate_n if not reasons else 0,
         association=[dict(camera=wrist,object_id=0,count=n,unknown_conflict=conflicts)],GT_used=False,future_used=False)
     return accepted,trace
 
 
 @torch.inference_mode()
 def prepare_tensor_gate(cameras,data,raw,clean,protocol,*,coordinate_frame,depths=None):
-    from .contracts import synchronized
-    from visual.runtime.coordinate_frames import camera_from_frame,camera_to_frame
-    from types import SimpleNamespace
-    synchronized(cameras)
     names={c.camera for c in cameras}
     if names!={'base_camera','hand_camera'} or set(raw)!=names or set(clean)!=names:raise ValueError('camera identity')
     if str(data['episode'])!=cameras[0].episode or int(data['timestep'])!=cameras[0].timestep:raise ValueError('sensor identity join')
@@ -104,10 +155,12 @@ def prepare_tensor_gate(cameras,data,raw,clean,protocol,*,coordinate_frame,depth
     if set(data)-allowed:raise ValueError('forbidden non-sensor input')
     raw={name:torch.as_tensor(value,device='cuda') for name,value in raw.items()}
     clean={name:torch.as_tensor(value,device=raw[name].device) for name,value in clean.items()}
+    invalid=[]
     for c in cameras:
         r=raw[c.camera];v=clean[c.camera]
         if r.dtype!=torch.bool or v.dtype!=torch.bool or r.shape!=(2,*c.depth_raw_mm.shape) or v.shape!=r.shape:raise ValueError('bool aligned raw/clean masks required')
-        if bool((v&~r).any()|v[:,r[0]&r[1]].any()):raise ValueError('clean mask subset/overlap')
+        invalid.append((v&~r).any()|(v&(r[0]&r[1])[None]).any())
+    if bool(torch.stack(invalid).any()):raise ValueError('clean mask subset/overlap')
     views=prepare_tensor_views(cameras,clean,coordinate_frame=coordinate_frame,depths=depths)
     accepted,gate=wrist_gate_tensor(cameras,raw,clean,protocol['gate'],views=views)
     cm={name:value.clone() for name,value in clean.items()};cm['hand_camera'][1]=False;cm['hand_camera'][0]=accepted

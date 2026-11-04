@@ -71,6 +71,10 @@ documented in [recurrent/README.md](recurrent/README.md). On a GPU server run
 
 ## Experiment tracking
 
+For Task10-I main-live pipeline reports and remaining runtime costs, start with
+the [live report index](docs/visual-graph-integration/README.md). It links the
+GPU coverage audit, the concrete cost inventory, and the 512 CUDA camera checks.
+
 To browse saved Graph rollout inputs in 3D, run
 `.venv/bin/python -m visualization.server` and open `http://127.0.0.1:8765/`.
 The [visualization frontend](visualization/README.md) has a separate rollout

@@ -33,6 +33,9 @@ for `triton_fused`, with a persistent `RobotFilterPreparation` worker. No opt-in
 flag or experiment helper context is required. The callers supply a zero-argument
 mask producer to `build`; the builder submits the current snapshot, invokes the
 producer, then consumes the preparation and runs the GPU filter once.
+`TensorRobotPreparation` now calls the filter's fused `depth_tensor` conversion
+for signed-int16 CPU/native-CUDA depth and shares that float64 buffer downstream.
+Conversion errors drain the submitted preparation before propagating.
 
 ```python
 geometry = CurrentGeometry(assets, schema)
@@ -61,8 +64,33 @@ CUDA is available. `geometry.wrist_gate_backend` records the selected gate and
 `last_wrist_gate_backend`/`graph.packet['wrist_gate_backend']` record the last
 executed gate (`torch_cuda` or `existing_cpu`). Legacy NumPy correction/prepare
 calls export only the accepted gate mask back to their host contract.
+The optional older `cuda_resident` prototype remains separate from this default.
 Full-screen filter diagnostics remain available through standalone `PlanA.prepare`;
 the prepared-clean fast path explicitly has no full filter diagnostic dictionary.
+
+The Task10-I frozen live runner now also defers its original JPEG/PNG SAM2 calls
+and requests CUDA masks. For correction it passes
+`build(..., mask_transform=correct)`, where `correct(raw_cuda, robot_frame)`
+receives one current, full-screen GPU robot classification. Unlike compact
+baseline filtering, full-screen coverage is required because correction can
+propose previously unmasked pixels. `robot_frame.prepare(...)` supplies the
+unchanged correction code with `PlanA.prepare(..., robot_diagnostics=...)`;
+CPU robot classification is skipped. The final masks reuse the same GPU flags,
+without rerasterizing the robot. The frame is invalid after the callback returns.
+GPU classification diagnostics carry `backend='cuda'`; auxiliary owner/depth
+rounding follows the existing CUDA filter, not NumPy's independent tie behavior.
+Confirmed/uncertain/candidate decisions and correction outputs are checked
+against CPU reference inputs. The correction state machine still consumes host
+masks/diagnostics at an explicit boundary after GPU classification. Unchanged
+SAM2 masks retain their original CUDA tensors; only changed host proposals are
+uploaded. This does not claim that the correction algorithm itself is all-GPU.
+
+The older Reach, Graph-Recurrent, Handoff and Predstate live callers now use the
+same tensor vision adapter and deferred CUDA-mask producer. Their CPU image
+sources upload at `sensors`; native CUDA images are never downloaded there.
+Video/NPZ exports happen after Graph construction, and episode cleanup closes
+the preparation worker. See the
+[robot-filter integration verification](../../docs/visual-graph-integration/10i_robot_filter_live_completion_20261104.md).
 
 Cache identity is now `graphs_common_coordinate_frame_v4_terra_primary` and records
 the grounding policy plus geometry backend/schedule. Existing v2/v3 caches are rejected rather than silently reused
@@ -85,8 +113,8 @@ edge directions use it too. View/free-space tests compose frame-to-camera
 matrices for projection without moving the stored cloud back through World.
 Raw camera calibration, source camera points and robot sensor inputs remain
 explicit audit inputs; scalar source-camera depth-jump retains its original
-measurement definition. Both `triton_fused` and explicit CPU perception support
-the choice. `ee` uses the current observation's TCP pose;
+measurement definition. Both `triton_fused` and `cuda_resident` support the choice,
+as does explicit CPU perception. `ee` uses the current observation's TCP pose;
 mixed frames and stale EE reference poses are rejected.
 
 Set `geometry.coordinate_frame` to `"world"` or `"ee"` in a new experiment's
@@ -118,6 +146,7 @@ identity metadata; audit counts are device scalars. `numpy_graph(graph)` and
 `numpy_records(records)` are explicit CPU archival/inspection adapters. Cache
 writing and diagnostic rollout dumps call them after construction; model input
 packing retains CUDA tensors. Explicit CPU perception keeps CPU Graph/list output.
+The optional resident adapter shares the same check and reuses its staged depth.
 Explicit CPU perception and historical standalone PlanA retain the NumPy path.
 See the [paired GPU measurement and verification](../../docs/visual-graph-integration/10i_view_consistency_cuda_20261103.md).
 
@@ -155,6 +184,12 @@ fingerprints. Its same-frame memo preserves the gate policy and precleaned-mask
 keyword. Existing model/renderer device requirements are independent of this
 geometry fallback. See the
 [gate default integration report](../../docs/visual-graph-integration/10i_wrist_gate_default_integration_20261104.md).
+
+An optional `perception_backend='cuda_resident'` now connects early raw sensor
+upload, CUDA robot filtering/gate and selected tensor packets to a small final
+CPU graph boundary, returning CUDA Graph tensors. `stage_inputs`/`build_staged`
+allow upload before current SAM2 masks arrive. Existing defaults are unchanged.
+See the [prototype API and measurement contract](../experiments/cuda_ingress_10i_20261103_v1/README.md).
 
 Sampling evidence and Shape-First also run on CUDA: ordered external
 contours, centroid-nearest voxel representatives, thinning and seeded FP64 FPS.

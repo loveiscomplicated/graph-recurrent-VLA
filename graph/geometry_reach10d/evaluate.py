@@ -21,7 +21,7 @@ from graph.plan_a_bc.geometry import CurrentGeometry
 from graph.plan_a_bc.model import CachedGraphPolicy,normalizer
 from graph.integration_baseline.bc08_codec import ActionCodec,controller_commands
 from graph.integration_baseline.graph import pack_graphs
-from graph.integration_baseline.online_vision_adapter import OnlineVisionAdapter
+from graph.integration_baseline.tensor_online_vision import TensorOnlineVisionAdapter as OnlineVisionAdapter
 from graph.integration_baseline.rollout_stop_clock import PhysicsAudit,controller_audit,validate_controller_command,numpy
 from graph.integration_baseline.geometry09a import physical_state,collision_audit,expert_reference,infer
 from graph.integration_baseline.geometry09a_report import response_metrics
@@ -42,8 +42,11 @@ def adapters_for(detector,tracker,identity):
 def live_graph(env,obs,identity,t,norm,geometry,adapters):
     cameras,data,surfaces=sensors(env,obs,identity,t,norm.schema)
     assert set(data)<=set(['episode','timestep','timestamp','robot76','robot_world_geometry','tcp_pose','qpos','robot_link_world'])
-    masks={c.camera:adapters[c.camera].process(c.rgb,identity,t)[0] for c in cameras}
-    graph,records,gate=geometry.build(cameras,data,surfaces,masks)
+    def current_masks():
+        return {c.camera:adapters[c.camera].process(c.rgb,identity,t,mask_device='cuda')[0] for c in cameras}
+    graph,records,gate=geometry.build(cameras,data,surfaces,current_masks)
+    from visual.runtime.tensor_packet import numpy_packet
+    masks=numpy_packet(geometry.last_raw_masks)
     return graph,data,cameras,masks,gate
 
 
@@ -104,12 +107,12 @@ def rollout(root,folder,spec,model,norm,codec,detector,tracker,condition,step,ho
                 early_close=early_close,peg_motion_m=drift,collision=collision,gate=gate,
                 nodes=len(graph.node_type),edges=graph.edge_index.shape[1],**post))
             trajectory.append(data['robot76'])
-            frame=np.concatenate([cv2.resize(c.rgb,(256,256),interpolation=cv2.INTER_NEAREST) for c in cameras],axis=1)
+            frame=np.concatenate([cv2.resize(numpy(c.rgb),(256,256),interpolation=cv2.INTER_NEAREST) for c in cameras],axis=1)
             cv2.putText(frame,f'{condition} {step} seed{spec["seed"]} {spec["variant"]} t{t} err{1000*post["target_position_error_m"]:.1f}mm',(5,20),cv2.FONT_HERSHEY_SIMPLEX,.38,(255,255,255),1)
             writer.write(cv2.cvtColor(frame,cv2.COLOR_RGB2BGR))
             if t==0:
                 npz(folder/'initial_student_input.npz',dict(robot76=data['robot76'],
-                    **{k:getattr(graph,k).numpy() for k in GRAPH_KEYS}))
+                    **{k:numpy(getattr(graph,k)) for k in GRAPH_KEYS}))
             if t%25==0:print('LIVE',condition,step,spec['seed'],spec['variant'],t,post['target_position_error_m'],flush=True)
             if success or bool(term.item()) or bool(trunc.item()):break
         final_collision=collision_audit(env,'peg')
@@ -128,6 +131,7 @@ def rollout(root,folder,spec,model,norm,codec,detector,tracker,condition,step,ho
         append_csv(root/'reach_rollout_metrics.csv',{k:v for k,v in result.items() if k not in ['initial_state','target_pose']})
         return result
     finally:
+        geometry.close()
         writer.release();physics.close()
         for a in adapters.values():a.close()
         detector.cache.clear();env.close();torch.cuda.empty_cache()
@@ -156,8 +160,8 @@ def interventions(root,folder,seed,model,norm,codec,detector,tracker,condition,s
                 assert base_detail['status']=='VALID_STAGE_CONDITIONED'
                 npz(folder/f't{t:03d}_baseline.npz',dict(robot76=data['robot76'],action7=base['action'],
                     expert_action7=eb,previous_hidden=base['previous_hidden'],
-                    **{k:getattr(graph,k).numpy() for k in GRAPH_KEYS},
-                    **{c.camera+'/'+k:v for c in cams for k,v in [('rgb',c.rgb),('depth_raw_mm',c.depth_raw_mm)]}))
+                    **{k:numpy(getattr(graph,k)) for k in GRAPH_KEYS},
+                    **{c.camera+'/'+k:numpy(v) for c in cams for k,v in [('rgb',c.rgb),('depth_raw_mm',c.depth_raw_mm)]}))
                 for offset in proto['intervention_offsets_mm']:
                     for c,a in aa.items():restore(a,prior[c])
                     alt_pose=pose.clone();alt_pose[0,:3]+=alt_pose.new_tensor(offset)*.001
@@ -173,8 +177,8 @@ def interventions(root,folder,seed,model,norm,codec,detector,tracker,condition,s
                     metric=response_metrics(base,alt,controller_commands(eb[None])[0],controller_commands(ea[None])[0])
                     npz(folder/f't{t:03d}_x{offset[0]:+d}_y{offset[1]:+d}.npz',dict(
                         robot76=altd['robot76'],action7=alt['action'],expert_action7=ea,previous_hidden=alt['previous_hidden'],
-                        **{k:getattr(altg,k).numpy() for k in GRAPH_KEYS},
-                        **{c.camera+'/'+k:v for c in altcams for k,v in [('rgb',c.rgb),('depth_raw_mm',c.depth_raw_mm)]}))
+                        **{k:numpy(getattr(altg,k)) for k in GRAPH_KEYS},
+                        **{c.camera+'/'+k:numpy(v) for c in altcams for k,v in [('rgb',c.rgb),('depth_raw_mm',c.depth_raw_mm)]}))
                     assert metric['previous_hidden_exact']
                     row=dict(condition=condition,step=step,seed=seed,timestep=t,offset_mm=offset,
                         robot_state_sha256=digest(data['robot76'].tolist()),
@@ -206,6 +210,7 @@ def interventions(root,folder,seed,model,norm,codec,detector,tracker,condition,s
             repeated_baseline_graph_action_hidden_exact=all(r['baseline_repeat_exact'] for r in results),actual_student_weights_unchanged=True,
             scope='initial offsets and same-history one-step diagnostics; no recovery rollout'),immutable=True)
     finally:
+        geom.close()
         physics.close()
         for a in aa.values():a.close()
         detector.cache.clear();env.close();torch.cuda.empty_cache()

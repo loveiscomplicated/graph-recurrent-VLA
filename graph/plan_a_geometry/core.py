@@ -154,12 +154,12 @@ class PlanA:
             from visual.runtime.graph_perception import make_packet as common_packet
             self.packet_builder=partial(common_packet,coordinate_frame=coordinate_frame)
 
-    def prepare(self,cameras,data,masks,surfaces,*,clean_masks=None):
+    def prepare(self,cameras,data,masks,surfaces,*,clean_masks=None,robot_diagnostics=None):
         """Join raw masks and optional already-filtered masks before the gate.
 
-        Supplied clean masks are the CurrentGeometry filter result. Full robot
-        diagnostics are unavailable in this private fast path; no second robot
-        classification is performed. Standalone calls retain full diagnostics.
+        Supplied clean masks or full-frame robot diagnostics come from the
+        current GPU filter. Neither path runs a second robot classification.
+        Standalone calls without either argument retain full diagnostics.
         """
         synchronized(cameras)
         allowed={'robot76','robot_world_geometry','tcp_pose','qpos','robot_link_world','timestep','timestamp','episode'}
@@ -168,10 +168,20 @@ class PlanA:
         if len(cameras)!=2 or {c.camera for c in cameras}!={self.main,self.wrist} or set(masks)!={self.main,self.wrist}:raise ValueError('camera identity')
         if str(data['episode'])!=cameras[0].episode or int(data['timestep'])!=cameras[0].timestep:raise ValueError('sensor identity join')
         if clean_masks is not None and set(clean_masks)!=set(masks):raise ValueError('clean camera identity')
+        if robot_diagnostics is not None:
+            if clean_masks is not None:raise ValueError('choose clean masks or robot diagnostics')
+            if set(robot_diagnostics)!=set(masks):raise ValueError('robot diagnostic camera identity')
         by={c.camera:c for c in cameras}; filters={};clean={}
         for c in cameras:
             if np.shape(masks[c.camera])!=(2,*c.depth.shape):raise ValueError('mask alignment')
-            if clean_masks is None:
+            if robot_diagnostics is not None:
+                result=robot_diagnostics[c.camera]
+                for key in ('confirmed_robot','uncertain','candidate','inside_known_link_volume'):
+                    if result[key].dtype!=bool or result[key].shape!=c.depth_raw_mm.shape:
+                        raise ValueError('robot diagnostic alignment')
+                filters[c.camera]=result
+                clean[c.camera],_=filtered_masks(masks[c.camera],result)
+            elif clean_masks is None:
                 filters[c.camera]=classify_robot(c,surfaces)
                 clean[c.camera],_=filtered_masks(masks[c.camera],filters[c.camera])
             else:
