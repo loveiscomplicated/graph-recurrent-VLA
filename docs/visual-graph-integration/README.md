@@ -5,6 +5,7 @@
 
 ## Repository cleanup
 
+- [Vast58752018: 남은 CUDA8개 테스트 통과·skip 해소](repo_cleanup_cuda_58752018_20261104.md)
 - [현재 주 live 기준 모듈화: 백업·실제 변경·검증·남은 작업](repo_cleanup_modular_live_20261104.md)
 - [실행 경로·Git 밖 보존 대상·사용자 결정 D01–D12](repo_cleanup_preflight_20261104.md)
 - [전체 목표 디렉터리 구조 제안](repo_cleanup_structure_proposal_20261104.md)
