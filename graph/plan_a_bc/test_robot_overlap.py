@@ -27,9 +27,11 @@ class DefaultRobotOverlap(unittest.TestCase):
             with patch('torch.cuda.is_available',return_value=True):ident=input_identity(root)
             self.assertEqual(ident['robot_filter_backend'],'cuda');self.assertEqual(ident['robot_preparation'],'before_vision')
             self.assertEqual(ident['grounding']['primary'],'gpt-6.1-terra')
-            self.assertEqual(ident['cache_version'],'graphs_common_coordinate_frame_v4_terra_primary')
+            self.assertEqual(ident['cache_version'],'graphs_modular_live_v5')
+            self.assertIsNone(ident['grounding']['fallback'])
+            self.assertEqual(ident['components']['graph_builder'],'graph.current:CurrentGeometry')
             self.assertEqual(ident['wrist_gate_backend'],'torch_cuda')
-            for version in ('graphs_common_coordinate_frame_v2','graphs_common_coordinate_frame_v3_robot_overlap'):
+            for version in ('graphs_common_coordinate_frame_v2','graphs_common_coordinate_frame_v3_robot_overlap','graphs_common_coordinate_frame_v4_terra_primary'):
                 old={**ident,'cache_version':version}
                 (root/'cache_manifest.json').write_text(json.dumps(dict(identity=old,episodes=[])))
                 with patch('torch.cuda.is_available',return_value=True),self.assertRaisesRegex(ValueError,'identity mismatch'):CachedDataset(root)
@@ -39,7 +41,7 @@ class DefaultRobotOverlap(unittest.TestCase):
         fixture=geometry_fixtures.Contracts();fixture.setUp();started=Event()
         class Filter:
             def prepare_surfaces(self,*_):started.set();return None
-        with patch('graph.plan_a_bc.geometry.RobotFK'),patch('torch.cuda.is_available',return_value=True):
+        with patch('graph.current.RobotFK'),patch('torch.cuda.is_available',return_value=True):
             geometry=CurrentGeometry('unused',{})
         self.assertEqual(geometry.robot_filter_backend,'cuda')
         geometry._check_mount=lambda *args:None
@@ -86,8 +88,9 @@ class DefaultRobotOverlap(unittest.TestCase):
             root=Path(tmp);dataset=root/'dataset';dataset.mkdir()
             with h5py.File(dataset/'ep.h5','w') as f:f['actions']=np.zeros((1,7),np.float32)
             (root/'normalizer.json').write_text('{"schema":{}}')
+            (root/'config.json').write_text('{}')
             entry=dict(episode_id=1,path='ep.h5',sha256=cache.sha(dataset/'ep.h5'),actions=1,seed=1,split='train')
-            with patch.object(cache,'CurrentGeometry',Geometry),patch.object(cache,'OnlineVisionAdapter',Adapter), \
+            with patch.object(cache,'components_from_config',return_value=SimpleNamespace(geometry=Geometry)),patch.object(cache,'OnlineVisionAdapter',Adapter), \
                     patch.object(cache,'input_identity',return_value=dict(coordinate_frame='ee')):
                 result=cache.cache_episode(root,dataset,entry,None,None,Mock())
             self.assertEqual(result['robot_preparation'],'before_vision');self.assertEqual(events,['inside_build','closed'])
@@ -120,7 +123,7 @@ class DefaultRobotOverlap(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'config.json').write_text('{"geometry":{},"evaluation":{"horizon":1,"smoke_horizon":1,"lift_consecutive_steps":2}}')
             def video(path,*args):Path(path).write_bytes(b'fixture');return writer
-            with patch.object(rollout,'CurrentGeometry',Geometry),patch.object(rollout,'OnlineVisionAdapter',Adapter), \
+            with patch.object(rollout,'components_from_config',return_value=SimpleNamespace(geometry=Geometry)),patch.object(rollout,'OnlineVisionAdapter',Adapter), \
                     patch.object(rollout,'environment',return_value=env),patch.object(rollout,'reset_diagnostics',return_value={}), \
                     patch.object(rollout,'sensors',return_value=(fixture.cameras,data,[])), \
                     patch.object(rollout,'PhysicsAudit',return_value=Mock(count=1)),patch.object(rollout,'controller_audit'), \
@@ -140,7 +143,7 @@ class CudaDefaultRobotOverlap(unittest.TestCase):
         surfaces=[LinkSurface('camera_link',cube([-.02,-.1,.099],[-.006,.1,.105]),np.eye(4))]
         raw=fixture.masks
         for frame in ('world','ee'):
-            with patch('graph.plan_a_bc.geometry.RobotFK'):
+            with patch('graph.current.RobotFK'):
                 candidate=CurrentGeometry('unused',{},coordinate_frame=frame)
                 reference=CurrentGeometry('unused',{},coordinate_frame=frame,robot_filter_backend='cpu')
             try:

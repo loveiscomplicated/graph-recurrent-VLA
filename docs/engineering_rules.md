@@ -10,7 +10,8 @@
 | 위치 | 현재 역할 |
 | --- | --- |
 | `envs/maniskill/`, `examples/` | 공통 simulator 생성, raw GT, 실행 예제 |
-| `visual/` | `.gitkeep`만 있음. 학습·평가 구현 없음 |
+| `visual/` | 기존 perception·tracking·tensor 처리 구현; 채택 경로는 현재 live와 연결 |
+| `graph/current.py`, `gnn/`, `controller/`, `vla/` | 사용자 승인 current-live 모듈화. [교체 계약](architecture.md)·[실행 방법](usage.md) |
 | `recurrent/` | GT state 입력 controller 7종 비교, 관측 손상 4단계, 학습·평가·리포트 (`recurrent/README.md`) |
 | `graph/prototype/`, `v2/`, `v3/`, `v4/` | Graph 모델 비교, TOML config, 학습·평가 및 진단 |
 | `graph/subtasks/`, `graph/subtasks/reach_bc/` | subtask 데이터·환경·분할, Reach BC 학습·평가 |
@@ -21,7 +22,8 @@
 루트 `AGENTS.md`가 공통 지침이며 `CLAUDE.md`는 이를 가져오는 진입점이다.
 분석 시 두 파일 외에 하위 `AGENTS.md`/`CLAUDE.md`나 별도 instruction 파일은 없었다.
 실제 entrypoint와 연결 범위는 [tracking 문서](experiment_tracking.md)의 표를 따른다.
-공통 train/evaluate launcher나 모든 팀에 강제되는 config/checkpoint schema는 없다.
+모든 팀에 강제되는 launcher나 config/checkpoint schema는 없다. 사용자 승인 current-live
+기준 실행은 tools.train/rollout/evaluate로 안내하며 과거 실험의 개별 계약과 구분한다.
 
 ## 에이전트 작업 절차
 

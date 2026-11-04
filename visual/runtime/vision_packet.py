@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 from time import perf_counter
 import numpy as np
+from vla.coordinates import pose_matrix
 from visual.runtime.object_groups import object_rows
 from visual.runtime.coordinate_frames import camera_to_frame, check_frame, feature_fields, FRAME_NAMES
 
@@ -62,21 +63,6 @@ def validate_transform(transform):
     return t.astype(np.float64)
 
 
-def pose_matrix(pose):
-    """World-from-EE pose [x,y,z,qw,qx,qy,qz], with no identity fallback."""
-    p = np.asarray(pose, np.float64)
-    if p.shape != (7,) or not np.isfinite(p).all():
-        raise ValueError('finite source observation TCP pose [7] required')
-    norm = np.linalg.norm(p[3:])
-    if abs(norm - 1) > NUMERIC_CONTRACT['quaternion_norm_atol']:
-        raise ValueError('TCP wxyz quaternion is not unit')
-    w, x, y, z = p[3:] / norm
-    t = np.eye(4, dtype=np.float64)
-    t[:3, :3] = [[1-2*(y*y+z*z), 2*(x*y-z*w), 2*(x*z+y*w)],
-                 [2*(x*y+z*w), 1-2*(x*x+z*z), 2*(y*z-x*w)],
-                 [2*(x*z-y*w), 2*(y*z+x*w), 1-2*(x*x+y*y)]]
-    t[:3, 3] = p[:3]
-    return t
 
 
 def camera_to_ee(frame):

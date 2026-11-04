@@ -118,10 +118,12 @@ class Contracts(unittest.TestCase):
             self.assertTrue(all(start<config['episode_lengths'][str(i)] for i in ids))
 
     def test_live_rollout_has_no_expert_cache_or_teacher(self):
-        tree=ast.parse(Path(__file__).with_name('rollout.py').read_text())
+        from vla.workflows import rollout
+        source=Path(rollout.__file__).read_text()
+        tree=ast.parse(source)
         names={n.id for n in ast.walk(tree) if isinstance(n,ast.Name)}
         self.assertFalse({'CachedDataset','ScriptedExpert','DirectDataset'} & names)
-        text=Path(__file__).with_name('rollout.py').read_text()
+        text=source
         self.assertIn('CurrentGeometry',text);self.assertIn('physics.unchanged(token)',text)
 
 

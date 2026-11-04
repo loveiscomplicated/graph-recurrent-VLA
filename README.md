@@ -1,4 +1,25 @@
-# Graph Recurrent VLA: shared ManiSkill prototype environment
+# Graph Recurrent VLA
+
+## Current live baseline
+
+현재 주 live를 교체 가능한 component로 분리해 정리 중이다. 별도 모델 확정안을
+기다리지 않으며, 현재 구현을 기준 실행으로 사용한다.
+
+| 위치 | 역할 |
+| --- | --- |
+| `graph/current.py` | 현재 Graph 생성, robot filter·wrist gate, GPU/World·EE 경로 |
+| `gnn/` | Graph encoder |
+| `controller/` | 제어 모델 |
+| `vla/` | 공통 계약·상태 관리·component 조립·학습/평가 workflow |
+| `tools/train.py`, `tools/rollout.py`, `tools/evaluate.py` | 기본 학습·live·독립 offline 평가 진입점 |
+| `visualization/` | 실행 가능한 저장 Graph 3D 뷰어 |
+
+[실행 방법](docs/usage.md), [모듈 교체 계약](docs/architecture.md),
+[정리 진행 보고서](docs/visual-graph-integration/repo_cleanup_modular_live_20261104.md)를 따른다.
+현재 명령은 기존 실험 root의 config/cache/assets를 사용한다. 합의한 **저장 SAM2
+mask 기반 2단계 cache 명령은 아직 구현되지 않았다.** 기존 combined cache 생성기는
+Terra/SAM2를 다시 실행할 수 있으므로 새 Graph 재생성 명령으로 사용하지 않는다.
+과거 코드는 산출물 원격 보존·복원 검증 전까지 삭제하지 않는다.
 
 ## Get started
 
@@ -28,7 +49,7 @@ On this machine, CPU simulation worked with ManiSkill 3.0.1, SAPIEN 3.0.3,
 Gymnasium 1.3.0, and PyTorch 2.14.1. CUDA was unavailable here; its path is
 available in the factory but has not been run on this host.
 
-## Start a team prototype
+## Independent prototype history
 
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,

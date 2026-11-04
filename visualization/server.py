@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from urllib.parse import parse_qs, unquote, urlsplit
 
-from graph.integration_baseline.graph import EDGE_TYPES, NODE_TYPES
+from vla.contracts.graph import EDGE_TYPES, NODE_TYPES
 from visualization.data import episode_info, frame_for_step, graph_steps, list_episodes
 from visualization.captures import capture_episode, capture_frame, list_captures
 from visualization.persistent import (VARIANTS, is_persistent_id, persistent_episode,

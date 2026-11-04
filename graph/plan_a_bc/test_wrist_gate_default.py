@@ -14,7 +14,7 @@ from .geometry import CurrentGeometry
 
 
 def current_geometry(**kwargs):
-    with patch('graph.plan_a_bc.geometry.RobotFK'):
+    with patch('graph.current.RobotFK'):
         geometry=CurrentGeometry('unused',{},**kwargs)
     geometry._check_mount=lambda *args:None
     return geometry

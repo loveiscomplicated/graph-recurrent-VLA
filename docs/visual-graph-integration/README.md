@@ -3,6 +3,13 @@
 이 레포를 사용하는 다른 채팅에서도 같은 원문을 찾기 위한 안내다.
 마지막 색인 갱신:2026-11-04 KST. 각 결과의 관측 시점·코드 snapshot은 원문을 따른다.
 
+## Repository cleanup
+
+- [현재 주 live 기준 모듈화: 백업·실제 변경·검증·남은 작업](repo_cleanup_modular_live_20261104.md)
+- [실행 경로·Git 밖 보존 대상·사용자 결정 D01–D12](repo_cleanup_preflight_20261104.md)
+- [전체 목표 디렉터리 구조 제안](repo_cleanup_structure_proposal_20261104.md)
+- [현재 실행 방법](../usage.md) / [component 교체 계약](../architecture.md)
+
 ## 주 live 비용 개선을 다시 시작할 때
 
 먼저 [주 live 최적화 연결·잔여 비용 보고서](10i_live_nonrobot_coverage_audit_20261104.md)를 읽는다.

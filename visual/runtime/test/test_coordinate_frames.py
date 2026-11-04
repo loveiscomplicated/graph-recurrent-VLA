@@ -182,7 +182,7 @@ class CoordinateFrames(unittest.TestCase):
         with self.assertRaises(ValueError): current_records([ee, replace(ee, reference_ee_pose=tuple(stale.tcp_pose))], fuse_views=False, coordinate_frame='ee')
         with self.assertRaises(ValueError): consistent_views([ee, world], [c], {c.camera: masks})
         with self.assertRaises(ValueError): build_graph(records, robot(c), c.tcp_pose, 0)
-        with patch('graph.plan_a_bc.geometry.RobotFK'):
+        with patch('graph.current.RobotFK'):
             for frame in ('world', 'ee'):
                 g = CurrentGeometry('unused', {}, perception_backend='cpu', coordinate_frame=frame)
                 self.assertEqual(g.system.coordinate_frame, frame)
@@ -204,10 +204,11 @@ class CoordinateFrames(unittest.TestCase):
         data = dict(episode=np.array(cameras[0].episode), timestep=np.int64(0),
             tcp_pose=cameras[0].tcp_pose, robot_world_geometry=robot(cameras[0]), robot76=np.zeros(76))
         for frame in ('world', 'ee'):
-            with patch('graph.plan_a_bc.geometry.RobotFK'):
+            with patch('graph.current.RobotFK'):
                 geometry = CurrentGeometry('unused', {}, perception_backend='cpu', coordinate_frame=frame)
             geometry._check_mount = lambda *args: None
-            geometry.system.prepare = lambda *args: dict(conditions={'C3': masks}, gate=dict(accepted=True))
+            geometry.system.prepare = lambda *args: dict(conditions={'C3': masks}, gate=dict(accepted=True),
+                wrist_gate_backend='cpu')
             g, records, _ = geometry.build(cameras, data, [], masks)
             self.assertEqual(g.packet['coordinate_frame'], FRAME_NAMES[frame])
             by_id = {r['persistent_node_id']: r for r in records}

@@ -3,15 +3,9 @@ import torch
 from torch import nn
 
 from .graph_builder import flat_features
+from vla.nn import mlp
 
 
-def mlp(dims, final_activation=False):
-    layers = []
-    for i, (a, b) in enumerate(zip(dims, dims[1:])):
-        layers.append(nn.Linear(a, b))
-        if i < len(dims)-2 or final_activation:
-            layers.append(nn.ReLU())
-    return nn.Sequential(*layers)
 
 
 class ActionHead(nn.Sequential):

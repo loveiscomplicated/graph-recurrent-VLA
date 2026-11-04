@@ -2,10 +2,11 @@
 
 Task ID: `repo_cleanup_structure_proposal_20261104` · 2026-11-04 KST.
 
-상태: **P04 구조 제안, 미확정·미구현.** 사용자의 레포 구조 질문에 대한 구체안이다.
-폴더 생성·소스 이동·삭제·commit·upload는 하지 않았다. 통합 모델의 확정 구조를
-공유받은 후 실제 파일 배치와 연결을 조정한다. 모델·feature·Graph schema·sequence·
-학습 알고리즘·config/checkpoint schema를 이 문서로 확정하지 않는다.
+현재 상태: **D12로 별도 모델 확정안 대기를 취소하고 현재 주 live의 모듈화를 시작했다.**
+실제 구현·진입점·검증은 [진행 보고서](repo_cleanup_modular_live_20261104.md)와
+[현재 구조](../architecture.md)를 따른다. 아래 트리는 당시의 전체 목표 제안이다.
+특히 collect/build_perception_cache/build_graph_cache는 아직 구현된 CLI가 아니다.
+새 모델·feature·Graph schema·학습 알고리즘을 이 제안으로 고정하지 않는다.
 
 개정: 사용자가 반복 개발할 `gnn/`, `controller/`, `graph/`를 분리하고 `vla/`는
 공통 안정 부분과 통합 인터페이스를 맡기는 안을 제시했다. 아래는 이를 반영한
@@ -59,7 +60,7 @@ graph-recurrent-VLA/
 │
 ├── docs/
 │   ├── usage.md                      # 기본 실행 흐름 안내
-│   ├── architecture.md               # 모델 확정 후 갱신할 실제 구성 설명
+│   ├── architecture.md               # 현재 기준 실행과 교체 계약
 │   ├── experiment_tracking.md        # 기존 운영 규칙
 │   ├── huggingface_artifacts.md       # 기존 게시·복원 규칙
 │   └── visual-graph-integration/      # 전체 연구·분석 보고서 유지
@@ -71,7 +72,7 @@ graph-recurrent-VLA/
 ```
 
 실제 의존성이 없으면 불필요하게 작은 하위 package를 더 만들지 않는다. Graph/GNN/
-controller의 내부 구조와 실제 통합 모델의 연결은 공유받은 확정안에 맞춘다. 세
+controller의 내부 구조는 현재 주 live를 출발점으로 삼고 교체 실험에 맞춰 바꾼다. 세
 component의 구현을 vla/models 등에 다시 복사해 이중으로 유지하는 방식은 제안하지 않는다.
 `configs/`는 새 기본 실행의 설정 위치 제안이며 모든 과거 팀 config를 통일하거나
 새 schema를 강제하는 뜻이 아니다. Raw/cache/산출물의 실제 루트는 설정 가능하게
@@ -109,11 +110,11 @@ GNN 이전 입력을 보존하는 요구를 유지하되 구체 저장 형식은
 - `graph/`: 관측·mask에서 Graph를 구성하는 알고리즘과 채택 GPU backend의 개발 영역.
   물체 표본·노드/엣지·관련 특징 생성의 구체 설계는 아직 결정하지 않는다.
 - `gnn/`: Graph에서 표현을 학습하는 모델의 개발 영역. 출력 차원·readout·보조 head의
-  소유 경계 등은 실제 통합 모델의 확정안에 맞춘다.
+  소유 경계 등은 현재 주 live의 계약을 출발점으로 삼는다.
 - `controller/`: 제어 모델의 개발 영역. GRU 등 특정 구조, recurrent state와 action
   표현·학습/sequence 설계를 이 폴더 분리로 강제하지 않는다.
 - `vla/integration/`: 선택한 component를 연결하고 통합 모델을 구성하는 영역. 모델 정의를
-  component와 중복 구현하지 않는다. 실제 입출력과 조립 방식은 공유받은 모델을 따른다.
+  component와 중복 구현하지 않는다. 실제 입출력과 조립 방식은 현재 주 live를 출발점으로 삼고 확장한다.
 
 공통 contracts는 component들이 참조할 수 있고, integration/workflows는 component를
 호출하는 방향을 제안한다. Component가 vla의 최상위 통합 모델이나 실행 workflow를
@@ -170,14 +171,15 @@ vla 안에 graph/gnn/controller의 별도 복사본을 쌓는 방식은 cleanup 
   기본 사용법을 별도 색인으로 찾을 수 있게 한다. 기존 상대 artifact 링크도 원격 보존
   위치나 유효한 복원 안내로 갱신해야 한다.
 
-## 6. 실제 적용의 선행 조건
+## 6. 현재 적용 상태 — D12 반영
 
-통합 모델 확정안 수령 → 현재 변경과 보존 대상 재확인 → 필요한 backup commit →
-파일별 의존성/이관표와 산출물 inventory → 원격 보존·복원 검증 → 작은 단위의 이동·
-기본 진입점 정리 → live/뷰어/관련 테스트·GPU/World·EE·필수 영상 검증 순서로 진행한다.
+별도 모델 확정안 수령을 기다리지 않는다. 변경 소스를 backup commit으로 보존한 뒤
+현재 주 live의 Graph/GNN/controller·통합과 실행을 분리했다. 실제 이관·검증과 남은
+작업은 [모듈화 보고서](repo_cleanup_modular_live_20261104.md)를 따른다.
 
-이번에는 문서와 기존 import를 확인하고 구조안을 작성했다. 새 package/CLI 생성,
-코드 이동·삭제·학습·수집·GPU·viewer 실행은 하지 않았다. 문서의 local 링크만 검증하며
-기존 실행/공통 인프라 테스트는 반복 실행하지 않았다.
+과거 소스 삭제에는 산출물 원격 보존·복원 검증이 먼저 필요하다. 현재 활성 helper와
+과거 실험의 의존성을 구분하고, 저장 mask 기반 2단계 cache 등 아직 구현하지 않은
+목표 진입점을 구현 완료로 취급하지 않는다. GPU/World·EE·필수 영상의 실제 GPU 실행
+검증도 남아 있다.
 
 [전체 사전 조사·확정 결정 기록](repo_cleanup_preflight_20261104.md)

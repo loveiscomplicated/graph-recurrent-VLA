@@ -211,7 +211,7 @@ class CudaRobotIntegration(unittest.TestCase):
         proposed = {name: a.copy() for name, a in f.masks.items()}
         proposed['hand_camera'][0, 5:8, 12:15] = True
         expected = {c.camera: classify_robot(c, surfaces) for c in f.cameras}
-        with patch('graph.plan_a_bc.geometry.RobotFK'):
+        with patch('graph.current.RobotFK'):
             geometry = CurrentGeometry('unused', {})
         calls = []
         original = CudaRobotFilter.filter_cameras

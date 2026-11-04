@@ -1,7 +1,16 @@
 # Agent guidance
 
 Read `README.md`, `envs/maniskill/README.md`, and `docs/PROJECT_CONTEXT.md`
-before changing code. This is the independent feasibility prototype stage.
+before changing code. Independent prototypes are the historical foundation.
+
+The user has authorized cleanup around the current main-live baseline; there is
+no separate model proposal to wait for. Keep graph generation, GNN and controller
+replaceable in `graph/`, `gnn/`, `controller/`, with shared contracts and integration
+in `vla/`. See `docs/architecture.md` and the cleanup report index. This does not
+freeze model weights or prescribe future experimental architectures. Preserve
+robot filtering, wrist gate, GPU paths, World/EE selection, mandatory live video,
+and the executable Graph viewer. Do not delete historical code/artifacts before
+the agreed remote preservation and restoration checks.
 
 Keep shared simulator code limited to the working ManiSkill simulator, its raw GT
 accessor, examples, and smoke tests. Existing experiment tracking and artifact

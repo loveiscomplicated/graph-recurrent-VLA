@@ -7,8 +7,8 @@ import re
 
 import numpy as np
 
-from graph.integration_baseline.graph import EDGE_TYPES, NODE_TYPES
-from visual.runtime.vision_packet import pose_matrix
+from vla.contracts.graph import EDGE_TYPES, NODE_TYPES
+from vla.coordinates import pose_matrix
 
 
 REQUIRED = {'node_input', 'node_type', 'edge_index', 'edge_attr', 'edge_type', 'source_index'}

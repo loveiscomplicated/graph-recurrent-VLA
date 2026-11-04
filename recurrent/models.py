@@ -7,6 +7,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from recurrent.common import load_config
+from controller.recurrent import RNNPolicy
 
 
 def mlp(sizes, act_last=False):
@@ -43,17 +44,6 @@ class StackMLPPolicy(nn.Module):
         return self.net(win), seq[:, -(self.k - 1):].detach()
 
 
-class RNNPolicy(nn.Module):
-    def __init__(self, obs_dim, act_dim, cell="gru", hidden=256, layers=1, enc_hidden=128):
-        super().__init__()
-        self.encoder = mlp([obs_dim, enc_hidden], act_last=True)
-        rnn = nn.GRU if cell == "gru" else nn.LSTM
-        self.rnn = rnn(enc_hidden, hidden, num_layers=layers, batch_first=True)
-        self.head = mlp([hidden, enc_hidden, act_dim])
-
-    def forward(self, x, state=None):
-        y, state = self.rnn(self.encoder(x), state)
-        return self.head(y), state
 
 
 class CfCCell(nn.Module):

@@ -7,7 +7,7 @@ import re
 import numpy as np
 
 from visualization.captures import _archive, _packed, capture_episode, within
-from visual.runtime.vision_packet import pose_matrix
+from vla.coordinates import pose_matrix
 
 
 VARIANTS = {

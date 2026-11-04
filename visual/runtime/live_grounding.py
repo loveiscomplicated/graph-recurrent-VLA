@@ -81,13 +81,14 @@ class GroundingStream:
         return result
 
 
-def policy_identity():
+def policy_identity(*, auth_fallback=True):
     """Public settings only, suitable for cache and experiment identities."""
-    return dict(policy="terra_standard_auth_fallback_v1", primary=MODEL,
+    return dict(policy="terra_standard_auth_fallback_v1" if auth_fallback else "terra_standard_only_v1", primary=MODEL,
                 service_tier="default", reasoning_effort="high", detail="original",
                 max_output_tokens=5120, store=False,
                 prompt_sha256=hashlib.sha256(PROMPT.encode()).hexdigest(),
-                fallback="grounding_dino", fallback_on=["missing_key", "http_401", "http_403"],
+                fallback="grounding_dino" if auth_fallback else None,
+                fallback_on=["missing_key", "http_401", "http_403"] if auth_fallback else [],
                 scan_every=SCAN_EVERY)
 
 
@@ -127,13 +128,20 @@ class LiveGrounding:
 
     Repeated byte-identical RGB uses a bounded result cache, including the
     recorded prefix-causality probe. The API sees only one current RGB image.
-    A rejected key selects DINO for this instance's remaining lifetime.
+    With auth_fallback=True, a rejected key selects DINO for this instance's
+    remaining lifetime. The canonical live policy selects Terra-only explicitly.
     """
-    def __init__(self, device="cuda", model_id=GDINO_ID, *, env_file=ENV_FILE):
+    def __init__(self, device="cuda", model_id=GDINO_ID, *, env_file=ENV_FILE, auth_fallback=True):
+        if type(auth_fallback) is not bool:
+            raise ValueError('auth_fallback must be boolean')
+        self.auth_fallback = auth_fallback
         self.device, self.model_id = device, str(model_id)
         had_key = bool(os.environ.get("OPENAI_API_KEY", "").strip())
         loaded = load_env_file(env_file)
         self._key = os.environ.get("OPENAI_API_KEY", "").strip()
+        if not self._key and not self.auth_fallback:
+            LOG.error('ERROR Terra-only policy: OPENAI_API_KEY is missing/blank; DINO fallback disabled')
+            raise AuthenticationError('missing_key; Terra-only policy forbids DINO fallback')
         self._dino = None
         self._cache = OrderedDict()
         self.backend = "terra" if self._key else "dino"
@@ -231,6 +239,9 @@ class LiveGrounding:
                                    prompt=PROMPT, scans=t//SCAN_EVERY+1)
                         for name in PROMPTS}
             except AuthenticationError as exc:
+                if not self.auth_fallback:
+                    LOG.error('ERROR Terra-only authentication failure frame=%d; DINO fallback disabled', t)
+                    raise
                 self.backend, self.fallback_reason = "dino", str(exc)
                 self._key = ""
                 self._cache.clear()
