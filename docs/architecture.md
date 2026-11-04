@@ -60,15 +60,28 @@ Graph builder 선택을 기록한다. Factory 이름은source revision을 대신
 
 ## 현재Graph·perception 보존
 
-Graph facade는 `graph/current.py`로 옮겼지만 채택된저수준helper는 아직
-`graph/plan_a_geometry`·`persistent_geometry`·일부 `graph/experiments`와 `visual/runtime`을
-참조한다. 폴더명이experiments라는 이유로 삭제하지 않는다. GPU filter/준비·wrist gate·
-sampling/edge·World/EE 계산을 유지한다. Mask producer호출은robot 준비와vision의
-overlap을 보존한다. 실제CUDA 성능은Linux GPU에서 추가 검증해야 한다.
+Graph facade는 `graph/current.py`이며, 채택 helper의 실제 구현은 다음에 있다.
+
+| 위치 | 역할 |
+| --- | --- |
+| `graph/geometry/` | CPU 기준 기하, robot filter·wrist gate, records, CPU/CUDA Graph 조립 |
+| `graph/perception/` | RGB-D projection·PCA·Shape-First·voxel/FPS·packet 구성 |
+| `graph/backends/` | CUDA robot filter·사전 준비, native C++, 선택 resident backend |
+| `vla/perception/` | Terra/DINO 초기화·SAM2·online adapter·관측 프레임 |
+| `vla/data/`, `vla/action_codec.py`, `vla/workflows/` | 상태 통계·robot schema·입출력·action codec·RNG와 live audit |
+
+기본 tools/cache 경로와 뷰어는 과거 실험/진단 package를 역으로 import하지 않는다.
+이전 leaf module은 같은 구현의 alias 또는 추출 함수의 re-export를 제공한다. 과거
+CLI와 보고서 코드는 원래 위치에 유지하며, 과거 package 자체를 삭제한 것은 아니다.
+전체 source 의존성과 이관표는 [helper 분리 보고서](visual-graph-integration/repo_cleanup_helpers_20261104.md)를 따른다.
+
+GPU filter/준비·wrist gate·sampling/edge·World/EE 계산과 mask producer를 통한 overlap을
+유지한다. 고정 geometry protocol과 native C++는 바이트 동일하게 옮겼다. SAM2 외부
+weight의 기존 위치도 유지한다. 실제 전체 live 성능 비교는 별도로 실행해야 한다.
 
 Perception policy 진입점은 `vla/perception/grounding.py`다. 기본 `terra_only`이며,
 옛auth fallback을 사용할 때만 `grounding.policy=terra_auth_fallback`을 명시한다.
-SAM2/adapter는 기존 구현을 재사용한다. 모델weight를 일괄freeze하는 처리는 추가하지 않았다.
+SAM2/adapter는 이관한 동일 구현을 재사용한다. 모델 weight의 일괄 freeze는 추가하지 않았다.
 
 뷰어는Graph 상수·좌표변환 공통부를 직접 참조하고 기존 저장형식과 검사 기능을 유지한다.
 과거코드 전체삭제·2단계cache·새expert 수집·원격복원 확인은 남은작업이다.

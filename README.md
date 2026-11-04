@@ -8,6 +8,7 @@
 | 위치 | 역할 |
 | --- | --- |
 | `graph/current.py` | 현재 Graph 생성, robot filter·wrist gate, GPU/World·EE 경로 |
+| `graph/geometry`, `graph/perception`, `graph/backends` | 과거 실험에서 분리한 현재 계산 helper |
 | `gnn/` | Graph encoder |
 | `controller/` | 제어 모델 |
 | `vla/` | 공통 계약·상태 관리·component 조립·학습/평가 workflow |
@@ -16,6 +17,7 @@
 
 [실행 방법](docs/usage.md), [모듈 교체 계약](docs/architecture.md),
 [정리 진행 보고서](docs/visual-graph-integration/repo_cleanup_modular_live_20261104.md)를 따른다.
+채택 helper의 위치와 호환 경로는 [Graph 안내](graph/README.md), [VLA 안내](vla/README.md)에 있다.
 현재 명령은 기존 실험 root의 config/cache/assets를 사용한다. 합의한 **저장 SAM2
 mask 기반 2단계 cache 명령은 아직 구현되지 않았다.** 기존 combined cache 생성기는
 Terra/SAM2를 다시 실행할 수 있으므로 새 Graph 재생성 명령으로 사용하지 않는다.

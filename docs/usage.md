@@ -33,6 +33,11 @@ backend로 만든cache를 무조건 허용하는 의미는 아니다. Terra API�
 
 ## Cache와 호환 경로
 
+현재 helper 구현은 `graph/geometry`, `graph/perception`, `graph/backends`와
+`vla/perception`에 있다. 과거 실험·진단 파일을 기본 실행에서 import하지 않는다.
+이전 module은 alias/re-export를 제공하며 과거 CLI·산출물은 아직 제거하지 않았다.
+[이관 내역](visual-graph-integration/repo_cleanup_helpers_20261104.md)을 참조한다.
+
 합의한 원자료＋Grounding＋raw SAM2 mask 1차cache, 저장mask로 만드는Graph 2차cache는
 앞으로 구현할 항목이다. `tools.build_graph_cache` / `tools.build_perception_cache`는
 아직 없다. `vla.data.graph_cache`의 생성 처리는 기존combined 경로의 이관이며,
@@ -70,6 +75,7 @@ WANDB_MODE=disabled python -m unittest tests.test_modular_live graph.plan_a_bc.t
   graph.plan_a_bc.test_robot_live_integration graph.plan_a_bc.test_wrist_gate_default \
   graph.plan_a_bc.test_robot_overlap visual.runtime.test.test_live_grounding \
   visual.runtime.test.test_coordinate_frames visualization.test_viewer \
-  visualization.test_captures visualization.test_persistent -v
+  visualization.test_captures visualization.test_persistent tests.test_helper_boundaries \
+  visualization.test_pointcloud -v
 WANDB_MODE=disabled python -m unittest tests.test_experiment_logger tests.test_experiment_artifacts -v
 ```

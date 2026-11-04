@@ -11,6 +11,10 @@
 - `utils/`: 기존 experiment identity·local/W&B logging·명시적 artifact publishing.
 - `visualization/`: 저장 Graph를 실제로 읽는 실행 가능한 검사 도구.
 
+채택 helper는 `graph/geometry`·`graph/perception`·`graph/backends`와 `vla/perception`으로
+분리했다. 이전 경로는 호환을 제공하며 기본 실행은 과거 실험·진단 package를 불러오지 않는다.
+[파일별 이동과 검증](visual-graph-integration/repo_cleanup_helpers_20261104.md)을 따른다.
+
 공통 simulator에 feature·Graph·dataset·모델 로직을 추가하지 않는다. 모델 parameter의
 학습/동결은 실험 설정의 책임이며 vla 공통 코드의 안정성과 구분한다. 주 live의 robot
 filter·wrist gate·GPU 처리·World/EE 선택·필수 영상 저장을 보존한다.

@@ -2,6 +2,10 @@
 
 Task ID: `repo_cleanup_modular_live_20261104` · 2026-11-04 KST.
 
+후속 helper 분리 완료: 실제 Graph/perception/GPU helper를 현재 모듈로 이관하고,
+기본 실행과 뷰어의 과거 package 역의존성을 제거했다.
+[파일별 이관·검증 보고서](repo_cleanup_helpers_20261104.md)를 따른다.
+
 후속: 사용자 지정 Vast58752018/RTX3090에서 아래 로컬 검증의 **CUDA skip8개를 모두
 실행해 통과**했다. [CUDA 보충 검증 보고서](repo_cleanup_cuda_58752018_20261104.md)를 따른다.
 이하의 Mac 미실행·skip 기록은 당시 결과이며, 실제 전체 live 비교와 성능 검증은 여전히 남아 있다.
