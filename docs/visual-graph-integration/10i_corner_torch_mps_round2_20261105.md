@@ -154,5 +154,5 @@ OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m u
 WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 .venv/bin/python -m local_corner_probe_10i_20261104.validate_torch --capture local_corner_probe_10i_20261104/capture_v4_final --reference local_corner_probe_10i_20261104/v4_final --output local_corner_probe_10i_20261104/new_round2_validation --device mps --rounds 10 --warmups 2 --compare-previous --previous-snapshot torch_mps_optimized_20261105_final
 ```
 
-比較用には `torch_mps_optimized_20261105_final/sources/` snapshotが必要。
-Ignored 原資料リンクは現在のローカルフォルダ保存を前提とする。
+비교에는 `torch_mps_optimized_20261105_final/sources/` snapshot이 필요하다.
+Ignored 원자료 링크는 현재 로컬 폴더 보존을 전제로 한다.
