@@ -1,7 +1,20 @@
 # 주 live 파이프라인 보고서 빠른 찾기
 
 이 레포를 사용하는 다른 채팅에서도 같은 원문을 찾기 위한 안내다.
-마지막 색인 갱신:2026-11-04 KST. 각 결과의 관측 시점·코드 snapshot은 원문을 따른다.
+마지막 색인 갱신:2026-11-05 KST. 각 결과의 관측 시점·코드 snapshot은 원문을 따른다.
+
+## 독립 visible-corner 프로토타입
+
+현재 주 live와 연결하지 않은 ignored RGB-D 검출기의 기록이다.
+
+- [MPS 추가 최적화:29.2ms·후보 검증 통합·30개 테스트](10i_corner_torch_mps_round2_20261105.md)
+- [정확도 유지 MPS 최적화:75.3→38.9ms·커널 병합·대기 축소](10i_corner_torch_mps_optimization_20261105.md)
+- [Torch/GPU 전환·MPS 정확도/시간 검증](10i_corner_torch_gpu_20261105.md)
+- [V4 Main 카메라 병목·중복 전처리 재사용 진단](10i_corner_v4_main_bottleneck_20261105.md)
+- [V4 Main 카메라 프레임당 시간](10i_corner_v4_main_latency_20261105.md)
+- [V4 Box 회복·같은 입력 정확도 비교](10i_visible_corner_512_box_v4_20261105.md)
+- [V3 관측 경계 회복](10i_visible_corner_512_recall_v3_20261104.md)
+- [V2 정확도 개선](10i_visible_corner_512_accuracy_v2_20261104.md)
 
 ## Repository cleanup
 
