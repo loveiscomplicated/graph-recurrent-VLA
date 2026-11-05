@@ -31,6 +31,20 @@ To collect trajectories, provide a policy and step count as described in the gui
 
 Use Python 3.11 from the repository root:
 
+For PyTorch device selection, `utils.device_set.set_device()` chooses CUDA,
+then MPS, then CPU. Pass `"cpu"`, `"mps"`, or `"cuda:0"` to request a
+specific device; an unavailable accelerator raises an error. NumPy arrays
+remain on CPU:
+
+```python
+from utils.device_set import set_device
+import torch
+
+device = set_device()  # or set_device("cpu")
+tensor = torch.ones(3, device=device)
+array = tensor.detach().cpu().numpy()
+```
+
 ```bash
 python3.11 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
