@@ -77,3 +77,11 @@ features without importing legacy experiment packages.
   separate there. Extract common code when there is evidence of shared needs,
   rather than requiring a common trainer. Keep data collection and storage in
   `data_collection/`. Existing code does not need to be moved to comply.
+- `training/` contains training orchestration: load or construct the selected
+  team model, prepare its training data, run the team-defined training process,
+  and save checkpoints and metrics. `evaluation/` contains evaluation
+  orchestration: load the selected model and checkpoint, run the team-defined
+  evaluation, and record its metrics or results. The root `main.py` reads the
+  config and dispatches to the appropriate workflow; model definitions remain in
+  their team directories. These roles do not prescribe training or evaluation
+  methods, model interfaces, or a shared implementation.
