@@ -1,4 +1,4 @@
-# Project context: week 3 feasibility prototypes
+# Project context: reusable simulation and data collection
 
 ## Reusable capabilities on graph
 
@@ -24,6 +24,5 @@ chooses geometry, graph construction, and a GNN prototype. The Recurrent team
 collects a simulator GT sequence and chooses features and a feed-forward or
 recurrent controller prototype. Each team works without waiting for another.
 
-`visual/`, `graph/`, and `recurrent/` are intentionally empty workspaces. Teams
-may organize their directories however they wish. Architecture decisions follow
-the prototype results, not this shared repository's scaffold.
+Teams organize `visual/`, `graph/`, and `recurrent/` independently. Architecture
+decisions follow prototype results rather than a shared prescribed design.

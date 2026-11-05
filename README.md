@@ -80,7 +80,7 @@ finally:
 The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
-see [project context](docs/PROJECT_CONTEXT.md) for scope.
+see [project context](docs/project_context.md) for scope.
 
 The Graph team's independent surface-geometry comparison prototype is documented
 in [graph/prototype/README.md](graph/prototype/README.md), with its measured

@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read `README.md`, `envs/maniskill/README.md`, and `docs/PROJECT_CONTEXT.md`
+Read `README.md`, `envs/maniskill/README.md`, and `docs/project_context.md`
 before changing code. This is the independent feasibility prototype stage.
 
 Keep shared simulator code limited to the working ManiSkill simulator, its raw GT
@@ -70,3 +70,10 @@ features without importing legacy experiment packages.
 - Check the current branch's implementation before using an API. If an interface
   is missing, report the gap and consider a shared extension before adding a
   parallel implementation. Update the corresponding docs when interfaces change.
+
+- For new code, use `visual/`, `graph/`, and `recurrent/` for each team's models
+  and model-specific internal modules. Put training code under `training/` and
+  evaluation code under `evaluation/`; team-specific implementations may remain
+  separate there. Extract common code when there is evidence of shared needs,
+  rather than requiring a common trainer. Keep data collection and storage in
+  `data_collection/`. Existing code does not need to be moved to comply.

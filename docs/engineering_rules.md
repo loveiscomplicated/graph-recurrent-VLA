@@ -4,7 +4,7 @@
 
 이 문서는 실험 인프라의 일관성과 재현성을 위한 규칙이다. 모델 구조, feature,
 그래프 구성, sequence, dataset, 학습·평가 방식, 팀 내부 config 형식은 팀이 결정한다.
-`docs/PROJECT_CONTEXT.md`의 독립 feasibility 원칙은 유지한다. 그 문서의
+`docs/project_context.md`의 독립 feasibility 원칙은 유지한다. 그 문서의
 “팀 디렉터리가 비어 있다”는 초기 설명과 달리 현재 Graph 코드는 구현되어 있다.
 
 | 위치 | 현재 역할 |
