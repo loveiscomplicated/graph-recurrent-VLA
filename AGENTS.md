@@ -44,6 +44,18 @@ features without importing legacy experiment packages.
 
 ## Development and experiment infrastructure
 
+- For new training/evaluation workflows, keep experiment
+  settings in a team-owned config file, preferably YAML under a `configs/` directory,
+  and accept a config path at execution. Include relevant data, model, training,
+  evaluation, and output settings as applicable; document a short runnable command
+  and prerequisites near the beginning of the team's README. Record the effective
+  config and any CLI overrides for reproducibility. Teams choose their own schema
+  and internal structure. Do not impose a shared config schema.
+- For new training/evaluation workflows, use the repository-root `main.py` as
+  the common entrypoint (for example, `python main.py --config path/to/config.yaml`).
+  It may dispatch to team-owned implementations. Document the runnable command,
+  config path, and prerequisites in the relevant team README. These rules apply
+  going forward; existing implementations do not need to be changed to comply.
 - Follow [engineering rules](docs/engineering_rules.md) for the work sequence,
   experiment identity, verification, and completion report.
 - For training/evaluation, reuse `utils.experiment_logger.ExperimentLogger`;

@@ -5,3 +5,11 @@
 Use the imported repository guidance as the common development rules. Follow its
 links to engineering, experiment tracking, and Hugging Face publishing details.
 If file imports are unavailable in your client, read `AGENTS.md` directly.
+
+For new training/evaluation workflows, follow the
+experiment config and README guidance in `AGENTS.md`: prefer team-owned YAML
+configs, document a short command, and record effective settings and overrides.
+Existing formats remain supported; do not impose a shared config schema.
+Use the repository-root `main.py` as the common entrypoint for new training/evaluation
+workflows, as described in `AGENTS.md`. Existing implementations do not need to be
+changed to comply.
