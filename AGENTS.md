@@ -14,6 +14,27 @@ prototype evidence.
 Verify simulator API claims against the installed package and runnable examples.
 State clearly when a backend or device was not executed on the current host.
 
+## Naming and documentation
+
+- Name directories, modules, scripts and documents after their function, using
+  descriptive lowercase `snake_case` names. Examples: `corner_detection`,
+  `geometry.py`, `corner_detection.md`.
+- Do not use legacy experiment/task identifiers (such as `10i`, `task10g`,
+  `stage3`, or `plan_a`) as names or prefixes for new code, documentation or
+  output directories. Do not recreate the old `visual-graph-integration` report
+  hierarchy on this branch.
+- Keep feature guides directly under `docs/`, such as `corner_detection.md`.
+  Component-local READMEs may link to these guides.
+  Update the relevant existing feature document instead of creating a report
+  for every task, chat, stage or date. Use Git history for change chronology.
+- Record dates, source experiment IDs and commit hashes inside a document when
+  needed for evidence or reproducibility; do not put them in new document names.
+  Preserve the actual names of referenced historical artifacts and external APIs.
+- When moving documentation, update all links and agent instructions, including
+  `CLAUDE.md`, and preserve relative links to raw verification artifacts.
+
+For corner-detection changes, also read `docs/corner_detection.md`.
+
 ## Development and experiment infrastructure
 
 - Follow [engineering rules](docs/engineering_rules.md) for the work sequence,

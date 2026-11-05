@@ -1,5 +1,13 @@
 # Graph Recurrent VLA: shared ManiSkill prototype environment
 
+## Corner detection
+
+`visual/corner_detection/` provides standalone current-frame RGB-D corner
+detection for the peg and box. Use `detect_tensors` for device-resident results,
+`detect` for a CPU dictionary, or `detect_cpu` for the explicit NumPy reference.
+See [corner detection](docs/corner_detection.md) for inputs, backend requirements,
+the saved-frame example, and the CPU/MPS extraction verification.
+
 ## Get started
 
 Use Python 3.11 from the repository root:
