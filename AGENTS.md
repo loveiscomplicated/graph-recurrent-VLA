@@ -37,3 +37,18 @@ internal structure. Make architecture decisions after prototype evidence.
 
 Verify simulator API claims against the installed package and runnable examples.
 State clearly when a backend or device was not executed on the current host.
+
+## Training and evaluation workflows
+
+- For new training/evaluation workflows, keep experiment
+  settings in a team-owned config file, preferably YAML under a `configs/` directory,
+  and accept a config path at execution. Include relevant data, model, training,
+  evaluation, and output settings as applicable; document a short runnable command
+  and prerequisites near the beginning of the team's README. Record the effective
+  config and any CLI overrides for reproducibility. Teams choose their own schema
+  and internal structure. Do not impose a shared config schema.
+- For new training/evaluation workflows, use the repository-root `main.py` as
+  the common entrypoint (for example, `python main.py --config path/to/config.yaml`).
+  It may dispatch to team-owned implementations. Document the runnable command,
+  config path, and prerequisites in the relevant team README. These rules apply
+  going forward; existing implementations do not need to be changed to comply.
