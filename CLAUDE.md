@@ -12,3 +12,7 @@ changed to comply.
 For new code, keep team models and their internal modules in `visual/`, `graph/`,
 and `recurrent/`; put training and evaluation code in `training/` and `evaluation/`.
 Follow the independent team implementation and existing-code guidance in `AGENTS.md`.
+`training/` loads or constructs models, prepares training data, runs training,
+and saves checkpoints and metrics. `evaluation/` loads models and checkpoints,
+runs evaluation, and records results. The root `main.py` reads the config and
+dispatches to these workflows; team directories contain model definitions.
