@@ -2,6 +2,13 @@
 
 ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출) → SAM2(추적) → 물체별 point cloud와 6D pose**를 만드는 Vision prototype이다. 공용 코드(`envs/`)와 다른 팀 폴더는 건드리지 않는다.
 
+## 독립 꼭짓점 검출기
+
+`corner_detection/`은 현재 RGB-D 한 프레임에서 관측으로 지지되는 peg/box 꼭짓점을
+검출하는 별도 패키지다. 기존 tracking/pose 실행과 독립적으로 호출한다. Torch CPU/CUDA
+계산과 선택적 MPS Metal 커널, 명시적으로 호출하는 NumPy 기준 구현을 포함한다.
+[사용법·구조·검증 결과](../docs/corner_detection.md)를 따른다.
+
 ## 결론
 
 - 실시간 추적은 된다: causal streaming + GPU point cloud로 **p95 45.1 ms (22.5 FPS)**, GPU 0.61 GB.
