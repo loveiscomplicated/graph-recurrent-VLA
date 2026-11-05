@@ -6,3 +6,8 @@ torch>=2.2
 pin>=3.0
 # PNG frame output in examples/render_episode.py.
 Pillow>=10
+
+# Direct dependencies of initial-frame visibility geometry.
+numpy>=1.24
+scipy>=1.10
+trimesh>=4

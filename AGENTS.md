@@ -34,6 +34,13 @@ State clearly when a backend or device was not executed on the current host.
   `CLAUDE.md`, and preserve relative links to raw verification artifacts.
 
 For corner-detection changes, also read `docs/corner_detection.md`.
+For collection changes, also read `docs/data_collection.md`; for simulator
+output-device changes, read `docs/gpu_observations.md`.
+
+Keep dataset selection and storage in `data_collection/`, outside the raw
+simulator. Preserve the ends-plus-grasp versus full-surface visibility modes
+and raw RGB/depth shape, dtype and device behavior. Reuse these extracted
+features without importing legacy experiment packages.
 
 ## Development and experiment infrastructure
 

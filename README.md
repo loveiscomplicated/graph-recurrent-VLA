@@ -8,6 +8,25 @@ detection for the peg and box. Use `detect_tensors` for device-resident results,
 See [corner detection](docs/corner_detection.md) for inputs, backend requirements,
 the saved-frame example, and the CPU/MPS extraction verification.
 
+## Data collection and GPU observations
+
+`data_collection/` selects episodes by the first Main frame's peg visibility.
+The default requires both ends and the grasp band; full camera-facing surface
+confirmation is an explicit alternative. The simulator also supports native
+CUDA RGB-D rendering and a separate raw observation output device.
+
+- [Data collection](docs/data_collection.md): filtering, policies and saved data.
+- [GPU observations](docs/gpu_observations.md): rendering and device checks.
+- [Collection verification](docs/data_collection_verification.md): results and limits.
+
+```bash
+python -m data_collection.collect_episodes --output outputs/initial_frames \
+  --num-episodes 10 --max-attempts 1000
+```
+
+This command uses CPU physics/rendering and saves approved initial observations.
+To collect trajectories, provide a policy and step count as described in the guide.
+
 ## Get started
 
 Use Python 3.11 from the repository root:

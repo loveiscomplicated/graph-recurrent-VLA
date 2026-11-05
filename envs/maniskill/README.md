@@ -1,5 +1,32 @@
 # ManiSkill `PegInsertionSide-v1`
 
+## Observation output device and camera configuration
+
+`make_peg_insertion_env` also accepts `render_backend`, `observation_device` and
+`sensor_configs`. Existing arguments retain their meaning. CPU physics defaults
+to the CPU renderer; explicitly select the CUDA renderer for native GPU RGB-D:
+
+```python
+env = make_peg_insertion_env(
+    device="cpu", render_backend="cuda", observation_device="cuda",
+    obs_mode="rgb+depth",
+    sensor_configs={name: dict(width=512, height=512)
+                    for name in ("base_camera", "hand_camera")},
+)
+```
+
+On supported Linux CUDA/Vulkan hosts, the renderer supplies native CUDA RGB-D;
+`ObservationDevice` transfers remaining raw observation arrays after reset/step.
+Already resident tensors are reused, preserving raw shapes and dtypes. Actions,
+rewards, flags, info and direct GT retain the simulator's behavior. With a CPU
+renderer, `observation_device="cuda"` uploads CPU images instead of avoiding
+readback. GPU behavior was not executed on the current Mac during extraction.
+
+Run `python examples/check_gpu_observations.py` on a GPU host to verify native
+RGB-D before wrapping, for both reset and step. Run CUDA renderer checks in a
+separate process from CPU rendering. See [GPU observations](../../docs/gpu_observations.md) and
+[data collection](../../docs/data_collection.md).
+
 ## Runtime checked on this host
 
 Python 3.11, ManiSkill 3.0.1, SAPIEN 3.0.3, Gymnasium 1.3.0, PyTorch 2.14.1,
@@ -34,7 +61,8 @@ finally:
 ```
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
-`render_mode`, and `sim_backend`. `seed` resets one episode during creation;
+`render_mode`, `sim_backend`, `render_backend`, `observation_device`, and
+`sensor_configs`. `seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to
 `physx_cuda`. Explicit `sim_backend` must agree with `device`. On this installed
