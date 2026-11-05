@@ -1,4 +1,32 @@
-# Graph Recurrent VLA: shared ManiSkill prototype environment
+# ManiSkill environment and episode collection
+
+`develop` starts from `main` and carries two reusable features: raw CUDA RGB-D
+observations and episode selection by first-frame peg visibility.
+
+| Directory | Purpose |
+| --- | --- |
+| `envs/maniskill/` | Environment creation, raw GT and observation device output |
+| `data_collection/` | Initial visibility, collection and portable raw storage |
+| `examples/` | Runnable simulator and GPU checks |
+| `tests/` | Geometry, collection and simulator checks |
+
+See [collection instructions](data_collection/README.md) for selection criteria,
+trajectory policies and the saved data format.
+
+```bash
+# Approved initial Main/Wrist observations, CPU renderer (works on this Mac).
+python -m data_collection.collect_episodes --output outputs/initial_frames \
+  --num-episodes 10 --max-attempts 1000
+
+# Native CUDA camera output: run on a Linux CUDA/Vulkan host.
+python examples/check_gpu_observations.py
+python -m data_collection.collect_episodes --output outputs/gpu_initial_frames \
+  --num-episodes 10 --render-backend cuda --observation-device cuda
+```
+
+Physics defaults to CPU in both commands. Disk output and the CPU visibility
+check explicitly materialize arrays on the host. Live observations can stay on
+CUDA until these boundaries. GPU execution has not been rechecked on this Mac.
 
 ## Get started
 

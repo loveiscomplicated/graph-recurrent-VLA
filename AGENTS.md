@@ -1,7 +1,14 @@
 # Agent guidance
 
 Read `README.md`, `envs/maniskill/README.md`, and `docs/PROJECT_CONTEXT.md`
-before changing code. This is the independent feasibility prototype stage.
+before changing code. On `develop`, also read `data_collection/README.md` before
+changing collection. The approved pivot retains the main simulator foundation,
+GPU observation output and initial peg visibility collection.
+
+Keep selection and storage in `data_collection/`, outside the raw simulator.
+Preserve the documented ends-plus-grasp versus full-surface distinction and raw
+RGB/depth dtype, shape and device behavior. Avoid legacy experiment imports and
+task-number names. Do not delete historical artifacts during extraction.
 
 Keep shared code limited to the working ManiSkill simulator, its raw GT accessor,
 examples, and smoke tests. Do not prescribe Visual, Graph, or Recurrent models,
