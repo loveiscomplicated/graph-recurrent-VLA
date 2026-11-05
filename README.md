@@ -71,6 +71,20 @@ available in the factory but has not been run on this host.
 
 ## Start a team prototype
 
+New workflows can use the root entrypoint with a team-owned YAML config:
+
+```yaml
+trainer: training.my_trainer:train
+device: auto
+```
+
+Run `python main.py --config path/to/config.yaml` from the repository root.
+The `trainer` value identifies an importable module and callable; the callable
+receives the complete config dictionary. Each team defines its remaining config
+fields and is responsible for recording the effective config with its experiment.
+The example target must be implemented by the team before it can run. Existing
+workflows retain their documented entrypoints.
+
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,
 `graph/`, and `recurrent/` directories are team-owned. Each team chooses
