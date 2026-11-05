@@ -185,7 +185,7 @@ with ExperimentLogger(team="graph", config=config, seed=seed, model=model_name) 
     logger.link_output(checkpoint_path)  # 기존 호출도 그대로 동작
     logger.link_output(video_path, kind="rollouts")
     logger.link_output(episode_json_path, kind="episode_metadata")
-    logger.link_output(trajectory_path, kind="trajectory")  # inventory에만 기록
+    logger.link_output(trajectory_path, kind="trajectory")  # 명시적 --include trajectory로 게시
 ```
 
 명시적 `kind`가 우선한다. 기존 등록 파일은 `.pt/.pth/.ckpt/.safetensors/.bin`을 checkpoint,
@@ -209,7 +209,12 @@ python -m tools.publish_experiment --run-id RUN_ID --include metrics
 탐색하지 않는다. Config와 재현성 manifest는 각 대상에 항상 동반된다. `metrics`를 선택하면
 Logger metrics와 추가 등록 metrics JSON을 포함한다. Metrics만 선택하면 현재 Model Repository에
 게시한다. Checkpoint와 rollouts를 모두 선택하면 선택한 metrics/config를 양쪽에 연결한다.
-Rollouts는 명시적으로 등록한 episode JSON도 동반한다. Trajectory는 전송하지 않는다.
+Rollouts는 명시적으로 등록한 episode JSON도 동반한다. `--include trajectory`는
+명시적으로 등록한 원본 궤적 파일/불투명 archive를 기존 Dataset Repository에 게시하며,
+영상 등록을 요구하지 않는다. Episode JSON, config와 재현성 manifest도 동반한다.
+예: `python -m tools.publish_experiment --run-id RUN_ID --include trajectory metrics --private`.
+Trajectory는 다른 include 선택에 자동 포함되지 않는다. Archive 내용/데이터 검증은
+게시 전에 수집 workflow가 수행하며 Publisher는 원본 bytes/hash를 보존한다.
 
 선택 종류에 등록된 파일이 없거나, 선택 파일 누락·빈 바이너리·잘못된 JSON·심볼릭 링크가 있으면
 전체 전송 전에 검증 오류를 반환한다. 선택하지 않은 파일의 누락은 게시를 막지 않는다.
@@ -303,7 +308,7 @@ task/environment와 run ID는 현재 manifest/동반 config로 보존한다.
 `source_run_id`, W&B URL, dataset hash를 안전하게 추가하고 계약 테스트를 보완하는 것을
 제안한다. 이 지침 작업에서는 코드를 변경하지 않는다.
 
-현재 trajectory는 로컬 inventory만 지원한다. Dataset Viewer/VideoFolder,
+Trajectory는 명시적 선택 게시를 지원한다. Dataset Viewer/VideoFolder,
 두 Repository 사이의 원자적 게시, 원격 버전 삭제/GC도 미구현이다.
 `publish()`는 파일 검증/로컬 receipt 쓰기 단계에서 예외가 날 수 있으므로 향후 workflow도
 별도 게시 job에서 실패를 처리하고, 성공한 로컬 checkpoint/학습 결과를 삭제하거나

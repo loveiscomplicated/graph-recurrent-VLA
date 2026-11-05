@@ -62,7 +62,9 @@ finally:
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
 `render_mode`, `sim_backend`, `render_backend`, `observation_device`, and
-`sensor_configs`. `seed` resets one episode during creation;
+`sensor_configs`, plus optional positive `max_episode_steps` to override the
+registered 100-step limit for caller-defined collection horizons.
+`seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to
 `physx_cuda`. Explicit `sim_backend` must agree with `device`. On this installed

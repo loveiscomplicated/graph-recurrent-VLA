@@ -2,6 +2,33 @@
 
 Run commands from the repository root after installing `requirements.txt`.
 
+For the explicitly requested 900-episode expert dataset on a Linux CUDA/Vulkan
+host, also install `requirements-tracking.txt`, configure HF write access, and run:
+
+```bash
+WANDB_MODE=disabled python -m data_collection.collect_dataset \
+  --config data_collection/configs/visible_peg.yaml
+```
+
+That config requests native Main/Wrist 512×512 RGB-D, CPU physics, CUDA rendering,
+900 successful scripted-expert trajectories, 250-step horizons, raw GT at every
+frame, four independent workers and 30-episode archives. Initial Main visibility
+is recomputed from every saved initial frame. Every saved frame's raw image schema
+and action/observation alignment are checked before publication. Success filtering
+changes the reset distribution; no train/validation/test partition is imposed.
+`publish: true` explicitly invokes the shared `tools.publish_experiment` trajectory
+workflow after collection; `publish: false` keeps the result local. Existing output
+directories are refused. A process failure is reported rather than automatically
+resuming or overwriting its output. Failed expert rollouts remain local and are
+excluded from the approved manifest and published archives. HF failures retain
+local archives and the existing experiment run identity for a publishing retry.
+
+`data_collection/scripted_policy.py` extracts the existing GT-guided servo expert
+without importing team experiment packages. It uses `pd_ee_delta_pose` and the
+installed controller's negative rotational scaling, and returns normalized native
+actions matching the actual environment action-space shape. The original team
+implementation remains unchanged. This is a privileged expert, not a learned policy.
+
 ```bash
 python -m data_collection.collect_episodes --help
 python -m data_collection.collect_episodes --output outputs/initial_frames \
@@ -69,6 +96,22 @@ python -m data_collection.collect_episodes --output outputs/collection_smoke \
 This is not an expert demonstration. No old expert, training or model workflow
 is imported by this extraction.
 
+To use the standalone scripted expert through the existing collector:
+
+```bash
+python -m data_collection.collect_episodes --output outputs/expert_episodes \
+  --num-episodes 3 --max-attempts 100 --resolution 512 \
+  --steps 250 --max-episode-steps 250 --require-success --save-step-gt \
+  --policy data_collection.scripted_policy:make_policy \
+  --control-mode pd_ee_delta_pose --render-backend cuda --observation-device cuda
+```
+
+`--max-episode-steps` explicitly overrides ManiSkill's default 100-step time limit.
+`--require-success` stops a trajectory on the first official success and keeps
+unsuccessful attempts in `rejected_seed_*/`, outside the approved manifest.
+`--save-step-gt` adds raw `ground_truth/` fields after each action, in addition to
+the existing initial GT. These options are opt-in; initial-only defaults remain.
+
 ## GPU observations
 
 Add `--render-backend cuda --observation-device cuda` on a supported Linux GPU
@@ -99,8 +142,10 @@ frame includes `action`, `reward`, `terminated`, `truncated`, and `info`.
 An episode has T+1 observations and T actions. Every frame is read back before
 being exposed. Episode folders are renamed from `.partial` only after their
 receipt is written; interrupted/failed folders remain excluded from the manifest.
-No exact simulator-state replay, automatic split assignment, successful-task
-guarantee, video encoding or remote publication is provided by this collector.
+Exact simulator-state replay, automatic split assignment and video encoding are
+not provided. The raw collector itself does not publish; the dataset workflow
+above explicitly validates and publishes selected archives through the shared CLI.
+Successful-task filtering requires the explicit `--require-success` option.
 
 ## Checks
 
