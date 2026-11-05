@@ -52,3 +52,9 @@ State clearly when a backend or device was not executed on the current host.
   It may dispatch to team-owned implementations. Document the runnable command,
   config path, and prerequisites in the relevant team README. These rules apply
   going forward; existing implementations do not need to be changed to comply.
+- For new code, use `visual/`, `graph/`, and `recurrent/` for each team's models
+  and model-specific internal modules. Put training code under `training/` and
+  evaluation code under `evaluation/`; team-specific implementations may remain
+  separate there. Extract common code when there is evidence of shared needs,
+  rather than requiring a common trainer. Keep data collection and storage in
+  `data_collection/`. Existing code does not need to be moved to comply.
