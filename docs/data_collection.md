@@ -17,7 +17,7 @@ existing output is never overwritten and automatic resume is not implemented.
 
 ## Visibility
 
-`visibility.py` extracts the historical GT/depth gate, including its calibration
+`data_collection/visibility.py` extracts the historical GT/depth gate, including its calibration
 checks, signed depth handling, pixel centers and expert grasp-band calculation.
 It imports no Graph, perception, tracker or model packages from this repository.
 
@@ -72,12 +72,8 @@ is imported by this extraction.
 ## GPU observations
 
 Add `--render-backend cuda --observation-device cuda` on a supported Linux GPU
-host. The renderer must produce RGB-D on CUDA before the observation wrapper;
-the wrapper uploads remaining raw CPU observation arrays. Selecting only
-`--observation-device cuda` with the CPU renderer uploads CPU images instead.
-Check native rendering separately with `python examples/check_gpu_observations.py`.
-This does not require or imply CUDA physics. GPU render tests run in a separate
-process because SAPIEN render-device selection is process-global.
+host. See [GPU observations](gpu_observations.md) for native rendering versus
+output transfer, the runnable device check and backend verification limits.
 
 ## Saved data
 
@@ -113,3 +109,5 @@ python -m unittest tests.test_visibility tests.test_data_collection \
   tests.test_observation_device tests.test_maniskill_env -v
 python -m unittest tests.test_observation_device_native_gpu -v
 ```
+
+Recorded results and execution limits: [collection verification](data_collection_verification.md).

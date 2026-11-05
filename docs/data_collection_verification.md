@@ -1,9 +1,11 @@
-# Develop: simulator GPU output and initial visibility extraction
+# Data collection and GPU observation verification
 
 2026-11-05 KST. User-authorized pivot; branch `develop` starts at local `main`
 `0386934eec665e866954d7d3f29bbd1e2bc02525`. The original legacy checkout and its
-uncommitted reports were retained. Work is in the attached develop worktree;
-this report accompanies the extraction commit. No remote push is included.
+uncommitted reports were retained. Work is in the attached develop worktree.
+The implementation was committed as `4afbaee`. No remote push was included.
+
+Usage: [data collection](data_collection.md) and [GPU observations](gpu_observations.md).
 
 ## Scope and implementation
 
@@ -62,10 +64,10 @@ python -m data_collection.collect_episodes \
   --num-episodes 1 --max-attempts 40 --steps 2 --zero-actions
 ```
 
-[Verification record](../../outputs/develop_extraction_verification/verification.json),
-[local historical comparison script](../../outputs/develop_extraction_verification/verify_historical_visibility.py),
-[smoke manifest](../../outputs/develop_collection_final_smoke/manifest.json),
-[smoke configuration and package versions](../../outputs/develop_collection_final_smoke/config.json).
+[Verification record](../outputs/develop_extraction_verification/verification.json),
+[local historical comparison script](../outputs/develop_extraction_verification/verify_historical_visibility.py),
+[smoke manifest](../outputs/develop_collection_final_smoke/manifest.json),
+[smoke configuration and package versions](../outputs/develop_collection_final_smoke/config.json).
 The comparison script references the preserved original checkout and its ignored
 historical input archive; these are verification inputs, not runtime dependencies.
 

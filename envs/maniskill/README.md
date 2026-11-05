@@ -24,7 +24,8 @@ readback. GPU behavior was not executed on the current Mac during extraction.
 
 Run `python examples/check_gpu_observations.py` on a GPU host to verify native
 RGB-D before wrapping, for both reset and step. Run CUDA renderer checks in a
-separate process from CPU rendering. See [collection](../../data_collection/README.md).
+separate process from CPU rendering. See [GPU observations](../../docs/gpu_observations.md) and
+[data collection](../../docs/data_collection.md).
 
 ## Runtime checked on this host
 

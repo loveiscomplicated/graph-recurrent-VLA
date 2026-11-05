@@ -1,7 +1,7 @@
 # Agent guidance
 
-Read `README.md`, `envs/maniskill/README.md`, and `docs/PROJECT_CONTEXT.md`
-before changing code. On `develop`, also read `data_collection/README.md` before
+Read `README.md`, `envs/maniskill/README.md`, and `docs/project_context.md`
+before changing code. On `develop`, also read `docs/data_collection.md` before
 changing collection. The approved pivot retains the main simulator foundation,
 GPU observation output and initial peg visibility collection.
 
@@ -9,6 +9,25 @@ Keep selection and storage in `data_collection/`, outside the raw simulator.
 Preserve the documented ends-plus-grasp versus full-surface distinction and raw
 RGB/depth dtype, shape and device behavior. Avoid legacy experiment imports and
 task-number names. Do not delete historical artifacts during extraction.
+
+## Naming and documentation
+
+- Name directories, modules, scripts and documents after their function, using
+  descriptive lowercase `snake_case` names. Examples: `data_collection`,
+  `visibility.py`, `gpu_observations.md`.
+- Do not use legacy experiment/task identifiers (such as `10i`, `task10g`,
+  `stage3`, or `plan_a`) as names or prefixes for new code, documentation or
+  output directories. Do not recreate the old `visual-graph-integration` report
+  hierarchy on `develop`.
+- Keep feature guides directly under `docs/`, such as `data_collection.md` and
+  `gpu_observations.md`. Component-local READMEs may link to these guides.
+  Update the relevant existing feature document instead of creating a report
+  for every task, chat, stage or date. Use Git history for change chronology.
+- Record dates, source experiment IDs and commit hashes inside a document when
+  needed for evidence or reproducibility; do not put them in new document names.
+  Preserve the actual names of referenced historical artifacts and external APIs.
+- When moving documentation, update all links and agent instructions, including
+  `CLAUDE.md`, and preserve relative links to raw verification artifacts.
 
 Keep shared code limited to the working ManiSkill simulator, its raw GT accessor,
 examples, and smoke tests. Do not prescribe Visual, Graph, or Recurrent models,

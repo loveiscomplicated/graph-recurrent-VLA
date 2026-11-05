@@ -10,8 +10,11 @@ observations and episode selection by first-frame peg visibility.
 | `examples/` | Runnable simulator and GPU checks |
 | `tests/` | Geometry, collection and simulator checks |
 
-See [collection instructions](data_collection/README.md) for selection criteria,
-trajectory policies and the saved data format.
+Documentation:
+
+- [Data collection](docs/data_collection.md): selection, policies and saved data.
+- [GPU observations](docs/gpu_observations.md): native RGB-D and output devices.
+- [Verification](docs/data_collection_verification.md): checks and execution limits.
 
 ```bash
 # Approved initial Main/Wrist observations, CPU renderer (works on this Mac).
@@ -81,4 +84,4 @@ finally:
 The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
-see [project context](docs/PROJECT_CONTEXT.md) for scope.
+see [project context](docs/project_context.md) for scope.

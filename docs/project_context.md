@@ -12,6 +12,12 @@ training workflow is selected by this extraction. Existing legacy branches and
 artifacts remain preserved. GPU execution requires a supported Linux GPU host;
 the extraction host is macOS without CUDA.
 
+Feature documentation lives in [data collection](data_collection.md) and
+[GPU observations](gpu_observations.md), with checks recorded in
+[collection verification](data_collection_verification.md). Update these
+documents as the features evolve. New paths use functional names; historical
+experiment IDs and dates belong in evidence within the document, not filenames.
+
 ## Original shared prototype context
 
 This repository's shared responsibility is a working ManiSkill 3
