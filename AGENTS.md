@@ -14,6 +14,26 @@ prototype evidence.
 Verify simulator API claims against the installed package and runnable examples.
 State clearly when a backend or device was not executed on the current host.
 
+## Code readability
+
+- Prioritize readability for the next maintainer. Write code whose purpose and
+  execution flow can be understood on a first read; do not compress it merely
+  to reduce line count.
+- Give functions one clear responsibility. Separate distinct steps such as
+  loading configuration, resolving a trainer, and executing it into meaningfully
+  named functions when doing so makes the flow easier to follow. Avoid excessive
+  fragmentation or unnecessary abstraction.
+- Use descriptive variable and function names. Keep control flow explicit;
+  avoid semicolon-separated statements, dense one-liners, and nested expressions
+  that hide intermediate steps. Separate logical blocks with blank lines.
+- Add concise docstrings for function responsibilities and comments for
+  non-obvious intent, conventions, or transformations. Include a concrete example
+  when a string format or dynamic import would otherwise be hard to understand.
+  Do not substitute comments for clear code.
+- Keep validation close to the input it checks, and write error messages that
+  identify the problem and the expected input. Before finishing, review changed
+  code for readability as well as correctness.
+
 ## Naming and documentation
 
 - Name directories, modules, scripts and documents after their function, using
