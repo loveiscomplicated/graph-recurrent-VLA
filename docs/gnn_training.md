@@ -7,6 +7,47 @@ supervision from the Visual corner detector's output and raw saved GT.
 
 ## Run on the training host
 
+### Train from a downloaded cache
+
+After extracting the published `graph_cache.tar` into `/workspace/gnn_cache`, use:
+
+```bash
+source /venv/main/bin/activate
+cd /workspace/graph-recurrent-VLA
+python main.py --config graph/configs/train_gated_mpnn_cached.yaml
+```
+
+The dedicated config selects `training.gnn.cached_data:build_data`. Set
+`data.cache_dir` to the extraction directory, whose contents must include the
+preprocessing namespace and `metadata/data_identity.json` plus
+`metadata/cache_inventory.json`. Raw episodes, simulator packages, OpenCV and the
+original detector runtime are not required by this data factory. Torch, NumPy
+and PyYAML are needed to deserialize batches and execute the trainer.
+
+The loader retains the published episode assignments, never reads reserved test
+frames and never regenerates a missing cache entry. Indexing checks metadata
+consistency, split overlap, frame counts, file existence and sizes. Each sample
+read checks the file's SHA256 against the published inventory, its embedded
+source identity, graph schema and target shape. It does not hash original RGB-D
+or execute current preprocessing to choose a new namespace. The original
+preprocessing versions/hashes are preserved as provenance. Graph schema version
+1 is supported; incompatible entries fail validation. Camera, graph and input-
+confidence settings must match the archive; replay cannot change cached features.
+
+The existing data factory remains available for raw data and on-demand cache
+creation. Cache-only replay uses a distinct dataset identity combining the
+original dataset hash, inventory bytes and empty-input policy. Checkpoints from
+raw mode cannot silently resume into this mode. Same-cache resume across paths
+uses the same identity. DataLoader seed controls shuffling and model RNG, while
+the archive's saved split is authoritative; validation/test fraction defaults
+are not used to resplit it. `split_file`, frame stride other than 1, and frame
+limits are rejected to prevent silently training on a different subset.
+
+Cache-only loader contracts can be checked without training or real cache
+generation using `python -m unittest tests.test_gnn_cached_data -v`.
+
+### Train from raw episodes
+
 Use Python 3.11 and install `requirements.txt`,
 `visual/corner_detection/requirements.txt`, and optionally
 `requirements-tracking.txt`. Extract the approved dataset TAR shards so

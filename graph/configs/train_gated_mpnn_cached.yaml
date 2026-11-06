@@ -1,0 +1,66 @@
+# Use an extracted published graph_cache.tar; no raw dataset is required.
+trainer: training.gnn.trainer:train
+device: auto
+seed: 0
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  use_semantic_ids: false
+  use_confidence: false
+  hidden: 64
+  layers: 2
+  edge_embedding_dim: 16
+  dropout: 0.0
+  coord_scale_m: 0.05
+  size_scales_m:
+  - 0.04
+  - 0.01
+  - 0.01
+  - 0.02
+mode: train
+data:
+  factory: training.gnn.cached_data:build_data
+  cache_dir: /workspace/gnn_cache
+  camera: base_camera
+  use_cache: true
+  empty_inputs: keep
+  num_workers: 0
+graph:
+  intra_k: null
+  cross_k: null
+confidence:
+  residual_scale_px: 2.0
+  plane_reference: 3.0
+  source_reference: 3.0
+  residual_weight: 0.6
+  plane_weight: 0.3
+  source_weight: 0.1
+task:
+  factory: training.gnn.tasks:Object21Task
+  settings:
+    pos_unit_m: 0.01
+    consistency_weight: 0.05
+    size_units_m:
+    - 0.04
+    - 0.01
+    - 0.01
+    - 0.02
+training:
+  compile:
+    enabled: true
+    dynamic: true
+  epochs: 30
+  batch_size: 32
+  log_interval_seconds: 10.0
+  gradient_clip_norm: 1.0
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+output:
+  root: outputs/gnn_training
+resume: null

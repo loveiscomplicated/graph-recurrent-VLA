@@ -25,6 +25,18 @@ for the contract, confidence policy, edge settings and runnable Python example.
 
 ## GNN training
 
+For a downloaded graph cache, extract `graph_cache.tar` into `/workspace/gnn_cache`
+and run from the repository root with Torch, NumPy and PyYAML installed:
+
+```bash
+python main.py --config graph/configs/train_gated_mpnn_cached.yaml
+```
+
+This cache-only factory reads the published split, graph tensors and GT targets.
+It checks the inventory and file checksums without raw RGB-D, detection, or cache
+regeneration. Change `data.cache_dir` for another extraction location. See
+[cache-only training](../docs/gnn_training.md#train-from-a-downloaded-cache).
+
 Install `requirements.txt` and `visual/corner_detection/requirements.txt`, extract
 approved episode shards and set `data.root` in the gated config. On the training host:
 
