@@ -26,6 +26,26 @@ W&B 인증 파일은 읽지 않는다. 파일이 없거나 `python-dotenv`가 �
 파일 로딩을 생략하므로 플랫폼의 비밀 환경변수 등으로 `DISCORD_WEBHOOK_URL`을 제공한다.
 환경변수를 직접 주입할 경우 notifier를 실행할 tmux 창에 설정해야 한다.
 
+### 실제 웹훅 전송 테스트
+
+저장소 루트에서 다음 명령으로 Discord에 테스트 메시지 한 건을 보낸다.
+Vast.ai처럼 이미 활성화된 Python 환경이 있다면 `.venv`를 만들 필요 없이
+그 환경의 `python`을 사용한다.
+
+```bash
+python -m pip install python-dotenv
+python -m tools.check_discord_webhook
+```
+
+notifier와 동일한 `.env` 로더와 `DiscordTransport`를 사용하며 기존 환경변수가
+`.env`보다 우선한다. tmux는 필요 없다. 성공하면 `Test message sent successfully`가
+출력되며 채널에서 메시지를 확인할 수 있다. 종료 코드는 성공 `0`, 전송 실패 `1`,
+웹훅 누락·잘못된 URL `2`다. URL과 응답 본문은 출력하지 않는다.
+한 번만 전송을 시도하며 자동 재시도하지 않는다. 전송 제한 시 안내된 시간 뒤에
+다시 실행한다. 이 명령은 웹훅 전송을 확인하며 tmux 로그 수집은 아래 검증과 별도다.
+
+### tmux 로그 전달
+
 훈련 세션이 `recurrent`라면 별도의 tmux 창을 열고 아래를 실행한다.
 저장소 루트에서 실행하며 notifier 자신의 pane은 자동으로 제외한다.
 
