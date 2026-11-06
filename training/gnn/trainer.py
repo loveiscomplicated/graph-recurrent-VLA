@@ -20,6 +20,7 @@ from data_collection.storage import write_json
 from graph.build_graph import ConfidenceSettings, GraphSettings
 from .checkpoint import load_checkpoint, save_checkpoint
 from .tasks import StepResult
+from .progress import TrainingProgress
 
 
 def validate_integer_settings(settings: dict, minimums: dict[str, int]) -> None:
@@ -141,7 +142,8 @@ def resolve_training_settings(config):
     if config["mode"] not in ("train", "initialize"):
         raise ValueError("mode must be train or initialize")
     sections = {
-        "training": {"epochs": 30, "batch_size": 32, "gradient_clip_norm": None},
+        "training": {"epochs": 30, "batch_size": 32, "gradient_clip_norm": None,
+                     "log_interval_seconds": 10.0},
         "optimizer": {"name": "adamw", "lr": 0.001, "weight_decay": 0.0001},
         "scheduler": {"name": "none"},
         "task": {"factory": "training.gnn.tasks:Object21Task", "settings": {}},
@@ -164,6 +166,7 @@ def resolve_training_settings(config):
     GraphSettings(**config["graph"])
     ConfidenceSettings(**config["confidence"])
     training = config["training"]
+    validate_positive_scale("training.log_interval_seconds", training["log_interval_seconds"])
     for name in ("epochs", "batch_size"):
         positive_integer(f"training.{name}", training[name])
     if training["gradient_clip_norm"] is not None:
@@ -221,7 +224,8 @@ def seed_everything(seed, device):
         torch.mps.manual_seed(seed)
 
 
-def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=None):
+def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=None,
+              progress=None):
     """Execute one epoch and aggregate each metric by its explicit denominator."""
     is_training = optimizer is not None
     model.train(is_training)
@@ -230,6 +234,8 @@ def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=No
     with torch.set_grad_enabled(is_training):
         for batch in loader:
             if batch is None:
+                if progress is not None:
+                    progress.batch_completed()
                 continue
             batch = batch.to(device)
             if is_training:
@@ -258,6 +264,8 @@ def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=No
                     raise ValueError("Nonfinite model gradients; optimizer step cancelled")
                 optimizer.step()
             batch_count += 1
+            if progress is not None:
+                progress.batch_completed()
     if not batch_count:
         raise ValueError("Cannot run an epoch with an empty DataLoader")
     return {name: total / denominators[name] for name, total in totals.items()}
@@ -329,11 +337,20 @@ def train(config: dict):
         experiment.record(parameter_count=sum(p.numel() for p in model.parameters()),
                           initialization_only=False)
         history = []
+        progress = TrainingProgress(
+            experiment, effective["training"]["epochs"], bundle.train, bundle.validation,
+            interval_seconds=effective["training"]["log_interval_seconds"],
+        )
         for epoch in range(start_epoch + 1, effective["training"]["epochs"] + 1):
+            progress.begin_epoch(epoch)
             learning_rate = optimizer.param_groups[0]["lr"]
+            progress.begin_phase("train")
             training_metrics = run_epoch(model, bundle.train, task, device, optimizer,
-                                         effective["training"]["gradient_clip_norm"])
-            validation_metrics = run_epoch(model, bundle.validation, task, device)
+                                         effective["training"]["gradient_clip_norm"], progress=progress)
+            progress.finish_phase()
+            progress.begin_phase("validation")
+            validation_metrics = run_epoch(model, bundle.validation, task, device, progress=progress)
+            progress.finish_phase()
             if validation_metrics["loss"] < best_loss:
                 best_loss = validation_metrics["loss"]
                 best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
@@ -354,10 +371,12 @@ def train(config: dict):
             atomic_torch_save(best_path, {"kind": "best_weights", "model": best_state,
                                          "validation_loss": best_loss, "config": effective,
                                          "dataset_sha256": bundle.identity["dataset_sha256"]})
-            write_json(output / "history.json", history)
-            for path in (last_path, best_path, output / "history.json"):
+            for path in (last_path, best_path):
                 experiment.link_output(path)
-            print(f"Epoch {epoch}: train={training_metrics['loss']:.6f} "
-                  f"val={validation_metrics['loss']:.6f}; output={output}", flush=True)
+            row["seconds"] = progress.finish_epoch()
+            write_json(output / "history.json", history)
+            experiment.link_output(output / "history.json")
+            print(f"Epoch {epoch}/{effective['training']['epochs']}: train={training_metrics['loss']:.6f} "
+                  f"val={validation_metrics['loss']:.6f}; seconds={row['seconds']:.1f}; output={output}", flush=True)
         experiment.record(completed_epoch=effective["training"]["epochs"], best_validation_loss=best_loss)
         return output

@@ -55,6 +55,7 @@ task:
 training:
   epochs: 30
   batch_size: 32
+  log_interval_seconds: 10.0
   gradient_clip_norm: 1.0
 optimizer:
   name: adamw

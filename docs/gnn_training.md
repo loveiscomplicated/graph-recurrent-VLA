@@ -116,6 +116,31 @@ without a compatible readout. Its example config retains `mode: initialize`.
 
 ## Outputs and resume
 
+During training, the terminal reports the current/total epoch, train or
+validation phase, completed/total phase batches, elapsed time within the epoch,
+estimated time remaining within the epoch, and estimated time remaining across
+all epochs. `training.log_interval_seconds` defaults to 10 seconds; reports are
+emitted at batch boundaries and phase transitions. A slow batch (including
+first-access detection/cache creation) can therefore delay the next report.
+
+The same numeric measurements are saved through `ExperimentLogger` under
+`progress/*` in `experiments/<run_id>/metrics.json` and W&B when enabled.
+`time/epoch_seconds` and each history row's `seconds` record epoch wall time
+through checkpoint writing/registration, before writing that history row.
+Epoch time includes both training and validation. Timing starts after dataset
+indexing, model construction and resume loading; it does not include preparation.
+
+ETAs use measured seconds per loader batch, separately for training and
+validation once each has been observed. Initially the observed rate also
+estimates the unobserved phase; until a batch has completed, estimates display
+`estimating` and ETA scalars are omitted. Future epochs use the mean duration
+of completed epochs in this invocation, including checkpoint overhead. Resume
+uses the restored epoch number and measures rates afresh. Cache warmup and
+variable batch costs can make initial estimates inaccurate. Custom unsized
+iterables retain elapsed-time logging but show unknown batch totals and omit
+ETAs. Measurements use the host wall clock without adding accelerator
+synchronization; CUDA/MPS timing has not been verified on this host.
+
 Each invocation creates a fresh ExperimentLogger UUID and a separate
 `output.root/<run_id>/` directory containing effective config, data identity and
 splits, epoch history, `last.pt` and `best.pt`. The logger records scalar metrics
