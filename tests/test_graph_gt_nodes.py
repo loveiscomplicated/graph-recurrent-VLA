@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import torch
 
-from graph.gt_nodes import get_gt_node_positions
+from graph.utils.gt_nodes import get_gt_node_positions
 
 
 def _fake_state(
@@ -53,7 +53,7 @@ class GetGTNodePositionsTest(unittest.TestCase):
             hole_radius=torch.tensor([0.5]),
         )
 
-        with patch("graph.gt_nodes.get_gt_state", return_value=state):
+        with patch("graph.utils.gt_nodes.get_gt_state", return_value=state):
             nodes = get_gt_node_positions(env=object())
 
         self.assertEqual(
@@ -83,7 +83,7 @@ class GetGTNodePositionsTest(unittest.TestCase):
             hole_radius=torch.zeros((1,)),
         )
 
-        with patch("graph.gt_nodes.get_gt_state", return_value=state):
+        with patch("graph.utils.gt_nodes.get_gt_state", return_value=state):
             nodes = get_gt_node_positions(env=object())
 
         # The TCP is rotated +90 degrees around world Z, so world +Y is TCP +X.
@@ -107,7 +107,7 @@ class GetGTNodePositionsTest(unittest.TestCase):
             hole_radius=torch.ones((2,)),
         )
 
-        with patch("graph.gt_nodes.get_gt_state", return_value=state):
+        with patch("graph.utils.gt_nodes.get_gt_state", return_value=state):
             nodes = get_gt_node_positions(env=object())
 
         self.assertEqual(tuple(nodes["gripper_tcp"].shape), (2, 3))

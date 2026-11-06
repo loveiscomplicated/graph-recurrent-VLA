@@ -1,5 +1,12 @@
 # Graph team
 
+## Simulator GT points
+
+`graph.utils.gt_nodes.get_gt_node_positions(env)` returns TCP-relative gripper,
+fingertip, peg-corner and hole-corner coordinates from simulator GT. See
+[`utils/gt_nodes.py`](utils/gt_nodes.py) and
+[`examples/visualize_gt_points.py`](../examples/visualize_gt_points.py).
+
 ## Observed corners to GNN input
 
 Install `requirements.txt` and `visual/corner_detection/requirements.txt` in a
