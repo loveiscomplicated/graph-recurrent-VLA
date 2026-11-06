@@ -1,5 +1,22 @@
 # Graph team
 
+## Learned temporal update gate
+
+With Torch, NumPy, PyYAML and Matplotlib installed, the original gated MPNN
+`best.pt`, its extracted published cache, and an explicit parent-disjoint split
+manifest, run from the repository root (full runs require separate approval):
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_temporal_gate.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_temporal_gate.yaml
+```
+
+Set checkpoint/cache/manifest paths in both configs and the learned checkpoint
+path in the evaluation config. The gate trains on GNN-train parents only; the
+original GNN validation split is reserved for the final three-method comparison.
+See [GNN training](../docs/gnn_training.md#learned-temporal-update-gate) for manifest
+preparation, initialization, features, assembly ablation and smoke tests.
+
 ## Frozen GNN temporal-memory evaluation
 
 With Torch, NumPy and PyYAML installed, an extracted graph cache and its trained

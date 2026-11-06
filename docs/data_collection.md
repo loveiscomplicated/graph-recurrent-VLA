@@ -156,3 +156,12 @@ python -m unittest tests.test_observation_device_native_gpu -v
 ```
 
 Recorded results and execution limits: [collection verification](data_collection_verification.md).
+
+## Temporal-gate episode selection
+
+`data_collection/temporal_gate_data.py` selects complete episodes from the existing
+published graph cache. Its explicit parent manifest keeps Gate development within
+the GNN train split and reserves original GNN validation for final comparison.
+It neither collects new simulator data nor modifies cached frames. See
+[learned temporal gate](gnn_training.md#learned-temporal-update-gate) for source
+parent mapping requirements and the manifest-generation command.

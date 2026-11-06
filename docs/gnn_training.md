@@ -222,6 +222,140 @@ Local verification passed 55 contracts across memory, cache replay and shared
 experiment infrastructure; only synthetic data was used locally. CUDA inference
 ran on the server, not on the local Mac. No simulator backend was executed.
 
+## Learned temporal update gate
+
+`graph/temporal_gate.py` adds an independent scalar MLP (30 → 32 → 32 → 1,
+ReLU/ReLU/Sigmoid, **2,081 trainable parameters**). It does not change
+`graph/gated_mpnn.py`, its State Head, or source checkpoints.
+`training/gnn/temporal_gate.py` loads the exact `best_weights` architecture and
+state, applies `eval()` and `requires_grad_(False)`, and checks the original cache
+identity before inference. Full training and large evaluations require separate
+user approval; the commands below describe the prepared workflow.
+
+Prerequisites: Torch, NumPy, PyYAML, Matplotlib; original `best.pt`; matching
+extracted cache; and actual source parent identities. No simulator, raw RGB-D,
+detector runtime, or network connection is needed. Use the repository root:
+
+```bash
+python -m data_collection.temporal_gate_data \
+  --cache-dir /workspace/gnn_cache \
+  --parent-map /workspace/parent_by_episode.json \
+  --output /workspace/gnn_cache/metadata/temporal_gate_splits.json
+WANDB_MODE=disabled python main.py --config graph/configs/train_temporal_gate.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_temporal_gate.yaml
+```
+
+Adjust paths in both configs; set evaluation `gate_checkpoint` to the newly
+trained run's `best.pt`. `--parent-map` is a JSON mapping such as
+`{"shard_000001/episode_000002": "actual_collection_parent_id", ...}`. Include
+**all** source train/validation/test episode IDs, even reserved episodes without
+cached frames. Published cache metadata contains episode IDs but no parent
+lineage. Never assume shard IDs are parent IDs. Only use an episode ID as its
+own parent when source provenance confirms independence. The tool writes a new
+manifest exclusively (`open('x')`), without touching caches or existing files.
+The manifest stores `splits`, `parent_by_episode`, seed and validation fraction.
+No real-data manifest was fabricated on this host.
+
+Splits are assigned by parent before any frame is read. Gate train and gate
+validation use only the original **GNN train** pool. Parents shared with original
+GNN validation/test are excluded. Gate test is the **complete original GNN
+validation split**, preserving the previous evaluation episodes; the original
+GNN test remains reserved and is never inferred. Gate validation selects the
+best gate checkpoint; gate test does not select weights or thresholds. Only
+whole episodes are shuffled for training; frames are sorted and must be
+contiguous. This protocol provides a final gate test on the established GNN
+validation set; it does not claim evaluation on the reserved GNN test set.
+
+The observation feature vector has 17 entries. For BOX and HOLE separately:
+valid count, present flag, missing flag, fraction with known confidence,
+known-confidence present flag, and known-confidence mean/min/max; finally,
+all-vertices-missing. Unknown statistics use zero **with explicit validity and
+coverage information**. Padding and invalid confidence never contribute.
+The schema does not provide an expected vertex count or a missing-corner
+identity, so the implementation does not invent either. Confidence is the
+existing heuristic observation score, not calibrated prediction confidence.
+
+Gate input combines those 17 values with current GNN hole world XYZ, previous
+memory world XYZ, their signed difference, current TCP world XYZ, and previous
+memory initialized flag. Position inputs are divided by a configurable 0.1 m
+scale. TCP-relative coordinates use world-aligned axes: `world = relative + tcp`;
+TCP quaternion rotation is not appropriate for this representation.
+
+At episode start, previous memory is absent (zero placeholder plus initialized=0
+in the MLP input). Effective alpha is **1 on the first frame**, seeding memory
+with the current GNN prediction even when vertices are absent. This is an
+explicit cold-start policy, independent of node-count/confidence thresholds or
+GT. Subsequent alpha is entirely learned in [0,1]. A poor first prediction can
+therefore initialize poor memory; initialization failures and subsequent recovery
+are scored. Every new episode calls rollout with `memory=None`.
+
+Training uses full-episode autoregressive BPTT with the model's own previous
+memory; no teacher forcing, previous GT input, or future observation input.
+GT hole world XYZ supervises each step using Huber loss (default delta 0.01 m)
+or configurable L1. Loss is the coordinate mean in metres, aggregated over
+frames; validation uses the same loss without gradients. First-frame loss is
+included but cannot train the forced cold-start alpha. Episode-level optimizer
+steps and gradient clipping bound the simple prototype. Large episodes and the
+full frozen-output arrays may require substantial RAM/device memory; there is
+no streaming cache or resume optimizer support in this initial implementation.
+
+`correct_object21()` replaces [10:13]. Its default also adjusts [7:10] by
+`old_hole - new_hole`, reusing the geometric convention of existing
+`replace_hole_position()`: the estimated peg tip remains fixed. Every other field
+is copied unchanged. `corrected_state38(robot15, object21, freshness2,
+hole_relative)` calls the existing `assemble_state38()` with this corrected
+Object21; robot and freshness values are supplied unchanged by the caller.
+The gate does not fabricate robot/freshness inputs absent from the graph cache.
+Evaluation additionally assembles a hole-only variant and reports endpoint-vector
+GT errors, preserved-tip residual and the inconsistent hole-only tip shift.
+
+Evaluation runs frozen GNN, the unchanged `HolePositionMemory` with the existing
+quality-gated recipe, and the learned gate on identical frames. It reports mean,
+median, p90, episode-balanced mean, fewer-than-three BOX/HOLE observations,
+zero BOX/HOLE observations, first-frame failures, rule initialization lifecycle,
+learned bad initialization recovery, harmful updates, and reacquisition latency.
+A harmful update worsens error relative to holding the previous world memory
+at the current frame; a separate count records crossings of `bad_error_mm`.
+This threshold defines diagnostics only and never controls learned alpha.
+Reobservation means returning BOX/HOLE presence after an absent run; recovery
+latency is time until error first falls below `bad_error_mm` within that visible
+run. Optional existing depth-visibility labels add the same strong-occlusion
+proxy and its recovery events; without labels, occlusion availability is false
+and no true occlusion result is claimed. GT stationary-hole drift is checked
+only after inference.
+
+New UUID output directories contain effective config (source model config,
+feature names, split manifest and source/checkpoint hashes), gate-only `best.pt`
+and training history, or evaluation summary, predictions, recovery events,
+provenance and per-episode PNG traces. Traces align effective alpha with all
+three hole-error curves and shade absent BOX/HOLE observations. Evaluation
+checks the frozen checkpoint hash, dataset identity, exact split manifest hash,
+feature ordering and gate settings against the trained gate. A new logger run
+records each invocation through `ExperimentLogger`; artifacts remain local and
+are registered through its existing manifest mechanism. No automatic publishing
+or new W&B implementation is introduced.
+
+Verification on the current CPU host:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python -m unittest \
+  tests.test_temporal_gate tests.test_hole_memory \
+  tests.test_gnn_temporal_memory tests.test_gnn_cached_data -v
+```
+
+The 29 tests pass, including 10 new tests: changing TCP/world coordinates,
+causal prefixes, episode resets, GT isolation, gradient flow through previous
+predictions, real feature masks, parent leakage prevention, geometry assembly,
+frozen-model CPU inference and short workflow smoke tests. One smoke test writes
+a tiny actual graph cache and a reduced real VertexEdgeGatedMPNN checkpoint,
+then runs both root-entrypoint workflows with one training epoch and final
+comparison. Another uses varying synthetic predictions to exercise gate updates.
+All fixture outputs are temporary and removed. These are plumbing/correctness
+checks, not performance evidence. The specified production checkpoint/cache
+were unavailable locally. Full training, the 18,751-frame comparison, CUDA/MPS,
+and simulator execution were not performed. No improvement over 26.59 mm or
+7.35 mm is claimed.
+
 ## Data, splits and cache
 
 Only manifest-listed episodes with valid receipts are read. Partial/rejected
