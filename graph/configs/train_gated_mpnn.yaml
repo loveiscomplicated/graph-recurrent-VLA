@@ -7,8 +7,8 @@ model:
   num_semantic_ids: 16
   use_semantic_ids: false
   use_confidence: false
-  hidden: 128
-  layers: 3
+  hidden: 64
+  layers: 2
   edge_embedding_dim: 16
   dropout: 0.0
   coord_scale_m: 0.05
