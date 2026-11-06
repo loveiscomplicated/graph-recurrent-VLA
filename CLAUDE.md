@@ -1,6 +1,17 @@
-# Project guidance
+# Claude Code entrypoint
 
 @AGENTS.md
+
+Use the imported repository guidance as the common development rules. Follow its
+links to engineering, experiment tracking, and Hugging Face publishing details.
+If file imports are unavailable in your client, read `AGENTS.md` directly.
+
+Follow the **Code readability** rules in `AGENTS.md`: use descriptive names,
+give functions clear responsibilities, and separate logical steps with readable
+control flow and spacing. Avoid compressed one-liners and semicolon-separated
+statements. Explain non-obvious intent and input formats with concise comments
+or examples, and use actionable validation errors. Review readability before
+finishing; keep abstractions proportional to the task.
 
 For new training/evaluation workflows, follow the
 experiment config and README guidance in `AGENTS.md`: prefer team-owned YAML

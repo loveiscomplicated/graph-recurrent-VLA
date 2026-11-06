@@ -1,0 +1,38 @@
+name: official
+data: outputs/recurrent/data/official_demos.npz
+out_dir: outputs/recurrent/exp/official
+corruption: corruption.yaml
+
+models: [mlp, stack_mlp, gru, lstm, cfc, rkn, mamba]
+levels: [none, low, mid, high]
+seeds: [0, 1, 2]
+model_overrides: []
+
+train:
+  steps: 3000
+  batch: 8
+  lr: 0.001
+  num_demos: null
+  val_frac: 0.1
+  split_seed: 0
+  device: auto
+  threads: 2
+  log_every: 250
+
+eval:
+  checkpoint: best
+  episodes: 30
+  start_seed: 2000
+  horizon: 250
+  with_expert: true
+  conditions:
+    normal: {}
+    hole_shift: {shift_dx: 0.02, shift_delay: 10}
+  cross_eval_clean: true
+  stress:
+    train_levels: [high]
+    blackout_lengths: [0, 10, 20, 40]
+
+parallel:
+  train_workers: auto
+  eval_workers: auto

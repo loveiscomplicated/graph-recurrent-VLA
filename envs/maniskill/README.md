@@ -35,6 +35,17 @@ live `task.backend` reported `sim_backend="physx_cpu"`,
 `render_backend="sapien_cpu"`, and `device=cpu` on macOS. This is ManiSkill +
 SAPIEN + PhysX, not MuJoCo. The registered task has a 100-step time limit.
 
+Linux Reach BC validation also executed this shared factory with Torch 2.8.0+cpu
+on Vast.ai 55512455. CPU simulation now always selects `sapien_cpu` host image
+readback, including when Torch can see CUDA; this avoids requesting a Vulkan
+`cuda:0` renderer when only a CPU Vulkan device such as lavapipe is available.
+Vulkan still needs a supported physical device. Shared CPU/RGB tests passed
+on the CPU-only host (8 tests including GT nodes). The CUDA-visible Linux path
+still needs verification on the target server.
+The Graph subtask source wrapper separately preserves its recorded environment
+configuration; SAPIEN 3.0.3 source-render and host-readback regression suites must
+run in separate processes because render-device selection is process-global.
+
 ```python
 from envs.maniskill import make_peg_insertion_env, get_gt_state
 import torch
@@ -50,7 +61,10 @@ finally:
 ```
 
 The factory accepts `seed`, `device`, `num_envs`, `obs_mode`, `control_mode`,
-`render_mode`, and `sim_backend`. `seed` resets one episode during creation;
+`render_mode`, `sim_backend`, `render_backend`, `observation_device`, and
+`sensor_configs`, plus optional positive `max_episode_steps` to override the
+registered 100-step limit for caller-defined collection horizons.
+`seed` resets one episode during creation;
 call `reset(seed=...)` again to start a chosen episode. `control_mode=None`
 uses ManiSkill's default. `device="cpu"` maps to `physx_cpu`; `"cuda"` maps to
 `physx_cuda`. Explicit `sim_backend` must agree with `device`. On this installed

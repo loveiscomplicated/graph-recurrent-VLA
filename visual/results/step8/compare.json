@@ -1,0 +1,442 @@
+{
+ "none": {
+  "config": {
+   "conf": false,
+   "conf_every": 0,
+   "period": 0,
+   "select": null
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7264,
+    "min": 0.0,
+    "hit50": 0.795
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4482.4,
+   "add_box_ms": 15.2,
+   "first_step_ms": 6.1,
+   "per_frame_ms": 46.5,
+   "per_frame_ms_p95": 47.1,
+   "per_frame_ms_max": 48.0,
+   "track_ms_per_frame": 46.4,
+   "bank_ms_per_frame": 0.0,
+   "gdino_ms_per_frame": 0.0,
+   "reid_ms_per_frame": 0.0,
+   "prompt_ms_per_frame": 0.0,
+   "gpu_peak_alloc_gb": 3.47,
+   "triggers": 0,
+   "gdino_calls": 0,
+   "accepted": 0,
+   "wrong": 0,
+   "helped": 0,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "conf": {
+  "config": {
+   "conf": true,
+   "conf_every": 1,
+   "period": 0,
+   "select": "reid"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.9009,
+    "min": 0.0,
+    "hit50": 0.991
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4566.5,
+   "add_box_ms": 15.1,
+   "first_step_ms": 7.4,
+   "per_frame_ms": 97.3,
+   "per_frame_ms_p95": 223.8,
+   "per_frame_ms_max": 244.2,
+   "track_ms_per_frame": 47.0,
+   "bank_ms_per_frame": 1.0,
+   "gdino_ms_per_frame": 41.6,
+   "reid_ms_per_frame": 7.1,
+   "prompt_ms_per_frame": 0.1,
+   "gpu_peak_alloc_gb": 4.02,
+   "triggers": 163,
+   "gdino_calls": 163,
+   "accepted": 2,
+   "wrong": 0,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "conf_e5": {
+  "config": {
+   "conf": true,
+   "conf_every": 5,
+   "period": 0,
+   "select": "reid"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.884,
+    "min": 0.0,
+    "hit50": 0.985
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4637.5,
+   "add_box_ms": 14.7,
+   "first_step_ms": 7.5,
+   "per_frame_ms": 58.8,
+   "per_frame_ms_p95": 122.0,
+   "per_frame_ms_max": 197.2,
+   "track_ms_per_frame": 46.6,
+   "bank_ms_per_frame": 1.0,
+   "gdino_ms_per_frame": 9.3,
+   "reid_ms_per_frame": 1.7,
+   "prompt_ms_per_frame": 0.0,
+   "gpu_peak_alloc_gb": 4.02,
+   "triggers": 36,
+   "gdino_calls": 36,
+   "accepted": 1,
+   "wrong": 0,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "period10": {
+  "config": {
+   "conf": false,
+   "conf_every": 0,
+   "period": 10,
+   "select": "reid"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.9025,
+    "min": 0.0,
+    "hit50": 0.997
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9467,
+    "min": 0.6523,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4636.5,
+   "add_box_ms": 14.9,
+   "first_step_ms": 7.1,
+   "per_frame_ms": 111.7,
+   "per_frame_ms_p95": 376.9,
+   "per_frame_ms_max": 414.0,
+   "track_ms_per_frame": 56.5,
+   "bank_ms_per_frame": 1.0,
+   "gdino_ms_per_frame": 37.8,
+   "reid_ms_per_frame": 12.5,
+   "prompt_ms_per_frame": 3.3,
+   "gpu_peak_alloc_gb": 4.11,
+   "triggers": 145,
+   "gdino_calls": 145,
+   "accepted": 61,
+   "wrong": 2,
+   "helped": 0,
+   "hurt": 1,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 2
+   }
+  }
+ },
+ "period30": {
+  "config": {
+   "conf": false,
+   "conf_every": 0,
+   "period": 30,
+   "select": "reid"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7306,
+    "min": 0.0,
+    "hit50": 0.795
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9482,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4559.5,
+   "add_box_ms": 14.6,
+   "first_step_ms": 8.1,
+   "per_frame_ms": 65.4,
+   "per_frame_ms_p95": 210.3,
+   "per_frame_ms_max": 377.9,
+   "track_ms_per_frame": 48.7,
+   "bank_ms_per_frame": 0.9,
+   "gdino_ms_per_frame": 11.0,
+   "reid_ms_per_frame": 3.8,
+   "prompt_ms_per_frame": 0.7,
+   "gpu_peak_alloc_gb": 4.08,
+   "triggers": 42,
+   "gdino_calls": 42,
+   "accepted": 16,
+   "wrong": 0,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "conf+period30": {
+  "config": {
+   "conf": true,
+   "conf_every": 1,
+   "period": 30,
+   "select": "reid"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7532,
+    "min": 0.0,
+    "hit50": 0.778
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9482,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4464.0,
+   "add_box_ms": 13.9,
+   "first_step_ms": 7.0,
+   "per_frame_ms": 125.0,
+   "per_frame_ms_p95": 325.1,
+   "per_frame_ms_max": 377.7,
+   "track_ms_per_frame": 49.3,
+   "bank_ms_per_frame": 0.9,
+   "gdino_ms_per_frame": 59.9,
+   "reid_ms_per_frame": 13.4,
+   "prompt_ms_per_frame": 0.8,
+   "gpu_peak_alloc_gb": 4.12,
+   "triggers": 235,
+   "gdino_calls": 235,
+   "accepted": 18,
+   "wrong": 0,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "conf_top1": {
+  "config": {
+   "conf": true,
+   "conf_every": 1,
+   "period": 0,
+   "select": "top1"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7861,
+    "min": 0.0,
+    "hit50": 0.898
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.741,
+    "min": 0.0001,
+    "hit50": 0.801
+   },
+   "load_frames_ms": 4543.3,
+   "add_box_ms": 13.6,
+   "first_step_ms": 5.9,
+   "per_frame_ms": 76.7,
+   "per_frame_ms_p95": 161.9,
+   "per_frame_ms_max": 215.6,
+   "track_ms_per_frame": 53.0,
+   "bank_ms_per_frame": 0.0,
+   "gdino_ms_per_frame": 22.4,
+   "reid_ms_per_frame": 0.0,
+   "prompt_ms_per_frame": 1.0,
+   "gpu_peak_alloc_gb": 4.03,
+   "triggers": 88,
+   "gdino_calls": 88,
+   "accepted": 23,
+   "wrong": 22,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 19,
+    "box": 65
+   }
+  }
+ },
+ "period10_top1": {
+  "config": {
+   "conf": false,
+   "conf_every": 0,
+   "period": 10,
+   "select": "top1"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.7916,
+    "min": 0.0,
+    "hit50": 0.906
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9417,
+    "min": 0.6282,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4722.3,
+   "add_box_ms": 13.6,
+   "first_step_ms": 5.7,
+   "per_frame_ms": 108.2,
+   "per_frame_ms_p95": 310.5,
+   "per_frame_ms_max": 350.7,
+   "track_ms_per_frame": 59.7,
+   "bank_ms_per_frame": 0.0,
+   "gdino_ms_per_frame": 43.6,
+   "reid_ms_per_frame": 0.0,
+   "prompt_ms_per_frame": 4.3,
+   "gpu_peak_alloc_gb": 4.12,
+   "triggers": 167,
+   "gdino_calls": 167,
+   "accepted": 73,
+   "wrong": 43,
+   "helped": 1,
+   "hurt": 3,
+   "fp_when_hidden": {
+    "peg": 23,
+    "box": 31
+   }
+  }
+ },
+ "conf_gt": {
+  "config": {
+   "conf": true,
+   "conf_every": 1,
+   "period": 0,
+   "select": "gt"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.9141,
+    "min": 0.6802,
+    "hit50": 1.0
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9462,
+    "min": 0.6469,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4656.2,
+   "add_box_ms": 14.4,
+   "first_step_ms": 6.1,
+   "per_frame_ms": 47.6,
+   "per_frame_ms_p95": 49.0,
+   "per_frame_ms_max": 59.2,
+   "track_ms_per_frame": 46.9,
+   "bank_ms_per_frame": 0.0,
+   "gdino_ms_per_frame": 0.0,
+   "reid_ms_per_frame": 0.0,
+   "prompt_ms_per_frame": 0.1,
+   "gpu_peak_alloc_gb": 3.48,
+   "triggers": 159,
+   "gdino_calls": 0,
+   "accepted": 2,
+   "wrong": 0,
+   "helped": 2,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ },
+ "period10_gt": {
+  "config": {
+   "conf": false,
+   "conf_every": 0,
+   "period": 10,
+   "select": "gt"
+  },
+  "all": {
+   "peg": {
+    "n": 342,
+    "mean": 0.9437,
+    "min": 0.0,
+    "hit50": 0.997
+   },
+   "box": {
+    "n": 291,
+    "mean": 0.9474,
+    "min": 0.6568,
+    "hit50": 1.0
+   },
+   "load_frames_ms": 4673.9,
+   "add_box_ms": 13.7,
+   "first_step_ms": 5.6,
+   "per_frame_ms": 60.6,
+   "per_frame_ms_p95": 89.9,
+   "per_frame_ms_max": 128.6,
+   "track_ms_per_frame": 56.8,
+   "bank_ms_per_frame": 0.0,
+   "gdino_ms_per_frame": 0.0,
+   "reid_ms_per_frame": 0.0,
+   "prompt_ms_per_frame": 3.3,
+   "gpu_peak_alloc_gb": 3.71,
+   "triggers": 78,
+   "gdino_calls": 0,
+   "accepted": 61,
+   "wrong": 0,
+   "helped": 1,
+   "hurt": 0,
+   "fp_when_hidden": {
+    "peg": 0,
+    "box": 1
+   }
+  }
+ }
+}

@@ -1,0 +1,6 @@
+# Minimal standalone detector dependencies, without the tracking stack.
+numpy>=1.24
+opencv-python>=4.8
+torch>=2.8
+# Evaluation and geometry contract tests.
+scipy>=1.10

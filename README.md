@@ -1,35 +1,31 @@
-# ManiSkill environment and episode collection
+# Graph Recurrent VLA: shared ManiSkill prototype environment
 
-`develop` starts from `main` and carries two reusable features: raw CUDA RGB-D
-observations and episode selection by first-frame peg visibility.
+## Corner detection
 
-| Directory | Purpose |
-| --- | --- |
-| `envs/maniskill/` | Environment creation, raw GT and observation device output |
-| `data_collection/` | Initial visibility, collection and portable raw storage |
-| `examples/` | Runnable simulator and GPU checks |
-| `tests/` | Geometry, collection and simulator checks |
+`visual/corner_detection/` provides standalone current-frame RGB-D corner
+detection for the peg and box. Use `detect_tensors` for device-resident results,
+`detect` for a CPU dictionary, or `detect_cpu` for the explicit NumPy reference.
+See [corner detection](docs/corner_detection.md) for inputs, backend requirements,
+the saved-frame example, and the CPU/MPS extraction verification.
 
-Documentation:
+## Data collection and GPU observations
 
-- [Data collection](docs/data_collection.md): selection, policies and saved data.
-- [GPU observations](docs/gpu_observations.md): native RGB-D and output devices.
-- [Verification](docs/data_collection_verification.md): checks and execution limits.
+`data_collection/` selects episodes by the first Main frame's peg visibility.
+The default requires both ends and the grasp band; full camera-facing surface
+confirmation is an explicit alternative. The simulator also supports native
+CUDA RGB-D rendering and a separate raw observation output device.
+
+- [Data collection](docs/data_collection.md): filtering, policies and saved data.
+- [GPU observations](docs/gpu_observations.md): rendering and device checks.
+- [Collection verification](docs/data_collection_verification.md): results and limits.
 
 ```bash
-# Approved initial Main/Wrist observations, CPU renderer (works on this Mac).
 python -m data_collection.collect_episodes --output outputs/initial_frames \
   --num-episodes 10 --max-attempts 1000
-
-# Native CUDA camera output: run on a Linux CUDA/Vulkan host.
-python examples/check_gpu_observations.py
-python -m data_collection.collect_episodes --output outputs/gpu_initial_frames \
-  --num-episodes 10 --render-backend cuda --observation-device cuda
 ```
 
-Physics defaults to CPU in both commands. Disk output and the CPU visibility
-check explicitly materialize arrays on the host. Live observations can stay on
-CUDA until these boundaries. GPU execution has not been rechecked on this Mac.
+This command uses CPU physics/rendering and saves approved initial observations.
+To collect trajectories, provide a policy and step count as described in the guide.
 
 ## Elapsed-time measurements
 
@@ -40,6 +36,20 @@ decorators, per-name aggregates, and optional accelerator synchronization.
 ## Get started
 
 Use Python 3.11 from the repository root:
+
+For PyTorch device selection, `utils.device_set.set_device()` chooses CUDA,
+then MPS, then CPU. Pass `"cpu"`, `"mps"`, or `"cuda:0"` to request a
+specific device; an unavailable accelerator raises an error. NumPy arrays
+remain on CPU:
+
+```python
+from utils.device_set import set_device
+import torch
+
+device = set_device()  # or set_device("cpu")
+tensor = torch.ones(3, device=device)
+array = tensor.detach().cpu().numpy()
+```
 
 ```bash
 python3.11 -m venv .venv
@@ -67,9 +77,23 @@ available in the factory but has not been run on this host.
 
 ## Start a team prototype
 
+New workflows can use the root entrypoint with a team-owned YAML config:
+
+```yaml
+trainer: training.my_trainer:train
+device: auto
+```
+
+Run `python main.py --config path/to/config.yaml` from the repository root.
+The `trainer` value identifies an importable module and callable; the callable
+receives the complete config dictionary. Each team defines its remaining config
+fields and is responsible for recording the effective config with its experiment.
+The example target must be implemented by the team before it can run. Existing
+workflows retain their documented entrypoints.
+
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,
-`graph/`, and `recurrent/` directories are deliberately empty. Each team chooses
+`graph/`, and `recurrent/` directories are team-owned. Each team chooses
 its own files, features, data, models, training, evaluation, and configuration.
 
 ```python
@@ -91,3 +115,34 @@ The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
 see [project context](docs/project_context.md) for scope.
+
+The Graph team's independent surface-geometry comparison prototype is documented
+in [graph/prototype/README.md](graph/prototype/README.md), with its measured
+results in [docs/graph_prototype.md](docs/graph_prototype.md).
+
+The Graph team's PegInsertionSide subtask conditions and expert segmentation
+pipeline are documented in [graph/subtasks/README.md](graph/subtasks/README.md).
+See [docs/subtask_segmentation.md](docs/subtask_segmentation.md) for the measured
+91-episode validation, boundary limitations, and Reach baseline data readiness.
+
+The Recurrent team's controller comparison (MLP, stacked-history MLP, GRU, LSTM,
+CfC, RKN and Mamba on GT state under four observation-corruption levels) is
+documented in [recurrent/README.md](recurrent/README.md). On a GPU server run
+`bash recurrent/setup_server.sh` and then `sh recurrent/run_all.sh`.
+
+## Experiment tracking
+
+Existing Graph training and evaluation entrypoints now record scalar experiments
+to `experiments/<run_id>/`. W&B is optional; missing authentication selects offline
+mode, and missing SDK keeps local JSON logging. Vessl optionally loads
+`/root/.secrets/wandb.env`; see the setup guide. See
+[experiment tracking setup and integration scope](docs/experiment_tracking.md).
+
+To publish selected checkpoints, rollout videos, and metrics after an experiment,
+see [Hugging Face artifacts](docs/huggingface_artifacts.md). Repository initialization
+and publishing are explicit commands; training only records a local manifest.
+
+To forward a tmux session and selected train/eval log files to Discord, run the
+standalone [Discord notifier](docs/discord_notifications.md) with
+`DISCORD_WEBHOOK_URL` in its environment. It batches output, respects rate-limit
+responses, and keeps local pane capture while delivery is unavailable.

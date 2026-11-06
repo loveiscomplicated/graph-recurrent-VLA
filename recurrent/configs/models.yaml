@@ -1,0 +1,38 @@
+mlp:
+  hidden: 256
+  depth: 4
+
+stack_mlp:
+  hidden: 256
+  depth: 3
+  k: 8
+
+gru:
+  hidden: 144
+  layers: 1
+  enc_hidden: 128
+
+lstm:
+  hidden: 128
+  layers: 1
+  enc_hidden: 128
+
+cfc:
+  hidden: 128
+  backbone: 160
+  backbone_layers: 1
+  enc_hidden: 128
+  ts: 1.0
+
+rkn:
+  latent_obs: 48
+  num_basis: 8
+  enc_hidden: 160
+  head_hidden: 128
+
+mamba:
+  d_model: 96
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  layers: 2

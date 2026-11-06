@@ -1,26 +1,50 @@
 # Agent guidance
 
 Read `README.md`, `envs/maniskill/README.md`, and `docs/project_context.md`
-before changing code. On `develop`, also read `docs/data_collection.md` before
-changing collection. The approved pivot retains the main simulator foundation,
-GPU observation output and initial peg visibility collection.
+before changing code. This is the independent feasibility prototype stage.
 
-Keep selection and storage in `data_collection/`, outside the raw simulator.
-Preserve the documented ends-plus-grasp versus full-surface distinction and raw
-RGB/depth dtype, shape and device behavior. Avoid legacy experiment imports and
-task-number names. Do not delete historical artifacts during extraction.
+Keep shared simulator code limited to the working ManiSkill simulator, its raw GT
+accessor, examples, and smoke tests. Existing experiment tracking and artifact
+publishing utilities are shared operational infrastructure. Do not prescribe
+Visual, Graph, or Recurrent models, features, graph construction, sequence design,
+datasets, training loops, configs, or final interfaces. The team directories are
+team-owned and may use any internal structure. Make architecture decisions after
+prototype evidence.
+
+Verify simulator API claims against the installed package and runnable examples.
+State clearly when a backend or device was not executed on the current host.
+
+## Code readability
+
+- Prioritize readability for the next maintainer. Write code whose purpose and
+  execution flow can be understood on a first read; do not compress it merely
+  to reduce line count.
+- Give functions one clear responsibility. Separate distinct steps such as
+  loading configuration, resolving a trainer, and executing it into meaningfully
+  named functions when doing so makes the flow easier to follow. Avoid excessive
+  fragmentation or unnecessary abstraction.
+- Use descriptive variable and function names. Keep control flow explicit;
+  avoid semicolon-separated statements, dense one-liners, and nested expressions
+  that hide intermediate steps. Separate logical blocks with blank lines.
+- Add concise docstrings for function responsibilities and comments for
+  non-obvious intent, conventions, or transformations. Include a concrete example
+  when a string format or dynamic import would otherwise be hard to understand.
+  Do not substitute comments for clear code.
+- Keep validation close to the input it checks, and write error messages that
+  identify the problem and the expected input. Before finishing, review changed
+  code for readability as well as correctness.
 
 ## Naming and documentation
 
 - Name directories, modules, scripts and documents after their function, using
-  descriptive lowercase `snake_case` names. Examples: `data_collection`,
-  `visibility.py`, `gpu_observations.md`.
+  descriptive lowercase `snake_case` names. Examples: `corner_detection`,
+  `geometry.py`, `corner_detection.md`.
 - Do not use legacy experiment/task identifiers (such as `10i`, `task10g`,
   `stage3`, or `plan_a`) as names or prefixes for new code, documentation or
   output directories. Do not recreate the old `visual-graph-integration` report
-  hierarchy on `develop`.
-- Keep feature guides directly under `docs/`, such as `data_collection.md` and
-  `gpu_observations.md`. Component-local READMEs may link to these guides.
+  hierarchy on this branch.
+- Keep feature guides directly under `docs/`, such as `corner_detection.md`.
+  Component-local READMEs may link to these guides.
   Update the relevant existing feature document instead of creating a report
   for every task, chat, stage or date. Use Git history for change chronology.
 - Record dates, source experiment IDs and commit hashes inside a document when
@@ -29,16 +53,16 @@ task-number names. Do not delete historical artifacts during extraction.
 - When moving documentation, update all links and agent instructions, including
   `CLAUDE.md`, and preserve relative links to raw verification artifacts.
 
-Keep shared code limited to the working ManiSkill simulator, its raw GT accessor,
-examples, and smoke tests. Do not prescribe Visual, Graph, or Recurrent models,
-features, graph construction, sequence design, datasets, training loops, configs,
-or final interfaces. The team directories are team-owned and may use any
-internal structure. Make architecture decisions after prototype evidence.
+For corner-detection changes, also read `docs/corner_detection.md`.
+For collection changes, also read `docs/data_collection.md`; for simulator
+output-device changes, read `docs/gpu_observations.md`.
 
-Verify simulator API claims against the installed package and runnable examples.
-State clearly when a backend or device was not executed on the current host.
+Keep dataset selection and storage in `data_collection/`, outside the raw
+simulator. Preserve the ends-plus-grasp versus full-surface visibility modes
+and raw RGB/depth shape, dtype and device behavior. Reuse these extracted
+features without importing legacy experiment packages.
 
-## Training and evaluation workflows
+## Development and experiment infrastructure
 
 - For new training/evaluation workflows, keep experiment
   settings in a team-owned config file, preferably YAML under a `configs/` directory,
@@ -52,6 +76,21 @@ State clearly when a backend or device was not executed on the current host.
   It may dispatch to team-owned implementations. Document the runnable command,
   config path, and prerequisites in the relevant team README. These rules apply
   going forward; existing implementations do not need to be changed to comply.
+- Follow [engineering rules](docs/engineering_rules.md) for the work sequence,
+  experiment identity, verification, and completion report.
+- For training/evaluation, reuse `utils.experiment_logger.ExperimentLogger`;
+  follow [experiment tracking](docs/experiment_tracking.md). Do not add a
+  team-specific W&B logger or change the existing run ID/project/group rules.
+- For artifacts, reuse `utils.experiment_artifacts` through
+  `tools.publish_experiment`; follow [HF publishing](docs/huggingface_artifacts.md).
+  Publish only on explicit request or in an explicitly defined publishing workflow;
+  do not automatically upload all checkpoints/videos from training.
+- Keep credentials out of code, logs, configs, manifests, and committed files.
+  Preserve local/offline logging and separate publishing failures from training.
+- Check the current branch's implementation before using an API. If an interface
+  is missing, report the gap and consider a shared extension before adding a
+  parallel implementation. Update the corresponding docs when interfaces change.
+
 - For new code, use `visual/`, `graph/`, and `recurrent/` for each team's models
   and model-specific internal modules. Put training code under `training/` and
   evaluation code under `evaluation/`; team-specific implementations may remain

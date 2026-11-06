@@ -1,22 +1,14 @@
 # Project context: reusable simulation and data collection
 
-2026-11-05: `develop` branches from `main` for a project pivot. Carry forward
-native CUDA RGB-D/output-device support and first-frame GT/depth peg visibility
-selection in `data_collection/`. Keep simulator responsibilities in
-`envs/maniskill/`; data selection and storage belong in `data_collection/`.
-The default filter preserves both end strips plus the historical grasp band;
-full camera-facing surface confirmation is an explicit alternative.
+## Reusable capabilities on graph
 
-Use human-readable role names. No Graph, GNN, recurrent model, old expert or
-training workflow is selected by this extraction. Existing legacy branches and
-artifacts remain preserved. GPU execution requires a supported Linux GPU host;
-the extraction host is macOS without CUDA.
-
-Feature documentation lives in [data collection](data_collection.md) and
-[GPU observations](gpu_observations.md), with checks recorded in
-[collection verification](data_collection_verification.md). Update these
-documents as the features evolve. New paths use functional names; historical
-experiment IDs and dates belong in evidence within the document, not filenames.
+The `graph` branch carries the standalone [corner detector](corner_detection.md)
+from `visual`, plus [initial-visibility collection](data_collection.md) and
+[GPU observation output](gpu_observations.md) from `develop`. These are reusable
+tools, separate from existing model/training experiments. Dataset selection and
+storage live in `data_collection/`; the shared simulator remains responsible for
+environment creation, raw observations and GT. The default visibility gate
+requires both peg ends plus the grasp band; full-surface confirmation is optional.
 
 ## Original shared prototype context
 
@@ -32,6 +24,5 @@ chooses geometry, graph construction, and a GNN prototype. The Recurrent team
 collects a simulator GT sequence and chooses features and a feed-forward or
 recurrent controller prototype. Each team works without waiting for another.
 
-`visual/`, `graph/`, and `recurrent/` are intentionally empty workspaces. Teams
-may organize their directories however they wish. Architecture decisions follow
-the prototype results, not this shared repository's scaffold.
+Teams organize `visual/`, `graph/`, and `recurrent/` independently. Architecture
+decisions follow prototype results rather than a shared prescribed design.

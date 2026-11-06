@@ -1,0 +1,4 @@
+# Optional transport; the logger works locally without this package.
+wandb>=0.25,<1
+python-dotenv>=1.0,<2
+huggingface_hub>=0.34,<3
