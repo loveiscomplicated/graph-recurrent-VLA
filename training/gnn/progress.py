@@ -2,6 +2,8 @@
 
 from time import perf_counter
 
+import torch
+
 
 def format_duration(seconds):
     """Render elapsed times and estimates as hours, minutes and seconds."""
@@ -51,10 +53,15 @@ class TrainingProgress:
         """Print immediately when entering training or validation."""
         self.phase = phase
         self.phase_started_at = self.clock()
+        self.metric_totals = {}
+        self.metric_denominators = {}
         self.report(force=True)
 
-    def batch_completed(self):
+    def batch_completed(self, totals=None, denominators=None):
         """Include all fetched batches, even batches filtered to None."""
+        if totals is not None:
+            self.metric_totals = totals
+            self.metric_denominators = denominators
         self.counts[self.phase] += 1
         self.report()
 
@@ -115,11 +122,20 @@ class TrainingProgress:
         if epoch_remaining is not None:
             metrics["epoch_remaining_seconds"] = epoch_remaining
             metrics["total_remaining_seconds"] = total_remaining
+        loss_text = ""
+        if self.metric_totals:
+            names = list(self.metric_totals)
+            means = torch.stack([
+                self.metric_totals[name] / self.metric_denominators[name] for name in names
+            ]).detach().cpu().tolist()
+            running_metrics = dict(zip(names, means))
+            metrics.update({f"{self.phase}/{name}": value for name, value in running_metrics.items()})
+            loss_text = f" loss={running_metrics['loss']:.6f}"
         self.experiment.log(metrics, step=self.epoch, prefix="progress")
         size = self.sizes[self.phase]
         print(
             f"Epoch {self.epoch}/{self.epochs} [{self.phase}] "
-            f"batch {self.counts[self.phase]}/{size if size is not None else '?'} "
+            f"batch {self.counts[self.phase]}/{size if size is not None else '?'}{loss_text} "
             f"elapsed={format_duration(elapsed)} "
             f"epoch_remaining={format_duration(epoch_remaining)} "
             f"total_remaining={format_duration(total_remaining)}",

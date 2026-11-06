@@ -292,6 +292,15 @@ def check_gradient_finiteness(model):
         raise ValueError("Nonfinite model gradients; optimizer step cancelled")
 
 
+def gradient_norm(model, device):
+    """Measure the global L2 norm without modifying gradients."""
+    norms = [torch.linalg.vector_norm(parameter.grad.detach())
+             for parameter in model.parameters() if parameter.grad is not None]
+    if not norms:
+        return torch.zeros((), device=device)
+    return torch.linalg.vector_norm(torch.stack(norms))
+
+
 def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=None,
               progress=None):
     """Execute one epoch and aggregate each metric by its explicit denominator."""
@@ -312,21 +321,29 @@ def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=No
             if not isinstance(result, StepResult) or result.loss.ndim != 0:
                 raise ValueError("Task must return StepResult with a scalar loss Tensor")
             metrics = prepare_metric_tensors(result, device)
-            for name, value in metrics.items():
-                weight = result.metric_weights[name]
-                totals[name] = totals.get(name, 0.0) + value * weight
-                denominators[name] = denominators.get(name, 0) + weight
+            metric_weights = dict(result.metric_weights)
             if is_training:
                 result.loss.backward()
                 if gradient_clip_norm is not None:
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm,
-                                                   error_if_nonfinite=True)
+                    norm = torch.nn.utils.clip_grad_norm_(
+                        model.parameters(), gradient_clip_norm, error_if_nonfinite=True,
+                    )
+                    # Match PyTorch's clipping coefficient, including its epsilon.
+                    metrics["gradient_clip_fraction"] = (norm + 1e-6 > gradient_clip_norm).float()
+                    metric_weights["gradient_clip_fraction"] = 1
                 else:
                     check_gradient_finiteness(model)
+                    norm = gradient_norm(model, device)
+                metrics["gradient_norm"] = norm.detach()
+                metric_weights["gradient_norm"] = 1
                 optimizer.step()
+            for name, value in metrics.items():
+                weight = metric_weights[name]
+                totals[name] = totals.get(name, 0.0) + value * weight
+                denominators[name] = denominators.get(name, 0) + weight
             batch_count += 1
             if progress is not None:
-                progress.batch_completed()
+                progress.batch_completed(totals, denominators)
     if not batch_count:
         raise ValueError("Cannot run an epoch with an empty DataLoader")
     metric_names = list(totals)

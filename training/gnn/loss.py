@@ -84,7 +84,16 @@ def object21_loss(
         + consistency_weight * terms["endpoint_consistency"]
     )
 
-    return {"total": total, **terms}
+    contributions = {
+        "weighted/peg_position": terms["peg_position"],
+        "weighted/hole_position": terms["hole_position"],
+        "weighted/endpoint": 2.0 * terms["endpoint"],
+        "weighted/peg_rotation": 0.5 * terms["peg_rotation"],
+        "weighted/hole_rotation": 0.5 * terms["hole_rotation"],
+        "weighted/size": 0.5 * terms["size"],
+        "weighted/endpoint_consistency": consistency_weight * terms["endpoint_consistency"],
+    }
+    return {"total": total, **terms, **contributions}
 
 
 # -------------------------------------------

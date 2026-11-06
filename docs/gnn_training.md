@@ -159,6 +159,42 @@ without a compatible readout. Its example config retains `mode: initialize`.
 
 ## Outputs and resume
 
+### Loss and geometry metrics
+
+Every epoch records sample-weighted train/validation means through the existing
+`ExperimentLogger` and `history.json`. In addition to total loss, its raw
+components, position/endpoint mean distance errors (metres), and empty-input
+fraction, Object21 records:
+
+| Metric suffix | Meaning |
+| --- | --- |
+| `peg_rotation_error_deg`, `hole_rotation_error_deg` | Mean shortest quaternion rotation angle in degrees; q and -q are equivalent |
+| `peg_half_size_x_error_mm`, `peg_half_size_y_error_mm`, `peg_half_size_z_error_mm` | Mean absolute peg half-size error on each local axis, in millimetres |
+| `hole_radius_error_mm` | Mean absolute hole radius error in millimetres |
+| `weighted/<loss_component>` | Contribution after the existing loss weight; these sum to total loss |
+| `empty_input/<geometry_error>`, `nonempty_input/<geometry_error>` | Validation-only geometry errors, separately for samples with no valid nodes and samples with at least one valid node |
+
+Subset means use each group's own sample count across batches. A group with no
+samples is omitted, rather than assigned zero error. With `empty_inputs: skip`,
+the empty group is filtered before the task and therefore has no error metrics.
+Validation grouping transfers one group count to the host per batch; other
+geometry metric calculations remain on the model device until reporting.
+
+Training also records `gradient_norm` (mean global L2 norm before clipping) and,
+when clipping is enabled, `gradient_clip_fraction` (fraction of optimizer steps
+whose gradients were scaled). These are averaged by optimizer step, independently
+of sample-weighted loss metrics. Norm measurement does not modify gradients;
+the clipping path reuses the norm returned by the existing clipping operation.
+
+At the existing progress cadence, the logger records cumulative means for the
+current phase under `progress/train/*` or `progress/validation/*`, and the
+terminal includes cumulative mean `loss`. Means reset at each phase and epoch;
+they describe all processed samples in that phase, rather than just the latest
+batch. Device scalars are copied together only when a progress report is due.
+The objective, loss weights and best-checkpoint selection are unchanged.
+
+### Time and progress
+
 During training, the terminal reports the current/total epoch, train or
 validation phase, completed/total phase batches, elapsed time within the epoch,
 estimated time remaining within the epoch, and estimated time remaining across
