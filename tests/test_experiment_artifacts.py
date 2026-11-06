@@ -130,6 +130,28 @@ class ArtifactTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             plan_upload(log.directory, [])
 
+    def test_explicit_trajectory_publication_uses_dataset_without_videos(self):
+        log = self.experiment()
+        with self.transport():
+            report = publish(log.directory, ['trajectory', 'metrics'])
+        self.assertEqual(report['status'], 'complete')
+        self.assertEqual(set(report['repositories']), {'rollouts'})
+        files = list(self.hub.files)
+        self.assertTrue(any('/trajectory/' in path and path.endswith('.h5') for _, path in files))
+        self.assertFalse(any(path.endswith(('.mp4', '.pt')) for _, path in files))
+        self.assertTrue(all(repo == DEFAULT_REPOSITORIES['rollouts'].repo_id for repo, _ in files))
+        manifest_path = report['repositories']['rollouts']['manifest_path']
+        manifest = json.loads(self.hub.files[DEFAULT_REPOSITORIES['rollouts'].repo_id, manifest_path])
+        self.assertEqual(manifest['selection'], ['metrics', 'trajectory'])
+        self.assertEqual(len(manifest['trajectory_paths']), 1)
+        self.assertIn('/trajectory/', manifest['trajectory_paths'][0])
+        with redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(main([
+                '--run-id', log.run_id, '--experiments-dir', str(log.directory.parent),
+                '--include', 'trajectory', '--dry-run',
+            ]), 0)
+        self.assertEqual(json.loads(output.getvalue())['status'], 'dry-run')
+
     def test_missing_selected_file_but_unselected_missing_does_not_block(self):
         log = self.experiment()
         manifest = save_manifest(log.directory)

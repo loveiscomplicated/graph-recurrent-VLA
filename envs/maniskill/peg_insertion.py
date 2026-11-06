@@ -41,6 +41,7 @@ def make_peg_insertion_env(
     observation_device: str | torch.device | None = None,
     render_backend: str | None = None,
     sensor_configs: dict | None = None,
+    max_episode_steps: int | None = None,
 ):
     """Make the task; ``seed`` also resets its first user episode.
 
@@ -55,6 +56,8 @@ def make_peg_insertion_env(
     """
     if num_envs < 1:
         raise ValueError("num_envs must be positive")
+    if max_episode_steps is not None and max_episode_steps < 1:
+        raise ValueError("max_episode_steps must be positive")
     if device not in {"cpu", "cuda"}:
         raise ValueError("device must be 'cpu' or 'cuda'")
     backend = sim_backend or ("physx_cpu" if device == "cpu" else "physx_cuda")
@@ -92,6 +95,8 @@ def make_peg_insertion_env(
         kwargs["control_mode"] = control_mode
     if sensor_configs is not None:
         kwargs["sensor_configs"] = sensor_configs
+    if max_episode_steps is not None:
+        kwargs["max_episode_steps"] = max_episode_steps
     original_cwd = Path.cwd()
     env = None
     try:

@@ -116,8 +116,8 @@ def plan_upload(directory, include, repositories=None):
     repositories = repositories or DEFAULT_REPOSITORIES
     validate_repositories(repositories)
     include = set(include)
-    if not include or include - {'checkpoint', 'rollouts', 'metrics'}:
-        raise ValueError('select checkpoint, rollouts and/or metrics explicitly')
+    if not include or include - {'checkpoint', 'rollouts', 'trajectory', 'metrics'}:
+        raise ValueError('select checkpoint, rollouts, trajectory and/or metrics explicitly')
     metadata = json.loads((directory / 'metadata.json').read_text())
     run_id = metadata['run_id']
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,127}', run_id) or metadata['team'] not in TEAMS:
@@ -131,6 +131,8 @@ def plan_upload(directory, include, repositories=None):
     config = clean(json.loads((directory / 'config.yaml').read_text()))
     plans = {}
     targets = include & {'checkpoint', 'rollouts'}
+    if 'trajectory' in include:
+        targets.add('rollouts')
     if not targets:  # metrics-only uses the current model repository, not a future evaluation repo.
         targets = {'checkpoint'}
     for target in sorted(targets):
@@ -175,6 +177,11 @@ def plan_upload(directory, include, repositories=None):
                 raise ValueError(f'no registered {target} files; use link_output(kind=...)')
             remote[field] = [add(directory / value, target) for value in manifest[field]]
         if target == 'rollouts':
+            if 'trajectory' in include:
+                if not manifest['trajectory_paths']:
+                    raise ValueError('no registered trajectory files; use link_output(kind="trajectory")')
+                remote['trajectory_paths'] = [add(directory / value, 'trajectory')
+                                              for value in manifest['trajectory_paths']]
             remote['episode_metadata_paths'] = [add(directory / value, 'episode_metadata', snapshot=True)
                                                 for value in manifest['episode_metadata_paths']]
         # Immutable per-selection manifest: separate invocations cannot overwrite inventory.

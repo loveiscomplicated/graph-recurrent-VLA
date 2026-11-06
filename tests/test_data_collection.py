@@ -116,6 +116,49 @@ class CollectionTests(unittest.TestCase):
             self.assertEqual(manifest["episodes"], [])
             self.assertTrue((root / "episode_000000.partial/frame_000000.npz").exists())
 
+    @patch("data_collection.collect_episodes.initial_visibility", side_effect=gate)
+    def test_success_filter_preserves_failures_outside_approved_manifest(self, _):
+        class ExpertEnv(FakeEnv):
+            def step(self, action):
+                observation, reward, term, trunc, info = super().step(action)
+                info["success"] = torch.tensor([self.seed == 3])
+                return observation, reward, term, trunc, info
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "dataset"
+            result = collect_episodes(
+                ExpertEnv(), root, num_episodes=1, max_attempts=4,
+                steps=5, policy=ZeroActions(), require_success=True,
+            )
+            self.assertEqual(result["status"], "COMPLETE")
+            self.assertEqual(result["attempted"], 4)
+            self.assertEqual(result["visibility_passed"], 2)
+            self.assertEqual(result["expert_attempted"], 2)
+            self.assertEqual(result["expert_failed"], 1)
+            self.assertEqual(result["episodes"][0]["seed"], 3)
+            self.assertTrue(result["episodes"][0]["success"])
+            self.assertEqual(result["episodes"][0]["steps"], 1)
+            rejected = json.loads((root / "rejected_seed_000001/episode.json").read_text())
+            self.assertFalse(rejected["success"])
+            self.assertEqual(rejected["observations"], 3)
+
+    @patch("data_collection.collect_episodes.initial_visibility", side_effect=gate)
+    def test_optional_step_ground_truth_aligns_with_post_action_observation(self, _):
+        from types import SimpleNamespace
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "dataset"
+            with patch(
+                "data_collection.collect_episodes.get_gt_state",
+                side_effect=lambda env: SimpleNamespace(t=torch.tensor([env.step_count])),
+            ):
+                collect_episodes(
+                    FakeEnv(), root, num_episodes=1, max_attempts=1,
+                    start_seed=1, steps=2, policy=ZeroActions(), save_step_gt=True,
+                )
+            with np.load(root / "episode_000000/frame_000002.npz") as saved:
+                np.testing.assert_array_equal(saved["ground_truth/t"], [2])
+
 
 if __name__ == "__main__":
     unittest.main()

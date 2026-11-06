@@ -17,7 +17,7 @@ def main(argv=None):
     mode.add_argument('--sync-wandb', metavar='RUN_ID', help='retry W&B link sync independently of HF')
     parser.add_argument('--experiments-dir', type=Path,
                         default=Path(os.getenv('EXPERIMENTS_DIR', REPO / 'experiments')))
-    parser.add_argument('--include', nargs='+', choices=['checkpoint', 'rollouts', 'metrics'])
+    parser.add_argument('--include', nargs='+', choices=['checkpoint', 'rollouts', 'trajectory', 'metrics'])
     parser.add_argument('--dry-run', action='store_true', help='validate files and show bytes without network calls')
     parser.add_argument('--private', action='store_true', help='require private upload targets (initialization is always private)')
     parser.add_argument('--repo-id', action='append', default=[], metavar='KIND=ORG/REPO',

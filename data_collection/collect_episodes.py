@@ -52,6 +52,8 @@ def collect_episodes(
     policy=None,
     visibility_mode="ends_and_grasp",
     metadata=None,
+    require_success=False,
+    save_step_gt=False,
 ):
     """A policy has reset(env, seed) and act(observation) -> native action.
 
@@ -65,6 +67,8 @@ def collect_episodes(
         )
     if steps and policy is None:
         raise ValueError("trajectory collection requires an explicit policy")
+    if require_success and not steps:
+        raise ValueError("require_success needs a trajectory with positive steps")
     keys = {"ends_and_grasp": "requested_pass", "full_surface": "strict_100_pass"}
     if visibility_mode not in keys:
         raise ValueError("unknown visibility mode")
@@ -77,10 +81,15 @@ def collect_episodes(
         steps=steps,
         visibility_mode=visibility_mode,
         metadata=metadata or {},
+        require_success=require_success,
+        save_step_gt=save_step_gt,
     )
     write_json(output / "config.json", config)
     episodes = []
-    manifest = dict(status="RUNNING", attempted=0, episodes=episodes)
+    manifest = dict(
+        status="RUNNING", attempted=0, visibility_passed=0,
+        expert_attempted=0, expert_failed=0, episodes=episodes,
+    )
     write_json(output / "manifest.json", manifest)
     try:
         for seed in range(start_seed, start_seed + max_attempts):
@@ -93,6 +102,7 @@ def collect_episodes(
             )
             if not passed:
                 continue
+            manifest["visibility_passed"] += 1
             name = f"episode_{len(episodes):06d}"
             pending = output / (name + ".partial")
             pending.mkdir()
@@ -102,7 +112,9 @@ def collect_episodes(
             )
             length = 0
             terminated = truncated = False
+            success = False
             if steps:
+                manifest["expert_attempted"] += 1
                 policy.reset(env, seed)
             for step in range(steps):
                 action = torch.as_tensor(
@@ -119,6 +131,10 @@ def collect_episodes(
                 command = to_numpy(action)
                 observation, reward, term, trunc, info = env.step(action)
                 length = step + 1
+                success = success or bool(to_numpy(info.get("success", False)).any())
+                extra = {}
+                if save_step_gt:
+                    extra["ground_truth"] = vars(get_gt_state(env))
                 save_frame(
                     pending / f"frame_{length:06d}.npz",
                     observation,
@@ -127,9 +143,10 @@ def collect_episodes(
                     terminated=term,
                     truncated=trunc,
                     info=info,
+                    **extra,
                 )
                 terminated, truncated = bool(term.item()), bool(trunc.item())
-                if terminated or truncated:
+                if terminated or truncated or (require_success and success):
                     break
             receipt = dict(
                 seed=seed,
@@ -139,8 +156,15 @@ def collect_episodes(
                 terminated=terminated,
                 truncated=truncated,
                 visibility_mode=visibility_mode,
+                success=success,
             )
             write_json(pending / "episode.json", receipt)
+            if require_success and not success:
+                manifest["expert_failed"] += 1
+                # Keep failed expert attempts as evidence, outside approved episodes.
+                pending.rename(output / f"rejected_seed_{seed:06d}")
+                print(f"Expert unsuccessful: seed={seed}, steps={length}", flush=True)
+                continue
             pending.rename(output / name)
             episodes.append(receipt)
             write_json(output / "manifest.json", manifest)
@@ -175,6 +199,9 @@ def main():
     parser.add_argument("--max-attempts", type=int, default=1000)
     parser.add_argument("--start-seed", type=int, default=0)
     parser.add_argument("--steps", type=int, default=0)
+    parser.add_argument("--max-episode-steps", type=int, default=None)
+    parser.add_argument("--require-success", action="store_true")
+    parser.add_argument("--save-step-gt", action="store_true")
     behavior = parser.add_mutually_exclusive_group()
     behavior.add_argument(
         "--policy", help="Python module:factory; factory() returns reset/act policy"
@@ -202,6 +229,8 @@ def main():
         parser.error("counts/resolution must be positive; steps/seed nonnegative")
     if args.steps and not (args.policy or args.zero_actions):
         parser.error("--steps requires --policy or --zero-actions")
+    if args.require_success and not args.steps:
+        parser.error("--require-success requires positive --steps")
     policy = ZeroActions() if args.zero_actions else None
     if args.policy:
         module, attribute = args.policy.split(":", 1)
@@ -216,6 +245,7 @@ def main():
             name: dict(width=args.resolution, height=args.resolution)
             for name in ("base_camera", "hand_camera")
         },
+        max_episode_steps=args.max_episode_steps,
     )
     try:
         metadata = {
@@ -255,6 +285,8 @@ def main():
             policy=policy,
             visibility_mode=args.visibility_mode,
             metadata=metadata,
+            require_success=args.require_success,
+            save_step_gt=args.save_step_gt,
         )
         if result["status"] != "COMPLETE":
             raise SystemExit(

@@ -32,6 +32,76 @@ preserved develop worktree.
 
 Usage: [data collection](data_collection.md) and [GPU observations](gpu_observations.md).
 
+## Native 512 expert dataset on Linux CUDA
+
+2026-11-06 KST, user-requested collection on Vast.ai **59288396**, RTX 3090.
+The effective config is [visible_peg.yaml](../data_collection/configs/visible_peg.yaml).
+The new run ID is `c555bed7462d4fc09e55ae3bb04421a1`. Original checkout commit:
+`64eaad4a3a365bfe5cbbb002a29059604ca1ccbc`, dirty; the selected executed source
+snapshot and file hashes are retained, rather than claiming commit-only reproduction.
+
+| Selection or verification | Result |
+| --- | --- |
+| Consecutive resets within 30 disjoint seed ranges | 2,916 |
+| Initial Main ends-and-grasp visibility rejected, no expert action | 2,003 |
+| Visibility passed; expert attempted | 913 |
+| Official expert success / unsuccessful | 900 / 13 (98.58% success among expert attempts) |
+| Dataset selection | Only the 900 successful episodes; no split assignment |
+| Raw observations | 92,825 frames; T+1 observations and T actions per episode |
+| Episode archives | 30 TAR files, 58,857,973,760 bytes before metadata |
+| Raw camera arrays, every frame | Main/Wrist RGB `[1,512,512,3]` uint8; depth `[1,512,512,1]` int16 mm |
+| Initial visibility | Independently recomputed from all 900 saved initial frames |
+| Per-frame schema/action alignment | All frames passed; every source array also read back at save time |
+
+The policy is the standalone extraction of `recurrent/expert.py`'s GT-guided
+servo control law, with native action shape and normalized bounds handling.
+Physics ran on CPU (`physx_cpu`), cameras rendered on CUDA (`sapien_cuda`), and
+the raw observation output was CUDA. Native camera CUDA residency before the
+output wrapper was checked on reset and step. The actual 512 camera override
+was then verified on every saved dataset frame. CUDA PhysX was not executed.
+The original recurrent implementation and historical datasets were not modified.
+
+Runtime: Python 3.12.15, ManiSkill 3.0.1, SAPIEN 3.0.3, Gymnasium 1.3.0,
+Torch 2.14.1+cu132, NumPy 2.5.4, Pinocchio package `pin` 4.1.0.
+Three-episode pilot: 17 resets, 3 visibility passes, all 3 expert successes.
+Four-worker pilot: 8 successful episodes, complete schema/visibility verification
+and archive construction. The 900-episode collection then ran as a supervisor job.
+
+Local collection/dataset/publishing contracts passed **31 tests**; Linux ran the
+same 31 tests successfully. Linux visibility/native-CUDA coverage also passed
+in the **38-test** run. Logger's **13 tests** passed in an isolated process;
+Mac simulator/visibility/output-device checks ran **17 tests**, 15 passed and
+2 CUDA skips. An initial combined logger run encountered an existing global
+import-mock interaction with imageio's lazy plugin module; isolation passed.
+The final checks did not require changing the logger or the unrelated team code.
+
+Evidence copied locally: [dataset manifest](../outputs/visible_peg_dataset/dataset_manifest.json),
+[source identity](../outputs/visible_peg_dataset/collection_source_identity.json),
+[local contracts](../outputs/visible_peg_dataset/local_contract_tests.log),
+[Linux contracts](../outputs/visible_peg_dataset/linux_contract_tests.log),
+[Linux CUDA coverage](../outputs/visible_peg_dataset/linux_gpu_tests.log).
+Publication completed using the shared `tools.publish_experiment --include
+trajectory metrics --private` workflow. The uploaded revision is
+`94cb85e8009f20b5b47063e8295f6c69040549c1` in
+[`Graph-Recurrent-VLA/graph-recurrent-rollouts`](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/94cb85e8009f20b5b47063e8295f6c69040549c1/integration/c555bed7462d4fc09e55ae3bb04421a1).
+All **35** remote files matched their expected sizes and LFS SHA-256 or downloaded
+JSON SHA-256. This passed both the Linux workflow verification and a separate
+local HF readback check. Full archive payloads were not downloaded again.
+The existing repository remained private. Its README/catalog now index the
+dataset; that documentation commit is `b0d357c2b73be4d4d3d8f1cb29a979b3cfdf3920`.
+Publishing used huggingface_hub 2.2.0 and hf_xet 1.7.0, with automatic transfer
+concurrency; no transfer retry or recollection was needed.
+
+Receipts: [HF publication](../outputs/visible_peg_dataset/huggingface_uploads.json),
+[Linux remote verification](../outputs/visible_peg_dataset/publication_verification.json),
+[local remote verification](../outputs/visible_peg_dataset/local_publication_verification.json),
+[catalog entry](../outputs/visible_peg_dataset/catalog_publication.json),
+[final workflow status](../outputs/visible_peg_dataset/progress.json).
+Vast.ai instance shutdown is checked separately in the
+[shutdown receipt](../outputs/visible_peg_dataset/shutdown_verification.json).
+At 2026-11-06 02:55 KST the API reported `actual_status=exited`,
+`intended_status=stopped`, and `cur_state=next_state=stopped` for **59288396**.
+
 ## Scope and implementation
 
 - `envs/maniskill/peg_insertion.py`: bring forward explicit render backend,
