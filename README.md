@@ -27,6 +27,12 @@ python -m data_collection.collect_episodes --output outputs/initial_frames \
 This command uses CPU physics/rendering and saves approved initial observations.
 To collect trajectories, provide a policy and step count as described in the guide.
 
+## Elapsed-time measurements
+
+For elapsed-time measurements of user-selected functions, callable modules, or
+code regions, use `utils.timer.Timer`. See [timing](docs/timing.md) for wrappers,
+decorators, per-name aggregates, and optional accelerator synchronization.
+
 ## Get started
 
 Use Python 3.11 from the repository root:
