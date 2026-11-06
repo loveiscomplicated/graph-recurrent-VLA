@@ -34,6 +34,21 @@ State clearly when a backend or device was not executed on the current host.
   identify the problem and the expected input. Before finishing, review changed
   code for readability as well as correctness.
 
+## Worktree and branch cleanup
+
+- Before finishing work, release branches checked out in temporary agent
+  worktrees so the user can check them out in their main working directory.
+- If the worktree must remain, run `git switch --detach` in that worktree after
+  preserving the work on its intended branch. Otherwise, archive or remove the
+  temporary worktree using the appropriate worktree tool. If cleanup is blocked,
+  detach HEAD to release the branch and report the remaining worktree.
+- Verify with `git worktree list` that completed temporary worktrees no longer
+  hold the feature or integration branches used by the task, including
+  `develop` and `graph`. Do not wait for the user to encounter a checkout error.
+- Preserve uncommitted changes and existing staging. Never discard work, force
+  worktree removal, or switch branches in the user's main working directory
+  merely to perform cleanup. Leave worktrees used by other active tasks alone.
+
 ## Naming and documentation
 
 - Name directories, modules, scripts and documents after their function, using
