@@ -14,7 +14,7 @@ from graph.build_graph import (
     compute_confidence,
 )
 from graph.gated_mpnn import VertexEdgeGatedMPNN
-from training.gnn_loss import object21_loss
+from training.gnn.loss import object21_loss
 
 
 def corners(points=None, objects=None, metadata=None):

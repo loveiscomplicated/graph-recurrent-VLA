@@ -23,35 +23,24 @@ shared `GraphBatch` consumed by both GNNs, preserving PEG/BOX/HOLE distinctions,
 unknown semantics/quality and padding masks. See [graph input](../docs/graph_input.md)
 for the contract, confidence policy, edge settings and runnable Python example.
 
-## GNN initialization skeleton
+## GNN training
 
-From the repository root, with Python 3.11 and `requirements.txt` installed:
-
-```bash
-python main.py --config graph/configs/train_gnn.yaml
-```
-
-Select `model.name: basic_gnn` for [BasicGNN](basic_gnn.py), or
-`model.name: vertex_edge_gated_mpnn` for [VertexEdgeGatedMPNN](gated_mpnn.py).
-The latter has its own runnable example config:
+Install `requirements.txt` and `visual/corner_detection/requirements.txt`, extract
+approved episode shards and set `data.root` in the gated config. On the training host:
 
 ```bash
 python main.py --config graph/configs/train_gated_mpnn.yaml
 ```
 
-Both use the same trainer. This entrypoint initializes the selected model, selects a
-Torch device, and opens a shared `ExperimentLogger` run. It does not load data,
-train, evaluate, or save checkpoints. Model dimensions in the config are example
-values to replace when the team chooses its inputs and objective.
+The common `training.gnn.trainer` handles optimization, validation, tracking and
+resume; task implementations own output-specific loss/metrics. Frame detection
+and graph caches are generated on first access when `data.use_cache` is true.
+See [GNN training](../docs/gnn_training.md) for dataset layout, splits, cache policy,
+checkpoint semantics and other GNN extensions. No training or frame caching was
+executed locally during this implementation.
 
-For local logging without W&B:
-
-```bash
-WANDB_MODE=disabled python main.py --config graph/configs/train_gnn.yaml
-```
-
-See [the initialization guide](../docs/graph_prototype.md#basicgnn-initialization-skeleton)
-for config fields, recorded metadata and remaining implementation steps.
+`train_gnn.yaml` remains a BasicGNN initialization example (`mode: initialize`);
+its node outputs need a suitable task before actual training.
 
 ## Existing prototypes
 
@@ -62,6 +51,6 @@ See [the independent surface-geometry prototype](prototype/README.md) and
 
 The vertex graph model is defined in [gated_mpnn.py](gated_mpnn.py).
 Its training objectives live in
-[training/gnn_loss.py](../training/gnn_loss.py):
+[training/gnn/loss.py](../training/gnn/loss.py):
 `object21_loss` compares geometry with GT and regularizes endpoint corrections;
 `paired_delta_loss` supervises position changes between paired samples.

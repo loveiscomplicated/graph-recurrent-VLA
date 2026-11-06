@@ -1,6 +1,7 @@
 # 저장소 루트: python main.py --config graph/configs/train_gnn.yaml
 # 현재는 모델·device·logger 초기화만 수행합니다. 학습은 실행하지 않습니다.
-trainer: training.gnn_trainer:train
+trainer: training.gnn.trainer:train
+mode: initialize
 device: auto
 seed: 0
 

@@ -28,7 +28,8 @@ for BasicGNN, `--use-confidence` to enable the quality input, and `--device mps`
 or `cuda` on a supported host. This executes an **untrained** model and prints
 shapes, not accuracy or task success. It does not create an experiment or upload.
 
-The trainer command remains initialization-only:
+The gated training command is now implemented; configure data first as described
+in [GNN training](gnn_training.md):
 
 ```bash
 WANDB_MODE=disabled python main.py --config graph/configs/train_gated_mpnn.yaml
@@ -183,8 +184,8 @@ also excludes padding. Any downstream node-level objective or metric must select
 `graph.node_valid`; graph-level empty samples produce finite predictions from
 model priors, not observed geometry. No success claims follow from this behavior.
 Outputs remain model-specific: BasicGNN returns node tensors; gated returns
-Object21 geometry. A common training loop still needs task-specific objectives,
-data loading and checkpoint management.
+Object21 geometry. The [common trainer](gnn_training.md) now connects gated Object21 supervision;
+other prediction layouts supply their own tasks.
 
 ## Verification
 

@@ -2,14 +2,13 @@
 
 from copy import deepcopy
 import unittest
-from unittest.mock import patch
 
 import torch
 
 from graph.basic_gnn import BasicGNN
 from graph.gated_mpnn import VertexEdgeGatedMPNN
 from main import load_config
-from training.gnn_trainer import build_model, resolve_config, train
+from training.gnn.trainer import build_model, resolve_config, train
 
 
 class GNNTrainerTests(unittest.TestCase):
@@ -63,21 +62,6 @@ class GNNTrainerTests(unittest.TestCase):
                 config['model'].update(change)
                 with self.assertRaises(ValueError):
                     resolve_config(config)
-
-    def test_logger_records_selected_model_and_effective_config(self):
-        for name in ('basic_gnn', 'vertex_edge_gated_mpnn'):
-            with self.subTest(name=name):
-                path = ('graph/configs/train_gnn.yaml' if name == 'basic_gnn'
-                        else 'graph/configs/train_gated_mpnn.yaml')
-                config = load_config(path)
-                config['device'] = 'cpu'
-                with patch('training.gnn_trainer.ExperimentLogger') as logger:
-                    train(config)
-                self.assertEqual(logger.call_args.kwargs['model'], name)
-                self.assertEqual(logger.call_args.kwargs['config']['model']['name'], name)
-                record = logger.return_value.__enter__.return_value.record.call_args.kwargs
-                self.assertTrue(record['initialization_only'])
-                self.assertGreater(record['parameter_count'], 0)
 
 
 if __name__ == '__main__':

@@ -349,52 +349,10 @@ repeat seeds, expand expert coverage, examine phase errors and compounding
 rollout failure, and assess surface density/cross-edge sparsity on training or
 validation data before any further test comparison.
 
-## BasicGNN initialization skeleton
+## GNN training entrypoint
 
-The separate `training.gnn_trainer:train` entrypoint currently initializes only
-the model, device and common logger. From the repository root, install
-`requirements.txt` and run:
-
-```bash
-python main.py --config graph/configs/train_gnn.yaml
-```
-
-The config contains `device` (default `auto`), `seed` (default `0`) and a `model`
-mapping. Set `model.name` to `basic_gnn` (also the default for older configs) or
-`vertex_edge_gated_mpnn`. The selector is removed before passing settings to the
-selected constructor; unknown model names or settings are rejected.
-
-- `basic_gnn`: required positive integer `n_layers`, `in_dim`, `h_dim`, `out_dim`,
-  `edge_dim`; optional `dropout` defaults to `0.1`.
-- `vertex_edge_gated_mpnn`: required positive integer `num_semantic_ids`;
-  defaults are `hidden=128` (minimum 8), `layers=3`, `edge_embedding_dim=16`,
-  `dropout=0.0`, `coord_scale_m=0.05`, and
-  `size_scales_m=[0.04, 0.01, 0.01, 0.02]`, `use_semantic_ids=false`,
-  and `use_confidence=false`. Layers and embedding dimensions
-  must be positive integers, physical scales must be finite and positive,
-  and the size scale list must contain exactly four values.
-
-For both models, dropout must be finite and in `[0,1)`. To initialize the gated
-model, run `python main.py --config graph/configs/train_gated_mpnn.yaml` after
-installing `requirements.txt`. Example dimensions and semantic vocabulary sizes
-do not define a final task. Both models now accept the observed-corner
-[GraphBatch](graph_input.md); their prediction outputs remain model-specific.
-BasicGNN's graph adapter uses `in_dim=8`, `edge_dim=8`, while the explicit dense
-call retains caller-selected dimensions. Both models default `use_confidence`
-to false. This entrypoint still only initializes them.
-Torch's seed is set before model initialization. The device helper chooses CUDA,
-then MPS, then CPU for `auto`; an unavailable explicit device raises an error.
-
-The shared `ExperimentLogger` records the selected model name, effective config
-(including constructor defaults), seed, resolved
-device, parameter count and `initialization_only=true` in `experiments/<run_id>/`.
-The run uses `job_type="initialize"`; a finished run means initialization
-completed, not that training finished. No data, optimizer, loss metrics,
-checkpoints or artifact uploads are produced. Set `WANDB_MODE=disabled` for
-local-only logging. See [experiment tracking](experiment_tracking.md).
-
-The remaining TODOs in `training/gnn_trainer.py` are team-selected data preparation,
-objective, optimizer, train/validation loops and checkpoint registration. Keep
-dataset preparation/storage in `data_collection/`. BasicGNN currently applies
-ReLU to its final layer, so outputs are nonnegative; account for this when the
-team chooses its objective.
+The original initialization-only skeleton has been extended under
+`training/gnn/`. See [GNN training](gnn_training.md) for the gated MPNN training
+recipe, model/task/data factory contracts, resume, and verification limits.
+BasicGNN's example retains explicit initialization mode. It returns nonnegative
+node features and needs its own task/readout for training.
