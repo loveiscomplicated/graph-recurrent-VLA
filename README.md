@@ -144,5 +144,6 @@ and publishing are explicit commands; training only records a local manifest.
 
 To forward a tmux session and selected train/eval log files to Discord, run the
 standalone [Discord notifier](docs/discord_notifications.md) with
-`DISCORD_WEBHOOK_URL` in its environment. It batches output, respects rate-limit
+`DISCORD_WEBHOOK_URL` in the repository-root `.env` (with `python-dotenv` installed)
+or its environment. It batches output, respects rate-limit
 responses, and keeps local pane capture while delivery is unavailable.
