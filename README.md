@@ -31,6 +31,12 @@ Physics defaults to CPU in both commands. Disk output and the CPU visibility
 check explicitly materialize arrays on the host. Live observations can stay on
 CUDA until these boundaries. GPU execution has not been rechecked on this Mac.
 
+## Elapsed-time measurements
+
+For elapsed-time measurements of user-selected functions, callable modules, or
+code regions, use `utils.timer.Timer`. See [timing](docs/timing.md) for wrappers,
+decorators, per-name aggregates, and optional accelerator synchronization.
+
 ## Get started
 
 Use Python 3.11 from the repository root:
