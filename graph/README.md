@@ -32,6 +32,10 @@ approved episode shards and set `data.root` in the gated config. On the training
 python main.py --config graph/configs/train_gated_mpnn.yaml
 ```
 
+The gated recipe enables `training.compile.enabled: true` and dynamic-shape
+compilation on CUDA. CPU/MPS use eager execution. Set the flag to `false` to
+disable compilation. The first train/validation calls can spend time compiling.
+
 The common `training.gnn.trainer` handles optimization, validation, tracking and
 resume; task implementations own output-specific loss/metrics. Frame detection
 and graph caches are generated on first access when `data.use_cache` is true.

@@ -80,17 +80,25 @@ class EdgeGatedMPNNLayer(nn.Module):
 
         aggregated = aggregated / denom.clamp_min(1.0)
 
-        # Only nodes receiving supported messages enter the update network.
+        # Only nodes receiving supported messages keep candidate updates.
         receives_message = denom[:, 0] > 0
-        update_inputs = torch.cat(
-            (h[receives_message], aggregated[receives_message]), dim=-1,
-        )
-        updated = self.update(update_inputs)
-        result = h.clone()
-        result[receives_message] = self.norm(
-            h[receives_message] + self.dropout(updated)
-        )
-        return result
+        if self.training and self.dropout.p > 0:
+            # Keep the original dropout draw count/order for stochastic recipes.
+            update_inputs = torch.cat(
+                (h[receives_message], aggregated[receives_message]), dim=-1,
+            )
+            updated = self.update(update_inputs)
+            result = h.clone()
+            result[receives_message] = self.norm(
+                h[receives_message] + self.dropout(updated)
+            )
+            return result
+
+        # Dense candidates avoid data-dependent node counts; unsupported nodes
+        # retain their previous states rather than receiving an update.
+        update_inputs = torch.cat((h, aggregated), dim=-1)
+        updated = self.norm(h + self.update(update_inputs))
+        return torch.where(receives_message.unsqueeze(-1), updated, h)
 
 
 # -------------------------------------------
@@ -110,8 +118,7 @@ class ConfidenceAttentionPool(nn.Module):
         valid: Tensor,
     ) -> Tuple[Tensor, Tensor]:
 
-        attention = h.new_zeros(valid.shape)
-        attention[valid] = self.attention(h[valid]).squeeze(-1)
+        attention = self.attention(h).squeeze(-1)
         logits = attention + torch.log(confidence.clamp_min(1e-6))
         logits = logits.masked_fill(~valid, -torch.inf)
         # Empty object groups get a finite softmax input, then zero weight.
@@ -281,9 +288,10 @@ class VertexEdgeGatedMPNN(nn.Module):
         BOX and HOLE retain different embeddings and edge types. Their features
         share the target-side message layers and readout, whose output is the
         hole pose/radius. hole_observed reports actual HOLE nodes only.
-        """
-        batch.validate(self.num_semantic_ids)
 
+        Validate the graph before calling this method. The training data loader
+        validates during collation, avoiding repeated checks on the model device.
+        """
         xyz = batch.xyz_world
         b, n, _ = xyz.shape
 
@@ -331,12 +339,14 @@ class VertexEdgeGatedMPNN(nn.Module):
         # Unknown or disabled semantics do not contribute a learned identity.
         semantic_features = torch.zeros((b, n, 32), dtype=xyz.dtype, device=xyz.device)
         if self.use_semantic_ids:
-            semantic_features[batch.semantic_valid] = self.semantic_embed(
-                batch.semantic_id[batch.semantic_valid]
+            semantic_features = self.semantic_embed(batch.semantic_id.clamp_min(0))
+            semantic_features = torch.where(
+                batch.semantic_valid.unsqueeze(-1), semantic_features, 0,
             )
 
-        object_features = torch.zeros((b, n, 8), dtype=xyz.dtype, device=xyz.device)
-        object_features[node_is_present] = self.object_embed(batch.object_type[node_is_present])
+        # PAD/unknown IDs are -1. Use a safe embedding index, then mask its output.
+        object_features = self.object_embed(batch.object_type.clamp_min(0))
+        object_features = torch.where(node_is_present.unsqueeze(-1), object_features, 0)
 
         # Node encoding
         node_features = torch.cat(
@@ -350,8 +360,8 @@ class VertexEdgeGatedMPNN(nn.Module):
             dim=-1,
         )
 
-        h = torch.zeros((b, n, self.hidden), device=xyz.device, dtype=xyz.dtype)
-        h[node_is_present] = self.node_encoder(node_features[node_is_present])
+        h = self.node_encoder(node_features)
+        h = torch.where(node_is_present.unsqueeze(-1), h, 0)
         h = h.reshape(b * n, -1)
 
         h = h * (node_is_present.reshape(-1, 1).to(h.dtype))

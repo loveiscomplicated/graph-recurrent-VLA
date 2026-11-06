@@ -8,7 +8,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import torch
 
@@ -21,7 +21,10 @@ from training.gnn.data import (
     split_episodes,
 )
 from training.gnn.tasks import Object21Task, StepResult
-from training.gnn.trainer import build_model, resolve_config, run_epoch, train
+from training.gnn.trainer import (
+    build_model, check_gradient_finiteness, prepare_metric_tensors,
+    resolve_config, run_epoch, train,
+)
 
 
 def sample():
@@ -50,6 +53,58 @@ class NodeTask:
 
 
 class TrainingContracts(unittest.TestCase):
+    def test_tensor_and_python_metrics_keep_independent_weighted_means(self):
+        results = iter([
+            StepResult(torch.tensor(2.), {'loss': torch.tensor(2.), 'score': 10.},
+                       {'loss': 3, 'score': 1}),
+            StepResult(torch.tensor(8.), {'loss': 8., 'score': torch.tensor(4.)},
+                       {'loss': 1, 'score': 2}),
+        ])
+        task = SimpleNamespace(compute=lambda model, batch: next(results))
+        metrics = run_epoch(torch.nn.Linear(1, 1), [sample(), sample()], task,
+                            torch.device('cpu'))
+        self.assertEqual(metrics, {'loss': 3.5, 'score': 6.0})
+        self.assertTrue(all(type(value) is float for value in metrics.values()))
+
+    def test_metric_tensors_detach_and_reject_invalid_values(self):
+        value = torch.tensor(2., requires_grad=True)
+        result = StepResult(value, {'loss': value}, {'loss': 1})
+        metrics = prepare_metric_tensors(result, torch.device('cpu'))
+        self.assertFalse(metrics['loss'].requires_grad)
+        for invalid in (torch.tensor(float('nan')), float('inf'), torch.ones(2)):
+            with self.subTest(value=invalid), self.assertRaisesRegex(ValueError, 'metric'):
+                result = StepResult(torch.tensor(1.), {'loss': invalid}, {'loss': 1})
+                prepare_metric_tensors(result, torch.device('cpu'))
+
+    def test_nonfinite_gradients_cancel_step_with_and_without_clipping(self):
+        for clip_norm in (None, 1.0):
+            with self.subTest(clip_norm=clip_norm):
+                model = torch.nn.Linear(1, 1, bias=False)
+                model.weight.register_hook(lambda gradient: torch.full_like(gradient, float('nan')))
+                def compute(model, batch):
+                    loss = model.weight.square().sum()
+                    return StepResult(loss, {'loss': loss.detach()}, {'loss': 1})
+                optimizer = Mock()
+                with self.assertRaisesRegex((ValueError, RuntimeError), '[Nn]on.?finite'):
+                    run_epoch(model, [sample()], SimpleNamespace(compute=compute),
+                              torch.device('cpu'), optimizer, clip_norm)
+                optimizer.step.assert_not_called()
+
+    def test_clipping_reuses_its_finiteness_check(self):
+        for clip_norm in (None, 1.0):
+            with self.subTest(clip_norm=clip_norm):
+                model = torch.nn.Linear(1, 1, bias=False)
+                def compute(model, batch):
+                    loss = model.weight.square().sum()
+                    return StepResult(loss, {'loss': loss.detach()}, {'loss': 1})
+                optimizer = Mock()
+                with patch('training.gnn.trainer.check_gradient_finiteness',
+                           wraps=check_gradient_finiteness) as check:
+                    run_epoch(model, [sample()], SimpleNamespace(compute=compute),
+                              torch.device('cpu'), optimizer, clip_norm)
+                self.assertEqual(check.call_count, int(clip_norm is None))
+                optimizer.step.assert_called_once()
+
     def test_targets_keep_world_axes_and_use_local_positive_x_tip(self):
         root_half = 2**-0.5
         gt = {'ee_pose': [[1, 2, 3, 0, 1, 0, 0]],

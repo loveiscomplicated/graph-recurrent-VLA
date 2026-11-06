@@ -2,16 +2,71 @@
 
 from copy import deepcopy
 import unittest
+from unittest.mock import patch
 
 import torch
 
 from graph.basic_gnn import BasicGNN
 from graph.gated_mpnn import VertexEdgeGatedMPNN
 from main import load_config
-from training.gnn.trainer import build_model, resolve_config, train
+from training.gnn.trainer import build_model, configure_model_compilation, resolve_config, train
 
 
 class GNNTrainerTests(unittest.TestCase):
+    def test_compile_settings_default_off_and_gated_recipe_enables_them(self):
+        config = resolve_config(load_config('graph/configs/train_gated_mpnn.yaml'))
+        self.assertEqual(config['training']['compile'], {'enabled': True, 'dynamic': True})
+        del config['training']['compile']
+        effective = resolve_config(config)
+        self.assertEqual(effective['training']['compile'], {'enabled': False, 'dynamic': True})
+
+    def test_invalid_compile_settings_fail_before_data_execution(self):
+        for settings in (True, {'enabled': 'true'}, {'dynamic': None}, {'mode': 'reduce-overhead'}):
+            with self.subTest(settings=settings), self.assertRaisesRegex(ValueError, 'training.compile'):
+                config = load_config('graph/configs/train_gated_mpnn.yaml')
+                config['training']['compile'] = settings
+                resolve_config(config)
+
+    def test_compile_is_cuda_only_and_can_be_disabled(self):
+        model = torch.nn.Linear(2, 1)
+        for device_name, requested in (('cpu', True), ('mps', True), ('cuda', False), ('cuda', True)):
+            with self.subTest(device=device_name, requested=requested):
+                settings = {'enabled': requested, 'dynamic': True}
+                with patch.object(model, 'compile') as compile_model:
+                    metadata = configure_model_compilation(model, settings, torch.device(device_name))
+                expected = requested and device_name == 'cuda'
+                self.assertEqual(metadata['enabled'], expected)
+                if expected:
+                    compile_model.assert_called_once_with(dynamic=True, mode='default', fullgraph=False)
+                else:
+                    compile_model.assert_not_called()
+
+    def test_inplace_compile_preserves_checkpoint_keys_and_optimizer_references(self):
+        """Exercise real Dynamo capture on CPU; no CUDA/Inductor execution."""
+        model = torch.nn.Linear(3, 2)
+        expected = deepcopy(model)
+        optimizer = torch.optim.AdamW(model.parameters())
+        parameter_ids = [id(parameter) for group in optimizer.param_groups for parameter in group['params']]
+        compile_function = torch.compile
+
+        def compile_with_eager_backend(function, **settings):
+            return compile_function(function, backend='eager', **settings)
+
+        # The device selects the CUDA branch only; the trace and tensors use CPU.
+        with patch('torch.compile', side_effect=compile_with_eager_backend):
+            configure_model_compilation(model, {'enabled': True, 'dynamic': True}, torch.device('cuda'))
+        inputs = torch.randn(4, 3)
+        torch.testing.assert_close(model(inputs), expected(inputs))
+        model(inputs).square().mean().backward()
+        expected(inputs).square().mean().backward()
+        self.assertEqual(list(model.state_dict()), list(expected.state_dict()))
+        self.assertEqual([id(parameter) for parameter in model.parameters()], parameter_ids)
+        restored = torch.nn.Linear(3, 2)
+        restored.load_state_dict(model.state_dict(), strict=True)
+        torch.testing.assert_close(restored(inputs), expected(inputs))
+        for parameter, reference in zip(model.parameters(), expected.parameters()):
+            torch.testing.assert_close(parameter.grad, reference.grad)
+
     def test_example_configs_select_models(self):
         examples = (
             ('graph/configs/train_gnn.yaml', BasicGNN),

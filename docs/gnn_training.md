@@ -31,6 +31,33 @@ The loader constructs graphs on CPU and the batch moves to the selected GNN
 device. There is no local training or cache preparation command run automatically
 when importing modules, validating config or constructing a dataset.
 
+The gated recipe enables CUDA model compilation:
+
+```yaml
+training:
+  compile:
+    enabled: true
+    dynamic: true
+```
+
+Other configs default to `enabled: false`. Requested compilation runs only on
+CUDA; CPU/MPS keep eager execution. The trainer records the request and actual
+activation under `model_compilation` in the shared experiment metadata. It uses
+`model.compile(dynamic=True, mode="default", fullgraph=False)` after checkpoint
+restoration. This calls `torch.compile` in place, preserving parameter identities
+and plain checkpoint keys without an `_orig_mod.` prefix. Both training and
+validation use compiled calls; initial calls or new graph shapes can trigger
+compilation. Compiler failures propagate rather than silently changing execution.
+
+Gated node encoding, embeddings, attention scores and deterministic message
+updates now compute dense candidates and mask their results. Edge-type selection
+and empty-edge early returns are retained, including `None` gradients for absent
+edge groups. With nonzero dropout during training, message updates retain the
+selected-node path to preserve the original dropout draw count/order. Saved
+weights remain compatible; exact eager/compiled resume trajectories are not
+guaranteed, and compiler settings are recorded but are not locked by the existing
+resume signature.
+
 ## Modules
 
 | Module | Responsibility |
@@ -81,6 +108,11 @@ then describe the retained subset. If a split has no usable batches, training
 fails instead of reporting a fabricated loss. Padding is excluded from graph
 operations. Custom node-level tasks must also mask padding in their losses.
 
+Graph batches are validated during collation; the gated MPNN does not repeat
+validation in `forward()`. Direct callers and custom data factories must validate
+their graphs before model execution. When semantic IDs are enabled, pass the
+model's `num_semantic_ids` to `GraphBatch.validate` to check vocabulary bounds.
+
 ## Objective and extension contract
 
 Object21 uses TCP-relative positions with world-aligned axes, world wxyz
@@ -94,15 +126,26 @@ loss remains available but is not used in this recipe.
 ```python
 StepResult(
     loss=differentiable_scalar,
-    metrics={"loss": python_float, "another_metric": python_float},
+    metrics={"loss": detached_scalar_tensor, "another_metric": python_float},
     metric_weights={"loss": sample_count, "another_metric": its_denominator},
 )
 ```
 
 Metrics are means with explicit positive denominators, so uneven final batches
-are aggregated correctly. Object21 also records position-error norms in metres.
+are aggregated correctly. Scalar tensors and Python numbers are accepted;
+Object21 returns detached tensors. The loop accumulates weighted metrics on the
+model device and transfers the epoch means to CPU together for Python-number
+logging. CPU/CUDA accumulation uses float64; MPS uses float32. Loss and metric
+finiteness are checked together each batch, retaining one host decision before
+an optimizer step. Object21 also records position-error norms in metres.
 The loop handles backward/optimizer only in training and disables gradients in
 validation; it never accesses Object21-specific output keys.
+
+With gradient clipping enabled, `clip_grad_norm_(error_if_nonfinite=True)`
+checks gradient finiteness before the optimizer step. Without clipping, the
+loop reduces per-parameter finiteness flags on the device and checks the combined
+result once. These checks retain host synchronization; they do not make the
+entire training loop suitable for full-graph compilation.
 
 Another GNN can use the built-in model selector or `model.factory:
 package.module:Constructor`, with the remaining model mapping passed as keyword
@@ -160,6 +203,62 @@ same runtime and deterministic backend behavior; CUDA reproducibility has not
 been established here. Best validation loss is not simulator success rate.
 
 ## Verification limits
+
+### CUDA masking and compilation measurement
+
+On 2026-11-06, an isolated source snapshot was measured on Vast.ai instance
+58752018 (RTX 3090, PyTorch 2.14.1+cu132). The local config at capture used
+hidden 64, two layers, dropout 0, batch size 32 and AdamW. The active cache
+generator on instance 59288396 (PID 1545) was left running. Only 96 completed
+cache files were read from that instance; benchmark code and compiler caches
+were placed in a separate directory on the idle instance. Existing remote
+repositories and Python environments were not modified.
+
+The samples formed three batches with padded node counts 15/16/12 and edge
+counts 1664/1586/1374. Timings cover the copied local training loop with
+GPU-resident batches: model, loss, metrics, backward, gradient clipping and
+AdamW. Each case used five 30-step windows, repeated in reverse case order
+in a second process execution; the table averages both executions. Disk reads,
+preprocessing, transfers, checkpointing, logger/progress output and initial
+compilation are excluded. These are compute-loop measurements, not end-to-end
+epoch times or convergence results.
+
+| Benchmark-only model variant | Eager ms/step | Compiled ms/step |
+| --- | ---: | ---: |
+| Current masked selection | 28.59 | 27.07 |
+| Dense node encoding, pooling and updates; existing edge selection | 24.97 | 21.40 |
+| Dense nodes and all edges, with masked message weights | 21.65 | 19.51 |
+
+Compilation used `torch.compile(model, dynamic=True, fullgraph=False)` in default
+mode. The first pass over all three shapes, including compilation/backward,
+took about 8–14 seconds; variants shared a fresh, isolated compiler cache, so
+these are not independent cold-cache comparisons. Current-code execution means
+ranged from 27.14–30.04 ms eager and 25.88–28.26 ms compiled, so the small
+compile-only benefit overlaps execution variability. Dense nodes plus compilation
+reduced mean step time by about 25% (1.34x throughput) versus current eager code.
+The current compiled model recorded `aten.nonzero` graph breaks.
+
+All six cases matched reference outputs and gradient values within the recorded
+tolerances on these batches. CPU checks additionally covered empty, isolated,
+single-object and padded graphs. Dense nodes preserved gradient presence in
+these checks. The all-edge candidate changed some absent-edge parameter
+gradients from `None` to zero: AdamW can then update parameters it previously
+skipped. It is therefore an experimental speed comparison, not a replacement
+with equivalent optimizer behavior. Nonzero-dropout RNG equivalence and broader
+graph-shape coverage remain unverified by that benchmark. The measured dense-node
+candidate was subsequently adopted in the production model, with the original
+selected-node update retained for nonzero-dropout training. The all-edge
+candidate remains benchmark-only.
+
+Local evidence: [summary](../outputs/gnn_compile_benchmark/summary.json),
+[first execution](../outputs/gnn_compile_benchmark/initial_results/),
+[reverse-order execution](../outputs/gnn_compile_benchmark/results/), and
+[edge cases](../outputs/gnn_compile_benchmark/source/edge_cases.json).
+The ignored [source snapshot](../outputs/gnn_compile_benchmark/source/) contains
+sample identities/hashes, exact local loop functions, variant generation and
+benchmark scripts. From that directory on an idle CUDA host, rerun with
+`OMP_NUM_THREADS=1 TORCHINDUCTOR_COMPILE_THREADS=1 python benchmark.py --variant dense_nodes --compile`.
+The benchmark refuses to start if another CUDA compute process is present.
 
 Local verification deliberately does not run training or generate frame caches.
 Contract tests check targets, splits, collation, both model output contracts in

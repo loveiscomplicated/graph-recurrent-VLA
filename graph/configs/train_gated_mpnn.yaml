@@ -53,6 +53,9 @@ task:
     - 0.01
     - 0.02
 training:
+  compile:
+    enabled: true
+    dynamic: true
   epochs: 30
   batch_size: 32
   log_interval_seconds: 10.0

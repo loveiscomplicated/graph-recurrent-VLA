@@ -163,6 +163,42 @@ class GraphBuilderTests(unittest.TestCase):
 
 
 class GraphModelContractTests(unittest.TestCase):
+    def test_compiled_gated_calls_match_eager_across_padding_and_empty_graphs(self):
+        """Trace GraphBatch calls on CPU without running CUDA/Inductor."""
+        reference = VertexEdgeGatedMPNN(4, hidden=16, layers=1)
+        compiled = deepcopy(reference)
+        compiled.compile(backend='eager', dynamic=True)
+        builder = GraphBuilder()
+        for observation, padding in ((corners(), 4), (corners(), 9), (corners([], []), 1)):
+            with self.subTest(padding=padding):
+                graph = builder([observation], torch.zeros(1, 3), pad_to=padding)
+                reference.zero_grad(set_to_none=True)
+                compiled.zero_grad(set_to_none=True)
+                expected = reference(graph)
+                actual = compiled(graph)
+                for name in expected:
+                    torch.testing.assert_close(actual[name], expected[name])
+                expected['object21'].sum().backward()
+                actual['object21'].sum().backward()
+                for parameter, other in zip(compiled.parameters(), reference.parameters()):
+                    if other.grad is None:
+                        self.assertIsNone(parameter.grad)
+                    else:
+                        torch.testing.assert_close(parameter.grad, other.grad)
+
+    def test_absent_edge_groups_keep_none_gradients(self):
+        for object_type in (0, 1):
+            with self.subTest(object_type=object_type):
+                graph = GraphBuilder()(
+                    [corners([[0, 0, 0], [0.03, 0, 0]], [object_type, object_type])],
+                    torch.zeros(1, 3), pad_to=5,
+                )
+                model = VertexEdgeGatedMPNN(4, hidden=16, layers=1)
+                model(graph)['object21'].sum().backward()
+                inactive_layers = model.hole_layers if object_type == 0 else model.peg_layers
+                for layer in [*inactive_layers, model.cross_layer]:
+                    self.assertTrue(all(parameter.grad is None for parameter in layer.parameters()))
+
     def test_padding_batch_composition_and_permutation_preserve_predictions(self):
         result = corners(metadata=[{'supporting_planes': 2}] * 4)
         order = torch.tensor([2, 0, 3, 1])
@@ -253,7 +289,12 @@ class GraphModelContractTests(unittest.TestCase):
         graph = GraphBuilder()([result], torch.zeros(1, 3), pad_to=7)
         for value in asdict(graph).values():
             self.assertFalse(value.is_inference())
-        for model in models():
+        # Avoid random all-inactive ReLU outputs in the BasicGNN fixture, while
+        # preserving the caller's RNG state for the other contract tests.
+        with torch.random.fork_rng(devices=[]):
+            torch.manual_seed(0)
+            test_models = models()
+        for model in test_models:
             with self.subTest(model=type(model).__name__):
                 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
                 before = model.layers[0].update_layer.weight.detach().clone() if isinstance(model, BasicGNN) else model.peg_head[0].weight.detach().clone()

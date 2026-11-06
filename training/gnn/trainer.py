@@ -130,6 +130,26 @@ def import_callable(path):
     return factory
 
 
+def configure_model_compilation(model, settings, device):
+    """Compile CUDA model calls in place while preserving checkpoint key names."""
+    enabled = settings["enabled"] and device.type == "cuda"
+    if enabled:
+        model.compile(dynamic=settings["dynamic"], mode="default", fullgraph=False)
+        reason = "cuda"
+    elif settings["enabled"]:
+        reason = "non_cuda_device"
+    else:
+        reason = "disabled"
+    return {
+        "requested": settings["enabled"],
+        "enabled": enabled,
+        "dynamic": settings["dynamic"],
+        "mode": "default",
+        "fullgraph": False,
+        "reason": reason,
+    }
+
+
 def positive_integer(name, value, minimum=1):
     """Validate counts without accepting bool as an integer."""
     if type(value) is not int or value < minimum:
@@ -166,6 +186,16 @@ def resolve_training_settings(config):
     GraphSettings(**config["graph"])
     ConfidenceSettings(**config["confidence"])
     training = config["training"]
+    compilation = training.setdefault("compile", {})
+    if not isinstance(compilation, dict):
+        raise ValueError("training.compile must be a YAML mapping")
+    unknown_compile_settings = set(compilation) - {"enabled", "dynamic"}
+    if unknown_compile_settings:
+        raise ValueError(f"Unknown training.compile settings: {sorted(unknown_compile_settings)}")
+    for name, default in (("enabled", False), ("dynamic", True)):
+        compilation.setdefault(name, default)
+        if type(compilation[name]) is not bool:
+            raise ValueError(f"training.compile.{name} must be bool")
     validate_positive_scale("training.log_interval_seconds", training["log_interval_seconds"])
     for name in ("epochs", "batch_size"):
         positive_integer(f"training.{name}", training[name])
@@ -224,6 +254,44 @@ def seed_everything(seed, device):
         torch.mps.manual_seed(seed)
 
 
+def prepare_metric_tensors(result, device):
+    """Normalize scalar metrics and check loss/metric finiteness together."""
+    if "loss" not in result.metrics or result.metrics.keys() != result.metric_weights.keys():
+        raise ValueError("Task metrics need loss and matching metric_weights")
+    metrics = {}
+    # MPS does not support float64. Other devices retain Python-float precision
+    # for weighted epoch accumulation, including legacy tasks returning floats.
+    accumulation_dtype = torch.float32 if device.type == "mps" else torch.float64
+    for name, value in result.metrics.items():
+        positive_integer(f"metric_weights.{name}", result.metric_weights[name])
+        if isinstance(value, torch.Tensor):
+            if value.ndim != 0 or value.is_complex() or value.dtype == torch.bool:
+                raise ValueError(f"Task metric {name} must be a real numeric scalar")
+            value = value.detach().to(device=device, dtype=accumulation_dtype)
+        elif type(value) in (int, float):
+            value = torch.tensor(value, device=device, dtype=accumulation_dtype)
+        else:
+            raise ValueError(f"Task metric {name} must be a scalar Tensor or Python number")
+        metrics[name] = value
+    # One host decision preserves failure before an optimizer step without
+    # converting every metric separately to a Python scalar.
+    checked_values = torch.stack([result.loss.detach(), *metrics.values()])
+    if not torch.isfinite(checked_values).all():
+        raise ValueError("Task returned a nonfinite loss or metric")
+    return metrics
+
+
+def check_gradient_finiteness(model):
+    """Check all existing gradients with a single host decision."""
+    checks = [
+        torch.isfinite(parameter.grad).all()
+        for parameter in model.parameters()
+        if parameter.grad is not None
+    ]
+    if checks and not torch.stack(checks).all():
+        raise ValueError("Nonfinite model gradients; optimizer step cancelled")
+
+
 def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=None,
               progress=None):
     """Execute one epoch and aggregate each metric by its explicit denominator."""
@@ -243,15 +311,9 @@ def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=No
             result = task.compute(model, batch)
             if not isinstance(result, StepResult) or result.loss.ndim != 0:
                 raise ValueError("Task must return StepResult with a scalar loss Tensor")
-            if not torch.isfinite(result.loss):
-                raise ValueError("Task returned a nonfinite loss")
-            if "loss" not in result.metrics or result.metrics.keys() != result.metric_weights.keys():
-                raise ValueError("Task metrics need loss and matching metric_weights")
-            for name, value in result.metrics.items():
+            metrics = prepare_metric_tensors(result, device)
+            for name, value in metrics.items():
                 weight = result.metric_weights[name]
-                if type(value) not in (int, float) or not math.isfinite(value):
-                    raise ValueError(f"Task metric {name} must be a finite Python scalar")
-                positive_integer(f"metric_weights.{name}", weight)
                 totals[name] = totals.get(name, 0.0) + value * weight
                 denominators[name] = denominators.get(name, 0) + weight
             if is_training:
@@ -259,16 +321,17 @@ def run_epoch(model, loader, task, device, optimizer=None, gradient_clip_norm=No
                 if gradient_clip_norm is not None:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), gradient_clip_norm,
                                                    error_if_nonfinite=True)
-                if any(parameter.grad is not None and not torch.isfinite(parameter.grad).all()
-                       for parameter in model.parameters()):
-                    raise ValueError("Nonfinite model gradients; optimizer step cancelled")
+                else:
+                    check_gradient_finiteness(model)
                 optimizer.step()
             batch_count += 1
             if progress is not None:
                 progress.batch_completed()
     if not batch_count:
         raise ValueError("Cannot run an epoch with an empty DataLoader")
-    return {name: total / denominators[name] for name, total in totals.items()}
+    metric_names = list(totals)
+    means = torch.stack([totals[name] / denominators[name] for name in metric_names])
+    return dict(zip(metric_names, means.cpu().tolist()))
 
 
 def atomic_torch_save(path, payload):
@@ -334,6 +397,10 @@ def train(config: dict):
             start_epoch = payload["epoch"]
             best_loss, best_state = payload["best_loss"], payload["best_model"]
             experiment.record(resume_checkpoint=str(source), resume_epoch=start_epoch)
+        # Compile after restoring weights and RNG. Module.compile keeps the
+        # original module/parameters, so optimizer and state_dict keys stay valid.
+        compilation = configure_model_compilation(model, effective["training"]["compile"], device)
+        experiment.record(model_compilation=compilation)
         experiment.record(parameter_count=sum(p.numel() for p in model.parameters()),
                           initialization_only=False)
         history = []

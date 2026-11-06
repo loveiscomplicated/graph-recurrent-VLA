@@ -15,7 +15,7 @@ class StepResult:
     """A differentiable scalar loss and scalar means with explicit denominators."""
 
     loss: Tensor
-    metrics: dict[str, float]
+    metrics: dict[str, Tensor | float | int]
     metric_weights: dict[str, int]
 
 
@@ -51,12 +51,12 @@ class Object21Task:
             raise ValueError("Object21Task requires dict outputs object21 and endpoint_residual")
         terms = object21_loss(output, batch.targets["object21"], **self.loss_settings)
         count = len(batch.sample_ids)
-        metrics = {name: float(value.detach()) for name, value in terms.items()}
+        metrics = {name: value.detach() for name, value in terms.items()}
         metrics["loss"] = metrics.pop("total")
         # Error units are metres, independent of normalized loss scales.
         for name, start in (("peg_position_error_m", 0), ("endpoint_error_m", 7),
                             ("hole_position_error_m", 10)):
             error = output["object21"][:, start:start+3] - batch.targets["object21"][:, start:start+3]
-            metrics[name] = float(torch.linalg.vector_norm(error.detach(), dim=-1).mean())
-        metrics["empty_input_fraction"] = float((~batch.graph.node_valid.any(dim=1)).float().mean())
+            metrics[name] = torch.linalg.vector_norm(error.detach(), dim=-1).mean()
+        metrics["empty_input_fraction"] = (~batch.graph.node_valid.any(dim=1)).float().mean()
         return StepResult(terms["total"], metrics, {name: count for name in metrics})
