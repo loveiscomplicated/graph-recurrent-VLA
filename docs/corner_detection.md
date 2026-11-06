@@ -82,6 +82,15 @@ Tensor fields remain on the requested device. `detect`/`as_dict` explicitly
 export them to CPU. Historical candidate method labels are retained in metadata
 for exact result comparisons; they are not module names or new experiment IDs.
 
+## Graph consumer
+
+The Graph team's [graph input](graph_input.md) guide describes conversion of
+`TensorResult` to `graph.build_graph.GraphBatch`, including unknown semantic IDs,
+quality scoring, explicit PEG/BOX/HOLE labels, edges and padding. These transforms
+live in `graph/build_graph/`; the detector does not construct graphs. Build outside
+`torch.inference_mode()` before GNN training so inference tensors are cloned into
+ordinary training inputs. Detector IDs remain `0=peg`, `1=box`.
+
 ## Backends
 
 `device="auto"` selects CUDA, then MPS, then Torch CPU. An explicitly requested

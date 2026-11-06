@@ -369,15 +369,19 @@ selected constructor; unknown model names or settings are rejected.
 - `vertex_edge_gated_mpnn`: required positive integer `num_semantic_ids`;
   defaults are `hidden=128` (minimum 8), `layers=3`, `edge_embedding_dim=16`,
   `dropout=0.0`, `coord_scale_m=0.05`, and
-  `size_scales_m=[0.04, 0.01, 0.01, 0.02]`. Layers and embedding dimensions
+  `size_scales_m=[0.04, 0.01, 0.01, 0.02]`, `use_semantic_ids=false`,
+  and `use_confidence=false`. Layers and embedding dimensions
   must be positive integers, physical scales must be finite and positive,
   and the size scale list must contain exactly four values.
 
 For both models, dropout must be finite and in `[0,1)`. To initialize the gated
 model, run `python main.py --config graph/configs/train_gated_mpnn.yaml` after
 installing `requirements.txt`. Example dimensions and semantic vocabulary sizes
-do not define final features, graph construction or a task. The two models retain
-their own forward inputs and outputs; this entrypoint only initializes them.
+do not define a final task. Both models now accept the observed-corner
+[GraphBatch](graph_input.md); their prediction outputs remain model-specific.
+BasicGNN's graph adapter uses `in_dim=8`, `edge_dim=8`, while the explicit dense
+call retains caller-selected dimensions. Both models default `use_confidence`
+to false. This entrypoint still only initializes them.
 Torch's seed is set before model initialization. The device helper chooses CUDA,
 then MPS, then CPU for `auto`; an unavailable explicit device raises an error.
 

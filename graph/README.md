@@ -1,5 +1,21 @@
 # Graph team
 
+## Observed corners to GNN input
+
+Install `requirements.txt` and `visual/corner_detection/requirements.txt` in a
+Python 3.11 environment. From the repository root:
+
+```bash
+python examples/build_corner_graph.py --input /path/to/frame.npz \
+  --tcp-xyz 0.0 0.0 0.2 --model gated --device cpu
+```
+
+Supply the actual observed TCP world position (metres). This is an untrained
+forward smoke check. `graph/build_graph/` converts Visual `TensorResult` into a
+shared `GraphBatch` consumed by both GNNs, preserving PEG/BOX/HOLE distinctions,
+unknown semantics/quality and padding masks. See [graph input](../docs/graph_input.md)
+for the contract, confidence policy, edge settings and runnable Python example.
+
 ## GNN initialization skeleton
 
 From the repository root, with Python 3.11 and `requirements.txt` installed:

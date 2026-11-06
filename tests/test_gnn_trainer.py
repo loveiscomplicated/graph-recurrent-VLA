@@ -53,6 +53,8 @@ class GNNTrainerTests(unittest.TestCase):
             {'size_scales_m': [0.1]},
             {'size_scales_m': [0.1, 0.1, 0.1, -1]},
             {'dropout': 1.0},
+            {'use_confidence': 'true'},
+            {'use_semantic_ids': 1},
             {'in_dim': 3},
         )
         for change in changes:

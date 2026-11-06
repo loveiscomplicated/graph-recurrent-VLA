@@ -41,7 +41,7 @@ def resolve_config(config: dict) -> dict:
     model_name = model_config.setdefault("name", "basic_gnn")
     if model_name == "basic_gnn":
         minimums = dict(n_layers=1, in_dim=1, h_dim=1, out_dim=1, edge_dim=1)
-        defaults = dict(dropout=0.1)
+        defaults = dict(dropout=0.1, use_confidence=False)
     elif model_name == "vertex_edge_gated_mpnn":
         minimums = dict(num_semantic_ids=1, hidden=8, layers=1, edge_embedding_dim=1)
         defaults = dict(
@@ -49,6 +49,8 @@ def resolve_config(config: dict) -> dict:
             layers=3,
             edge_embedding_dim=16,
             dropout=0.0,
+            use_semantic_ids=False,
+            use_confidence=False,
             coord_scale_m=0.05,
             size_scales_m=[0.04, 0.01, 0.01, 0.02],
         )
@@ -69,6 +71,10 @@ def resolve_config(config: dict) -> dict:
     if (type(dropout) not in (int, float) or not math.isfinite(dropout)
             or not 0 <= dropout < 1):
         raise ValueError("model.dropout must be a finite number in [0, 1)")
+
+    for name in ("use_semantic_ids", "use_confidence"):
+        if name in model_config and type(model_config[name]) is not bool:
+            raise ValueError(f"model.{name} must be bool")
 
     if model_name == "vertex_edge_gated_mpnn":
         validate_positive_scale("model.coord_scale_m", model_config["coord_scale_m"])

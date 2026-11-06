@@ -9,8 +9,11 @@ seed: 0
 model:
   name: basic_gnn
   n_layers: 2
-  in_dim: 3
+  # GraphBatch adapter: relative xyz + type one-hot + quality and validity.
+  in_dim: 8
   h_dim: 64
   out_dim: 16
-  edge_dim: 3
+  # Relative xyz + distance + edge type one-hot.
+  edge_dim: 8
+  use_confidence: false
   dropout: 0.1

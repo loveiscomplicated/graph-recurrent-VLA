@@ -1,11 +1,13 @@
 """Regression checks for quaternion safety and model input validation."""
 
 import unittest
+from types import SimpleNamespace
+
+from graph.build_graph import GraphBuilder
 
 import torch
 
 from graph.gated_mpnn import (
-    VertexBatch,
     VertexEdgeGatedMPNN,
     normalize_quat_wxyz,
 )
@@ -42,15 +44,13 @@ class QuaternionNormalizationTests(unittest.TestCase):
 class ModelValidationTests(unittest.TestCase):
     def setUp(self):
         self.model = VertexEdgeGatedMPNN(2, hidden=16, layers=1)
-        self.batch = VertexBatch(
-            vertex_xyz_world=torch.zeros(1, 2, 3),
-            tcp_xyz_world=torch.zeros(1, 3),
-            semantic_id=torch.tensor([[0, 1]]),
-            object_id=torch.tensor([[0, 1]]),
-            visible=torch.ones(1, 2, dtype=torch.bool),
-            confidence=torch.ones(1, 2),
-            edge_index=torch.tensor([[0, 1], [1, 0]]),
-            edge_type=torch.tensor([2, 2]),
+        result = SimpleNamespace(
+            xyz=torch.zeros(2, 3),
+            object_id=torch.tensor([0, 1]),
+            metadata=[{}, {}],
+        )
+        self.batch = GraphBuilder()(
+            [result], torch.zeros(1, 3), semantic_ids=[torch.tensor([0, 1])],
         )
 
     def test_valid_batch_runs_without_explicit_validation(self):
