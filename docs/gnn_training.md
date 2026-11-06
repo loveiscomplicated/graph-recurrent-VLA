@@ -115,6 +115,67 @@ The old `training.gnn_trainer` and `training.gnn_loss` modules moved to the path
 above. Update external imports accordingly. The common entrypoint remains
 `python main.py --config ...`, with `trainer: training.gnn.trainer:train`.
 
+## Frozen GNN temporal-memory evaluation
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_temporal_memory.yaml
+```
+
+`evaluation/gnn/temporal_memory.py` loads the exact model/data configuration from
+a cache-only `best.pt`, checks the cache dataset identity, freezes the model and
+evaluates all saved validation frames. Only checkpoint/cache locations, inference
+batch size and evaluation settings are overridden. No optimizer, detector, cache
+generation, checkpoint overwrite or reserved test access occurs. Local CPU tests
+use synthetic inputs; real inference is intended for the training host.
+
+`graph/utils/hole_memory.py` keeps a separate causal memory per episode, replayed
+by numeric frame index. Its input gate uses observed BOX/HOLE node count and saved
+corner-confidence metadata, never GT rim identities, visibility labels or errors.
+Node count does not establish that four aperture corners were detected. Unknown
+confidence is rejected by the primary policy. The shipped policies are fixed
+before this comparison, rather than selected by a validation threshold sweep:
+
+- `count_only`: update with at least five observed target-side nodes.
+- `quality_gated`: require at least five target-side nodes, confidence on all
+  of them, mean confidence at least 0.82, and three consecutive qualifying frames.
+  Each candidate world position must be within 10 mm of their coordinate-wise
+  median; save that median when the window passes.
+
+Consecutive windows clear on rejected quality or missing frame indices. Stored
+positions persist without an expiry because this baseline assumes a stationary
+hole and a consistent world frame. An accepted, stable later observation replaces
+the stored value, including after occlusion. This can still store a stable wrong
+prediction; the heuristic confidence is not a calibrated accuracy probability.
+
+The memory stores `predicted_hole_relative + tcp_world`, then returns
+`stored_hole_world - current_tcp_world`. Before initialization it returns the
+current GNN prediction and marks memory unavailable. Outputs include initialized,
+updated, held, quality-accepted and age-in-frames flags. Episode boundaries reset
+all state. Changing the position also corrects the endpoint vector by the opposite
+amount, preserving the model's estimated peg tip. Hole rotations/radius and all
+peg outputs remain current-frame GNN outputs. The exported arrays can be consumed
+by a later recurrent workflow; this evaluation does not modify or run a GRU.
+
+`outputs/temporal_memory/<run_id>/` records effective config, checkpoint/source
+hashes, per-frame predictions/flags, summary and reacquisition events through
+`ExperimentLogger`. GT and optional earlier depth-visibility labels are read for
+scoring after replay, not for memory decisions. The evaluator checks stationary
+GT position within `stationary_tolerance_m`; it fails if that assumption does not
+hold. Diagnostic occlusion labels align by sample ID and describe approximate
+7x7 depth support, not actor-segmentation visibility GT.
+
+Metrics include overall and low-observation errors, optional strong-occlusion
+errors, endpoint error, equal-episode means, initial memory error/delay, held and
+cold-start errors, and wrong-initialization recovery/censoring. `bad_error_mm`
+(10 mm by default) is a reporting threshold only. Reacquisition starts when the
+observation gate changes from rejected to accepted after memory initialization.
+Update latency is measured within that continuous accepted run; short/unstable
+runs without updates are reported separately. Before/after error comparisons
+refer to those reacquisition events, not independent random frames. All results
+are descriptive validation evidence, not an independent test or insertion-success
+estimate. Run contracts with
+`python -m unittest tests.test_hole_memory tests.test_gnn_temporal_memory -v`.
+
 ## Data, splits and cache
 
 Only manifest-listed episodes with valid receipts are read. Partial/rejected

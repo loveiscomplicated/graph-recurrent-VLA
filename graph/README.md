@@ -1,5 +1,20 @@
 # Graph team
 
+## Frozen GNN temporal-memory evaluation
+
+With Torch, NumPy and PyYAML installed, an extracted graph cache and its trained
+`best.pt`, run from the repository root:
+
+```bash
+python main.py --config graph/configs/evaluate_temporal_memory.yaml
+```
+
+Set the checkpoint/cache paths in the YAML. Set `evaluation.visibility_labels`
+to `null` if the optional earlier depth-visibility diagnostics are unavailable.
+This evaluates the saved validation split without training or generating caches.
+See [temporal memory](../docs/gnn_training.md#frozen-gnn-temporal-memory-evaluation)
+for observation gates, causal state, metrics and limits.
+
 ## Simulator GT points
 
 `graph.utils.gt_nodes.get_gt_node_positions(env)` returns TCP-relative gripper,

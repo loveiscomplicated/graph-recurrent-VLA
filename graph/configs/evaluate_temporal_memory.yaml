@@ -1,0 +1,27 @@
+trainer: evaluation.gnn.temporal_memory:evaluate
+device: auto
+checkpoint: outputs/gnn_training/4186cdeb0fdb449ea443f28e3bddc936/best.pt
+data:
+  cache_dir: /workspace/gnn_cache
+evaluation:
+  split: validation
+  batch_size: 64
+  # Diagnostic labels are read only after causal memory predictions are fixed.
+  visibility_labels: outputs/hole_diagnostics/1f5a906d0b3b436a9001f5fd528c11f6/depth_visibility.npz
+  bad_error_mm: 10.0
+  stationary_tolerance_m: 0.0001
+memory:
+  count_only:
+    min_target_nodes: 5
+    min_mean_confidence: 0.0
+    min_confidence_fraction: 0.0
+    consecutive_frames: 1
+    max_spread_m: 0.01
+  quality_gated:
+    min_target_nodes: 5
+    min_mean_confidence: 0.82
+    min_confidence_fraction: 1.0
+    consecutive_frames: 3
+    max_spread_m: 0.01
+output:
+  root: outputs/temporal_memory
