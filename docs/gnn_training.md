@@ -176,6 +176,52 @@ are descriptive validation evidence, not an independent test or insertion-succes
 estimate. Run contracts with
 `python -m unittest tests.test_hole_memory tests.test_gnn_temporal_memory -v`.
 
+### Measured validation comparison
+
+On 2026-11-06 KST, Vast.ai instance 59373350 executed CUDA eager inference with
+the unchanged source `best.pt` from training run
+`4186cdeb0fdb449ea443f28e3bddc936`. Evaluation run
+`d5b9bc38666a4d37ab166be778567a64` used 18,751 validation frames from 180 episodes.
+The repository base was `3b13a6b`; evaluation/memory additions were uncommitted,
+with source hashes recorded in `provenance.json`. No training, detector execution,
+cache creation or test evaluation ran. Maximum reconstructed GT hole drift
+within an episode was 6.46e-8 m. Gate settings above were fixed before execution.
+
+| Hole position metric, mm | Current GNN | Count-only memory | Quality-gated memory |
+| --- | ---: | ---: | ---: |
+| All-frame mean | 26.59 | 7.35 | 8.19 |
+| Strong-occlusion-proxy mean, 11,127 frames | 37.36 | 7.68 | 9.19 |
+| Fewer than three target nodes, 10,035 frames | 41.37 | 7.51 | 9.73 |
+| All-frame 90th percentile | 70.42 | 14.16 | 14.17 |
+
+Quality gating improved 163/180 episode means, but initialized only 166 episodes
+versus count-only's 179. Its 1,965 cold-start frames averaged 28.63 mm, while its
+13,699 held frames averaged 5.85 mm. Thus stricter gates improved stored/held
+estimates but reduced coverage; the primary quality gate did not outperform the
+simpler policy on total mean error. Initial stored error averaged 4.57 mm, with
+5/166 initializations above the diagnostic 10-mm threshold. All five later had a
+qualifying update within 10 mm (mean 10 frames to recovery).
+
+After initialized memory saw rejected then accepted quality, the quality policy
+had 199 reacquisition events: 107 updated in that accepted run (mean latency
+2.14 frames), and 92 did not. Of 14 updated events with prior error above 10 mm,
+11 ended within 10 mm. Across all updates, the postprocessing audit found 55
+overwrites from <=10-mm memory to >10-mm memory and a longest uninterrupted wrong
+hold of 105 frames. Stable observations and heuristic confidence do not guarantee
+accurate predictions. In the paired 107 updated reacquisitions, mean error went
+from 6.55 to 7.73 mm, so reacquisition did not improve an already good memory on
+average. This motivates initialization coverage and overwrite safeguards before
+adding a learned recurrent component; these results do not establish insertion
+success or independent-test generalization.
+
+Ignored raw artifacts, available on the evaluation host and the local checkout:
+[summary](../outputs/temporal_memory/d5b9bc38666a4d37ab166be778567a64/summary.json),
+[update audit](../outputs/temporal_memory/d5b9bc38666a4d37ab166be778567a64/memory_update_audit.json),
+[comparison plot](../outputs/temporal_memory/d5b9bc38666a4d37ab166be778567a64/temporal_memory_comparison.png).
+Local verification passed 55 contracts across memory, cache replay and shared
+experiment infrastructure; only synthetic data was used locally. CUDA inference
+ran on the server, not on the local Mac. No simulator backend was executed.
+
 ## Data, splits and cache
 
 Only manifest-listed episodes with valid receipts are read. Partial/rejected
