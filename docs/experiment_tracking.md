@@ -26,6 +26,10 @@
 | `graph.prototype.v3.compare` | candidate/baseline checkpoint + CLI | paired comparison JSON | 비교 평가 run |
 | `graph.prototype.v4.evaluate` | checkpoint config + CLI | offline/cache latency/rollout JSON | 평가 summary |
 | `graph.subtasks.reach_bc.evaluate` | 고정 paired manifest + CLI | held_out/fresh/latency JSON, 영상 | 평가 summary, episode별 partial summary |
+| `training.gnn.temporal.hole_gru:train` | `graph/configs/temporal/hole_gru/train.yaml`, root `main.py` | GRU-only best.pt, effective config, history | epoch train/validation, frozen/source/data identity |
+| `evaluation.gnn.temporal.hole_gru:evaluate` | `graph/configs/temporal/hole_gru/evaluate.yaml`, root `main.py` | paired summary, predictions, events, PNG traces | GNN/rule/GRU error, parameter/latency/device-memory metadata |
+| `training.gnn.temporal.pose_gru:train` | `graph/configs/temporal/pose_gru/train_*.yaml` / `graph/configs/temporal/precision/train_*.yaml`, root `main.py` | mode-specific best.pt, train-only normalization, config, pose/geometry history | frozen/data/parent/feature identity, effective loss weights, validation geometry/motion selection |
+| `evaluation.gnn.temporal.pose_gru:evaluate` | `graph/configs/temporal/pose_gru/evaluate.yaml`, root `main.py` | paired pose/episode/motion/occlusion metrics, predictions, traces | configured baseline/mode comparison, streaming checks, parameter/latency/memory |
 
 학습은 train split의 gradient update와 validation checkpoint 선택을 유지한다.
 평가는 기존 test split 및 선택된 checkpoint를 사용하고 optimizer를 실행하지 않는다.

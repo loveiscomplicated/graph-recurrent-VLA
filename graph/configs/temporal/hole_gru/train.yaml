@@ -1,0 +1,21 @@
+trainer: training.gnn.temporal.hole_gru:train
+device: cpu
+seed: 0
+checkpoint: outputs/gnn_training/4186cdeb0fdb449ea443f28e3bddc936/best.pt
+split_manifest: /workspace/gnn_cache/metadata/temporal_gate_splits.json
+data:
+  cache_dir: /workspace/gnn_cache
+gru:
+  hidden: 64
+  layers: 1
+  position_scale_m: 0.1
+training:
+  epochs: 20
+  lr: 0.001
+  loss: huber
+  huber_delta_m: 0.01
+  gradient_clip_norm: 1.0
+evaluation:
+  batch_size: 64
+output:
+  root: outputs/temporal_gru

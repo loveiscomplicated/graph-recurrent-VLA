@@ -10,9 +10,10 @@ from torch.nn import functional as F
 from data_collection.episode_dataset import file_sha256
 from data_collection.storage import write_json
 from data_collection.temporal_gate_data import selected_loaders
-from evaluation.gnn.temporal_memory import sample_order
-from graph.temporal_gate import LearnedTemporalGate, QUALITY_NAMES, observation_features, rollout
-from training.gnn.trainer import build_model, resolve_config, seed_everything
+from data_collection.temporal.frozen_episodes import infer_observations, episode_tensors
+from graph.temporal_gate import LearnedTemporalGate, QUALITY_NAMES, rollout
+from training.gnn.temporal.frozen_source import load_frozen_source
+from training.gnn.trainer import seed_everything
 from utils.device_set import set_device
 from utils.experiment_logger import ExperimentLogger
 
@@ -59,72 +60,6 @@ def resolve_gate_config(config):
     return effective
 
 
-def load_frozen_source(effective, device):
-    """Load exact best.pt architecture/state head and disable all parameter gradients."""
-    checkpoint = torch.load(effective['checkpoint'], map_location='cpu', weights_only=True)
-    if checkpoint.get('kind') != 'best_weights':
-        raise ValueError('checkpoint must be the original best_weights best.pt')
-    source = resolve_config(checkpoint['config'])
-    if source['model']['name'] != 'vertex_edge_gated_mpnn':
-        raise ValueError('Expected the existing vertex_edge_gated_mpnn checkpoint')
-    if source['data']['factory'] != 'training.gnn.cached_data:build_data':
-        raise ValueError('Expected a published cache-only GNN checkpoint')
-    if source['data']['empty_inputs'] != 'keep':
-        raise ValueError('Temporal gate requires empty_inputs=keep')
-    source['data']['cache_dir'] = effective['data']['cache_dir']
-    source['training']['batch_size'] = effective['evaluation']['batch_size']
-    model = build_model(source['model'], device)
-    model.load_state_dict(checkpoint['model'], strict=True)
-    model.eval().requires_grad_(False)
-    return model, source, checkpoint['dataset_sha256']
-
-
-def infer_observations(model, loader, device):
-    """Capture frozen outputs/observations; keep labels separate from rollout inputs."""
-    arrays = {name: [] for name in ('prediction', 'target', 'tcp_world', 'features', 'quality')}
-    identifiers = []
-    with torch.no_grad():
-        for batch in loader:
-            graph = batch.graph
-            features = observation_features(graph)
-            box_count, hole_count = features[:, 0], features[:, 8]
-            known = (box_count * features[:, 3] + hole_count * features[:, 11])
-            confidence_sum = (box_count * features[:, 3] * features[:, 5]
-                              + hole_count * features[:, 11] * features[:, 13])
-            count = box_count + hole_count
-            quality = torch.stack((count, confidence_sum / known.clamp_min(1),
-                                   known / count.clamp_min(1)), dim=1)
-            values = (model(graph.to(device))['object21'].cpu(), batch.targets['object21'],
-                      graph.tcp_xyz_world, features, quality)
-            identifiers.extend(batch.sample_ids)
-            for name, value in zip(arrays, values):
-                arrays[name].append(value.numpy())
-    if not identifiers or len(set(identifiers)) != len(identifiers):
-        raise ValueError('Selected frames must be nonempty and unique')
-    order = sorted(range(len(identifiers)), key=lambda i: sample_order(identifiers[i]))
-    data = {name: np.concatenate(values)[order] for name, values in arrays.items()}
-    if not all(np.isfinite(value).all() for value in data.values()):
-        raise ValueError('Nonfinite frozen predictions, observations or targets')
-    data['sample_ids'] = np.asarray(identifiers)[order]
-    data['episode'] = np.asarray([sample_order(value)[0] for value in data['sample_ids']])
-    data['frame'] = np.asarray([sample_order(value)[1] for value in data['sample_ids']])
-    for episode in np.unique(data['episode']):
-        frames = data['frame'][data['episode'] == episode]
-        if np.any(np.diff(frames) != 1):
-            raise ValueError(f'Temporal episodes require contiguous cached frames: {episode}')
-    return data
-
-
-def episode_tensors(data, episode, device):
-    """Transfer one complete episode; labels remain outside the gate input tuple."""
-    mask = data['episode'] == episode
-    inputs = tuple(torch.as_tensor(data[name][mask], device=device, dtype=torch.float32)
-                   for name in ('prediction', 'tcp_world', 'features'))
-    target_world = torch.as_tensor(data['target'][mask, 10:13] + data['tcp_world'][mask],
-                                   device=device, dtype=torch.float32)
-    return inputs, target_world
-
-
 def run_gate_epoch(gate, data, device, settings, optimizer=None, generator=None):
     """Full-episode autoregressive BPTT; shuffle episodes only, never their frames."""
     gate.train(optimizer is not None)
@@ -167,6 +102,8 @@ def prepare(effective, device, requested):
     effective['feature_names'] = list(QUALITY_NAMES)
     repository = Path(__file__).resolve().parents[2]
     source_files = ('graph/temporal_gate.py', 'graph/gated_mpnn.py', 'graph/utils/hole_memory.py',
+                    'graph/temporal/observations.py', 'data_collection/temporal/frozen_episodes.py',
+                    'training/gnn/temporal/frozen_source.py',
                     'training/gnn/temporal_gate.py', 'evaluation/gnn/temporal_gate.py',
                     'data_collection/temporal_gate_data.py')
     effective['source_sha256'] = {name: file_sha256(repository / name) for name in source_files}

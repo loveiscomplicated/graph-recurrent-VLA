@@ -165,3 +165,35 @@ the GNN train split and reserves original GNN validation for final comparison.
 It neither collects new simulator data nor modifies cached frames. See
 [learned temporal gate](gnn_training.md#learned-temporal-update-gate) for source
 parent mapping requirements and the manifest-generation command.
+
+`data_collection/temporal/frozen_episodes.py` shares frozen-frame inference with the
+learned gate and GRU estimator. It sorts predictions, targets, observed TCP and
+quality by one sample-ID permutation. `FrozenEpisodeDataset` requires complete
+zero-based, contiguous episodes and validates row shapes and frame/episode IDs.
+Graph/GT pairing is checked against the existing cache identity and byte checksum
+before sequence construction. Inputs contain only current GNN outputs and actual
+observation metadata; labels are returned separately as Hole world XYZ. GRU uses
+the same explicit parent manifest and never reads original GNN test frames.
+See [GRU estimator](temporal_estimation.md#gru-temporal-object-state-estimator).
+
+`TemporalPoseDataset` in `data_collection/temporal/pose_sequences.py` extends this path
+for Peg/Hole poses. It reuses sample ordering, checksum and parent-split checks,
+adds valid PEG/BOX/HOLE quality and causal TCP translation changes, and returns
+world-frame Object21 labels separately. Padding is structural and masked; input
+normalization is fitted on train observations only. Optional `data.raw_root`
+reads only `observation/extra/tcp_pose` and `observation/agent/qpos` from matching
+raw frames, verifies every frame against the cache's source SHA256 and checks TCP
+agreement. It adds wxyz TCP orientation, causal angular motion and the two Panda
+finger positions. There is no fallback to `ground_truth/` fields. Cache-only mode
+omits these nine unavailable values. See
+[joint pose estimator](temporal_estimation.md#joint-peghole-temporal-pose-estimator).
+
+Insertion-precision GRU retains this same complete-episode input/normalization
+contract. `prepare_pose_sequences` can also reuse the independent-cache selector
+in `data_collection/temporal/insertion_sequences.py`: a `test_role: independent` manifest must provide
+explicit parent identities for both original and external cache episodes. All
+external parents must be absent from every original GNN split. Training only
+checks external split metadata for leakage; external frame tensors are opened
+only for explicit test evaluation. `data.independent_raw_root` is required when
+the independent test uses the observed-robot feature schema. The previous GNN
+validation comparison remains available and is labeled reused reference data.

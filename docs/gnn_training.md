@@ -115,6 +115,16 @@ The old `training.gnn_trainer` and `training.gnn_loss` modules moved to the path
 above. Update external imports accordingly. The common entrypoint remains
 `python main.py --config ...`, with `trainer: training.gnn.trainer:train`.
 
+
+## Temporal GRU estimation
+
+Frozen-GNN temporal GRU extensions have a dedicated feature guide:
+
+- [Temporal estimation](temporal_estimation.md): Hole GRU, Pose GRU and insertion
+  objectives, sequence data and measured comparisons.
+
+The rule memory and learned Gate below retain their existing entrypoints.
+
 ## Frozen GNN temporal-memory evaluation
 
 ```bash
@@ -355,6 +365,7 @@ checks, not performance evidence. The specified production checkpoint/cache
 were unavailable locally. Full training, the 18,751-frame comparison, CUDA/MPS,
 and simulator execution were not performed. No improvement over 26.59 mm or
 7.35 mm is claimed.
+
 
 ## Data, splits and cache
 

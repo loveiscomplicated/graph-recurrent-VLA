@@ -1,0 +1,33 @@
+trainer: training.gnn.temporal.pose_gru:train
+device: cpu
+seed: 0
+checkpoint: outputs/gnn_training/4186cdeb0fdb449ea443f28e3bddc936/best.pt
+split_manifest: /workspace/gnn_cache/metadata/temporal_gate_splits.json
+data:
+  cache_dir: /workspace/gnn_cache
+  raw_root: null
+mode: peg_only
+gru:
+  hidden: 128
+  projection: 64
+  head_hidden: 64
+  layers: 1
+  position_mode: direct
+  position_scale_m: 0.1
+training:
+  epochs: 20
+  episode_batch_size: 4
+  lr: 0.001
+  gradient_clip_norm: 1.0
+loss:
+  position_unit_m: 0.01
+  rotation_unit_rad: 0.1
+  weights:
+    peg_position: 1.0
+    peg_rotation: 1.0
+    hole_position: 1.0
+    hole_rotation: 1.0
+evaluation:
+  batch_size: 64
+output:
+  root: outputs/temporal_pose_peg_only

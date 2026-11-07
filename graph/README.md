@@ -1,5 +1,45 @@
 # Graph team
 
+## Temporal estimation workflows
+
+Install Torch, NumPy, PyYAML and Matplotlib, then run from the repository root.
+Set the selected recipe's checkpoint, cache and parent-manifest paths first.
+Pose GRU can add checksum-matched raw robot frames for observed TCP orientation
+and gripper positions.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_gru/train.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_gru/evaluate.yaml
+```
+
+Choose the workflow by its input/output task:
+
+| Workflow | Config under `graph/configs/temporal/` | Guide |
+| --- | --- | --- |
+| Hole position GRU | `hole_gru/train.yaml`, `hole_gru/evaluate.yaml` | [Hole GRU](../docs/temporal_estimation.md#gru-temporal-object-state-estimator) |
+| Peg/Hole pose GRU | `pose_gru/train_hole.yaml`, `train_peg.yaml`, `train_joint.yaml`, `evaluate.yaml` | [Pose GRU](../docs/temporal_estimation.md#joint-peghole-temporal-pose-estimator) |
+| Pose/relative/lateral loss ablations | `precision/train_*.yaml`, `precision/evaluate.yaml` | [Insertion objectives](../docs/temporal_estimation.md#gru-insertion-precision-objectives) |
+
+`hole_gru.py` estimates Hole position; `pose_gru.py` refines selected Peg/Hole
+poses. The guide retains their observation contracts, measured results,
+split roles and device limitations.
+
+| Location | Responsibility |
+| --- | --- |
+| `graph/temporal/` | Models, streaming state and observation features |
+| `graph/pose_geometry.py` | Pose and insertion geometry |
+| `data_collection/temporal/` | Aligned episodes, observed robot joins and parent splits |
+| `training/gnn/temporal/` | Config validation, frozen-source preparation, training and losses |
+| `evaluation/gnn/temporal/` | Paired evaluation, diagnostics and plots |
+
+Run the related CPU tests, including tiny synthetic training workflows:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python -m unittest \
+  tests.test_temporal_hole_gru tests.test_temporal_pose_gru \
+  tests.test_temporal_precision tests.test_temporal_gate -v
+```
+
 ## Learned temporal update gate
 
 With Torch, NumPy, PyYAML and Matplotlib installed, the original gated MPNN

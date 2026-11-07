@@ -3,34 +3,9 @@
 import torch
 from torch import nn
 
-from graph.build_graph import NodeType
 from graph.gated_mpnn import assemble_state38
-
-QUALITY_NAMES = tuple(
-    f"{kind}_{stat}"
-    for kind in ("box", "hole")
-    for stat in ("count", "present", "missing", "confidence_fraction",
-                 "confidence_present", "confidence_mean", "confidence_min", "confidence_max")
-) + ("all_vertices_missing",)
-
-
-def observation_features(graph):
-    """Summarize actual valid vertices; unknown confidence is masked, never imputed."""
-    features = []
-    for kind in (NodeType.BOX, NodeType.HOLE):
-        present = graph.node_valid & (graph.object_type == kind)
-        count = present.sum(1)
-        known = present & graph.confidence_valid
-        known_count = known.sum(1)
-        confidence = graph.confidence
-        mean = (confidence * known).sum(1) / known_count.clamp_min(1)
-        minimum = confidence.masked_fill(~known, float('inf')).min(1).values
-        minimum = torch.where(known_count > 0, minimum, 0)
-        maximum = confidence.masked_fill(~known, 0).max(1).values
-        features.extend((count, count > 0, count == 0, known_count / count.clamp_min(1),
-                         known_count > 0, mean, minimum, maximum))
-    features.append(~graph.node_valid.any(1))
-    return torch.stack(features, dim=1).float()
+# Re-export the existing names so learned-gate callers keep the same API.
+from graph.temporal.observations import QUALITY_NAMES, observation_features
 
 
 class LearnedTemporalGate(nn.Module):
