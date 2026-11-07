@@ -1,0 +1,20 @@
+# Instantaneous offline GT geometry; never grasp/contact labels or model inputs.
+trainer: evaluation.gnn.temporal.hybrid_error_analysis:evaluate
+device: cpu
+seed: 0
+hybrid_evaluation: outputs/hybrid_temporal_estimation/904b37659de34a3f8a0154e77d004df4
+hybrid_predictions_sha256: 462fd8328505d0cf2e92503c89ed3d1b182ae83f463d5584926a8cebc45024cd
+bootstrap_resamples: 10000
+required_episode: shard_000022/episode_000016
+geometry_proxies:
+  near_distance_m: 0.20
+  alignment_min_x_m: -0.15
+  alignment_lateral_m: 0.03
+  alignment_axis_deg: 20.0
+  approach_min_x_m: -0.05
+  approach_lateral_m: 0.01
+  approach_axis_deg: 10.0
+  head_min_x_m: -0.015
+  head_max_x_m: 0.02
+output:
+  root: outputs/hybrid_error_diagnostics

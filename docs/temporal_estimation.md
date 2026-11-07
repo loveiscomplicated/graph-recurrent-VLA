@@ -22,6 +22,7 @@ The root entrypoint and each workflow's existing config schema remain supported.
 - [GRU insertion objectives](#gru-insertion-precision-objectives)
 - [Insertion Mamba/GRU](#mamba-insertion-precision-estimator)
 - [Base GNN and learned Gate](gnn_training.md)
+- [Hybrid composition and diagnostics](hybrid_estimation.md)
 
 ## GRU temporal object-state estimator
 

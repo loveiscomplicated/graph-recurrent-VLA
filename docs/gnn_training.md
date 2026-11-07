@@ -118,10 +118,12 @@ above. Update external imports accordingly. The common entrypoint remains
 
 ## Temporal estimation guides
 
-Frozen-GNN temporal extensions have a dedicated feature guide:
+Frozen-GNN temporal extensions have dedicated feature guides:
 
 - [Temporal estimation](temporal_estimation.md): Hole GRU, Pose GRU and insertion
   GRU/Mamba models, objectives, sequence data and measured comparisons.
+- [Hybrid estimation](hybrid_estimation.md): frozen Mamba/Gate composition,
+  evaluation and saved-prediction error analysis.
 
 The rule memory and learned Gate below retain their existing entrypoints.
 

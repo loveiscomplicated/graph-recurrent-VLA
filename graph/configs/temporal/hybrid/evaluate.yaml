@@ -1,0 +1,19 @@
+# Original CUDA snapshot, downloaded unchanged from the recorded evaluation.
+# Exact saved weights; explicit compatible Mamba-1 reference runtime on this Mac.
+# Use mamba_ssm with device cuda:0 only on an already prepared CUDA host.
+trainer: evaluation.gnn.temporal.hybrid:evaluate
+device: cpu
+math_threads: 1
+seed: 0
+data_identity: outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/published_inputs/data_identity.json
+reference_evaluation: outputs/hybrid_temporal_estimation/inputs/reference
+reference_predictions_sha256: 37a4a9ab4063db9542b75a3f0db5b898e76db596f7c3ee65e7c24b151b0c612a
+gnn_checkpoint: outputs/hybrid_temporal_estimation/inputs/gnn_best.pt
+mamba_checkpoint: outputs/hybrid_temporal_estimation/inputs/mamba_best.pt
+gate_checkpoint: outputs/hybrid_temporal_estimation/inputs/learned_gate.pt
+mamba_backend: torch_reference
+expected_episodes: 126
+expected_frames: 12841
+bootstrap_resamples: 10000
+output:
+  root: outputs/hybrid_temporal_estimation
