@@ -1,0 +1,7 @@
+trainer: evaluation.gnn.temporal.insertion:compare_existing_gru
+device: cpu
+reference_evaluation: /workspace/temporal_insertion_mamba/validation/d159dcc6d8464253a76ab9095be5a221
+gru_checkpoint: /workspace/gru_temporal_precision/48e96aabdb54427391d43cc6ed3784c8/training/b506bc44dc9a484094048d4fac9b903c/best.pt
+cuda_memory_fraction: 0.4
+output:
+  root: outputs/temporal_model_comparison

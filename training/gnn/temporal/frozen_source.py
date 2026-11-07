@@ -1,6 +1,7 @@
 """Restore frozen perception and prepare identity-checked temporal observations."""
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,7 @@ import torch
 
 from data_collection.episode_dataset import file_sha256
 from data_collection.temporal.frozen_episodes import infer_observations
+from data_collection.temporal.insertion_sequences import select_insertion_loaders
 from data_collection.temporal.pose_sequences import attach_proprioception
 from data_collection.temporal_gate_data import selected_loaders
 from graph.temporal.observations import OBSERVATION_CONTRACT, OBSERVATION_NAMES
@@ -132,3 +134,61 @@ def infer_pose_data(frozen, loader, device, identity, effective):
                         "Independent observed-robot evaluation requires data.independent_raw_root"
                     )
     return attach_proprioception(data, identity, raw_root)
+
+
+def prepare_insertion_sequences(effective, device, requested):
+    """Verify frozen source identity and separate reference from independent testing."""
+    frozen, source, expected = load_frozen_source(effective, device)
+    loaders, identity, manifest = select_insertion_loaders(
+        source,
+        effective["split_manifest"],
+        requested,
+        torch.Generator().manual_seed(effective["seed"]),
+        effective["data"]["independent_cache_dir"],
+    )
+    if identity["dataset_sha256"] != expected:
+        raise ValueError("Frozen GNN and source cache dataset identities differ")
+    effective.update(
+        source_checkpoint_sha256=file_sha256(effective["checkpoint"]),
+        split_manifest_sha256=file_sha256(effective["split_manifest"]),
+        temporal_split_manifest=manifest,
+        source_training_config=source,
+    )
+    repository = Path(__file__).resolve().parents[3]
+    sources = (
+        "graph/temporal/insertion.py",
+        "graph/temporal/pose_observations.py",
+        "graph/pose_geometry.py",
+        "graph/gated_mpnn.py",
+        "graph/temporal_gate.py",
+        "graph/utils/hole_memory.py",
+        "data_collection/temporal/insertion_sequences.py",
+        "data_collection/temporal/pose_sequences.py",
+        "data_collection/temporal/frozen_episodes.py",
+        "data_collection/temporal_gate_data.py",
+        "training/gnn/temporal/insertion.py",
+        "training/gnn/temporal/pose_loss.py",
+        "training/gnn/cached_data.py",
+        "evaluation/gnn/temporal/insertion.py",
+        "evaluation/gnn/temporal/precision.py",
+    )
+    sources += ("training/gnn/temporal/config.py", "training/gnn/temporal/frozen_source.py")
+    effective["source_sha256"] = {name: file_sha256(repository / name) for name in sources}
+    return frozen, loaders, identity
+
+
+def infer_insertion_data(frozen, loader, device, identity, effective, split):
+    """Use observed proprioception from the matching source, never GT robot fallback."""
+    settings = effective
+    if split == "test" and effective["temporal_split_manifest"]["test_role"] == "independent":
+        settings = deepcopy(effective)
+        settings["data"]["raw_root"] = effective["data"]["independent_raw_root"]
+        if effective["with_robot"] and settings["data"]["raw_root"] is None:
+            raise ValueError(
+                "Independent test requires matching observed data.independent_raw_root"
+            )
+        identity = dict(identity, frames=identity["independent_frames"])
+    data = infer_pose_data(frozen, loader, device, identity, settings)
+    if ("tcp_quaternion" in data) != effective["with_robot"]:
+        raise ValueError("Source and independent feature schemas must match")
+    return data

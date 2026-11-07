@@ -14,8 +14,26 @@ ROBOT_NAMES = ('tcp_qw', 'tcp_qx', 'tcp_qy', 'tcp_qz',
                'tcp_delta_rot_x', 'tcp_delta_rot_y', 'tcp_delta_rot_z',
                'left_gripper_qpos', 'right_gripper_qpos')
 POSE_CONTRACT = 'object21_world_vertex_quality_tcp_motion_wxyz_v1'
+INSERTION_CONTRACT = 'object21_world_vertex_quality_tcp_motion_observation_age_v1'
+FRESHNESS_NAMES = ('peg_unobserved_age_frames', 'target_unobserved_age_frames')
 
 
+def observation_age_step(quality25, previous_age=None):
+    """Count consecutive missing observations; no GT visibility or pose is used.
+
+    Target support means BOX or HOLE vertices. An initially missing object has
+    age one; a present object has age zero. These are observed-support ages,
+    not a claim that an occluded object has a reliable remembered pose.
+    """
+    if quality25.ndim != 2 or quality25.shape[-1] != 25:
+        raise ValueError('Expected quality25[B,25]')
+    missing = torch.stack((quality25[:, 0] == 0,
+                           quality25[:, 8] + quality25[:, 16] == 0), dim=-1)
+    if previous_age is None:
+        previous_age = quality25.new_zeros((len(quality25), 2))
+    if previous_age.shape != missing.shape:
+        raise ValueError('Previous observation age must have shape [B,2]')
+    return torch.where(missing, previous_age + 1, 0.)
 
 
 def pose_input_step(object21, quality25, tcp_world, previous_tcp=None,

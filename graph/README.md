@@ -4,8 +4,8 @@
 
 Install Torch, NumPy, PyYAML and Matplotlib, then run from the repository root.
 Set the selected recipe's checkpoint, cache and parent-manifest paths first.
-Pose GRU can add checksum-matched raw robot frames for observed TCP orientation
-and gripper positions.
+Pose GRU can add checksum-matched raw robot frames; insertion Mamba/GRU requires
+those frames by default.
 
 ```bash
 WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_gru/train.yaml
@@ -19,16 +19,18 @@ Choose the workflow by its input/output task:
 | Hole position GRU | `hole_gru/train.yaml`, `hole_gru/evaluate.yaml` | [Hole GRU](../docs/temporal_estimation.md#gru-temporal-object-state-estimator) |
 | Peg/Hole pose GRU | `pose_gru/train_hole.yaml`, `train_peg.yaml`, `train_joint.yaml`, `evaluate.yaml` | [Pose GRU](../docs/temporal_estimation.md#joint-peghole-temporal-pose-estimator) |
 | Pose/relative/lateral loss ablations | `precision/train_*.yaml`, `precision/evaluate.yaml` | [Insertion objectives](../docs/temporal_estimation.md#gru-insertion-precision-objectives) |
+| Insertion Mamba and matched GRU | `insertion/train_mamba.yaml`, `train_gru_matched.yaml`, `evaluate.yaml`, `compare_gru_mamba.yaml` | [Insertion estimation](../docs/temporal_estimation.md#mamba-insertion-precision-estimator) |
 
-`hole_gru.py` estimates Hole position; `pose_gru.py` refines selected Peg/Hole
-poses. The guide retains their observation contracts, measured results,
-split roles and device limitations.
+`insertion.py` supports both Mamba and GRU; `hole_gru.py` and `pose_gru.py` name
+their separate original estimators. CPU Mamba uses the explicit `torch_reference`
+backend; official `mamba_ssm` kernels require a compatible CUDA environment.
+The guides retain the measured results, split roles and device limitations.
 
 | Location | Responsibility |
 | --- | --- |
 | `graph/temporal/` | Models, streaming state and observation features |
 | `graph/pose_geometry.py` | Pose and insertion geometry |
-| `data_collection/temporal/` | Aligned episodes, observed robot joins and parent splits |
+| `data_collection/temporal/` | Aligned episodes, causal windows, parent splits and observed robot joins |
 | `training/gnn/temporal/` | Config validation, frozen-source preparation, training and losses |
 | `evaluation/gnn/temporal/` | Paired evaluation, diagnostics and plots |
 
@@ -37,7 +39,8 @@ Run the related CPU tests, including tiny synthetic training workflows:
 ```bash
 WANDB_MODE=disabled .venv/bin/python -m unittest \
   tests.test_temporal_hole_gru tests.test_temporal_pose_gru \
-  tests.test_temporal_precision tests.test_temporal_gate -v
+  tests.test_temporal_insertion tests.test_temporal_precision \
+  tests.test_temporal_gate -v
 ```
 
 ## Learned temporal update gate

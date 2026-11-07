@@ -4,7 +4,9 @@ Each resolver retains its workflow's existing defaults and output schema. Shared
 validation covers frozen inputs and diagnostic settings, not a repository schema.
 """
 
+import importlib.metadata
 import math
+import sys
 from copy import deepcopy
 from pathlib import Path
 
@@ -12,9 +14,21 @@ import numpy as np
 import torch
 
 from graph.temporal.hole_gru import TemporalHoleGRU
-from graph.temporal.pose_gru import TemporalPoseGRU
+from graph.temporal.insertion import TemporalInsertionEstimator, feature_names
+from graph.temporal.pose_gru import MODES, TemporalPoseGRU
+from graph.temporal.pose_observations import INSERTION_CONTRACT
 from graph.utils.hole_memory import MemorySettings
 from training.gnn.temporal.pose_loss import INSERTION_ABLATIONS
+
+LOSS_TERMS = (
+    "peg_position",
+    "peg_rotation",
+    "hole_position",
+    "hole_rotation",
+    "relative_position",
+    "lateral_position",
+    "relative_orientation",
+)
 
 
 def resolve_common_config(config):
@@ -264,5 +278,136 @@ def resolve_pose_config(config):
     with torch.random.fork_rng(devices=[]):
         TemporalPoseGRU(
             mode=effective["mode"], with_robot=effective["with_robot"], **effective["gru"]
+        )
+    return effective
+
+
+def dependency_versions():
+    """Record installed versions without importing optional CUDA extensions."""
+    versions = {
+        "python": sys.version.split()[0],
+        "torch": str(torch.__version__),
+        "torch_cuda": torch.version.cuda,
+    }
+    distributions = (
+        "mamba-ssm",
+        "causal-conv1d",
+        "triton",
+        "transformers",
+        "einops",
+        "numpy",
+        "matplotlib",
+        "mani_skill",
+        "sapien",
+    )
+    for distribution in distributions:
+        try:
+            versions[distribution] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            versions[distribution] = None
+    return versions
+
+
+def resolve_insertion_config(config):
+    """Reuse existing source/proprioception validation; add explicit insertion choices."""
+    common = deepcopy(config)
+    requested_loss = common.pop("loss", {})
+    effective = resolve_pose_defaults(common)
+    effective["data"]["independent_cache_dir"] = config.get("data", {}).get("independent_cache_dir")
+    effective["data"]["independent_raw_root"] = config.get("data", {}).get("independent_raw_root")
+    for name in ("independent_cache_dir", "independent_raw_root"):
+        value = effective["data"][name]
+        if value is not None:
+            effective["data"][name] = str(Path(value).expanduser().resolve())
+    require_robot = config.get("data", {}).get("require_robot", True)
+    if type(require_robot) is not bool:
+        raise ValueError("data.require_robot must be boolean")
+    if require_robot and not effective["with_robot"]:
+        raise ValueError(
+            "Full robot features require data.raw_root; explicitly set require_robot=false for cache-only ablation"
+        )
+    effective["data"]["require_robot"] = require_robot
+    model = effective.setdefault("model", {})
+    defaults = dict(
+        architecture="mamba",
+        backend="torch_reference",
+        d_model=128,
+        n_layers=1,
+        d_state=16,
+        d_conv=4,
+        expand=2,
+        head_hidden=64,
+        position_mode="residual",
+        position_scale_m=0.01,
+    )
+    if set(model) - set(defaults):
+        raise ValueError(f"Unknown insertion model settings: {set(model) - set(defaults)}")
+    for name, value in defaults.items():
+        model.setdefault(name, value)
+    if model["architecture"] == "gru" and model["backend"] != "torch_reference":
+        raise ValueError("GRU comparison uses backend=torch_reference (reported as torch_gru)")
+    loss = dict(
+        position_unit_m=0.01,
+        rotation_unit_rad=0.1,
+        ablation="pose_relative_full",
+        rotation_objective="geodesic_huber",
+        weights={name: 1.0 for name in LOSS_TERMS},
+    )
+    if set(requested_loss) - set(loss):
+        raise ValueError("Unknown insertion loss settings")
+    loss.update({name: value for name, value in requested_loss.items() if name != "weights"})
+    loss["weights"].update(requested_loss.get("weights", {}))
+    if loss["ablation"] not in INSERTION_ABLATIONS:
+        raise ValueError(f"loss.ablation must be one of {tuple(INSERTION_ABLATIONS)}")
+    if loss["rotation_objective"] != "geodesic_huber":
+        raise ValueError("Insertion workflow requires loss.rotation_objective=geodesic_huber")
+    for name in ("position_unit_m", "rotation_unit_rad"):
+        value = loss[name]
+        if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+            raise ValueError(f"loss.{name} must be finite and positive")
+    if set(loss["weights"]) != set(LOSS_TERMS) or any(
+        type(value) not in (int, float) or not math.isfinite(value) or value < 0
+        for value in loss["weights"].values()
+    ):
+        raise ValueError(f"loss.weights must contain finite nonnegative values for {LOSS_TERMS}")
+    active = [
+        obj + "_" + term for obj in MODES[effective["mode"]] for term in ("position", "rotation")
+    ]
+    active.extend(INSERTION_ABLATIONS[loss["ablation"]])
+    if not any(loss["weights"][name] > 0 for name in active):
+        raise ValueError("At least one active loss weight must be positive")
+    effective["loss"] = loss
+    effective["training"].setdefault("sequence_length", 64)
+    effective["training"].setdefault("context_policy", "reset_windows")
+    effective["training"].setdefault("cuda_memory_fraction", None)
+    memory_fraction = effective["training"]["cuda_memory_fraction"]
+    if memory_fraction is not None and (
+        type(memory_fraction) not in (int, float)
+        or not math.isfinite(memory_fraction)
+        or not 0 < memory_fraction <= 1
+    ):
+        raise ValueError("training.cuda_memory_fraction must be null or a number in (0,1]")
+    if effective["training"]["context_policy"] != "reset_windows":
+        raise ValueError("Only explicit reset_windows context policy is implemented")
+    length = effective["training"]["sequence_length"]
+    if type(length) is not int or length < 1:
+        raise ValueError("training.sequence_length must be a positive integer")
+    effective["evaluation"].setdefault("split", "validation")
+    if effective["evaluation"]["split"] not in ("validation", "test"):
+        raise ValueError("evaluation.split must be validation or test")
+    effective["evaluation"].setdefault("benchmark_training", False)
+    if type(effective["evaluation"]["benchmark_training"]) is not bool:
+        raise ValueError("evaluation.benchmark_training must be boolean")
+    effective["comparison"] = deepcopy(config.get("comparison", {}))
+    effective["comparison"].setdefault("checkpoints", {})
+    effective["comparison"].setdefault("learned_gate", None)
+    effective["feature_names"] = list(feature_names(effective["with_robot"]))
+    effective["observation_contract"] = INSERTION_CONTRACT
+    effective["dependencies"] = dependency_versions()
+    effective["implementation_reference"] = "state-spaces/mamba v2.2.6 Mamba-1"
+    # Validate before loading datasets, without advancing the training RNG.
+    with torch.random.fork_rng(devices=[]):
+        TemporalInsertionEstimator(
+            mode=effective["mode"], with_robot=effective["with_robot"], **effective["model"]
         )
     return effective

@@ -197,3 +197,11 @@ checks external split metadata for leakage; external frame tensors are opened
 only for explicit test evaluation. `data.independent_raw_root` is required when
 the independent test uses the observed-robot feature schema. The previous GNN
 validation comparison remains available and is labeled reused reference data.
+
+`data_collection/temporal/insertion_sequences.py` extends the same frozen-episode path
+for insertion Mamba/GRU experiments. It adds observed-support ages and causal
+windows, and requires an explicit `gnn_validation_reference` or `independent`
+test role. Independent-cache parents must be absent from every original GNN
+split. Training validates external metadata without reading independent test
+frames. See [Mamba insertion estimator](temporal_estimation.md#mamba-insertion-precision-estimator)
+for manifest creation, raw-proprioception joins and the independent-test workflow.

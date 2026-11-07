@@ -1,0 +1,46 @@
+# Must match the selected checkpoint. Other model settings default to train recipe.
+trainer: evaluation.gnn.temporal.insertion:evaluate
+device: cpu
+seed: 0
+checkpoint: outputs/gnn_training/4186cdeb0fdb449ea443f28e3bddc936/best.pt
+split_manifest: /workspace/gnn_cache/metadata/temporal_insertion_splits.json
+data:
+  cache_dir: /workspace/gnn_cache
+  raw_root: /workspace/episodes
+  require_robot: true
+  independent_cache_dir: null
+  independent_raw_root: null
+temporal_checkpoint: /workspace/temporal_insertion_training/RUN_ID/best.pt
+mode: joint_peg_hole
+model:
+  architecture: mamba
+  backend: torch_reference
+training:
+  sequence_length: 64
+  episode_batch_size: 4
+loss:
+  ablation: pose_relative_full
+evaluation:
+  split: validation  # Set test only after all model/threshold choices are frozen.
+  batch_size: 64
+  phase_labels: null
+  visibility_labels: null
+  motion_threshold_m: 0.001
+  motion_threshold_rad: 0.01
+  lag_max_frames: 10
+  long_occlusion_frames: 20
+  plot_episodes: 3
+  latency_warmup_steps: 10
+  latency_steps: 100
+  benchmark_training: false
+rule_memory:
+  min_target_nodes: 5
+  min_mean_confidence: 0.0
+  min_confidence_fraction: 0.0
+  consecutive_frames: 1
+  max_spread_m: 0.01
+comparison:
+  learned_gate: null
+  checkpoints: {}  # Named temporal_insertion checkpoints, e.g. gru_joint: /path/best.pt
+output:
+  root: outputs/temporal_insertion_evaluation

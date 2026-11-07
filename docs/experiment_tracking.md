@@ -30,6 +30,10 @@
 | `evaluation.gnn.temporal.hole_gru:evaluate` | `graph/configs/temporal/hole_gru/evaluate.yaml`, root `main.py` | paired summary, predictions, events, PNG traces | GNN/rule/GRU error, parameter/latency/device-memory metadata |
 | `training.gnn.temporal.pose_gru:train` | `graph/configs/temporal/pose_gru/train_*.yaml` / `graph/configs/temporal/precision/train_*.yaml`, root `main.py` | mode-specific best.pt, train-only normalization, config, pose/geometry history | frozen/data/parent/feature identity, effective loss weights, validation geometry/motion selection |
 | `evaluation.gnn.temporal.pose_gru:evaluate` | `graph/configs/temporal/pose_gru/evaluate.yaml`, root `main.py` | paired pose/episode/motion/occlusion metrics, predictions, traces | configured baseline/mode comparison, streaming checks, parameter/latency/memory |
+| `training.gnn.temporal.insertion:train` | `graph/configs/temporal/insertion/train_mamba.yaml`, root `main.py` | Mamba/GRU best.pt, train-only normalization, seven-term history and curves | shared feature/parent/source identity, backend/dependencies, explicit reset-window context |
+| `training.gnn.temporal.insertion:train_and_compare` | `graph/configs/temporal/insertion/train_gru_matched.yaml`, root `main.py` | matched GRU training followed by paired validation | reference checkpoint checksum, enforced shared protocol, separate existing train/evaluate run IDs; no watcher |
+| `evaluation.gnn.temporal.insertion:evaluate` | `graph/configs/temporal/insertion/evaluate.yaml`, root `main.py` | paired precision/episode/lag metrics, predictions, protocol matching | explicit validation/reference/independent role, actual cache parity, latency and optional backward throughput |
+| `evaluation.gnn.temporal.insertion:compare_existing_gru` | `graph/configs/temporal/insertion/compare_gru_mamba.yaml`, root `main.py` | four-system validation summary, GRU replay and comparison audit | exact reference-frame/target hashes, preserved checkpoints and train normalization, explicit training differences |
 
 학습은 train split의 gradient update와 validation checkpoint 선택을 유지한다.
 평가는 기존 test split 및 선택된 checkpoint를 사용하고 optimizer를 실행하지 않는다.

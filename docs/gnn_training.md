@@ -116,12 +116,12 @@ above. Update external imports accordingly. The common entrypoint remains
 `python main.py --config ...`, with `trainer: training.gnn.trainer:train`.
 
 
-## Temporal GRU estimation
+## Temporal estimation guides
 
-Frozen-GNN temporal GRU extensions have a dedicated feature guide:
+Frozen-GNN temporal extensions have a dedicated feature guide:
 
 - [Temporal estimation](temporal_estimation.md): Hole GRU, Pose GRU and insertion
-  objectives, sequence data and measured comparisons.
+  GRU/Mamba models, objectives, sequence data and measured comparisons.
 
 The rule memory and learned Gate below retain their existing entrypoints.
 

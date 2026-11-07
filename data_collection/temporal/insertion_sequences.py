@@ -6,8 +6,59 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader, Subset
 
+from data_collection.temporal.pose_sequences import TemporalPoseDataset
 from data_collection.temporal_gate_data import make_gate_manifest, validate_gate_splits
+from graph.temporal.insertion import feature_names
+from graph.temporal.pose_observations import observation_age_step
 from training.gnn.cached_data import build_data
+
+
+class InsertionEpisodeDataset(TemporalPoseDataset):
+    """Append observed-support ages without exposing labels to the feature builder."""
+
+    def __init__(self, data):
+        super().__init__(data)
+        self.feature_names = feature_names(self.with_robot)
+
+    def __getitem__(self, index):
+        observations, target = super().__getitem__(index)
+        age = None
+        ages = []
+        for quality in self.data["pose_quality"][self.indices[index]]:
+            age = observation_age_step(torch.as_tensor(quality)[None], age)
+            ages.append(age[0])
+        return torch.cat((observations, torch.stack(ages)), dim=-1), target
+
+
+class InsertionWindowDataset:
+    """Nonoverlapping causal windows; recurrent state resets at each window.
+
+    Proprioceptive deltas and observation ages are constructed on complete episodes
+    first. No future sample enters an input, and no window crosses an episode.
+    This is explicitly truncated context, not state-carrying TBPTT. Both backbones
+    use this same reset policy; full streaming evaluation retains episode context.
+    """
+
+    def __init__(self, episodes, sequence_length):
+        if type(sequence_length) is not int or sequence_length < 1:
+            raise ValueError("training.sequence_length must be a positive integer")
+        self.episodes = episodes
+        # Frozen observations never change during training. Build complete causal
+        # features once rather than rebuilding an episode for each of its windows.
+        self.sequences = [episodes[index] for index in range(len(episodes))]
+        self.windows = [
+            (index, start, min(start + sequence_length, len(rows)))
+            for index, rows in enumerate(episodes.indices)
+            for start in range(0, len(rows), sequence_length)
+        ]
+
+    def __len__(self):
+        return len(self.windows)
+
+    def __getitem__(self, index):
+        episode, start, stop = self.windows[index]
+        observations, target = self.sequences[episode]
+        return observations[start:stop], target[start:stop]
 
 
 def validate_insertion_splits(manifest, source_splits, independent_splits=None):

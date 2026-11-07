@@ -1,9 +1,9 @@
-# Temporal GRU state estimation
+# Temporal state estimation
 
 The Graph team's temporal estimators consume frozen GNN outputs and observed
 robot metadata. Run from the repository root with Torch, NumPy, PyYAML and
 Matplotlib installed. Set checkpoint, cache and parent-manifest paths before use;
-Pose recipes document optional raw robot observations.
+Pose and insertion recipes document optional or required raw robot observations.
 
 ```bash
 WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_gru/train.yaml
@@ -20,6 +20,7 @@ The root entrypoint and each workflow's existing config schema remain supported.
 - [Hole GRU](#gru-temporal-object-state-estimator)
 - [Pose GRU](#joint-peghole-temporal-pose-estimator)
 - [GRU insertion objectives](#gru-insertion-precision-objectives)
+- [Insertion Mamba/GRU](#mamba-insertion-precision-estimator)
 - [Base GNN and learned Gate](gnn_training.md)
 
 ## GRU temporal object-state estimator
@@ -624,6 +625,644 @@ Local evidence:
 [real CUDA smoke](../outputs/temporal_precision_launch/48e96aabdb54427391d43cc6ed3784c8/cuda_smoke.json),
 [unit test log](../outputs/temporal_precision_launch/48e96aabdb54427391d43cc6ed3784c8/unit_tests.log).
 
+## Mamba insertion-precision estimator
+
+`graph/temporal/insertion.py` contains a separate temporal **state** estimator. The
+Frozen GNN and recurrent Action controller retain their weights and behavior.
+Models stay in `graph/`, orchestration in `training/gnn/temporal/insertion.py` and
+`evaluation/gnn/temporal/insertion.py`, and selection/windowing in
+`data_collection/temporal/insertion_sequences.py`. Existing geometry, pose feature
+construction, checksum loading, memory/gate replay and `ExperimentLogger` are
+reused. No new simulator interface, controller, W&B client or publisher is added.
+
+### Prerequisites and run commands
+
+From the repository root, install the existing Torch/NumPy/PyYAML/Matplotlib
+requirements. Set the original gated MPNN `best.pt`, published graph cache and
+matching raw episode root in `graph/configs/temporal/insertion/train_mamba.yaml`. The raw
+root is needed for observed TCP wxyz and finger qpos; missing observations fail
+instead of falling back to GT. Frozen model coordinate/size scales come from the
+original checkpoint config. Object21 outputs already use metres and world wxyz;
+there is no extra inverse target-normalization step. The original published checkpoint is not present
+at the recipe's default local path on this Mac.
+
+Create a manifest from an **actual collection parent map**, never infer parent
+independence from a filename:
+
+```bash
+python -m data_collection.temporal.insertion_sequences \
+  --cache-dir /workspace/gnn_cache \
+  --parent-map /workspace/parent_by_episode.json \
+  --output /workspace/gnn_cache/metadata/temporal_insertion_splits.json
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/insertion/train_mamba.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/insertion/evaluate.yaml
+```
+
+The first command, without an independent cache, labels `test` as
+`gnn_validation_reference`. This is the previously reused 180-episode GNN
+validation set, not an independent generalization test. Development train and
+validation remain subsets of GNN-train parents. Siblings of all reserved GNN
+validation/test parents are excluded from development, including unused siblings.
+The manifest is created exclusively; an existing file is never overwritten.
+
+For final generalization, separately obtain new episodes with new parent IDs and
+prepare their checksummed cache using the **same preprocessing**. The current
+published cache reader materializes train/validation entries, so independent
+cache episodes are selected from those entries; its own reserved `test` entries
+remain unread. Distinct source/external episode IDs and an explicit combined
+parent map are required. Create the manifest with the extra option:
+
+```bash
+python -m data_collection.temporal.insertion_sequences \
+  --cache-dir /workspace/gnn_cache \
+  --independent-cache-dir /workspace/independent_cache \
+  --parent-map /workspace/combined_parent_by_episode.json \
+  --output /workspace/temporal_insertion_independent_splits.json
+```
+
+Set `data.independent_cache_dir` and `data.independent_raw_root` in both recipes.
+All independent-cache parents must be absent from **every** original GNN split.
+Training reads independent metadata to check parents, but no independent cache
+inventory, frame or target. Evaluation defaults to `evaluation.split: validation`.
+Set `temporal_checkpoint` to the selected best checkpoint and add comparison
+checkpoints only after fixing the experiment plan. Switch to `split: test` once
+hyperparameters and thresholds are frozen; test statistics must not tune models.
+Neither collection nor large evaluation is launched by these preparation steps.
+
+### Mamba implementation and environment audit
+
+The implementation reference is the official
+[Mamba v2.2.6 mixer](https://github.com/state-spaces/mamba/blob/v2.2.6/mamba_ssm/modules/mamba_simple.py)
+and [selective scan reference](https://github.com/state-spaces/mamba/blob/v2.2.6/mamba_ssm/ops/selective_scan_interface.py).
+Two **explicit** backends are supported; failure never silently selects another:
+
+- `torch_reference`: local FP32 Mamba-1 selective SSM. Input-dependent Delta/B/C,
+  stable negative diagonal A, causal depthwise convolution, D skip and SiLU gate
+  are present. Projection/convolution are batched; selective scan uses a readable
+  Python loop. It maintains real convolution and SSM caches, with no history
+  window recomputation. This backend is not an optimized CUDA performance claim.
+- `mamba_ssm`: official `Mamba` mixer, parallel fused sequence forward and actual
+  `allocate_inference_cache`/`step` incremental state. The state dictionary layout
+  of the reference mixer matches the official mixer for an optional parity test.
+  This path was validated on Vast.ai 59441593 as recorded below; it has not run on this Mac.
+
+The [pinned upstream requirements](https://github.com/state-spaces/mamba/blob/v2.2.6/README.md#installation)
+include Linux/NVIDIA, Torch and CUDA. On an authorized Linux CUDA host, check the
+actual Torch/CUDA/compiler ABI first; a candidate installation command is
+`python -m pip install --no-build-isolation 'mamba-ssm==2.2.6.post3' 'causal-conv1d>=1.4.0,<2'`.
+Prebuilt wheel compatibility is unverified; the approved source build against
+Torch 2.14 is documented below.
+Optional convolution kernels are not required for the reference backend.
+Mamba-2 was reviewed as an upstream option; this small first prototype uses
+Mamba-1, whose state size 16 and explicit incremental interface match the recipe.
+The local Mac environment was retained; the subsequent approved remote installation
+and its compatibility pins are recorded below.
+
+On 2026-11-07 KST the host reports macOS arm64, Torch 2.14.1, no Torch CUDA,
+MPS available, ManiSkill 3.0.1 and SAPIEN 3.0.3. `mamba_ssm`, `causal_conv1d` and
+Triton are absent. Local execution uses CPU; the separate remote CUDA reference smoke is recorded
+below. MPS temporal execution remains unverified; official CUDA kernels were subsequently
+validated on the approved Vast.ai host as recorded below. Existing `recurrent.models.MambaPolicy` is an Action policy and
+was inspected but is not imported or modified by this estimator.
+
+### Observation and output contracts
+
+Full input is **64D**, identically ordered for Mamba and the new GRU comparator:
+
+| Slice | Input |
+| --- | --- |
+| `0:21` | Frozen Object21 with Peg/Hole XYZ translated from TCP-relative to world; world wxyz normalized |
+| `21:46` | PEG/BOX/HOLE count, presence, missingness, known-confidence fraction/presence/mean/min/max, plus all-missing flag |
+| `46:49` | Observed TCP world XYZ |
+| `49:52`, `52:53` | Consecutive observed TCP delta XYZ, previous-frame flag |
+| `53:57`, `57:60` | Observed TCP wxyz, shortest world-axis rotation delta |
+| `60:62` | Observed left/right finger joint positions |
+| `62:64` | Consecutive missing-observation ages for PEG and BOX-or-HOLE support |
+
+The first frame has zero TCP motion and no previous-frame flag. An initially
+missing object has age one; observed support resets its age to zero. These ages
+are observation metadata, not GT visibility or predicted-state reliability.
+`data.require_robot: false` plus `raw_root: null` is an explicit **55D cache-only
+ablation**, not the full robot experiment. Both compared models must use the same
+choice. Raw proprioception is joined by exact saved-frame checksum and observed
+TCP agreement. GT poses/endpoints/visibility/phases never enter features.
+Train-only population mean/std are fitted before windowing, stored as buffers and
+checked against checkpoint metadata. Constant training features use unit scale.
+
+World Object21 output has Peg pose `0:7`, endpoint-minus-Hole vector `7:10`, Hole
+pose `10:17`, and unchanged predicted Size4D `17:21`. Positions are metres;
+quaternions are unit wxyz. Streaming also returns TCP-relative Object21 and
+predicted-Hole-frame relative geometry. Passing caller `robot15` and `freshness2`
+adds State38 as `[Robot15, Object21, Freshness2]`; observation ages are separately
+named and do not silently replace the caller's established freshness semantics.
+
+Default model: d_model 128, one layer, d_state 16, expand 2, convolution width 4,
+shared temporal context and separate 6D Peg/Hole residual heads. Positions default
+to residual correction with scale 0.01m because the Frozen GNN supplies a useful
+spatial anchor, especially for Peg. `position_mode: direct` supports a controlled
+comparison. Rotation uses an exponential-map residual left-composed with the GNN
+rotation, never linear quaternion interpolation. Inactive poses remain Frozen GNN
+outputs; all modes use the same differentiable Object21 assembler.
+
+Full-feature parameter counts, including projection, normalization layers and
+heads (normalization buffers are excluded):
+
+| Backbone | Hole-only / Peg-only | Joint |
+| --- | ---: | ---: |
+| Mamba-1 reference | 133,702 | 142,348 |
+| Same-feature GRU | 116,038 | 124,684 |
+
+The comparison holds feature/data/protocol constant; these defaults do not claim
+matched parameter budgets. Record architecture/backend and actual counts per run.
+
+### Simulator geometry and losses
+
+Installed `mani_skill/envs/tasks/tabletop/peg_insertion_side.py` defines the head
+pose as `peg.pose * Pose([peg_half_size_x, 0, 0])`. Thus
+`endpoint_world = peg_position + R_peg @ [predicted_half_size_x, 0, 0]` and
+`relative = endpoint_world - hole_position`. Inference uses only predicted size;
+GT size is used only for labels and independent geometry checks. The installed
+`peg_head_pos` convenience property omits the rotation of its offset; the
+rotation-aware `peg_head_pose` is the geometry reference for this task.
+
+Hole local X is axial; Y/Z are lateral. The task uses `_clearance=0.003m` when
+constructing hole radius as peg half-width plus clearance. Its actual
+`has_peg_inserted()` predicate is head Hole-frame X >= -0.015m and absolute Y/Z
+<= hole radius, with no orientation flag or upper axial bound. Neither the 3mm
+clearance nor a 3mm estimation threshold is an insertion success criterion.
+
+`insertion_loss` extends the existing pose-loss module without changing the
+original GRU objective. It masks padding **before** quaternion/geometry operations.
+Each position/relative error is divided by `position_unit_m` (default 0.01m), then
+coordinate-mean Huber with delta 1. Each quaternion-equivalent geodesic angular
+error is divided by `rotation_unit_rad` (default 0.1rad), then scalar Huber.
+The seven individually weighted terms are:
+
+- Peg/Hole position and geodesic rotation (four terms).
+- World endpoint-minus-Hole prediction error.
+- Y/Z components of that **error** rotated into the GT Hole frame. It supervises
+  actual GT arrangement, not forced zero lateral displacement.
+- Relative SO(3): compare `inverse(q_hole) * q_peg` against its GT counterpart.
+
+Full directed SO(3) is retained to match the labeled pose contract. Square-section
+rotation symmetries are not quotiented out, so these orientation diagnostics can
+penalize physically equivalent cross-section orientations. The signed +X head
+axis is retained; orientation losses do not claim to reproduce simulator success.
+Relative gradients flow through predicted endpoint geometry into both active
+pose heads. Frozen Size4D limits attainable endpoint accuracy and remains a
+separately inspectable source of error.
+
+Use `loss.ablation` = `pose_only`, `pose_relative`, `pose_relative_lateral`, or
+`pose_relative_full`. Use `mode` = `hole_only`, `peg_only`, or `joint_peg_hole`.
+All seven unweighted terms and the weighted total are saved for train/validation
+in `history.json`, local/W&B scalar curves, and `loss_curves.png`. Inactive-object
+pose errors remain diagnostics but are excluded from that mode's pose objective.
+Set weights and units in YAML; position and angular units are explicit.
+
+### Causal training, streaming and fair comparisons
+
+`training.sequence_length` accepts 32/64/128 or another positive integer. Complete
+episodes first supply actual consecutive TCP deltas/ages; windows never cross
+an episode. `context_policy: reset_windows` is the only implemented training
+policy: each nonoverlapping window starts zero recurrent state, without cache
+carry or gradients across windows. This truncates learned temporal context.
+Validation checkpoint selection uses the same window policy. Full streaming
+inference retains episode history, so evaluation context can be longer than
+training context; this limitation must be considered for long occlusions.
+Right padding never contributes supervision or future influence to real frames.
+
+`StreamingInsertionEstimator` exposes `reset(episode_id)`, `step(observation,
+episode_id=None)` and `forward_sequence(prebuilt_features, mask=None)`. Multiple
+interleaved episode IDs own independent TCP history, support ages and caches;
+`discard(id)` releases completed state. Sequence forward starts zero state and
+leaves live caches untouched. Streaming consumes only a whitelist of current
+observation fields, rejects label keys, and uses actual recurrent caches.
+Evaluation asserts sequence/step agreement within absolute 2e-5 and relative 1e-4
+FP32 tolerance. CPU reference and GRU agree more closely in the smoke checks.
+The optional CUDA test also compares official/reference forward and input
+gradients with identical mixer weights; it is skipped when CUDA/package is absent.
+
+Set `model.architecture: gru` with backend `torch_reference` to train the comparator
+through the **same** dataset, features, normalization, heads, geometry, loss,
+window length, seed, batch size, epoch budget and minimum-validation-loss selection.
+Add its checkpoint to `comparison.checkpoints`, e.g. `gru_joint: /path/best.pt`.
+Named checkpoints also support pose-mode/loss ablations. Evaluation verifies
+Frozen GNN, source cache, actual development assignments/parents and feature
+contracts. It records per-comparison seed/training/loss/normalization equality
+rather than silently treating mismatched runs as fair. Deliberately different
+loss ablations are identified explicitly. Select best within each run; weighted
+loss values from different objectives are not directly comparable.
+
+Frozen GNN, count-based Hole memory, first-observation Hole hold and a geometric
+endpoint-only GNN ablation always run on the same frames. Configure
+`comparison.learned_gate` for a preserved learned gate with matching development
+parents; it retains its original restricted feature interface. Absent learned
+checkpoints are explicitly unmeasured. Historical 4.34/26.59/4.78/11.77mm numbers
+are not copied into new results. Baseline stored endpoint predictions remain
+intact; the separately named GNN geometric ablation isolates endpoint assembly.
+
+### Evaluation artifacts and verification
+
+`summary.json` includes absolute mean/median/P90/P95/worst pose errors, relative
+3D error, GT-Hole-frame lateral/axial error, relative orientation, directed
+relative axis direction error and axis-angle alignment estimation error. It also
+reports control-frame relative-vector error, using predicted Hole rotation for
+the predicted vector, distinct from the GT-reference-frame estimation error.
+Strict lateral <1/<2/<3mm and relative 3D <3mm frame percentages are saved overall,
+by diagnostic group and by episode. Per-episode worst relative errors and all
+paired episode mean differences are saved. Relative-geometry gains accompanied by
+worse moving-Peg position error are flagged explicitly for each paired method. Motion slices and translational and
+rotational lag reuse the existing post-inference evaluator. Optional exact-ID
+phase labels supply before-grasp, after-grasp and insertion phases; unavailable
+labels are reported, not inferred as grasp truth. Missing vertices are an
+observation-absence proxy, not GT occlusion labels. Raw predictions, predicted
+control geometry and source arrays are stored in `predictions.npz`.
+
+Performance reports actual parameter counts, backend/device/FP32, synchronized
+streaming and sequence latency, reset/reallocation overhead, actual cache bytes,
+and CUDA allocation peaks when run on CUDA. `benchmark_training: true` adds
+resident forward+loss+backward throughput with no optimizer update. Use identical
+batch/length/warmup/steps on the same GPU for compute comparisons. Python reference
+latency does not characterize fused Mamba. Wall-clock times are not simulator
+control frequency. Artifacts use new UUID output directories and shared Logger
+sidecars. Nothing is uploaded automatically and existing checkpoints are untouched.
+
+Run the new contract/integration suite and existing regressions:
+
+```bash
+.venv/bin/python -m unittest tests.test_temporal_insertion -v
+.venv/bin/python -m unittest tests.test_temporal_pose_gru tests.test_temporal_hole_gru \
+  tests.test_temporal_gate tests.test_hole_memory tests.test_gnn_temporal_memory \
+  tests.test_experiment_logger tests.test_experiment_artifacts -v
+```
+
+Synthetic checksummed-cache training is a workflow smoke, not production accuracy.
+The live CPU test separately runs actual RGB-D/detection/GNN/streaming frames and
+checks rotated task endpoint/Hole-axis consistency. Its GNN/temporal weights are
+untrained because the production `best.pt`/published dataset are absent locally.
+The approved 20-epoch training and requested development validation subsequently
+completed, as recorded below. Independent test generalization, Mamba superiority,
+stable 3mm insertion precision, MPS execution and closed-loop success are not established.
+
+Local verification on 2026-11-07 KST: model/geometry suites ran 67 tests (66 passed,
+one official-CUDA test skipped), and the Logger/Artifact suites ran 36 tests in a
+separate process (all passed). Two targeted scoring/workflow tests also passed
+after the motion/relative tradeoff report was added. The live smoke used three
+actual 512×512 RGB-D frames on `physx_cpu`/`sapien_cpu`, including native corner
+detection, an untrained frozen GNN and Mamba reference streaming. Endpoint and
+Hole-frame reconstruction matched the installed task geometry. A single combined
+process exposed an existing logger import-mock interaction with lazily loaded
+ImageIO modules after simulator import; the documented separate invocations pass.
+Raw local evidence is the ignored
+[verification JSON](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/verification.json),
+[model tests](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/model_tests.log),
+[infrastructure tests](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/infrastructure_tests.log),
+and [live CPU smoke](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/live_cpu_smoke.log).
+
+
+On the user-selected Vast.ai instance **59441593** (2026-11-07 KST), CUDA reference
+smoke also passed: RTX 3090 24GiB, driver 595.91.07, Torch 2.14.1+cu132,
+CUDA toolkit 13.2 and Triton 3.8.0. The new instance has no production repository,
+GNN checkpoint, dataset, simulator, Matplotlib, mamba_ssm or causal_conv1d. Only an
+isolated source snapshot was copied into
+`/workspace/temporal_insertion_validation/8e066415885e4395ae3a824472bc94b1/`;
+no packages or system configuration were changed. GPU reference and same-feature
+GRU forward/backward, both-head gradient checks and episode cache replay passed.
+Maximum sequence/stream difference was 1.49e-8 for Mamba reference and 1.09e-8 for
+GRU. Batch-one cache bytes were 20,480 and 512 respectively. The tiny probe used
+batch 1, sequence length 5, FP32, two warmups and five measured repetitions;
+streaming means including Python/validation/features/geometry were 7.04ms and
+6.51ms. These are reference smoke timings, not optimized Mamba or production
+throughput conclusions. No optimizer update or production evaluation occurred.
+The initial reference smoke preceded the user's subsequent approval of an isolated
+official-library installation and full training launch, recorded below. Raw result:
+[CUDA reference smoke](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/cuda_reference_smoke.json)
+and [probe source](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/remote_cuda_smoke.py).
+
+
+The user subsequently authorized testing and a detached tmux training launch on
+Vast.ai 59441593, with GRU sharing the same GPU and no ongoing training watch.
+The production deployment uses `training.cuda_memory_fraction: 0.4`, batch 4,
+sequence length 64, 20 epochs and the official Mamba backend. CPU math threads
+are limited in the launcher; the source-GNN inference batch is 32. The allocator
+limit applies to this process's Torch allocations, not driver/context memory or
+another process's allocations. Frozen episode features are materialized once
+when building sequence windows, avoiding repeated raw-feature reconstruction in
+every epoch/window. The reusable default CPU recipe still leaves the optional
+CUDA limit unset. Training uses the preserved 504/126 development parent split;
+the previously reused 180-episode GNN validation remains reference-only.
+
+The initially reviewed PyPI spelling `mamba-ssm==2.2.6` is not distributed;
+`2.2.6.post3` is the available release in that line. Its default C++17 build
+fails against the installed Torch 2.14 ATen headers, which require C++20. The
+isolated installation uses the verified upstream sdist, changes setup build flags
+to C++20 and sm_86 only, and records the patch and sdist SHA256. Mixer and CUDA
+kernel source are unchanged. The build is labeled
+`2.2.6.post3+cu132.torch214.cxx20.sm86` for reproducibility; default Torch and
+system CUDA are retained. See the raw
+[build provenance](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/mamba_build_provenance.json)
+and [build flag patch](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/mamba_build_flags.patch).
+
+
+### Approved CUDA training launch
+
+On 2026-11-07 at 02:35 KST, after the user authorized installation, testing and
+training, the official source build passed forward/input-gradient parity against
+the reference mixer and real cache-based streaming equivalence. The runtime is
+`mamba-ssm 2.2.6.post3+cu132.torch214.cxx20.sm86`, Torch 2.14.1+cu132,
+Transformers 4.44.2, huggingface-hub 0.36.2 and tokenizers 0.19.1. Mamba's package
+initializer requires generation aliases removed in Transformers 5; the isolated
+venv pins the compatible
+[Transformers 4.44.2 generation API](https://github.com/huggingface/transformers/blob/v4.44.2/src/transformers/generation/__init__.py).
+The optional causal-conv1d package is absent: this run uses the official CUDA
+selective scan and Torch convolution, plus the library's incremental state path.
+
+A production-data smoke used the original GNN checkpoint with one 105-frame train
+episode and one 93-frame validation episode. Both temporal pose heads updated,
+Frozen GNN gradients stayed disabled, and sequence/streaming output difference on
+validation was 1.19e-7. Its normalization/model were discarded after the smoke;
+the full run independently fits statistics on all 504 train parents. No test
+frames were used by this smoke.
+
+The published graph cache (83,453 frames) and exactly 64,702 raw development
+frames were restored with archive and original-frame SHA256 checks. Raw GNN
+validation/test episodes were not extracted. Shared input locations are
+`/workspace/temporal_insertion_data/gnn_cache`,
+`/workspace/temporal_insertion_data/episodes`, and
+`/workspace/temporal_insertion_data/published_inputs/best.pt`. The original
+checkpoint tracking sidecar was restored unchanged, preserving source run
+`4186cdeb0fdb449ea443f28e3bddc936`. Existing default-path consumers can use the
+shared `/workspace/gnn_cache` and `/workspace/episodes` aliases; no existing paths
+were overwritten.
+
+The detached training process was launched with:
+
+```bash
+cd /workspace/temporal_insertion_mamba/source
+/workspace/temporal_insertion_validation/8e066415885e4395ae3a824472bc94b1/venv/bin/python -u \
+  main.py --config graph/configs/train_temporal_mamba_cuda.yaml
+# Attach after connecting to instance 59441593:
+tmux attach -t mamba_insertion_joint
+```
+
+- tmux session: `mamba_insertion_joint`.
+- Shared Logger run ID: `94c59d23eeba486a81adfa221fa829c3`.
+- Config: `/workspace/temporal_insertion_mamba/source/graph/configs/train_temporal_mamba_cuda.yaml`.
+- Log: `/workspace/temporal_insertion_mamba/logs/train.log`.
+- Checkpoints/curves: `/workspace/temporal_insertion_mamba/training/94c59d23eeba486a81adfa221fa829c3/`.
+- Local tracking: `/workspace/temporal_insertion_mamba/experiments/94c59d23eeba486a81adfa221fa829c3/`.
+- Settings: Joint Peg/Hole, full relative loss, d_model 128, one layer, sequence 64,
+  batch 4, 20 epochs, seed 0, GPU allocator limit 40%, math threads 4 and resident
+  frozen inference batch 32. W&B is disabled and local shared tracking is active.
+
+One startup confirmation found the training PID alive and the train-side Frozen
+GNN/proprioception preparation in progress. No periodic watcher, completion
+monitor, large evaluation or automatic publishing was launched. The user will
+inspect the training directly. GRU can reuse these inputs; a scientifically
+matched comparison must also use the same 64D feature schema, loss and protocol.
+
+Raw evidence:
+[official CUDA test](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/official_cuda_test.log),
+[production-data smoke](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/production_cuda_smoke.json),
+[data preparation](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/preparation.json),
+[deployed config](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/train_temporal_mamba_cuda.yaml),
+and [launch receipt](../outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/launch_receipt.json).
+
+### Matched GRU training and automatic comparison
+
+The user requested retraining GRU on instance **59441593** with Mamba's input,
+loss, training context and checkpoint selection on 2026-11-07 KST. Run the
+team-owned recipe through the existing root entrypoint:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/insertion/train_gru_matched.yaml
+```
+
+The recipe requires the prepared production data and checkpoints at its explicit
+`/workspace/` paths and the existing compatible CUDA environment. It reuses
+`TemporalInsertionEstimator(architecture='gru')`, the 64D observed-robot/age
+features, residual pose heads and the same insertion trainer. The selected Mamba
+checkpoint `94c59d23eeba486a81adfa221fa829c3/best.pt` is pinned by SHA256
+`ca6c6931e421d0bba776b8787038b0d16b87bc203bd82e1c757ac3053ed83069`.
+
+Before training, `train_and_compare` rejects differences in source/cache/raw
+paths, Frozen GNN hash, parent-manifest hash, feature contract, pose mode/heads,
+seed, loss or training settings. Shared settings are seed 0, hidden width 128,
+one layer, batch 4, 64-frame reset windows, Adam 0.001, gradient clip 1,
+20 epochs, and 0.4 CUDA allocator fraction. Position/rotation units remain
+0.01m/0.1rad; all seven geodesic-Huber loss weights are 1. Both runs select the
+minimum frame-weighted validation objective. The 53D legacy GRU is preserved.
+
+Train normalization is independently fitted and checked against Mamba's saved
+train-only statistics, allowing only floating-point reduction roundoff; the
+exact Mamba statistics are then reused. Validation never fits these values.
+The existing train/epoch implementation performs all optimizer updates; no
+second trainer or team-specific logger was added. GRU and Mamba parameter counts
+may differ; this comparison matches the requested training protocol and shared
+input/output components, rather than parameter count or training throughput.
+
+After successful training, the same process verifies actual dataset identity,
+parent manifest and exact normalization, then evaluates the selected GRU,
+unchanged Mamba, Learned Gate and Frozen GNN together on full validation episodes.
+The summary's `primary` method is the matched GRU and `mamba` is the preserved
+reference. `comparison_protocols.mamba.matches_primary` records seed, training,
+loss and normalization agreement. CuDNN TF32 is disabled for this inference
+stage to check full-sequence/one-step parity. Training and evaluation use their
+own shared ExperimentLogger run IDs and save effective configs, checkpoints,
+predictions, metrics and provenance. No final-test data or publishing is included.
+
+The tmux job runs training followed directly by evaluation; it has no polling
+loop, watch process or automatic restart. Results are written under
+`/workspace/temporal_insertion_gru_matched/training/<train_run_id>/` and
+`/workspace/temporal_insertion_gru_matched/validation/<evaluation_run_id>/`.
+The previously measured table below still refers to the legacy 53D GRU until
+the new training and evaluation complete.
+
+Launch verified on 2026-11-07 at 01:40:51 UTC (10:40:51 KST): tmux session
+`gru_insertion_matched`, with a live pane at launch. The isolated source workspace
+is `/workspace/temporal_insertion_gru_matched/source`; the combined log is
+`/workspace/temporal_insertion_gru_matched/logs/training_and_comparison.log`.
+The launcher limits CPU math threads to 4 and preserves the existing environment
+and previous runs. No training watch or completion monitor was started.
+
+Preflight verified the original feature/model/loss source hashes and identical
+epoch/update/checkpoint-selection code. The actual-data CUDA smoke used one
+105-frame train episode and one 93-frame validation episode, updated both pose
+heads, kept Frozen GNN parameters frozen, and passed streaming parity with
+maximum component difference **1.19e-7**. Smoke normalization used only that train
+episode and was discarded. Related local suites ran **39 tests: 38 passed,
+one official-CUDA test skipped**; the remote native-GRU CUDA path was exercised
+by the actual-data smoke. Full training/comparison completion was not observed.
+
+Raw launch evidence:
+[protocol preflight](../outputs/temporal_insertion_gru_matched/protocol_preflight.json),
+[actual-data CUDA smoke](../outputs/temporal_insertion_gru_matched/production_cuda_smoke.json),
+[launch receipt](../outputs/temporal_insertion_gru_matched/launch_receipt.json),
+[deployed config](../outputs/temporal_insertion_gru_matched/deployed_config.yaml),
+and [local tests](../outputs/temporal_insertion_gru_matched/model_tests.log).
+
+### Measured temporal validation
+
+On 2026-11-07 KST, the requested post-training evaluation scored the unchanged
+epoch-19 `best.pt` from training run `94c59d23eeba486a81adfa221fa829c3` on **126
+validation episodes / 12,841 frames**. The checkpoint SHA256 is
+`ca6c6931e421d0bba776b8787038b0d16b87bc203bd82e1c757ac3053ed83069`.
+This is the temporal development validation split drawn from original GNN-train
+parents, not the previously reused 180-episode GNN validation or an independent
+final test. All baselines below were recomputed on these same frames.
+
+Training completed all 20 epochs. Best validation objective was **0.923652738**
+at epoch 19 (train objective 0.78526); epoch 20 validation was 1.055772535.
+The objective fell 75.37% from epoch 1 to the selected epoch. These are normalized
+weighted Huber/geodesic losses, not millimetres. Re-evaluation under the original
+64-frame reset-window protocol reproduced **0.923652707**, within 3.1e-8 of the
+saved selection objective. The metrics below primarily use uninterrupted episode
+streaming, with a fresh cache at each episode boundary.
+
+Frame-weighted mean errors and strict precision percentages:
+
+| Metric | Frozen GNN | Learned Gate | GRU | Mamba |
+| --- | ---: | ---: | ---: | ---: |
+| Peg position mm | 3.93 | 3.93 | 5.52 | 3.56 |
+| Peg rotation degrees | 2.87 | 2.87 | 1.61 | 1.43 |
+| Hole position mm | 24.62 | 3.67 | 7.44 | 9.01 |
+| Hole rotation degrees | 4.95 | 4.95 | 1.63 | 1.80 |
+| Endpoint-minus-Hole vector mm | 23.24 | 11.05 | 10.18 | 8.65 |
+| GT-Hole-frame lateral mm | 17.42 | 7.46 | 6.58 | 6.51 |
+| GT-Hole-frame axial mm | 12.14 | 6.84 | 6.67 | 4.64 |
+| Relative orientation degrees | 5.83 | 5.83 | 2.29 | 2.19 |
+| Lateral <3mm % | 16.34 | 25.82 | 19.73 | 26.79 |
+| Relative 3D <3mm % | 9.16 | 11.94 | 4.37 | 13.92 |
+
+The preserved Rule-memory and first-observation-hold baselines remain in the
+original streaming summary: relative 3D / lateral errors are 12.24 / 8.60mm and
+11.53 / 7.88mm, respectively.
+
+#### Existing GRU comparison audit
+
+Comparison run `7113412787dd4fbd8e0883e338bd0705` remeasured the unchanged epoch-19
+GRU from `b506bc44dc9a484094048d4fac9b903c` on instance 59441593. Its checkpoint
+SHA256 is `521364a326bf195ad3f0e16a8a07ef229b472ba156169841d92cccae0a18993f`.
+The audit verified the same Frozen GNN, dataset identity, train/validation episode
+sets and actual parent mappings. It reused the original Mamba evaluation's exact
+ordered sample IDs, GNN outputs, observed TCP, robot observations and targets;
+the cache-only GRU receives only its trained observation fields. Each model keeps
+its saved train-only normalization. No validation fitting or retraining occurred.
+
+All four systems use the same complete-episode causal inference, episode reset,
+world/WXYZ conventions, endpoint-minus-Hole sign, GT-Hole axes, scoring function
+and frame weighting. Recomputed Frozen GNN, Gate and Mamba means matched their
+original results. GRU model/feature/geometry functions were also checked against
+its preserved training source. CuDNN TF32 was disabled for GRU replay; strict
+full-sequence versus one-step inference checks passed with maximum component
+difference **1.79e-7**. Its old training-validation history already covered 12,841
+frames; the five position/vector mean errors reproduce within **0.00055mm**.
+The table uses the new streaming measurements, including newly scored strict
+thresholds. GRU loss 0.56678 and Mamba loss 0.92365 have different definitions
+and must not be ranked against each other.
+
+The table compares the completed trained systems on identical evaluation data.
+It does not isolate the recurrent backbone, because their training differs:
+
+| Setting | Existing GRU | Mamba |
+| --- | --- | --- |
+| Input | 53D cache-only | 64D observed-robot/age features |
+| Position output | Direct, scale 0.1m | Residual, scale 0.01m |
+| Rotation loss | Pose surrogate | Geodesic Huber |
+| Relative/lateral/orientation loss weights | 0.25 / 0.25 / 0.1 | 1 / 1 / 1 |
+| Training context | Complete episode | Reset windows of 64 frames |
+| Checkpoint selection | Geometry-tail/motion composite | Minimum weighted validation loss |
+| Epochs / selected epoch | 20 / 19 | 20 / 19 |
+
+Against this GRU, Mamba reduces mean relative 3D error by **14.98%**, Peg position
+by **35.49%** and axial error by **30.48%**. Mean lateral improves only **1.16%**
+(0.076mm). GRU has lower Hole position/rotation errors and a lower lateral tail:
+
+| Tail metric mm | GRU | Mamba |
+| --- | ---: | ---: |
+| Relative 3D P95 | 22.75 | 22.14 |
+| Lateral P95 | 15.48 | 17.08 |
+
+Mamba improves episode-mean Peg position in 117/126 episodes, relative 3D in
+90/126 and lateral in 69/126; Hole position improves in 40/126. This is mixed
+performance across metrics, not a uniform Mamba-over-GRU result. A controlled
+backbone claim requires matching the training settings above.
+
+Mamba distributions (position/vector errors in mm; rotations in degrees):
+
+| Metric | Mean | Median | P90 | P95 | Worst frame |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Peg position | 3.56 | 2.62 | 7.25 | 9.53 | 37.76 |
+| Peg rotation | 1.43 | 1.02 | 2.89 | 3.94 | 18.95 |
+| Hole position | 9.01 | 6.76 | 17.60 | 22.35 | 88.82 |
+| Hole rotation | 1.80 | 1.33 | 3.87 | 5.20 | 17.89 |
+| Endpoint-minus-Hole vector | 8.65 | 6.63 | 17.45 | 22.14 | 74.02 |
+| GT-Hole-frame lateral error | 6.51 | 4.94 | 13.13 | 17.08 | 44.85 |
+| GT-Hole-frame axial error | 4.64 | 2.89 | 11.15 | 15.44 | 63.50 |
+| Relative orientation | 2.19 | 1.58 | 4.69 | 6.06 | 19.84 |
+
+Strict lateral <1/<2/<3mm frame percentages were **3.59% / 13.62% / 26.79%**.
+Relative 3D <3mm was **13.92%**. These measure estimation error,
+not physical alignment or insertion success. Mamba does not yet provide stable
+3mm precision on this validation set.
+
+The same checkpoint under reset-window versus full-episode context:
+
+| Context | Peg mm | Hole mm | Relative 3D mm | Lateral mm | Lateral <3mm % | Relative <3mm % |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reset every 64 frames | 3.50 | 9.55 | 9.26 | 7.04 | 27.98 | 15.15 |
+| Full episode streaming | 3.56 | 9.01 | 8.65 | 6.51 | 26.79 | 13.92 |
+
+Full context improves mean and tail relative errors, while the reset-window
+condition has slightly more frames below the strict 3mm thresholds. Both remain
+above the required precision; the shortfall is not solely a streaming-context
+change. Parallel full-sequence and actual cache-step outputs agreed within
+4.17e-7 maximum component difference across all validation episodes.
+
+Paired evidence and limitations:
+
+- Against Frozen GNN, Mamba improves mean Hole position, relative 3D and lateral
+  error in **126/126 episodes**; Peg position improves in **74/126**. Mean relative
+  3D error falls 62.77%, and lateral error falls 62.63%.
+- Against Learned Gate, Mamba improves relative 3D in **89/126 episodes** and
+  lateral error in **76/126**, but Hole position in only **3/126**. Relative-vector
+  improvement therefore does not establish better stationary-Hole memory.
+- Moving-Peg position error is 3.70mm versus GNN 4.09mm. In the 125-frame fast
+  direction-change proxy slice, it is 3.03mm versus 2.88mm, a small degradation.
+  Median translational lag is zero frames; 4/126 episodes have positive fitted
+  lag. These are offline GT-based diagnostics, not measured controller latency.
+- With no observed BOX-or-HOLE support (1,849 frames), Mamba relative error is
+  16.75mm and lateral error 11.56mm; relative 3D <3mm is only 0.81%.
+- The GT alignment-geometry proxy covers 782 frames: relative error 6.01mm,
+  lateral error 4.34mm, lateral <3mm 45.01%, relative <3mm 35.68%. It is not a
+  grasp-phase label or a closed-loop success rate.
+- PEG node count never reaches zero, and typed HOLE node count is zero in all
+  validation frames. Target support is represented by BOX nodes. These counts
+  cannot establish physical Peg/Hole visibility or absence of aperture geometry;
+  no GT visibility or before/after-grasp phase labels were supplied.
+- GRU is now included with matching evaluation data/protocol. Its unequal
+  training features, objective, context and selection remain explicit in the
+  audit above; these measurements do not isolate a backbone effect.
+
+Evaluation run: `d159dcc6d8464253a76ab9095be5a221`; context-analysis run:
+`56bb89f31aa1414495e0f89a2a619ae9`. Both use the shared ExperimentLogger and
+new output directories, preserve the selected checkpoint, and read no final-test
+frames. No further training or publishing was started.
+
+Raw results:
+[four-system comparison](../outputs/temporal_insertion_validation/7113412787dd4fbd8e0883e338bd0705/summary.json),
+[comparison config and provenance](../outputs/temporal_insertion_validation/7113412787dd4fbd8e0883e338bd0705/effective_config.json),
+[GRU source compatibility](../outputs/temporal_insertion_validation/7113412787dd4fbd8e0883e338bd0705/gru_code_compatibility.json),
+[GRU training history](../outputs/temporal_insertion_validation/training/gru_history.json),
+[streaming summary](../outputs/temporal_insertion_validation/d159dcc6d8464253a76ab9095be5a221/summary.json),
+[context comparison](../outputs/temporal_insertion_validation/56bb89f31aa1414495e0f89a2a619ae9/summary.json),
+[evaluation provenance](../outputs/temporal_insertion_validation/d159dcc6d8464253a76ab9095be5a221/provenance.json),
+[training loss history](../outputs/temporal_insertion_validation/training/history.json),
+and [loss curves](../outputs/temporal_insertion_validation/training/loss_curves.png).
+Full prediction arrays remain on instance 59441593 under
+`/workspace/temporal_insertion_mamba/validation/d159dcc6d8464253a76ab9095be5a221/predictions.npz`
+and the matching `validation_context` output directory.
+
 ## GRU commit verification
 
 On 2026-11-07, the GRU commit candidate was exported independently of the pending
@@ -634,3 +1273,18 @@ The existing Logger/artifact suites ran separately from the repository with Git
 metadata available: all 36 tests passed. These checks used CPU fixtures and tiny
 cache-based training/evaluation; CUDA/MPS, live simulator execution, full-dataset
 training and external publishing were not run for this commit.
+
+## Mamba commit verification
+
+On 2026-11-07, the Mamba commit candidate was exported independently of the
+pending Hybrid implementation. The combined Mamba, GRU, learned Gate and temporal
+memory suite ran 64 tests: 63 passed and the official CUDA-kernel parity test
+was skipped. The suite includes CPU reference forward/streaming/gradient checks,
+matched-GRU training/comparison, parent-disjoint cache validation and a live
+ManiSkill CPU RGB-D smoke. The existing Logger/artifact suites ran separately
+from the repository: all 36 tests passed.
+
+All 15 temporal YAML recipes resolved to callable workflows without Hybrid
+sources; local feature links and prior raw artifact links were checked. No
+CUDA/MPS execution, full-dataset training, remote launch or publishing was
+performed for this commit.
