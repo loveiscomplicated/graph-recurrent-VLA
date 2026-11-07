@@ -205,3 +205,12 @@ test role. Independent-cache parents must be absent from every original GNN
 split. Training validates external metadata without reading independent test
 frames. See [Mamba insertion estimator](temporal_estimation.md#mamba-insertion-precision-estimator)
 for manifest creation, raw-proprioception joins and the independent-test workflow.
+
+`data_collection/temporal/finetuning_split.py` partitions only the original Mamba
+training parents into fine-tuning train/development (seed 0, 80/20 by parent).
+The existing 126-episode validation is reserved as a reused development benchmark;
+it enters neither gradients, auxiliary-weight calibration nor checkpoint selection.
+Pretrained Mamba, Gate and GNN have already seen the new development parents, so
+this is held out only from the fine-tuning updates. The original reference test is
+also reserved and is not promoted to an independent test. Existing cache checksums,
+raw observed robot joins, frame identities and visibility conventions are reused.

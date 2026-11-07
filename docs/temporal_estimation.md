@@ -1289,3 +1289,32 @@ All 15 temporal YAML recipes resolved to callable workflows without Hybrid
 sources; local feature links and prior raw artifact links were checked. No
 CUDA/MPS execution, full-dataset training, remote launch or publishing was
 performed for this commit.
+
+## Repository layout verification
+
+On 2026-11-07, the temporal additions were grouped under `temporal/` in the
+model, data, training, evaluation and config directories. Models retain their
+weights/state keys and observation contracts. AST comparison confirmed unchanged
+model, loss and episode-data definitions; all 19 YAML recipes retained their
+values apart from relocated entrypoints/config references. Fourteen temporal
+recipes also produced identical effective settings and Torch RNG states before
+and after configuration extraction.
+
+The related workflow tests ran 88 cases: 86 passed and two CUDA-only cases were
+skipped. Logger/artifact tests ran separately in a fresh process: 36 passed.
+The suites include tiny synthetic CPU training/evaluation, a live ManiSkill CPU
+RGB-D check, and a regression rejecting calculation changes during historical
+source-path verification. No CUDA/MPS execution, official CUDA Mamba kernels,
+full-dataset training or remote publishing was performed during this cleanup.
+
+```bash
+WANDB_MODE=disabled .venv/bin/python -m unittest \
+  tests.test_experiment_logger tests.test_experiment_artifacts -v
+```
+
+The workflow command is listed in [the Graph README](../graph/README.md).
+The existing 12,841-frame Hybrid reference was validated and its frozen branches
+restored on CPU; the saved Hybrid diagnostic inputs also passed validation.
+This was input/checkpoint validation, without full reference inference. All 83
+raw artifact links from the original guides were preserved, and local feature
+links and recipe dispatch targets were checked.

@@ -1,7 +1,7 @@
 # Hybrid temporal estimation
 
 The Graph team's hybrid workflow composes frozen Mamba and Learned Gate outputs,
-and supports saved-array diagnostics. Run from the
+then supports Peg-head fine-tuning and saved-array diagnostics. Run from the
 repository root with Torch, NumPy, PyYAML and Matplotlib, the documented original
 checkpoints and checksum-identified evaluation inputs available locally.
 
@@ -9,7 +9,8 @@ checkpoints and checksum-identified evaluation inputs available locally.
 WANDB_MODE=disabled python main.py --config graph/configs/temporal/hybrid/evaluate.yaml
 ```
 
-Model assembly lives in `graph/temporal/hybrid.py`. Reusable causal replay lives in `data_collection/temporal/hybrid_features.py`.
+Model assembly lives in `graph/temporal/hybrid.py`. Reusable causal replay and
+Peg-head feature caching live in `data_collection/temporal/hybrid_features.py`.
 Training stays in `training/gnn/temporal/`; scoring and analysis stay in
 `evaluation/gnn/temporal/`. `hybrid_inputs.py` validates saved inputs separately
 from the evaluation entrypoint.
@@ -21,6 +22,7 @@ validation. New audits record current and historical hashes and the check used;
 past checkpoints, prediction archives and experiment records are not rewritten.
 
 - [Frozen hybrid evaluation](#frozen-mamba--learned-gate-hybrid)
+- [Peg-head fine-tuning](#h1-peg-head-relative-geometry-fine-tuning)
 - [Error attribution](#hybrid-h1-relative-geometry-error-attribution)
 - [Temporal estimators](temporal_estimation.md)
 - [Base GNN and learned Gate](gnn_training.md)
@@ -303,6 +305,329 @@ Each representative trace includes all five systems and GT world position/wxyz,
 Peg/Hole position/rotation errors, relative/lateral/axial errors, and predicted
 Hole-frame lateral geometry. Prior evaluation outputs are preserved.
 
+## H1 Peg-head relative-geometry fine-tuning
+
+Run through the root entrypoint after setting the original checkpoint, graph-cache,
+observed raw-frame and checksum-identified benchmark paths:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/temporal/hybrid/finetune_peg.yaml
+.venv/bin/python -m unittest tests.test_temporal_hybrid_finetuning tests.test_temporal_hybrid -v
+```
+
+The YAML defaults to explicit CPU `torch_reference`. On the already prepared Vast
+environment, `device: cuda:0` trains the Peg head on CUDA while
+`inference_device: cpu`, `mamba_backend: torch_reference` replay frozen branches
+on CPU. Official frozen streaming instead requires `inference_device: cuda:0`
+with `mamba_backend: mamba_ssm`; no driver/package upgrade is required.
+`action: audit` only verifies/replays H1. `action: run` with
+missing training cache/raw roots records `missing_training_data`, without creating
+an optimizer or falling back to benchmark training. Output is always a new
+`outputs/hybrid_geometry_finetuning/<run_id>/`; pretrained files remain read-only.
+
+### Boundary and freeze policy
+
+The epoch-19 joint Mamba has independent `heads.peg` and `heads.hole` modules.
+Implementation **A** fine-tunes only `heads.peg.0.weight` (64×128),
+`heads.peg.0.bias` (64), `heads.peg.2.weight` (6×64) and
+`heads.peg.2.bias` (6): **8,646 parameters**. No residual adapter is introduced.
+The six outputs retain the pretrained residual position/rotation-vector decoder.
+Input projection, norms, selective mixers, Hole head, normalization buffers,
+Learned Gate and GNN remain frozen. Original GNN predictions come from the same
+checksummed graph cache; no detector is retrained. Hole XYZ is always predicted
+by the frozen Gate and Hole rotation by the frozen Mamba.
+
+`graph/temporal/hybrid_finetuning.py` contains the model wrapper; orchestration/loss live in
+`training/gnn/temporal/hybrid_finetuning*.py`, selection and diagnostics in
+`evaluation/gnn/temporal/hybrid_finetuning.py`, parent selection in
+`data_collection/temporal/finetuning_split.py`. The inference assembly now constructs
+Object21 out of place, preserving its numerical computation while permitting
+Method A to backpropagate into the Peg pose. Method A still uses predicted GNN
+half-length along Peg local +X; insertion axis remains Hole local +X. Object21
+and State38 use the existing inference contracts. GT enters only loss/scoring.
+
+### Fine-tuning data and causal context
+
+Seed 0 partitions the original **504 training parents** into **403 train / 41,270
+frames** and **101 fine-tuning development episodes / 10,591 frames**. Sibling
+episodes stay with their parent.
+The development parents were seen during pretraining; they are not independent
+held-out system validation. Original **126 episodes / 12,841 frames** remain a
+reused development benchmark with no gradient, calibration or selection access.
+The other 180 original reference episodes remain unread. No independently
+collected test is inferred or substituted from those historical partitions.
+
+Each branch runs its real per-frame streaming API with a cold reset at episode
+frame 0, preserving observed TCP changes, quaternion conventions, support ages,
+Gate memory and Mamba selective/convolution caches. A head-input hook caches only
+the frozen causal representation. Training shuffles valid pointwise head inputs;
+there is no padded supervision and no gradient through a cached backbone. This
+deliberately uses **full-episode context**, whereas original Mamba pretraining reset
+at 64-frame windows. Final selected heads are replayed through full streaming on
+both development and benchmark and checked against cached-head results.
+Normalization is restored exactly from pretraining, never refitted.
+
+### Controlled objectives and selection
+
+All three ablations independently start from the same epoch-19 weights, fresh
+AdamW, identical shuffle seed, LR 3e-5, weight decay 1e-4, cosine schedule,
+gradient clip 1, maximum 15 epochs and patience 5. FT-A uses Peg position and
+rotation; FT-B adds relative vector; FT-C also adds lateral vector. Huber errors
+are dimensionless with the original scales 0.01 m / 0.1 rad; quaternion rotation
+uses sign-invariant geodesic Huber. Relative GT is the actual endpoint−Hole
+arrangement, never a zero-distance target. Lateral supervision is error expressed
+in GT Hole YZ, matching the existing loss/scorer; GT axis is absent at inference.
+
+Before fitting, a fixed random sample of up to 2,048 **training** frames measures
+each loss's Peg-head gradient. Auxiliary coefficients target relative norm 0.10
+and lateral norm 0.05 of the combined pose gradient, clipped to [0.001, 0.2]. The
+resulting coefficients are fixed, and FT-B/FT-C share the same relative weight.
+`gradient_calibration.json` records losses, raw/weighted norms, sample indices and
+relative/lateral gradient cosine. Each epoch also logs first-minibatch gradient
+contributions. Ratios are an explicit initial budget, not universal coefficients.
+
+Checkpoint selection uses only fine-tuning development. A candidate must stay
+within H1 development means +0.2 mm Peg position, +0.1° Peg rotation, +0.2 mm axial
+and +0.2 mm moving-Peg position. Its fixed score is relative mean + 0.5×lateral
+mean + 0.1×relative P95 + 0.1×lateral P95 (all mm). Epoch 0 is eligible and remains
+best if no admissible improvement appears. Benchmark numbers never alter weights,
+budgets or this rule. These tolerances are study settings, not physical success
+criteria; final motion/lag and tail diagnostics must still be inspected.
+
+### Evidence and verification artifacts
+
+The workflow prints parameter names/count, verifies exact optimizer membership,
+stores per-tensor best/last parameter diffs (including frozen buffers), checks all
+Gate tensors, and hashes the original three checkpoints before/after the study.
+It checks initial H1 parity and bitwise Hole pose invariance, then uses the same
+insertion scorer for mean/median/P90/P95, 1/2/3 mm precision, motion/occlusion and
+available phase groups. GT-derived alignment/approach groups are offline proxies;
+true Grasp/Lift/Transport labels require a separate supplied phase inventory.
+Diagnostics preserve endpoint bias, endpoint/Hole error cross term, parent-cluster
+paired bootstrap, frame improvement/worsening and the historical failure
+`shard_000022/episode_000016`. Estimation precision is not insertion success.
+
+Local CPU baseline audit `43b3ae6ef83b401396ce3fd7655a8e65` reproduced the original
+126-episode benchmark without training. New model/geometry/split tests passed
+12/12 on local CPU and on the prepared Vast Python environment before adding a
+separate CPU-cache/CUDA-head transfer test. Shared logger and
+artifact tests passed 36/36 in their own process. A combined broad process exposed
+an existing `imageio.plugins` lazy-import interaction with the logger test's global
+`importlib` mock; the required infrastructure suite passes independently. CUDA
+head-training results and CPU streaming comparisons are recorded below, including
+the absence of an independent test. No simulator change is part of fine-tuning.
+
+Selected artifacts store the Peg head only (`kind: hybrid_peg_finetuning`), not
+a replacement for the original Mamba checkpoint. Restore the original Mamba/Gate
+with `evaluation.gnn.temporal.hybrid.restore_branches`, verify that its three
+source checkpoint hashes match the selected artifact's
+`config.source_checkpoint_hashes`, then load `payload['peg_head']` into
+`mamba.heads['peg']` with `strict=True`. The unchanged
+`StreamingHybridEstimator(mamba, gate)` then provides Object21/State38 inference.
+`best.pt` and `last.pt` are distinct artifacts, and epoch 0 means the selected
+head is the original unadapted head.
+
+After a completed study is copied locally, set `source_run` and the same reference
+snapshot in `graph/configs/temporal/hybrid/analyze_finetuning.yaml`, then run:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/temporal/hybrid/analyze_finetuning.yaml
+```
+
+This is a separate tracked analysis, with source input checksums and no model
+updates. It adds FT-B versus FT-A / FT-C versus FT-B parent-paired comparisons,
+matched episode lag summaries, precision CDFs and development curves. Its GT-only
+approach proxy requires the tip to move by >0.5 mm/frame along Hole +X within the
+existing alignment window; it is explicitly not a true contact/phase annotation.
+
+### Measured H1 fine-tuning results
+
+On 2026-11-07, Vast.ai **59441593 / RTX 3090** completed study
+`cd65c40b572b476aad496c356ffd495a`. The Peg head trained on CUDA; frozen branch extraction and final
+full-episode inference used the verified CPU `torch_reference` backend. A two-episode
+host timing measured 4.11 ms/frame with maximum Mamba/CUDA-snapshot difference
+1.19e-7. The initial all-CUDA attempt was stopped before any optimizer update
+because per-frame frozen replay was slower; its files were preserved.
+Official `mamba_ssm` CUDA streaming of the updated heads and MPS execution were
+not run; CUDA was exercised for Peg-head optimization and the device-transfer test.
+
+**No fine-tuned head was adopted.** All three conditions stopped after 5 epochs;
+epoch 0 retained the lowest admissible development score **13.004831**.
+Consequently each `best.pt` contains the original H1 Peg head, and the selected
+benchmark outputs are unchanged. The following table deliberately reports the
+**actual trained, unselected `last.pt` heads at epoch 5**, freshly replayed on the
+same 126 reused benchmark episodes / 12,841 frames. These diagnostic numbers were
+not used to change the selection rule, loss weights or models.
+
+| Metric | Original H1 | FT-A last | FT-B last | FT-C last |
+| --- | ---: | ---: | ---: | ---: |
+| Peg position mm | 3.558 | 3.218 | 3.229 | 3.232 |
+| Peg rotation deg | 1.431 | 1.307 | 1.307 | 1.307 |
+| Hole position mm | 3.669 | 3.669 | 3.669 | 3.669 |
+| Relative 3D mm | 7.667 | 7.835 | 7.752 | 7.735 |
+| Lateral mm | 4.986 | 5.013 | 4.958 | 4.937 |
+| Axial mm | 4.901 | 5.073 | 5.021 | 5.020 |
+| Lateral <3mm | 39.85% | 38.93% | 39.99% | 40.51% |
+| Relative 3D <3mm | 17.92% | 17.59% | 18.10% | 18.22% |
+
+Hole rotation is unchanged at 1.801538° for every head. Hole XYZ/quaternion
+outputs were bitwise identical within each paired replay. The four Peg tensors
+changed in every last checkpoint; every other Mamba state tensor and all 2,081
+Gate parameters were unchanged. The three original checkpoint SHA256 values
+matched before/after. Selected-head cached/full-stream differences were at most
+1.19e-7 on both development and the benchmark. GNN inference also asserted exact
+parameter/buffer preservation; the detector was not loaded for training.
+
+| Condition | Epochs run | Selected epoch | Last development score | Last guard failures |
+| --- | ---: | ---: | ---: | --- |
+| FT-A | 5 | 0 | 13.483831 | axial |
+| FT-B | 5 | 0 | 13.341005 | axial |
+| FT-C | 5 | 0 | 13.315793 | none; score still worse than H1 |
+
+All updated epochs scored worse than epoch 0; even first-epoch scores were
+13.105882 / 13.060523 / 13.047452 for A/B/C (exact values are in histories).
+The final development Relative 3D means were 7.619 / 7.537 / 7.521 mm, versus
+7.340 mm for H1, despite better absolute Peg poses. No benchmark-based override
+of this negative development result was made.
+
+#### Loss and gradient evidence
+
+Position/rotation units remained 0.01 m / 0.1 rad. The 2,048 train-frame
+calibration fixed the following C weights; A disables both auxiliaries and B
+disables lateral. Combined pose gradient norm was 0.453008.
+
+| Term | Initial normalized loss | Raw gradient norm | Weight in C | Weighted norm |
+| --- | ---: | ---: | ---: | ---: |
+| peg_position | 0.033036 | 0.055132 | 1.00000000 | 0.055132 |
+| peg_rotation | 0.039180 | 0.449544 | 1.00000000 | 0.449544 |
+| relative_position | 0.131282 | 0.556036 | 0.08147092 | 0.045301 |
+| lateral_position | 0.085617 | 0.798353 | 0.02837141 | 0.022650 |
+
+Relative/lateral gradient cosine was **0.974172**, so the two objectives
+largely overlap at initialization. Rotation supervision had about 8.15× the raw
+position gradient norm. The auxiliary gradient budgets were 10% and 5% of the
+combined pose gradient, not universal coefficients of 0.1. Per-epoch first-batch
+gradient contributions and normalized term losses are preserved in each history.
+
+#### Tails, precision and cancellation
+
+| Metric mm | H1 | A last | B last | C last |
+| --- | ---: | ---: | ---: | ---: |
+| Relative P90 | 15.175 | 15.463 | 15.399 | 15.415 |
+| Relative P95 | 21.850 | 22.861 | 22.451 | 22.467 |
+| Lateral P95 | 13.803 | 13.711 | 13.610 | 13.622 |
+| Axial P95 | 16.909 | 17.878 | 17.619 | 17.605 |
+| Endpoint mean | 7.062 | 7.188 | 7.152 | 7.152 |
+| Endpoint P95 | 22.246 | 23.368 | 23.182 | 23.179 |
+
+C improves lateral <3mm by **0.662 percentage points** and relative <3mm by
+**0.296 points**, but its mean relative error and relative/axial tails worsen.
+Its mean lateral improvement alone is insufficient evidence of overall success.
+
+The cancellation cross term is `-2 E[e_endpoint · e_hole]` in mm²:
+**-14.913 / -15.130 / -15.635 / -15.837** for H1/A/B/C. Cancellation becomes
+more favorable, while endpoint mean and tail errors worsen. Thus these results
+do not support a simple loss-of-cancellation explanation for the fine-tuning
+degradation. C reduces Peg centre Y bias from -0.966 to -0.397 mm, while endpoint
+Y bias grows from +0.185 to +0.729 mm. Better centre/angular scalar errors need
+not yield a better tip with fixed predicted size; direction and error coupling
+matter. A causal attribution specifically to size was not isolated in this study.
+
+| Last head vs H1 | Relative improved episodes /126 | Relative mean delta mm [95% CI] | Lateral improved episodes /126 |
+| --- | ---: | --- | ---: |
+| FT-A | 46 | +0.1680 [+0.0824, +0.2601] | 58 |
+| FT-B | 53 | +0.0857 [+0.0036, +0.1738] | 67 |
+| FT-C | 54 | +0.0687 [-0.0134, +0.1567] | 70 |
+
+C improves/worsens relative error on 49.70% / 50.30% of frames. Its axial
+mean delta is +0.1194 mm, parent-bootstrap 95% CI [+0.0238, +0.2200]. These CIs
+are conditional comparisons on a reused benchmark, not independent-test evidence.
+
+| Added loss, last heads | Relative delta mm [95% CI] | Lateral delta mm [95% CI] |
+| --- | --- | --- |
+| B minus A | -0.0823 [-0.0940, -0.0706] | -0.0553 [-0.0657, -0.0448] |
+| C minus B | -0.0170 [-0.0204, -0.0135] | -0.0213 [-0.0257, -0.0167] |
+
+The added geometry objectives mitigate pose-only degradation and have measurable
+effects against their matched controls. They do **not** recover H1 geometry or
+satisfy the fixed development selection criterion in this setting.
+
+#### Motion, alignment and failure cases
+
+| Group | Frames | Relative H1→C mm | Lateral H1→C mm | Axial H1→C mm | Lateral <3mm H1→C |
+| --- | ---: | --- | --- | --- | --- |
+| peg_stationary | 5765 | 7.561→7.629 | 5.254→5.244 | 4.535→4.624 | 39.01%→38.65% |
+| peg_moving | 6950 | 7.814→7.884 | 4.788→4.706 | 5.256→5.403 | 40.40%→41.87% |
+| insertion_alignment_geometry_proxy | 782 | 5.654→5.727 | 4.111→4.089 | 3.286→3.396 | 48.59%→50.00% |
+| target_support_missing | 1849 | 15.894→16.281 | 9.182→9.065 | 11.517→12.071 | 15.90%→19.58% |
+
+Alignment-proxy relative P95 worsens from 14.493 to 15.896 mm despite improved
+3mm fractions. Moving-Peg position improves 3.705→3.295 mm. Mean absolute
+position lag across the same 126 episodes is 0.03175→0.01587 frames; rotation
+absolute lag is 0.88095→0.83333 frames, with six episodes nevertheless worsening
+in absolute rotation lag. This is not uniform temporal improvement.
+
+There are no Peg-support-absent frames, while direct Hole-node support is absent
+on all benchmark frames; the useful missing-support slice is BOX-or-HOLE absence.
+These are observed-support proxies, not physical occlusion labels. True
+Grasp/Lift/Transport/contact-phase annotations were unavailable. A separately
+defined GT approach proxy is reported for the **selected** heads in comparison.json;
+all selected heads are H1 and therefore unchanged on that slice.
+
+Historical failure `shard_000022/episode_000016`:
+
+| Metric mm | H1 | A last | B last | C last |
+| --- | ---: | ---: | ---: | ---: |
+| Relative 3D | 12.008 | 12.453 | 12.239 | 12.220 |
+| Lateral | 3.779 | 3.488 | 3.391 | 3.355 |
+| Axial | 11.057 | 11.585 | 11.398 | 11.395 |
+
+C reduces lateral error here, but relative/axial errors still worsen. The
+episode was not used as an optimization target or model-selection override.
+
+#### Reproduction and limits
+
+Original checkpoints/results remain preserved; no commit, push, W&B delivery or
+HF publication occurred. Training used `ExperimentLogger`; post-selection
+analysis has its own linked input hashes and run identity. No simulator/controller
+rollout or CUDA physics/render validation is claimed. The installed CPU endpoint
+check passed four reset/step cases with maximum 1.49e-8 m difference.
+
+One LR, one calibrated auxiliary-gradient budget and this Peg-only boundary were
+evaluated. This negative result does not establish that every possible head-only
+weight/schedule fails. There is **no independent test**: fine-tuning development
+was previously seen in pretraining, the 126-episode benchmark is reused, and
+the reserved 180 reference episodes were not read for training or final scoring.
+
+Local final hybrid/fine-tuning tests: 14 total, 13 passed and one CUDA-host skip.
+Remote prepared-environment tests: 13/13 including actual CPU-cache/CUDA-head
+transfer. Existing Mamba/precision regressions: 27 total, 26 passed and one CUDA
+skip. Shared logger/artifact tests: 36/36 in a separate process.
+
+Reproduce the prepared-host study with its preserved config:
+
+```bash
+cd /workspace/hybrid_geometry_finetuning/launch_f3ab893b87514deb84764ec35394f44d/source_cpu_streaming
+WANDB_MODE=disabled /workspace/temporal_insertion_validation/8e066415885e4395ae3a824472bc94b1/venv/bin/python main.py \
+  --config ../finetune_hybrid_geometry_cpu_streaming.yaml
+```
+
+The source base was `850c47be1bb530da4c23dbec8e9bf153b0c539d3` with uncommitted
+work. Exact source snapshots and checksums are retained; Git commit alone does
+not reconstruct this run. Local analysis uses the documented root entrypoint
+with `graph/configs/temporal/hybrid/analyze_finetuning.yaml`.
+
+- [Training status/best epochs](../outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/execution_status.json)
+- [Freeze/hash audit](../outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/audit.json)
+- [Train/development/benchmark parent manifest](../outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/finetuning_split.json)
+- [Gradient calibration](../outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/gradient_calibration.json)
+- [Selected-head benchmark summary](../outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/summary.json)
+- [Last-head development and fresh benchmark diagnostics](../outputs/hybrid_geometry_analysis/b6de749c250a43bb9e4ad1d641dd8536/last_head_diagnostics.json)
+- [Selected-head tracking/approach comparison](../outputs/hybrid_geometry_analysis/b6de749c250a43bb9e4ad1d641dd8536/comparison.json)
+- [Development curves](../outputs/hybrid_geometry_analysis/b6de749c250a43bb9e4ad1d641dd8536/development_curves.png)
+- [Source archive and launch provenance](../outputs/hybrid_geometry_finetuning/launch_f3ab893b87514deb84764ec35394f44d/launch.json)
+
+
 ## Hybrid-H1 relative geometry error attribution
 
 2026-11-07 KST, run `807c6a8f83464862be67b85fdc7fce47`. 기존 Hybrid run
@@ -575,6 +900,49 @@ shard_000005/episode_000007와 shard_000029/episode_000003의 **lateral 악화�
 Hole이 1.651mm까지 좋아져도 Endpoint 18.300mm로 Relative가 17.970mm 남는다.
 개선 최대 episode는 dot이 **−38.66→+9.41mm²**로 변해 amplification도 해소된다.
 이는 배타적 분류기나 물리적 접촉 원인 판정이 아닌 결과의 설명이다.
+
+### Fine-tuning 우선 대상과 loss 후보
+
+1. **잔여 Relative는 Endpoint와 frozen half-length를 우선 진단한다.** Endpoint
+   term이 Hole term보다 크다. Mamba→H1 악화 프레임의 변화는 cancellation 식으로
+   설명된다. Hole을 일부러 부정확하게 만들어 cancellation을 복원하는 것이 목표는 아니다.
+2. **전체 translation/rotation의 우열은 단일 비율로 확정하지 않는다.** 위치의
+   norm 개선이 약간 크고 회전의 MSE 개선이 약간 크다. Approach에서는 회전 교체의
+   Lateral 개선 **1.211mm**가 위치의 **0.544mm**보다 크므로 orientation과
+   transverse endpoint precision을 우선 비교할 근거가 있다.
+3. **Approach Lateral mean 4.153mm와 Axial P95 13.611mm를 함께 관리한다.**
+   Alignment Axial 악화와 Approach/terminal Relative <3mm 하락을 전체 mean으로 숨기지 않는다.
+4. **기존 Mamba는 이미 Relative/Lateral/Relative-orientation loss를 학습했다.**
+   실제 저장 config는 `pose_relative_full`, geodesic Huber, position unit 0.01m,
+   rotation unit 0.1rad, 7개 weight 모두 1이다. Loss를 처음 추가한다는 제안은 맞지 않는다.
+   후속 실험에서 supervision geometry를 실제 H1의 **frozen Gate Hole + Mamba Peg +
+   GNN Size** 조립에 맞추는 ablation을 우선 비교할 수 있다. GT는 supervision과
+   offline grouping에만 사용한다. 이번 작업은 새 모델/데이터 인터페이스를 정하지 않았다.
+5. **Mamba Peg head만으로 frozen Size/Gate/Hole-rotation 오차를 직접 고칠 수 없다.**
+   Pose 잔여 성분은 줄일 수 있으나 centre translation으로 길이 오차를 흡수하면
+   절대 pose가 왜곡될 수 있다. GT Peg Pose에서도 Endpoint 4.964mm가 남는 점을
+   고려해 별도 size calibration/refinement 가능성을 먼저 검증할 근거가 있다.
+6. **절대 pose·relative·tail·episode 지표를 보존한다.** Peg position **3.558mm**,
+   rotation **1.431°**, Gate Hole **3.669mm**, Hole rotation **1.802°**, Relative
+   orientation **2.185°**, 전체 H1 Lateral <3mm **39.85%**를 함께 추적한다.
+   Approach <3mm, signed X/Y/Z bias, Axial/Relative P95, episode worst,
+   predicted-Hole-frame geometry 및 reset/causality도 보존 대상으로 둔다.
+
+후보 objective는 절대 pose anchor를 유지한
+`L_pose + lambda_rel*Huber(e_rel/s) + lambda_lat*Huber(e_local_yz/s)
++ lambda_ax*Huber(e_local_x/s) + lambda_endpoint*Huber(E/s)`다.
+기존 `s=0.01m` 후보와 실제 정밀도 scale의 ablation은 구분한다. Relative는 GT의
+실제 상대 배열을 목표로 하며 Peg를 무조건 Hole 중심으로 옮기는 loss가 아니다.
+Size를 조정하는 후속 실험에서는 별도 half-length supervision을 비교할 수 있다.
+현재 코드에 axial/endpoint 전용 weight를 구현한 것은 아니다.
+
+초기 비교 후보로 `lambda_rel∈{0.25,0.5,1}`, `lambda_lat∈{0.5,1,2}`,
+추가 axial/endpoint term은 각각 `{0,0.25,0.5}`를 제안한다. 기존 rel/lateral이
+이미 1인 baseline도 포함한다. 이는 소규모 ablation 후보이며 최적값이 아니다.
+Relative loss가 이미 axial/lateral을 포함해 중복 가중될 수 있고 frozen size 편향을
+pose에 전가하지 않는지 확인해야 한다. 우선순위는 전체 Cartesian sweep보다
+현재 objective 재현 → H1 조립 일치 → 구간별 lateral/axial 가중치 → size 개선의
+분리 비교다. 최종 판단에는 별도 parent-disjoint test와 실제 insertion controller가 필요하다.
 
 ### 산출물·검증·확정할 수 없는 사항
 

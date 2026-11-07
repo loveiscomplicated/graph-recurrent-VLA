@@ -22,6 +22,7 @@ Choose the workflow by its input/output task:
 | Pose/relative/lateral loss ablations | `precision/train_*.yaml`, `precision/evaluate.yaml` | [Insertion objectives](../docs/temporal_estimation.md#gru-insertion-precision-objectives) |
 | Insertion Mamba and matched GRU | `insertion/train_mamba.yaml`, `train_gru_matched.yaml`, `evaluate.yaml`, `compare_gru_mamba.yaml` | [Insertion estimation](../docs/temporal_estimation.md#mamba-insertion-precision-estimator) |
 | Frozen Mamba + Gate hybrid | `hybrid/evaluate.yaml` | [Hybrid evaluation](../docs/hybrid_estimation.md#frozen-mamba--learned-gate-hybrid) |
+| Hybrid Peg-head fine-tuning | `hybrid/finetune_peg.yaml`, `hybrid/analyze_finetuning.yaml` | [Fine-tuning](../docs/hybrid_estimation.md#h1-peg-head-relative-geometry-fine-tuning) |
 | Saved hybrid error analysis | `hybrid/analyze_errors.yaml` | [Error attribution](../docs/hybrid_estimation.md#hybrid-h1-relative-geometry-error-attribution) |
 
 `insertion.py` supports both Mamba and GRU; `hole_gru.py` and `pose_gru.py` name
@@ -43,8 +44,8 @@ Run the related CPU tests, including tiny synthetic training workflows:
 WANDB_MODE=disabled .venv/bin/python -m unittest \
   tests.test_temporal_hole_gru tests.test_temporal_pose_gru \
   tests.test_temporal_insertion tests.test_temporal_precision \
-  tests.test_temporal_hybrid tests.test_temporal_hybrid_error_analysis \
-  tests.test_temporal_gate -v
+  tests.test_temporal_hybrid tests.test_temporal_hybrid_finetuning \
+  tests.test_temporal_hybrid_error_analysis tests.test_temporal_gate -v
 ```
 
 ## Learned temporal update gate
