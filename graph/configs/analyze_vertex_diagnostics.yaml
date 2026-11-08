@@ -1,0 +1,7 @@
+trainer: evaluation.gnn.vertex_diagnostics:analyze
+predictions: outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_evaluation/b1bc1a57bb494f4aadb43d91c8eedbc5
+parent_manifest: outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/original_split_manifest.json
+seed: 0
+bootstrap_repetitions: 2000
+output:
+  root: outputs/vertex_gnn_diagnostics

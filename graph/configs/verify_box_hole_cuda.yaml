@@ -1,0 +1,28 @@
+{
+  "predictions": "/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_evaluation/b1bc1a57bb494f4aadb43d91c8eedbc5",
+  "train_geometry": "/workspace/vertex_gnn_diagnostics/08c9f60da5ed43e8bf64b30de2b95253/results/train_geometry.npz",
+  "validation_geometry": "/workspace/vertex_gnn_diagnostics/08c9f60da5ed43e8bf64b30de2b95253/results/validation_geometry.npz",
+  "parent_manifest": "/workspace/temporal_insertion_data/published_inputs/temporal_gate_splits.json",
+  "checkpoints": {
+    "baseline": "/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/baseline/38a96f9288f840fab735f48a79343ca0/best.pt",
+    "geometry": "/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/geometry/9eed87b0accd47a593de8687e601600f/best.pt",
+    "multiseed": "/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/multiseed/e87597b82ed749e09d221e9062e39918/best.pt",
+    "combined": "/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/combined/802284c9d5c247ac807a982c70ab59ff/best.pt"
+  },
+  "trainer": "evaluation.gnn.box_hole_cuda_verification:verify",
+  "data_identity": "/workspace/temporal_insertion_data/published_inputs/data_identity.json",
+  "collection_manifest": "/workspace/visible_peg_dataset/dataset_manifest.json",
+  "device": "cuda:0",
+  "torch_threads": 4,
+  "batch_size": 128,
+  "seed": 0,
+  "bootstrap_repetitions": 2000,
+  "replay_tolerance_m": 2e-06,
+  "output": {
+    "root": "/workspace/box_hole_observability/cuda"
+  },
+  "instance_id": 59441593,
+  "raw_root": "/workspace/episodes",
+  "verified_fixture_states": "/workspace/box_hole_observability/source/verified_fixture_states.json",
+  "verified_fixture_states_sha256": "95a54cc7472eb368acec7cdcb2b5aeb883ea601249857a4af068189fd32d1a08"
+}

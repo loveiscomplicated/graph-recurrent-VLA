@@ -1,0 +1,24 @@
+{
+  "predictions": "outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_evaluation/b1bc1a57bb494f4aadb43d91c8eedbc5",
+  "train_geometry": "outputs/vertex_gnn_diagnostics/08c9f60da5ed43e8bf64b30de2b95253/train_geometry.npz",
+  "validation_geometry": "outputs/vertex_gnn_diagnostics/08c9f60da5ed43e8bf64b30de2b95253/validation_geometry.npz",
+  "parent_manifest": "outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a/original_split_manifest.json",
+  "checkpoints": {
+    "baseline": "outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/baseline/38a96f9288f840fab735f48a79343ca0/best.pt",
+    "geometry": "outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/geometry/9eed87b0accd47a593de8687e601600f/best.pt",
+    "multiseed": "outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/multiseed/e87597b82ed749e09d221e9062e39918/best.pt",
+    "combined": "outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_training/combined/802284c9d5c247ac807a982c70ab59ff/best.pt"
+  },
+  "trainer": "evaluation.gnn.box_hole_diagnostics:analyze",
+  "data_identity": "outputs/vertex_gnn_diagnostics/data_identity.json",
+  "collection_manifest": "outputs/visible_peg_dataset/dataset_manifest.json",
+  "device": "cpu",
+  "torch_threads": 4,
+  "batch_size": 128,
+  "seed": 0,
+  "bootstrap_repetitions": 2000,
+  "replay_tolerance_m": 2e-06,
+  "output": {
+    "root": "outputs/box_hole_observability"
+  }
+}
