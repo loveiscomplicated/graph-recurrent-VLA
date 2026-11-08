@@ -1,0 +1,55 @@
+trainer: training.gnn.temporal.joint_finetuning:continue_and_evaluate
+device: cuda:0
+seed: 0
+checkpoint: /workspace/selected_vertex_continuation_matched/training_seed_0/ba9daea778694023845cb88ece0b7624/training/695438c8b53f4bbb81269b056af6d133/final_epoch.pt
+split_manifest: /workspace/temporal_continuation_120/inputs/splits.json
+selected_m0:
+  dataset: /workspace/selected_vertex_m0/data
+  cache_source_checkpoint: /workspace/temporal_continuation_120/inputs/cache_source_best.pt
+data:
+  cache_dir: /workspace/temporal_continuation_120/data/gnn_cache
+  raw_root: /workspace/temporal_continuation_120/data/episodes
+  require_robot: true
+mode: joint_peg_hole
+model:
+  architecture: mamba
+  backend: mamba_ssm
+  d_model: 128
+  n_layers: 1
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  head_hidden: 64
+  position_mode: residual
+  position_scale_m: 0.01
+training:
+  epochs: 500
+  episode_batch_size: 4
+  sequence_length: 64
+  context_policy: reset_windows
+  lr: 0.001
+  gradient_clip_norm: 1.0
+  cuda_memory_fraction: 0.25
+  early_stopping:
+    patience: 30
+    min_epochs: 60
+    min_delta: 0.0
+loss:
+  ablation: pose_relative_full
+  position_unit_m: 0.01
+  rotation_unit_rad: 0.1
+evaluation:
+  batch_size: 64
+  split: test
+  plot_episodes: 3
+  latency_warmup_steps: 10
+  latency_steps: 100
+output:
+  root: /workspace/joint_node_token_continuation/training/seed_0
+evaluation_selection: /workspace/temporal_continuation_120/inputs/validation_frames.jsonl
+temporal_checkpoint: /workspace/node_token_mamba/training/seed_0/5ec76e979b37428f898b7b0efca9a8ca/best.pt
+joint_finetuning:
+  gnn_lr: 1.0e-05
+  temporal_lr: 0.0001
+continuation_checkpoint: /workspace/joint_node_token_mamba/training/seed_0/73aeffa38cb7485383052348f5b4a71d/best.pt
+comparison_output: /workspace/joint_node_token_continuation/evaluation/seed_0

@@ -1,0 +1,5 @@
+trainer: data_collection.temporal.fixed_id_corner_sequences:prepare
+source:
+  corner_dataset: /path/to/prepared_corner_dataset
+output:
+  root: outputs/fixed_id_corner_sequences

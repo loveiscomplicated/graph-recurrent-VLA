@@ -1,0 +1,11 @@
+trainer: evaluation.gnn.temporal.corner_tracking_aggregate:aggregate
+seeds: [0, 1, 2]
+runs:
+  - /path/to/mamba/seed_0/run_id
+  - /path/to/transformer/seed_0/run_id
+  - /path/to/mamba/seed_1/run_id
+  - /path/to/transformer/seed_1/run_id
+  - /path/to/mamba/seed_2/run_id
+  - /path/to/transformer/seed_2/run_id
+output:
+  root: outputs/corner_tracking_comparison

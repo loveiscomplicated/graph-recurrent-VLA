@@ -1,0 +1,20 @@
+trainer: evaluation.detected_corner_video:render
+device: cuda:0
+fps: 12
+threshold_mm: 30
+data:
+  corner_dataset: /path/to/fixed_id_corner_sequences
+  family_dataset: /path/to/vertex_family_dataset
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+models:
+  mamba: {checkpoint: /path/to/best.pt, sha256: /checkpoint/sha256}
+  transformer: {checkpoint: /path/to/best.pt, sha256: /checkpoint/sha256}
+validation:
+  mamba: {path: /path/to/validation.json, sha256: /validation/sha256}
+  transformer: {path: /path/to/validation.json, sha256: /validation/sha256}
+episodes:
+  - {name: online_corners_long_gap, episode: shard_000011/episode_000011}
+  - {name: online_corners_short_gap, episode: shard_000020/episode_000010}
+  - {name: online_corners_id_switches, episode: shard_000020/episode_000009}
+output:
+  root: outputs/detected_corner_videos

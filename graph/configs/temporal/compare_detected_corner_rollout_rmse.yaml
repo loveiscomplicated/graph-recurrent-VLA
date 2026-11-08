@@ -1,0 +1,4 @@
+trainer: evaluation.detected_corner_rollout_rmse:compare
+runs_root: /path/to/runs
+output:
+  root: outputs/detected_corner_rollout_rmse_comparison

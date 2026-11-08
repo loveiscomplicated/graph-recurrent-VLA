@@ -1,0 +1,9 @@
+trainer: evaluation.fixed_id_gnn_leaderboard:compare
+seeds: [0, 1, 2]
+runs_root: /path/to/fixed_id_gnn_runs
+corner_dataset: /path/to/fixed_id_corner_sequences
+reference_validation: /path/to/reference_validation.npz
+reference_sha256: /reference/sha256
+device: cuda:0
+output:
+  root: outputs/fixed_id_gnn_comparison

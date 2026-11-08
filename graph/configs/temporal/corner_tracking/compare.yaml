@@ -1,0 +1,41 @@
+trainer: training.gnn.temporal.corner_tracking:compare
+device: cpu
+torch_threads: 1
+seeds: [0, 1, 2]
+architectures: [mamba, transformer]
+data:
+  kind: prepared
+  root: /path/to/prepared_corner_tracking_dataset
+model:
+  backend: torch_reference
+  d_model: 128
+  layers: 1
+  heads: 4
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  coordinate_scale_m: 0.05
+  age_scale_frames: 32.0
+tracking:
+  confirmation_hits: 2
+  confirmation_window: 3
+  graph_max_missing_frames: 8
+  retirement_missing_frames: 33
+  ambiguity_ratio: 0.8
+  dormant_confirmation_hits: 2
+  graph_radius95_m: 0.005
+masking:
+  mode_probabilities: [0.25, 0.40, 0.25, 0.10]
+  length_probabilities: [0.20, 0.40, 0.30, 0.10]
+calibration:
+  minimum_samples: 32
+training:
+  pretrain_epochs: 5
+  joint_epochs: 20
+  motion_lr: 0.001
+  gnn_lr: 0.001
+  weight_decay: 0.0001
+  node_weight: 0.1
+  gradient_clip_norm: 1.0
+output:
+  root: outputs/corner_tracking

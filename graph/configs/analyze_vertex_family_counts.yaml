@@ -1,0 +1,6 @@
+trainer: evaluation.gnn.vertex_family_counts:analyze
+predictions: outputs/vertex_family_full_training/evaluation/15b2cfa92d7a474ca68ff178e14f8fe6
+counts: outputs/vertex_family_full_training/evaluation/15b2cfa92d7a474ca68ff178e14f8fe6/vertex_counts.npz
+seeds: [0, 1, 2]
+output:
+  root: outputs/vertex_family_count_analysis

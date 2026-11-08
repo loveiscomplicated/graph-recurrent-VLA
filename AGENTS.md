@@ -72,6 +72,17 @@ For corner-detection changes, also read `docs/corner_detection.md`.
 For collection changes, also read `docs/data_collection.md`; for simulator
 output-device changes, read `docs/gpu_observations.md`.
 
+For Graph corner prediction or tracking changes, read the relevant guide:
+[fixed-ID prediction](docs/corner_prediction.md),
+[lifecycle tracking](docs/corner_tracking.md), or
+[detector-only association and GNN](docs/detected_corner_gnn.md).
+The six detector-only GNN leaderboard results (20 epochs, fresh 40 epochs and
+early-stopped continuation, each Mamba/Transformer) require exact evaluation
+reproduction when their implementation or numerical dependencies change. Follow
+the [preservation criteria](docs/detected_corner_gnn.md#evaluation-preservation);
+keep the affected code intact until the required reference inputs and execution
+environment are available.
+
 Keep dataset selection and storage in `data_collection/`, outside the raw
 simulator. Preserve the ends-plus-grasp versus full-surface visibility modes
 and raw RGB/depth shape, dtype and device behavior. Reuse these extracted

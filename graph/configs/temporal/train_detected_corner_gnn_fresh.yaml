@@ -1,0 +1,6 @@
+trainer: training.detected_corner_gnn_fresh:train
+# Start from a matching effective 20-epoch config, change training.epochs to 40,
+# choose a new output.root, and set the source run's last.pt and SHA-256 below.
+rollout_source:
+  checkpoint: /path/to/completed_20_epoch/last.pt
+  checkpoint_sha256: /source/checkpoint/sha256

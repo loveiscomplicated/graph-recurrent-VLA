@@ -1,0 +1,7 @@
+trainer: training.gnn.temporal.node_token_mamba:aggregate
+seed_roots:
+- /workspace/node_token_mamba/training/seed_0
+- /workspace/node_token_mamba/training/seed_1
+- /workspace/node_token_mamba/training/seed_2
+evaluation_selection: /workspace/temporal_continuation_120/inputs/validation_frames.jsonl
+output_path: /workspace/node_token_mamba/summary_21d.json

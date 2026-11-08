@@ -1,0 +1,5 @@
+trainer: evaluation.detected_corner_tracking:select_threshold
+calibration_root: /path/to/calibration_runs
+max_conflict_rate: 0.01
+output:
+  selection_file: outputs/detected_corner_tracking/selected_threshold.json

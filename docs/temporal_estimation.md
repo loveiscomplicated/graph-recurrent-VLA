@@ -1,5 +1,13 @@
 # Temporal state estimation
 
+## Corner workflow guides
+
+- [Fixed-ID corner prediction](corner_prediction.md).
+- [Tracked corner completion](corner_tracking.md).
+- [Detector-only association and downstream GNN](detected_corner_gnn.md).
+
+## Earlier GNN-based estimators
+
 The Graph team's temporal estimators consume frozen GNN outputs and observed
 robot metadata. Run from the repository root with Torch, NumPy, PyYAML and
 Matplotlib installed. Set checkpoint, cache and parent-manifest paths before use;
@@ -1436,3 +1444,345 @@ parents are development/reference results, not an independent final test. The
 59 temporal development parents were part of the GNN training pool. The frozen
 GNN and temporal estimator are independently checked and never share optimizer
 updates.
+
+## Node-token launch scripts
+
+The shell entrypoints use `tools/node_token_launch.sh` for path validation,
+environment setup and stdout/stderr logging. Each still dispatches its original
+YAML through the selected checkout's `main.py`; effective experiment settings
+and run identity remain the responsibility of the existing workflow and
+`ExperimentLogger`.
+
+| Launcher under `tools/` | Execution order | Default experiment root |
+| --- | --- | --- |
+| `run_node_token_mamba.sh` | Seeds 0/1/2 sequentially, then aggregate | `/workspace/node_token_mamba` |
+| `run_node_token_early_stopping.sh` | Seeds 0/1/2 concurrently, then compare after all succeed | `/workspace/node_token_early_stopping` |
+| `run_joint_node_token_seed.sh SEED` | One seed with streamed output | `/workspace/joint_node_token_mamba` |
+| `run_joint_node_continuation_seed.sh SEED` | One seed with streamed output | `/workspace/joint_node_token_continuation` |
+| `run_joint_early_node_token_seed.sh SEED` | One seed with streamed output | `/workspace/joint_node_token_early_stopping` |
+
+Run `bash tools/run_node_token_mamba.sh --help` to inspect the shared options.
+Joint launchers require seed 0, 1 or 2 as their first argument. A portable call is:
+
+```bash
+bash tools/run_joint_node_token_seed.sh 0 \
+  --experiment-root /path/to/run \
+  --source-root /path/to/checkout \
+  --python /path/to/venv/bin/python \
+  --runtime-root /path/to/runtime \
+  --logs /path/to/logs
+```
+
+The checkout must contain `main.py` and the recipes used by that launcher.
+Adapt data/checkpoint paths in the YAML separately. Omitted options retain the
+original defaults: source at `<experiment-root>/source`, logs at
+`<experiment-root>/logs`, Python at `/workspace/temporal_continuation_120/venv/bin/python`,
+and extra modules at `/workspace/temporal_continuation_120/runtime`. An empty
+`--runtime-root ""` disables the extra module directory. Paths containing spaces
+are supported when quoted. The launchers set `EXPERIMENTS_DIR` below the run
+root and retain `WANDB_MODE=disabled`; the early-stopping and joint launchers
+retain their two-thread OMP/MKL limits.
+
+Batch failures stop aggregation/comparison and produce `FAILED`; success produces
+`COMPLETE`. Joint jobs retain `seed_N_FAILED`/`seed_N_COMPLETE` and stream both
+output channels through `tee` into the seed log. `set -E` preserves failure
+marker traps inside the shared logging function; `pipefail` retains Python's
+failure status. Tests use a temporary model-free `main.py` to check execution
+order, concurrency, path overrides and failure propagation:
+
+```bash
+.venv/bin/python -m unittest tests.test_node_token_launchers -v
+```
+
+## Frame-node-token Mamba experiment
+
+The model-specific ordering and temporary pre-pool hook are implemented in
+`graph/temporal/node_features.py`. Frozen GNN execution and alignment live in
+`training/gnn/temporal/node_features.py`; `data_collection/temporal/node_tokens.py`
+contains only window alignment and batch padding. Frozen preparation detaches
+features before caching them; joint fine-tuning uses the same ordering while
+retaining the autograd graph. Both paths preserve object-type/world-XYZ order,
+detector order for ties, empty frames and the existing padding masks.
+
+The 2026-11-09 [CPU snapshot comparison](../outputs/refactoring_baseline/node_feature_parity.json)
+matched the preceding dirty implementation exactly for frozen features, joint
+predictions, all parameter gradients and one Adam update. This used a synthetic
+fixture with the `torch_reference` backend; CUDA and full-dataset inference were
+not executed for this extraction.
+
+With the original selected M0 checkpoints, full graph cache, robot frames, split
+manifest, and CUDA Mamba runtime available, run each seed from the repository root:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/train_node_token_mamba_0.yaml
+python main.py --config graph/configs/temporal/insertion/train_node_token_mamba_1.yaml
+python main.py --config graph/configs/temporal/insertion/train_node_token_mamba_2.yaml
+python main.py --config graph/configs/temporal/insertion/aggregate_node_token_mamba.yaml
+```
+
+The paths in the recipes describe the 4175 host and must be adapted elsewhere.
+The frozen M0, 64D observation, residual pose decoder, train/validation/test
+parent splits, loss, Adam learning rate, batch size, 64-frame reset windows,
+120-epoch selection budget and 960 selected evaluation frames match the reference.
+A fresh model is trained for each seed. Original Mamba 120-epoch runs were
+continuations; this experiment starts at epoch 1, so optimizer and random-state
+trajectories are not identical. The new node projection changes parameter count.
+
+Each frame's valid pre-pool nodes are sorted by object type then world XYZ
+(remaining exact ties retain detector order), projected into Mamba width, and
+followed by the original 64D observation token. No correspondence across frames
+is assumed. Padding nodes are omitted from the token stream. The observation
+token representation feeds the original Peg and Hole pose heads. Sorting is
+not invariant to coordinate changes or exact ties; Mamba is order-sensitive.
+The loss is applied once per frame, and complete episodes are replayed causally
+for selected-frame evaluation. The selected 40-parent evaluation set has already
+been used for M0 development and is not an independent final test.
+
+Each seed writes a tracked best checkpoint, last optimizer state, history, selected
+predictions and errors. The aggregate takes the mean of seed errors for each
+matched frame before reporting their distribution. The last checkpoint records
+optimizer state but this workflow does not implement resume.
+
+## Node-token Mamba with an early-stopped GNN
+
+Run the three seed configs `graph/configs/temporal/insertion/train_node_token_early_stopping_0.yaml`
+through `_2.yaml` using `python main.py --config <path>`. The recipes use the
+corresponding best GNN from the physical-151 validation selection, freeze its
+weights, and start a fresh node-token Mamba. Mamba uses the same early-stopping
+settings as the ordinary selected-GNN Mamba: minimum 60 epochs, maximum 500,
+patience 30 and zero minimum improvement. Other model, loss and data settings
+match the earlier node-token experiment; the parallel recipe caps each CUDA
+process at 25% of GPU memory and uses two CPU math threads. The cap is not a GPU
+scheduler. `last.pt` saves optimizer and early-stopping state, but resuming is
+not implemented by this workflow.
+
+After all three runs, execute:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/compare_node_token_early_stopping.yaml
+```
+
+It compares the same 960 selected frames and
+151 physical-condition frames against both the ordinary early-stopped Mamba with
+the same frozen GNN and the earlier 120-epoch node-token model. Frame IDs, GT
+and the matched early-stopped GNN hashes are checked before writing per-metric
+paired differences. The 120-epoch reference used a different frozen GNN and
+training budget, so it is not an isolated node-token comparison. These are
+reference/development results: the selected GNN has already used the 151-frame
+subset for checkpoint selection.
+
+On the 4175 host, `tools/run_node_token_early_stopping.sh` runs the three seeds
+in parallel and performs comparison only if all succeed. The source snapshot,
+configs, experiment tracking, per-seed logs, output checkpoints and comparison
+are stored separately under `/workspace/node_token_early_stopping`.
+
+## Joint fine-tuning from the 120-epoch node-token checkpoints
+
+The three recipes `graph/configs/temporal/insertion/train_joint_node_token_mamba_0.yaml`
+through `_2.yaml` load the node-token Mamba best epochs 108/112/89 and their exact
+matching 60-epoch final GNN checkpoints. From the repository root, run
+`python main.py --config graph/configs/temporal/insertion/train_joint_node_token_mamba_0.yaml`
+with the original graph cache, raw robot observations and CUDA Mamba runtime.
+The server paths in the recipes must be adapted on other hosts.
+
+The existing joint trainer now accepts `node_token_mamba` input checkpoints. It
+recomputes both Object21 and sorted pre-pooling node representations on each
+window; neither representation is detached. Original train-only normalization,
+robot/quality observations, parent splits, residual heads and loss are retained.
+Adam updates both networks with GNN LR 1e-5 and temporal LR 1e-4. Each run performs
+exactly 20 new epochs without early stopping. Epoch 0 records the pretrained
+validation baseline; best selection includes that baseline. Paired best and
+last checkpoints contain both networks and optimizer state. Validation uses
+reset windows; this training command does not run the original 960-frame test.
+The joint evaluator also restores the node-token architecture for later complete
+episode evaluation using the same `joint_finetuning:evaluate` entrypoint.
+
+On the 4175 host, launch `tools/run_joint_node_token_seed.sh 0` (and 1/2) in
+separate tmux windows for three parallel seeds. Each process is capped at 25%
+of GPU allocator memory and two CPU math threads. Logs are both displayed in
+tmux and saved under `/workspace/joint_node_token_mamba/logs/`. This cap does
+not provide GPU scheduling or guarantee enough memory for unrelated jobs.
+
+Verification on 2026-11-08 KST: 24 local joint/node-token/config/GNN tests
+passed. Three concurrent CUDA smokes on the 4175 RTX 3090 restored all three
+pretrained pairs, matched the frozen node-token predictions before updating,
+and ran a real-feature 4-window × 64-frame training/validation step with finite
+loss and updates to both networks. These repeated-frame checks validate the
+joint pipeline and memory budget, not model quality. Evidence:
+[seed 0](../outputs/joint_node_token_mamba/verification/cuda_seed_0.log),
+[seed 1](../outputs/joint_node_token_mamba/verification/cuda_seed_1.log),
+[seed 2](../outputs/joint_node_token_mamba/verification/cuda_seed_2.log).
+
+#### Measured 20-epoch joint fine-tuning results
+
+All three seeds completed 20 joint epochs on 2026-11-08 KST. Best checkpoints
+were selected at additional epochs 20/18/20 using development validation only.
+The mean development best loss fell from 1.6073 to 0.6640. Subsequent complete
+causal episode replay scored the original 960 selected frames and the 151-frame
+physical-condition subset. Frame IDs, world-frame targets, source checkpoint
+hashes and evaluation checkpoint hashes were verified against the references.
+
+| Original 960-frame mean error | Before joint tuning | After joint tuning |
+| --- | ---: | ---: |
+| Peg position | 9.851 mm | 3.804 mm |
+| Peg rotation | 1.083° | 0.662° |
+| Tip-minus-Hole relative position | 14.674 mm | 7.459 mm |
+| Hole position | 15.148 mm | 7.648 mm |
+| Hole rotation | 1.739° | 1.121° |
+
+The physical-condition subset showed a different tradeoff: Peg position worsened
+from 1.364 to 1.594 mm and Hole position from 1.679 to 1.837 mm, although rotations
+improved. Peg Y/Z half-size errors also worsened over the 960-frame cohort.
+These are development/reference results, not an independent final test or
+insertion-success measurement. The 151-frame subset was used for the earlier
+GNN checkpoint selection. Full-episode metrics are not saved by this evaluator.
+
+![Joint training and validation loss](../outputs/joint_node_token_mamba/figures/loss_curves.png)
+
+The [Markdown performance report](../outputs/joint_node_token_mamba/performance_report.md)
+contains nine physical metrics, per-seed mean/median/p90 statistics, component
+loss curves, comparisons with the earlier ordinary early-stopped Mamba,
+checkpoint hashes and raw artifact links. The
+[three-seed summary](../outputs/joint_node_token_mamba/summary_21d.json) and
+[reproduction script](../outputs/joint_node_token_mamba/build_performance_report.py)
+preserve the calculation. The ordinary early-stopped Mamba uses different GNN
+checkpoints and training budgets, so that comparison is descriptive.
+
+## Early-stopped joint continuation
+
+The three `graph/configs/temporal/insertion/continue_joint_node_token_mamba_0.yaml`
+through `_2.yaml` recipes continue from the reported paired best joint checkpoints
+at epochs 20/18/20. Run from the repository root with the original checkpoints,
+graph cache, observed robot frames and CUDA Mamba runtime available:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/continue_joint_node_token_mamba_0.yaml
+```
+
+Both networks remain trainable, with GNN LR 1e-5 and Mamba LR 1e-4. Paired model
+weights, Adam moments/step counters and original train-only normalization are
+restored. Data, loss, window length, batch size and optimizer learning rates must
+match the source checkpoint; incompatible continuations fail before updates.
+The stopping rule monitors development validation loss, with patience 30,
+minimum cumulative joint epoch 60, maximum cumulative joint epoch 500, and
+minimum improvement zero. Pretraining epochs are not counted in this limit.
+Best selection includes the source checkpoint. History after a selected source
+best is excluded from the new continuation history; all original files remain.
+
+The earlier 20-epoch checkpoints did not save RNG state. Their optimizer is
+restored, while Python/NumPy/Torch/shuffle generators are reseeded and this
+limitation is recorded in continuation metadata. This first continuation cannot
+reproduce the hypothetical uninterrupted RNG trajectory. New paired checkpoints
+save RNGs, early-stopping state, cumulative history and an embedded best paired
+checkpoint. Subsequent resumes preserve these states, including the stale counter;
+resuming an already early-stopped last checkpoint performs no extra updates.
+
+`continue_and_evaluate` invokes the existing joint evaluator once training ends,
+using the selected paired best on the original 960/151 reference frames. Test
+metrics never control optimization or stopping. There is no polling watcher.
+The server launcher `tools/run_joint_node_continuation_seed.sh <seed>` displays
+and saves logs under `/workspace/joint_node_token_continuation/logs/`. Launch
+seeds 0/1/2 in separate tmux windows for parallel execution. Source snapshots,
+outputs and experiment IDs are separate from the completed 20-epoch run.
+
+Verification on 2026-11-08 KST: all 30 related local tests passed. The trainer's
+synthetic interrupted/resumed run matched uninterrupted weights and Adam states
+exactly; tests also verified best-history truncation, minimum epochs, stale-counter
+continuity, RNG restoration and rejected protocol changes. Three concurrent
+real-feature CUDA smokes restored 151 Adam parameter states per seed and advanced
+step counters while updating both networks with the real 4×64 training shape.
+See [local tests](../outputs/joint_node_token_continuation/verification/local_tests.log)
+and [seed 0](../outputs/joint_node_token_continuation/verification/cuda_seed_0.log),
+[seed 1](../outputs/joint_node_token_continuation/verification/cuda_seed_1.log),
+[seed 2](../outputs/joint_node_token_continuation/verification/cuda_seed_2.log).
+
+## Joint training from independently early-stopped sources
+
+The `train_joint_early_node_token_mamba_0.yaml` through `_2.yaml` recipes under
+`graph/configs/temporal/insertion/` start a new joint phase from the leaderboard's
+"GNN 조기 종료 + 노드 토큰 Mamba 조기 종료" paired source weights:
+
+| Seed | Selected GNN epoch | Selected node-token Mamba epoch |
+| ---: | ---: | ---: |
+| 0 | 106 | 97 |
+| 1 | 91 | 285 |
+| 2 | 105 | 198 |
+
+With the original graph cache, raw observed robot frames, checkpoints and CUDA
+Mamba runtime, run from the repository root:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/train_joint_early_node_token_mamba_0.yaml
+```
+
+The existing joint trainer and early-stopping implementation are reused.
+`train_and_evaluate` supports a fresh joint phase as well as the continuation
+wrapper. Both GNN and Mamba are trainable, including the pre-pooling node path.
+Source weights and train-only normalization are preserved; joint Adam state and
+stopping counters start fresh because the source phase trained Mamba behind a
+frozen GNN. Joint epoch 0 records the unchanged source baseline. The source GNN
+hash must match the Mamba's recorded frozen GNN identity.
+
+The new phase uses GNN LR 1e-5, Mamba LR 1e-4, 64-frame reset windows and a batch
+of four windows. Development validation loss selects best and drives stopping:
+minimum 60 joint epochs, maximum 500, patience 30, min_delta 0. Source pretraining
+epochs do not count toward this new joint-phase limit. Parent splits, observations,
+loss and other input settings match the source node-token recipes. After stopping,
+the selected paired best is evaluated once on the original 960/151 frames. This
+reference evaluation never selects the checkpoint or controls optimization.
+
+On server 4175, `tools/run_joint_early_node_token_seed.sh <seed>` runs one seed
+with visible tmux output and a saved log. Launch seeds 0/1/2 in separate windows
+of `joint_node_token_early_stopping` for parallel execution. Each process uses
+at most 25% of allocator memory and two CPU math threads. Data, source snapshots,
+experiment IDs, checkpoints and logs are stored under the separate
+`/workspace/joint_node_token_early_stopping` root. The older joint continuation
+from the 60-epoch GNN remains a separate experiment.
+
+On 2026-11-08 KST, 33 local joint/continuation/config/node-token/GNN tests passed.
+Three concurrent real-source CUDA smokes confirmed the exact GNN/Mamba pairings,
+frozen-to-joint forward agreement, finite losses and updates to both networks
+using a 4×64 real-feature batch. Repeated-frame smoke data verifies plumbing,
+not performance. See [source pairs](../outputs/joint_node_token_early_stopping/source_pairs.json),
+[local tests](../outputs/joint_node_token_early_stopping/verification/local_tests.log),
+[seed 0 CUDA](../outputs/joint_node_token_early_stopping/verification/cuda_seed_0.log),
+[seed 1 CUDA](../outputs/joint_node_token_early_stopping/verification/cuda_seed_1.log),
+and [seed 2 CUDA](../outputs/joint_node_token_early_stopping/verification/cuda_seed_2.log).
+The original evaluation set was used in earlier GNN development; these are not
+independent final-test or insertion-success measurements.
+
+
+## Relocated corner workflow sections
+
+<a id="shared-fixed-id-corner-prediction"></a>
+<a id="twenty-epoch-parallel-comparison"></a>
+<a id="continuation-to-40-total-epochs"></a>
+<a id="early-stopped-continuation"></a>
+<a id="fixed-id-corner-video-visualization"></a>
+<a id="fixed-id-corner-predictor-followed-by-a-gnn"></a>
+<a id="fixed-id-reappearance-distance-audit"></a>
+
+See [corner prediction](corner_prediction.md) for these sections.
+
+<a id="tracked-corner-completion-before-gnn"></a>
+<a id="run-and-prerequisites"></a>
+<a id="memory-and-predict-before-update-order"></a>
+<a id="initial-lifecycle-and-association-rules"></a>
+<a id="paired-masks-and-supervision"></a>
+<a id="matched-training-outputs-and-limitations"></a>
+<a id="verification"></a>
+<a id="corner-tracking-profiling-and-execution-efficiency"></a>
+<a id="one-frame-association-recovery"></a>
+<a id="compiled-corner-tracking-execution"></a>
+<a id="tracking-failure-audit"></a>
+
+See [corner tracking](corner_tracking.md) for these sections.
+
+<a id="detector-only-corner-association"></a>
+<a id="detector-only-tracking-video"></a>
+<a id="detector-only-rollout-rmse"></a>
+<a id="detector-only-rollout-gnn-training"></a>
+<a id="fresh-40-epoch-run-with-optimizer-checkpoints"></a>
+<a id="object21-validation-video"></a>
+
+See [detected corner gnn](detected_corner_gnn.md) for these sections.

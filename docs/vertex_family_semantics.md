@@ -731,3 +731,65 @@ Parent 불확실성이며 모델별 조기 종료에 따른 학습량 차이도 
 [summary와 paired CI](../outputs/vertex_family_full_training/evaluation/15b2cfa92d7a474ca68ff178e14f8fe6/summary.json),
 [실행·체크포인트 provenance](../outputs/vertex_family_full_training/evaluation/15b2cfa92d7a474ca68ff178e14f8fe6/provenance.json).
 설정은 `graph/configs/evaluate_vertex_family_all_frames.yaml`이다.
+
+### 전체 Object21 및 관측 Vertex 개수별 비교
+
+같은 저장 예측 12개를 재집계했다. 아래는 전체 4,102프레임에서 세 seed의 per-frame
+오차를 평균한 결과이며, 회전만 degree이고 나머지는 mm다. Position/relative는 3D
+Euclidean norm, rotation은 quaternion 부호에 불변인 geodesic angle, 크기는 절대 오차다.
+
+| 구성 항목 | M0 | M1 Detector | M2 Oracle | 용량 통제 |
+| --- | ---: | ---: | ---: | ---: |
+| Peg 위치 | 4.679 | 4.304 | 4.092 | 4.518 |
+| Peg 회전 (degree) | 2.706 | 2.451 | 2.418 | 2.612 |
+| 끝점−Hole 상대 벡터 | 24.625 | 24.846 | 24.419 | 24.534 |
+| Hole 위치 | 24.468 | 24.551 | 24.308 | 24.111 |
+| Hole 회전 (degree) | 5.843 | 5.505 | 5.834 | 5.580 |
+| Peg half-size X | 5.472 | 5.491 | 5.297 | 5.168 |
+| Peg half-size Y | 0.910 | 0.877 | 0.921 | 0.838 |
+| Peg half-size Z | 0.917 | 0.880 | 0.924 | 0.829 |
+| Hole 반경 | 2.359 | 2.371 | 2.379 | 2.372 |
+
+Target 노드 수에 따른 Hole 위치 오차(mm):
+
+| 관측 수 | Frames | M0 | M1 | M2 | 용량 통제 |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 457 | 69.388 | 69.381 | 69.424 | 69.392 |
+| 1 | 733 | 33.773 | 33.945 | 34.551 | 33.394 |
+| 2 | 1061 | 24.197 | 24.186 | 23.867 | 23.538 |
+| 3 | 544 | 14.534 | 14.753 | 13.877 | 14.203 |
+| 4 | 360 | 11.233 | 10.776 | 9.999 | 10.603 |
+| 5 | 218 | 9.162 | 9.576 | 9.015 | 9.852 |
+| 6 | 354 | 6.922 | 6.938 | 6.613 | 6.601 |
+| 7 | 216 | 5.005 | 5.400 | 4.935 | 4.560 |
+| 8 | 131 | 4.487 | 5.169 | 4.861 | 4.161 |
+| 9 | 24 | 5.781 | 5.720 | 5.794 | 6.483 |
+| 10 | 4 | 5.816 | 6.982 | 9.529 | 6.869 |
+
+Peg 노드 수에 따른 Hole 위치 오차(mm):
+
+| 관측 수 | Frames | M0 | M1 | M2 | 용량 통제 |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 3 | 1 | 5.740 | 10.037 | 4.575 | 7.515 |
+| 4 | 2092 | 32.203 | 32.715 | 32.540 | 31.971 |
+| 5 | 620 | 17.008 | 16.926 | 16.128 | 16.093 |
+| 6 | 740 | 16.230 | 16.014 | 15.896 | 15.735 |
+| 7 | 591 | 15.804 | 15.192 | 14.903 | 15.701 |
+| 8 | 54 | 18.669 | 15.859 | 18.463 | 18.993 |
+| 9 | 4 | 22.164 | 19.575 | 16.496 | 22.102 |
+
+Target=BOX+HOLE이며 이 평가에서는 HOLE 타입이 모두 0이라 Target은 BOX 검출 수다.
+검출 수가 서로 다른 물리 corner의 수라는 보장은 없다. Target=10은 4프레임,
+Peg=3은 1프레임, Peg=9는 4프레임이므로 그 평균을 일반화하지 않는다.
+수치별로 장면·형상·가림·반대편 물체 관측 수가 함께 달라지는 관찰 집계다. Joint
+Peg×Target 셀도 저장했지만 count를 맞췄다는 사실만으로 geometry/quality를 통제한 것은 아니다.
+그림에는 20프레임 미만 집단을 제외하며 CSV에는 전부 보존했다. Parent가 2개 미만인
+셀에는 신뢰구간을 제시하지 않았다. Bootstrap CI는 고정된 세 학습 seed에 조건부다.
+
+[개수별 전체 Object21 CSV](../outputs/vertex_family_count_analysis/d29c6e924fa440168f2b452147b70d2e/count_metrics.csv),
+[동일 count 집단의 paired gain/CI](../outputs/vertex_family_count_analysis/d29c6e924fa440168f2b452147b70d2e/paired_count_gains.csv),
+[Target 수별 Object21 그림](../outputs/vertex_family_count_analysis/d29c6e924fa440168f2b452147b70d2e/target_object21_errors.png),
+[Peg 수별 Object21 그림](../outputs/vertex_family_count_analysis/d29c6e924fa440168f2b452147b70d2e/peg_object21_errors.png).
+
+재현: `WANDB_MODE=disabled python main.py --config graph/configs/analyze_vertex_family_counts.yaml`.
+기존 예측/GT/sample ID의 일치와 원래 전체 metric의 복원을 검사하며 새 추론이나 학습을 하지 않는다.

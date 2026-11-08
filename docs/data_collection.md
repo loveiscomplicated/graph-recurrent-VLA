@@ -1,5 +1,148 @@
 # Episode collection
 
+## Fixed-ID per-corner sequences
+
+This dataset-only workflow isolates per-corner temporal prediction before adding
+any downstream graph. Set `source.corner_dataset` to a completed, full-frame
+`observed_corner_tracks_v1` directory in
+`data_collection/configs/fixed_id_corner_sequences.yaml`, then run from the root
+with Python 3.11, NumPy and PyYAML:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/fixed_id_corner_sequences.yaml
+```
+
+IDs are defined in object-local coordinates, independent of detector output
+order or world pose. Lexicographic sign combinations `(-1,-1,-1)` through
+`(+1,+1,+1)` identify eight corners per family:
+
+| IDs | Frame | Local coordinates |
+| --- | --- | --- |
+| 0–7 | peg | signs × peg half sizes |
+| 8–15 | box | signs × `[peg_half_sizes.x] * 3` |
+| 16–23 | hole | signs × `[peg_half_sizes.x, hole_radius, hole_radius]` |
+
+The source certificates attach actual detections to these IDs offline. UNKNOWN
+certificates stay unassigned; the adapter does not force them to the nearest
+corner. These inherited GT-assisted certificates have imperfect coverage and
+are not evidence of perfect visual identity recognition. When certificates
+duplicate an ID in one frame, offline annotation retains the actual detection
+closest to that ID's GT coordinate, without averaging or snapping its position.
+The manifest counts unknown detections and duplicate certificates.
+
+Each `(episode, vertex_id)` sample begins at its first certified detection.
+Never-observed IDs and frames before that first sighting are omitted. The first
+sighting initializes history; all subsequent frames are prediction targets,
+including frames with detections. An ID first seen in the final frame has no
+future prediction target and is counted separately. There is **no artificial
+corner deletion, random masking or synthetic occlusion** in this workflow.
+
+- Visible observation and target: unchanged actual detector XYZ in metres.
+- Missing after first sighting: zero observation with a false observation flag;
+  GT world XYZ is a supervision label only.
+- `observed` means a certified detection is available. Missing intervals can
+  reflect occlusion, detector misses, or an unresolved ID certificate.
+
+`iter_sequences(root, split)` yields independent corner sequences. Their model
+inputs have shape `[T,13]`: previous-frame observed XYZ (3), previous-frame
+observation flag (1), and current observed robot state (9: TCP world XYZ, wxyz
+quaternion, two finger positions). The current detection is shifted to the next
+input so that predicting a visible target cannot become copying that target.
+`prediction_valid` excludes only initialization. `targets` contains world XYZ;
+`target_delta_xyz` subtracts `last_observed_xyz_world`, the most recent detection
+strictly before each valid prediction, for displacement training. Predictions
+are not fed back as measured observations. A future consumer can return the
+unchanged measurement when visible and the predicted position when missing.
+
+ID is sample metadata, not an embedding or numeric input. All corner samples
+can reuse one temporal model's weights. Mamba and Transformer can consume the
+same samples, labels, masks and parent-separated splits. This command builds
+data only; it imports no tracker, GNN or temporal model and starts no training.
+It retains train/calibration/validation membership, opens no reserved-test files,
+checks input/output hashes and writes a completion manifest only after all
+episodes succeed. Experiment identity and the effective config use the shared
+`ExperimentLogger`; nothing is uploaded. Run
+`.venv/bin/python -m unittest tests.test_fixed_id_corner_sequences -v` to check
+first-sighting rules, real-coordinate preservation, ordering invariance,
+causality, parent separation and interrupted/corrupt-source behavior.
+
+### Prepared dataset verification
+
+On 2026-11-08 the server converted all 630 episodes from source run
+`c9c8da5bc0ac46f8a5cfad4219b082e6`, preserving the previous development splits:
+
+| Split | Episodes | Corner sequences | Visible prediction targets | Missing prediction targets |
+| --- | ---: | ---: | ---: | ---: |
+| train | 531 | 6,786 | 353,892 | 318,322 |
+| calibration | 59 | 753 | 38,430 | 36,769 |
+| validation | 40 | 519 | 27,719 | 23,791 |
+
+The dataset is at
+`/workspace/fixed_id_corner_sequences/data/278debee127a4c8cad63271e9ff13e22`;
+its dataset SHA-256 is
+`989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e`.
+The exact server config is `/workspace/fixed_id_corner_sequences/prepare.yaml`.
+The tmux session `fixed_id_corner_data` retains `prepare` and `audit` windows;
+logs are `/workspace/fixed_id_corner_sequences/prepare.log` and `audit.log`.
+
+The full source/output audit passed for every episode and sequence: 428,099
+retained observations match original detector coordinates exactly, all eligible
+certified observations remain present, visible and missing targets follow the
+declared rule, causal inputs contain no current measurement, and parent splits
+are unchanged. Of 428,105 certified source detections, five duplicate certificates
+were collapsed to one original measurement each, and one terminal-only first
+sighting had no future prediction target. There were zero artificially removed
+certified observations. The 60,300 UNKNOWN detections remain unassigned and
+7,061 never-seen episode/vertex combinations are excluded. UNKNOWN intervals
+must not be interpreted as confirmed physical occlusion.
+
+Canonical ID geometry and observed robot state additionally matched 18 sampled
+original raw-GT frames, including world rotations. All seven local contract
+tests passed. This preparation/audit ran NumPy on CPU; no simulator, CUDA model
+or new training was executed. The implementation was a dirty working snapshot
+based on `320b7cc`; exact source-file hashes are recorded in the effective config
+and manifest. The original sources and previous model checkpoints are preserved.
+Local copies of the [verification result](../outputs/fixed_id_corner_sequences/278debee127a4c8cad63271e9ff13e22/verification.json),
+[summary](../outputs/fixed_id_corner_sequences/278debee127a4c8cad63271e9ff13e22/summary.json)
+and [effective config](../outputs/fixed_id_corner_sequences/278debee127a4c8cad63271e9ff13e22/prepare.yaml)
+are retained as ignored verification artifacts.
+
+## Full episodes for tracked corner completion
+
+`python main.py --config graph/configs/temporal/corner_tracking/prepare.yaml`
+packs an existing **full-frame** vertex-family dataset into checksummed temporal
+episodes. This preparation adapter also requires OpenCV for the existing label
+utilities. Set `source.family_dataset` first. It reuses observed graph coordinates,
+BOX physical certificates and the original raw observed TCP/finger state; it
+does not run detection or edit RGB-D. PEG supervision reuses the existing unique
+coordinate/projection association. Those GT-assisted IDs are labels only and
+can remain UNKNOWN. The source certification policies have different strength;
+they are not a claim of perfect corner identity.
+
+The adapter rejects selected-frame/noncontiguous cohorts. It preserves the
+source development-validation parents and reserves 10% of source training
+parents, seed 0, exclusively for calibration. These parents do not receive
+optimizer updates. The source dataset is original-TRAIN-only; its development
+validation is not a new independent test. Prepared manifests support reserved
+test metadata, but training/evaluation here never open those episode files.
+Raw files, graph files and certificate archives are checked against source hashes.
+Prepared episode bytes and the manifest are also hashed. Every episode carries
+an explicit parent and split; overlapping parents are rejected.
+
+For faster preparation, set the source path and `workers` in
+`data_collection.temporal.corner_tracks_parallel:prepare` via
+`graph/configs/temporal/corner_tracking/prepare_parallel.yaml` and run the same
+root entrypoint. Workers process independent episodes, check the same source
+hashes and GT/robot alignment, and report progress. The final manifest is written
+atomically only after every episode succeeds; failed runs retain partial files
+without a completion manifest. `tests.test_corner_tracks_parallel` compares the
+prepared episode arrays and splits with the serial adapter and checks that source
+bytes remain unchanged and corrupted input cannot publish a manifest.
+
+See [tracked corner completion](corner_tracking.md#tracked-corner-completion-before-gnn)
+for synthetic-removal manifests, chronological eligibility, supervision boundaries,
+and the shared Mamba/Transformer workflow.
+
 For the separate Graph-team development cohort that preserves selected original
 TRAIN frames, detector metadata, physical-role certificates and immutable graph
 inputs, see [the vertex-family study](vertex_family_semantics.md). Its

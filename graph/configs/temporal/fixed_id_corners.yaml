@@ -1,0 +1,29 @@
+trainer: training.fixed_id_corners:train
+seed: 0
+data:
+  root: /path/to/fixed_id_corner_sequences
+  expected_dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+model:
+  architecture: mamba
+  width: 128
+  layers: 2
+  heads: 4
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  displacement_scale_m: 0.01
+training:
+  device: cuda:0
+  epochs: 20
+  batch_size: 96
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  precision: bfloat16
+  log_every_batches: 10
+  cpu_threads: 2
+  early_stopping: null
+output:
+  root: outputs/fixed_id_corner_training
+resume:
+  checkpoint: null

@@ -67,5 +67,41 @@ class JointConfigTests(unittest.TestCase):
         self.assertIs(selected_mamba.aggregate, selected_estimator.aggregate)
 
 
+class EarlyNodeJointTests(unittest.TestCase):
+    def test_seed_recipes_keep_the_matching_early_stopped_source(self):
+        directory = Path('graph/configs/temporal/insertion')
+        outputs = set()
+        for seed in range(3):
+            source = load_config(directory / f'train_node_token_early_stopping_{seed}.yaml')
+            joint = load_config(directory / f'train_joint_early_node_token_mamba_{seed}.yaml')
+            for key in ('seed', 'checkpoint', 'split_manifest', 'selected_m0', 'data', 'mode',
+                        'model', 'loss', 'evaluation_selection'):
+                self.assertEqual(joint[key], source[key], (seed, key))
+            self.assertEqual(joint['training']['early_stopping'], source['training']['early_stopping'])
+            self.assertEqual(joint['training']['epochs'], 500)
+            self.assertIn(f'/node_token_early_stopping/training/seed_{seed}/', joint['temporal_checkpoint'])
+            self.assertNotIn('continuation_checkpoint', joint)
+            self.assertEqual(joint['trainer'], 'training.gnn.temporal.joint_finetuning:train_and_evaluate')
+            outputs.add(joint['output']['root'])
+        self.assertEqual(len(outputs), 3)
+
+    def test_training_wrapper_evaluates_best_and_preserves_input_config(self):
+        from training.gnn.temporal.joint_finetuning import train_and_evaluate
+        config = {'output': {'root': 'training'}, 'comparison_output': 'evaluation'}
+        with patch('training.gnn.temporal.joint_finetuning.train', return_value=Path('training/run')) as train:
+            with patch('training.gnn.temporal.joint_finetuning.evaluate', return_value='finished') as evaluate:
+                self.assertEqual(train_and_evaluate(config), 'finished')
+        train.assert_called_once_with(config)
+        evaluated = evaluate.call_args.args[0]
+        self.assertEqual(evaluated['joint_checkpoint'], 'training/run/best.pt')
+        self.assertEqual(evaluated['output']['root'], 'evaluation')
+        self.assertEqual(config['output']['root'], 'training')
+
+    def test_continuation_wrapper_still_requires_a_resume_checkpoint(self):
+        from training.gnn.temporal.joint_finetuning import continue_and_evaluate
+        with self.assertRaisesRegex(ValueError, 'continuation_checkpoint'):
+            continue_and_evaluate({'comparison_output': 'evaluation'})
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,9 @@
+trainer: data_collection.temporal.corner_tracks_parallel:prepare
+seed: 0
+source:
+  family_dataset: /path/to/full_frame_vertex_family_dataset
+calibration_fraction: 0.1
+camera: base_camera
+workers: 4
+output:
+  root: outputs/corner_tracking_data

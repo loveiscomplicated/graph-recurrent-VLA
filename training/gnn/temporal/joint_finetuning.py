@@ -16,13 +16,22 @@ from torch.utils.data import DataLoader
 from data_collection.episode_dataset import file_sha256
 from data_collection.storage import write_json
 from data_collection.temporal.insertion_sequences import InsertionEpisodeDataset, InsertionWindowDataset
+from data_collection.temporal.node_tokens import collate_node_windows
 from evaluation.gnn.temporal.insertion import check_development_provenance
 from evaluation.gnn.vertex_metrics import per_frame_errors, statistics
 from graph.pose_geometry import geometric_endpoint, unit_quaternion
+from graph.temporal.node_features import capture_pre_pool_features, ordered_node_features
+from graph.temporal.node_token_mamba import NodeTokenMamba
 from training.gnn.data import collate_graph_samples
 from training.gnn.temporal.config import resolve_insertion_config, resolve_joint_job_config
 from training.gnn.temporal.frozen_source import infer_insertion_data, prepare_insertion_sequences
-from training.gnn.temporal.insertion import build_insertion_model, configure_training_memory
+from training.gnn.temporal.insertion import (
+    build_insertion_model, configure_training_memory, update_early_stopping,
+)
+from training.gnn.temporal.joint_continuation import (
+    capture_random_state, load_joint_continuation, restore_random_state,
+)
+from training.gnn.temporal.node_features import infer_node_data
 from training.gnn.temporal.pose_loss import insertion_loss
 from training.gnn.trainer import atomic_torch_save, seed_everything
 from utils.device_set import set_device
@@ -77,6 +86,39 @@ def replace_gnn_predictions(observations, mask, predictions, tcp_world):
     return torch.cat((padded, observations[..., 21:]), dim=-1)
 
 
+def build_joint_temporal(effective, node_width=None):
+    """Restore the pretrained input architecture without changing its parameters."""
+    if node_width is None:
+        return build_insertion_model(effective)
+    return NodeTokenMamba(node_width=node_width, mode=effective['mode'],
+                          with_robot=effective['with_robot'], **effective['model'])
+
+
+def forward_joint_predictions(gnn, temporal, graph, observations, mask):
+    """Recompute Object21 and optional node tokens with an intact autograd graph."""
+    if not isinstance(temporal, NodeTokenMamba):
+        output = gnn(graph)['object21']
+        inputs = replace_gnn_predictions(observations, mask, output, graph.tcp_xyz_world)
+        return temporal.forward_sequence(inputs, mask)
+
+    captured = []
+
+    # Retain the original tensor so temporal supervision reaches message passing.
+    with capture_pre_pool_features(gnn, captured.append):
+        output = gnn(graph)['object21']
+    if len(captured) != 1:
+        raise ValueError('Expected exactly one pre-pooling node representation')
+    inputs = replace_gnn_predictions(observations, mask, output, graph.tcp_xyz_world)
+    ordered = ordered_node_features(graph, captured[0])
+    nodes = pad_sequence(ordered, batch_first=True)
+    counts = torch.tensor([len(frame) for frame in ordered], device=nodes.device)
+    node_mask = torch.arange(nodes.shape[1], device=nodes.device)[None] < counts[:, None]
+    lengths = mask.sum(1).tolist()
+    nodes = pad_sequence(nodes.split(lengths), batch_first=True)
+    node_mask = pad_sequence(node_mask.split(lengths), batch_first=True)
+    return temporal.forward_nodes(inputs, nodes, node_mask, mask)
+
+
 def run_epoch(gnn, temporal, windows, device, settings, optimizer=None, generator=None):
     """Measure frame-weighted objective and physical error statistics for one split."""
     training = optimizer is not None
@@ -89,9 +131,7 @@ def run_epoch(gnn, temporal, windows, device, settings, optimizer=None, generato
         for observations, target, mask, batch in loader:
             observations, target, mask = (value.to(device) for value in (observations, target, mask))
             graph = batch.graph.to(device)
-            gnn_output = gnn(graph)['object21']
-            inputs = replace_gnn_predictions(observations, mask, gnn_output, graph.tcp_xyz_world)
-            prediction = temporal.forward_sequence(inputs, mask)
+            prediction = forward_joint_predictions(gnn, temporal, graph, observations, mask)
             loss, terms = insertion_loss(prediction, target, mask, temporal.mode, settings['loss'])
             if training:
                 optimizer.zero_grad(set_to_none=True)
@@ -124,7 +164,7 @@ def run_epoch(gnn, temporal, windows, device, settings, optimizer=None, generato
 
 
 def train(config):
-    """Run a fresh joint fine-tuning job from matched pretrained checkpoints."""
+    """Train or continue paired models, selecting only on development validation."""
     effective = resolve_insertion_config(config)
     if not effective.get('selected_m0'):
         raise ValueError('Joint fine-tuning currently requires selected_m0')
@@ -137,28 +177,52 @@ def train(config):
         value = rates.get(key)
         if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
             raise ValueError(f'joint_finetuning.{key} must be finite and positive')
-    if settings.get('early_stopping'):
-        raise ValueError('Disable early stopping for the requested fixed-length joint run')
     device = set_device(effective['device'])
     configure_training_memory(device, settings)
     seed_everything(effective['seed'], device)
+    print(f'Loading paired GNN and temporal checkpoints for seed {effective["seed"]}', flush=True)
     gnn, loaders, identity = prepare_insertion_sequences(effective, device, ('train', 'validation'))
     previous = torch.load(checkpoint_path, map_location='cpu', weights_only=True)
-    if previous.get('kind') != 'temporal_insertion':
-        raise ValueError('temporal_checkpoint must be temporal_insertion best weights')
+    if previous.get('kind') not in ('temporal_insertion', 'node_token_mamba'):
+        raise ValueError('temporal_checkpoint must contain insertion or node-token best weights')
+    node_width = None
+    if previous['kind'] == 'node_token_mamba':
+        node_width = previous['config']['node_width']
+        effective['node_width'] = node_width
+        effective['node_token_contract'] = previous['config']['node_token_contract']
     check_development_provenance(previous, effective, identity)
     for key in ('seed', 'mode', 'model', 'with_robot', 'feature_names', 'observation_contract'):
         if previous['config'][key] != effective[key]:
             raise ValueError(f'Temporal checkpoint differs in {key}')
-    temporal = build_insertion_model(effective).to(device)
+    temporal = build_joint_temporal(effective, node_width).to(device)
     temporal.load_state_dict(previous['model'], strict=True)
     effective['normalization'] = previous['config']['normalization']
+    repository = Path(__file__).resolve().parents[3]
+    for name in ('graph/gated_mpnn.py', 'graph/temporal/node_token_mamba.py',
+                 'training/gnn/temporal/joint_finetuning.py',
+                 'training/gnn/temporal/joint_continuation.py'):
+        effective['source_sha256'][name] = file_sha256(repository / name)
     effective['joint_finetuning'] = dict(
         rates, temporal_checkpoint=str(checkpoint_path),
         temporal_checkpoint_sha256=file_sha256(checkpoint_path),
         source_sha256=file_sha256(Path(__file__)),
         optimizer='new Adam; both pretrained models are updated',
     )
+    continuation = None
+    best_payload = None
+    history = []
+    early_state = None
+    starting_epoch = 0
+    continuation_path = config.get('continuation_checkpoint')
+    if continuation_path is not None:
+        continuation, best_payload, history, early_state, metadata = load_joint_continuation(
+            continuation_path, effective, identity)
+        starting_epoch = continuation['epoch']
+        gnn.load_state_dict(continuation['gnn'], strict=True)
+        temporal.load_state_dict(continuation['temporal'], strict=True)
+        effective['continuation'] = metadata
+        effective['joint_finetuning']['optimizer'] = metadata['optimizer']
+        print(f'Continuing paired weights and Adam from joint epoch {starting_epoch}', flush=True)
     datasets = {}
     for split, loader in loaders.items():
         print(f'Preparing {split} observations', flush=True)
@@ -169,36 +233,101 @@ def train(config):
     optimizer = torch.optim.Adam([{'params': gnn.parameters(), 'lr': rates['gnn_lr']},
                                   {'params': temporal.parameters(), 'lr': rates['temporal_lr']}])
     generator = torch.Generator().manual_seed(effective['seed'])
+    if continuation is not None:
+        optimizer.load_state_dict(continuation['optimizer'])
     run_settings = dict(settings, loss=effective['loss'])
-    with ExperimentLogger(team='graph', model='joint_' + temporal.architecture,
+    early_settings = settings.get('early_stopping')
+    if early_settings and early_state is None:
+        early_state = {'reference_loss': float('inf'), 'stale_epochs': 0}
+    model_name = 'joint_node_token_mamba' if node_width is not None else 'joint_' + temporal.architecture
+    with ExperimentLogger(team='graph', model=model_name,
                           config=effective, seed=effective['seed']) as experiment:
         output = Path(effective['output']['root']) / experiment.run_id
         output.mkdir(parents=True, exist_ok=False)
         write_json(output / 'effective_config.json', effective)
         experiment.link_output(effective['checkpoint'], checkpoint=True)
         experiment.link_output(checkpoint_path, checkpoint=True)
-        history = []
-        best = float('inf')
-        for epoch in range(settings['epochs'] + 1):
-            trained = None if epoch == 0 else run_epoch(gnn, temporal, datasets['train'], device,
-                                                        run_settings, optimizer, generator)
+        if continuation is not None:
+            experiment.link_output(continuation_path, checkpoint=True)
+        experiment.record(dataset_sha256=identity['dataset_sha256'],
+                          gnn_parameter_count=sum(p.numel() for p in gnn.parameters()),
+                          temporal_parameter_count=sum(p.numel() for p in temporal.parameters()),
+                          test_frames_read=False, backend=temporal.backend,
+                          torch_num_threads=torch.get_num_threads())
+        best = float('inf') if best_payload is None else best_payload['validation_loss']
+        if best_payload is not None:
+            atomic_torch_save(output / 'best.pt', dict(best_payload, config=deepcopy(effective)))
+
+        def save_epoch(epoch, validation, improved):
+            """Keep paired best weights and a self-contained resumable last state."""
+            payload = {
+                'kind': 'joint_gnn_temporal', 'epoch': epoch,
+                'gnn': gnn.state_dict(), 'temporal': temporal.state_dict(),
+                'optimizer': optimizer.state_dict(), 'config': deepcopy(effective),
+                'dataset_sha256': identity['dataset_sha256'],
+                'validation_loss': validation['loss'], 'history': history,
+                'early_stopping_state': deepcopy(early_state),
+                'random_state': capture_random_state(generator, device),
+            }
+            if improved:
+                atomic_torch_save(output / 'best.pt', payload)
+                experiment.link_output(output / 'best.pt')
+            payload['best_checkpoint'] = torch.load(output / 'best.pt', map_location='cpu', weights_only=True)
+            atomic_torch_save(output / 'last.pt', payload)
+            write_json(output / 'history.json', history)
+
+        validation = run_epoch(gnn, temporal, datasets['validation'], device, run_settings)
+        if continuation is not None:
+            if not math.isclose(validation['loss'], continuation['validation_loss'], rel_tol=1e-5, abs_tol=1e-6):
+                raise ValueError('Restored joint validation loss differs from the continuation checkpoint')
+            write_json(output / 'resume_baseline.json', {'epoch': starting_epoch, 'validation': validation})
+            experiment.log({'resume_baseline': validation}, step=starting_epoch)
+            if not history:
+                history.append({'epoch': starting_epoch, 'train': None, 'validation': validation})
+            restore_random_state(continuation.get('random_state'), generator, device, effective['seed'])
+            save_epoch(starting_epoch, validation, improved=False)
+        else:
+            history.append({'epoch': 0, 'train': None, 'validation': validation})
+            best = validation['loss']
+            if early_settings:
+                early_state = update_early_stopping(early_state, best, early_settings)
+            experiment.log(history[-1], step=0)
+            save_epoch(0, validation, improved=True)
+        print(f'Joint {temporal.architecture} epoch {starting_epoch}/{settings["epochs"]}: '
+              f'validation={validation["loss"]:.6f}', flush=True)
+        early_stopped = bool(early_settings and starting_epoch >= early_settings['min_epochs']
+                             and early_state['stale_epochs'] >= early_settings['patience'])
+        epoch = starting_epoch
+        final_epoch_limit = starting_epoch if early_stopped else settings['epochs']
+        for epoch in range(starting_epoch + 1, final_epoch_limit + 1):
+            trained = run_epoch(gnn, temporal, datasets['train'], device, run_settings, optimizer, generator)
             validation = run_epoch(gnn, temporal, datasets['validation'], device, run_settings)
+            if early_settings:
+                early_state = update_early_stopping(early_state, validation['loss'], early_settings)
             row = {'epoch': epoch, 'train': trained, 'validation': validation}
             history.append(row)
-            write_json(output / 'history.json', history)
             experiment.log(row, step=epoch)
-            payload = {'kind': 'joint_gnn_temporal', 'epoch': epoch, 'gnn': gnn.state_dict(),
-                       'temporal': temporal.state_dict(), 'optimizer': optimizer.state_dict(),
-                       'config': deepcopy(effective), 'dataset_sha256': identity['dataset_sha256'],
-                       'validation_loss': validation['loss']}
-            atomic_torch_save(output / 'last.pt', payload)
-            if validation['loss'] < best:
+            improved = validation['loss'] < best
+            if improved:
                 best = validation['loss']
-                atomic_torch_save(output / 'best.pt', payload)
+            save_epoch(epoch, validation, improved)
             print(f'Joint {temporal.architecture} epoch {epoch}/{settings["epochs"]}: '
-                  f'validation={validation["loss"]:.6f}', flush=True)
-        for name in ('effective_config.json', 'history.json', 'last.pt', 'best.pt'):
+                  f'train={trained["loss"]:.6f}, validation={validation["loss"]:.6f}', flush=True)
+            early_stopped = bool(early_settings and epoch >= early_settings['min_epochs']
+                                 and early_state['stale_epochs'] >= early_settings['patience'])
+            if early_stopped:
+                print(f'Early stopping at joint epoch {epoch}; '
+                      f'{early_state["stale_epochs"]} epochs without improvement', flush=True)
+                break
+        completion = {'completed_epoch': epoch, 'starting_epoch': starting_epoch,
+                      'early_stopped': early_stopped, 'best_validation_loss': best,
+                      'stop_reason': 'early_stopping' if early_stopped else 'epoch_limit'}
+        write_json(output / 'training_summary.json', completion)
+        experiment.record(**completion)
+        for name in ('effective_config.json', 'history.json', 'last.pt', 'best.pt', 'training_summary.json'):
             experiment.link_output(output / name)
+        if continuation is not None:
+            experiment.link_output(output / 'resume_baseline.json')
         return output
 
 
@@ -226,10 +355,13 @@ def evaluate(config):
         raise ValueError('Joint checkpoint and evaluation dataset identities differ')
     gnn.load_state_dict(payload['gnn'], strict=True)
     gnn.eval().requires_grad_(False)
-    temporal = build_insertion_model(effective).to(device)
+    temporal = build_joint_temporal(effective, saved.get('node_width')).to(device)
     temporal.load_state_dict(payload['temporal'], strict=True)
     temporal.eval()
-    data = infer_insertion_data(gnn, loaders['test'], device, identity, effective, 'test')
+    if isinstance(temporal, NodeTokenMamba):
+        data = infer_node_data(gnn, loaders['test'], device, identity, effective, 'test')
+    else:
+        data = infer_insertion_data(gnn, loaders['test'], device, identity, effective, 'test')
     episodes = InsertionEpisodeDataset(data)
     predictions = []
     with torch.no_grad():
@@ -237,7 +369,15 @@ def evaluate(config):
             observations, _ = episodes[index]
             observations = observations[None].to(device)
             mask = torch.ones(observations.shape[:2], dtype=torch.bool, device=device)
-            predictions.append(temporal.forward_sequence(observations, mask)[0].cpu())
+            if isinstance(temporal, NodeTokenMamba):
+                rows = episodes.indices[index]
+                nodes = [data['node_features'][row] for row in rows]
+                batch = collate_node_windows([(observations[0].cpu(), episodes[index][1], nodes)])
+                node_values, node_mask = (value.to(device) for value in batch[2:4])
+                output = temporal.forward_nodes(observations, node_values, node_mask, mask)
+            else:
+                output = temporal.forward_sequence(observations, mask)
+            predictions.append(output[0].cpu())
     predictions = torch.cat(predictions)
     target = torch.cat([episodes[index][1] for index in range(len(episodes))])
     ordered_ids = [str(episodes.data['sample_ids'][row]) for rows in episodes.indices for row in rows]
@@ -261,7 +401,8 @@ def evaluate(config):
                           for name, mask in groups.items()}}
     effective['joint_checkpoint'] = str(checkpoint_path)
     effective['evaluation_selection'] = str(selection_path)
-    with ExperimentLogger(team='graph', model='joint_' + temporal.architecture, job_type='evaluate',
+    model_name = 'joint_node_token_mamba' if saved.get('node_width') is not None else 'joint_' + temporal.architecture
+    with ExperimentLogger(team='graph', model=model_name, job_type='evaluate',
                           config=effective, seed=effective['seed']) as experiment:
         output = Path(effective['output']['root']) / experiment.run_id
         output.mkdir(parents=True, exist_ok=False)
@@ -278,3 +419,22 @@ def evaluate(config):
 def train_from_base(config):
     """Resolve a seed job before invoking the existing joint training workflow."""
     return train(resolve_joint_job_config(config))
+
+
+def train_and_evaluate(config):
+    """Train a paired model and evaluate its selected best exactly once at the end."""
+    if not config.get('comparison_output'):
+        raise ValueError('Joint training and evaluation requires comparison_output')
+    output = train(config)
+    evaluation_config = deepcopy(config)
+    evaluation_config['trainer'] = 'training.gnn.temporal.joint_finetuning:evaluate'
+    evaluation_config['joint_checkpoint'] = str(output / 'best.pt')
+    evaluation_config['output']['root'] = config['comparison_output']
+    return evaluate(evaluation_config)
+
+
+def continue_and_evaluate(config):
+    """Continue joint optimization and evaluate its selected best after completion."""
+    if not config.get('continuation_checkpoint') or not config.get('comparison_output'):
+        raise ValueError('Joint continuation needs continuation_checkpoint and comparison_output')
+    return train_and_evaluate(config)

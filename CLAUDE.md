@@ -6,6 +6,13 @@ Use the imported repository guidance as the common development rules. Follow its
 links to engineering, experiment tracking, and Hugging Face publishing details.
 If file imports are unavailable in your client, read `AGENTS.md` directly.
 
+Graph corner workflows have separate guides for
+[fixed-ID prediction](docs/corner_prediction.md),
+[lifecycle tracking](docs/corner_tracking.md), and
+[detector-only association and GNN](docs/detected_corner_gnn.md).
+Follow the detector-only guide's [exact evaluation preservation criteria](docs/detected_corner_gnn.md#evaluation-preservation)
+before changing dependencies of its six protected leaderboard results.
+
 Follow the **Code readability** rules in `AGENTS.md`: use descriptive names,
 give functions clear responsibilities, and separate logical steps with readable
 control flow and spacing. Avoid compressed one-liners and semicolon-separated

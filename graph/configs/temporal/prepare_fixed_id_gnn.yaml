@@ -1,0 +1,7 @@
+trainer: data_collection.temporal.fixed_id_gnn_data:prepare
+data:
+  corner_dataset: /path/to/fixed_id_corner_sequences
+  family_dataset: /path/to/vertex_family_dataset
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+output:
+  cache_root: outputs/fixed_id_gnn_data

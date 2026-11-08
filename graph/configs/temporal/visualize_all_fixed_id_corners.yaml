@@ -1,0 +1,21 @@
+trainer: evaluation.fixed_id_all_corners_video:render
+device: cuda:0
+fps: 12
+data:
+  corner_dataset: /path/to/fixed_id_corner_sequences
+  family_dataset: /path/to/vertex_family_dataset
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+models:
+  mamba:
+    checkpoint: /path/to/mamba_best.pt
+    sha256: b005edb5c295a2fd1a0e1db87f2ac4190d81f8f5b2d0cfb8735b7d1698b3c5bc
+  transformer:
+    checkpoint: /path/to/transformer_best.pt
+    sha256: fb555e95493a64b3e0a8d1e3138fc21adcc7d07d6cd9ec62ff1efcb79b88c076
+episodes:
+  - name: all_corners_episode_one
+    episode: shard_000011/episode_000011
+  - name: all_corners_episode_two
+    episode: shard_000020/episode_000010
+output:
+  root: outputs/fixed_id_all_corners_videos

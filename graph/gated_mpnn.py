@@ -210,6 +210,7 @@ class VertexEdgeGatedMPNN(nn.Module):
         readout_seeds: int = 4,
         readout_dim: int = 16,
         readout_heads: int = 4,
+        extra_node_dim: int = 0,
     ):
         super().__init__()
 
@@ -235,12 +236,15 @@ class VertexEdgeGatedMPNN(nn.Module):
         self.num_semantic_ids = num_semantic_ids
         self.use_semantic_ids = use_semantic_ids
         self.use_confidence = use_confidence
+        if type(extra_node_dim) is not int or extra_node_dim < 0:
+            raise ValueError("extra_node_dim must be a nonnegative integer")
+        self.extra_node_dim = extra_node_dim
 
         self.semantic_embed = nn.Embedding(num_semantic_ids, 32)
         self.object_embed = nn.Embedding(3, 8)
 
         self.node_encoder = mlp(
-            32 + 8 + 3 + 1 + 1,
+            32 + 8 + 3 + 1 + 1 + extra_node_dim,
             hidden,
             hidden,
         )
@@ -312,12 +316,18 @@ class VertexEdgeGatedMPNN(nn.Module):
     def forward(
         self,
         batch: GraphBatch,
+        extra_node_features: Tensor | None = None,
     ) -> Dict[str, Tensor]:
         """Predict hole geometry using box and/or hole observations.
 
         BOX and HOLE retain different embeddings and edge types. Their features
         share the target-side message layers and readout, whose output is the
         hole pose/radius. hole_observed reports actual HOLE nodes only.
+
+        extra_node_dim=0 preserves the observed-only API/checkpoint layout.
+        A team-owned completed-graph caller can opt into extra_node_features
+        [B,N,extra_node_dim] to encode provenance without inventing semantic IDs.
+        Such callers must interpret support summaries under their own contract.
 
         Validate the graph before calling this method. The training data loader
         validates during collation, avoiding repeated checks on the model device.
@@ -389,6 +399,17 @@ class VertexEdgeGatedMPNN(nn.Module):
             ),
             dim=-1,
         )
+
+        if self.extra_node_dim:
+            expected_shape = (b, n, self.extra_node_dim)
+            if extra_node_features is None or extra_node_features.shape != expected_shape:
+                raise ValueError(f"extra_node_features must have shape {expected_shape}")
+            if (extra_node_features.device != xyz.device or extra_node_features.dtype != xyz.dtype
+                    or not torch.isfinite(extra_node_features).all()):
+                raise ValueError("extra_node_features must be finite with the graph dtype and device")
+            node_features = torch.cat((node_features, extra_node_features), dim=-1)
+        elif extra_node_features is not None:
+            raise ValueError("Set extra_node_dim before supplying extra_node_features")
 
         h = self.node_encoder(node_features)
         h = torch.where(node_is_present.unsqueeze(-1), h, 0)

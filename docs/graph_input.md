@@ -187,6 +187,21 @@ Outputs remain model-specific: BasicGNN returns node tensors; gated returns
 Object21 geometry. The [common trainer](gnn_training.md) now connects gated Object21 supervision;
 other prediction layouts supply their own tasks.
 
+## Optional features for completed corner graphs
+
+`VertexEdgeGatedMPNN(extra_node_dim=5)` accepts a second argument,
+`extra_node_features[B,N,5]`. The default `extra_node_dim=0` retains the existing
+call and state-dict layout; opting in changes the first encoder layer and needs
+a new checkpoint. Features must be finite and on the graph device.
+
+The Graph team's `graph.temporal.corner_tracking.graph.CompletedGraph` is a
+separate experimental contract. It retains `observed`, observation age and XYZ
+uncertainty alongside an internal GNN geometry adapter. The adapter's presence
+mask means included support, so its counts/centroids are **completed support**,
+not physical visibility or raw detector counts. It must not be published as an
+observed GraphBatch cache. Raw detector graphs and their API remain unchanged.
+Track IDs are not semantic IDs. See [tracked corner completion](corner_tracking.md#tracked-corner-completion-before-gnn).
+
 ## Verification
 
 ```bash

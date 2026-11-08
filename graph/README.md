@@ -1,5 +1,72 @@
 # Graph team
 
+## Corner prediction and tracking
+
+Run recipes from the repository root with Python 3.11, Torch, NumPy, SciPy and
+PyYAML. Set dataset, checkpoint and checksum paths before running. Official
+`mamba_ssm` requires CUDA; camera videos also require OpenCV and FFmpeg with
+libx264. The lifecycle smoke recipe below runs on CPU without the CUDA runtime.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/corner_tracking/smoke.yaml
+```
+
+Select the workflow by the identity information and training target:
+
+| Workflow | Recipe | Guide |
+| --- | --- | --- |
+| Prepare fixed-ID corner histories | `data_collection/configs/fixed_id_corner_sequences.yaml` | [Dataset and certificates](../docs/data_collection.md#fixed-id-per-corner-sequences) |
+| Shared fixed-ID Mamba or Transformer | `graph/configs/temporal/fixed_id_corners.yaml` | [Training, continuation and early stopping](../docs/corner_prediction.md#shared-fixed-id-corner-prediction) |
+| Fixed-ID prediction videos | `graph/configs/temporal/visualize_fixed_id_corners.yaml`, `visualize_all_fixed_id_corners.yaml` | [Single-corner and full-episode video](../docs/corner_prediction.md#fixed-id-corner-video-visualization) |
+| Fixed-ID prediction followed by GNN | `graph/configs/temporal/prepare_fixed_id_gnn.yaml`, `train_fixed_id_gnn.yaml`, `compare_fixed_id_gnn.yaml` | [Cache, training and comparison](../docs/corner_prediction.md#fixed-id-corner-predictor-followed-by-a-gnn) |
+| Detector-only association | `graph/configs/temporal/calibrate_detected_corner_tracking.yaml`, `select_detected_corner_threshold.yaml`, `evaluate_detected_corner_tracking.yaml` | [Association and rollout evaluation](../docs/detected_corner_gnn.md) |
+| Detector-only rollouts followed by GNN | `graph/configs/temporal/train_detected_corner_gnn.yaml` | [20-epoch, fresh 40-epoch and resumed training](../docs/detected_corner_gnn.md#detector-only-rollout-gnn-training) |
+| Lifecycle-managed corner completion | `graph/configs/temporal/corner_tracking/prepare.yaml`, `compare.yaml`, `compare_compiled.yaml` | [Tracking, CUDA execution and diagnostics](../docs/corner_tracking.md) |
+
+For example, after configuring the frozen temporal checkpoint, matched dataset,
+label cache and calibrated threshold:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/train_detected_corner_gnn.yaml
+```
+
+The six detector-only GNN leaderboard results have an [exact evaluation
+preservation requirement](../docs/detected_corner_gnn.md#evaluation-preservation).
+The 40-epoch and continuation YAML files describe additions to a complete source
+effective config; follow their instructions before execution.
+
+## Node-token and joint temporal training
+
+With the original graph cache, observed robot frames, matching source checkpoints
+and CUDA Mamba runtime, set the paths in the selected recipe and run:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/train_joint_node_token_mamba_0.yaml
+```
+
+Use the corresponding seed 1/2 recipes for paired independent runs.
+
+| Workflow | Recipe under `graph/configs/temporal/insertion/` | Guide |
+| --- | --- | --- |
+| Joint training from pretrained node-token models | `train_joint_node_token_mamba_0.yaml` | [Joint protocol](../docs/temporal_estimation.md#joint-fine-tuning-from-the-120-epoch-node-token-checkpoints) |
+| Joint continuation with early stopping | `continue_joint_node_token_mamba_0.yaml` | [Checkpoint and stopping contract](../docs/temporal_estimation.md#early-stopped-joint-continuation) |
+| Joint training from independently early-stopped sources | `train_joint_early_node_token_mamba_0.yaml` | [Source pairs and evaluation](../docs/temporal_estimation.md#joint-training-from-independently-early-stopped-sources) |
+
+The five node-token shell launchers accept checkout, Python, runtime and log
+paths while retaining their original server defaults. For example:
+
+```bash
+bash tools/run_joint_node_token_seed.sh 0 \
+  --experiment-root /path/to/run \
+  --source-root /path/to/checkout \
+  --python /path/to/venv/bin/python \
+  --runtime-root /path/to/runtime
+```
+
+Use `--runtime-root ""` when no extra runtime module directory is needed, and
+`--logs PATH` to select a log directory. Dataset/checkpoint paths inside each YAML
+must also be configured. See [launcher behavior and failure markers](../docs/temporal_estimation.md#node-token-launch-scripts).
+
 ## Frozen selected-frame M0 with temporal Transformer
 
 With PyTorch, NumPy, PyYAML and Matplotlib installed, provide the original
@@ -358,3 +425,36 @@ and relative-vector diagnostics on the same development-validation frames.
 Output includes seed-specific/averaged errors, Parent-clustered intervals and
 label-removal/swapping interventions. No optimizer step or reserved-test read is
 performed. Update the dataset/matrix paths if running on a different host.
+
+For saved full-frame prediction comparisons by exact PEG/target/total and joint
+PEG×target counts, run
+`WANDB_MODE=disabled python main.py --config graph/configs/analyze_vertex_family_counts.yaml`.
+The inputs are per-frame natural predictions and an aligned `vertex_counts.npz`
+exported from the original validation graphs. It reports all Object21 components,
+seed means, Parent bootstrap intervals and figures without new model inference.
+
+## Frame-node-token Mamba
+
+With the selected M0 checkpoints, graph cache, robot frames and CUDA Mamba runtime,
+run `python main.py --config graph/configs/temporal/insertion/train_node_token_mamba_0.yaml`
+from the repository root after updating paths. Repeat for seeds 1 and 2, then run
+`python main.py --config graph/configs/temporal/insertion/aggregate_node_token_mamba.yaml`.
+The implementation and comparison limits are described in
+[temporal estimation](../docs/temporal_estimation.md#frame-node-token-mamba-experiment).
+
+### Node-token Mamba with early-stopped GNN
+
+After preparing the original graph cache, robot frames, three early-stopped GNN
+checkpoints and CUDA Mamba runtime, update the paths in
+`configs/temporal/insertion/train_node_token_early_stopping_0.yaml` (and seed 1/2)
+and run `python main.py --config graph/configs/temporal/insertion/train_node_token_early_stopping_0.yaml`.
+After all seeds complete, run the `compare_node_token_early_stopping.yaml` config.
+The 4175 server also has a parallel launcher in `tools/run_node_token_early_stopping.sh`.
+See [temporal estimation](../docs/temporal_estimation.md#node-token-mamba-with-an-early-stopped-gnn)
+for stopping and comparison details.
+
+For a detector-only GNN continuation, copy the completed run's effective YAML,
+add the resume fields from `configs/temporal/train_detected_corner_gnn_resume.yaml`,
+and run `python main.py --config /path/to/effective_resume.yaml`. This requires
+its 40-epoch checkpoints and frozen rollout cache; see
+[temporal estimation](../docs/temporal_estimation.md) for early stopping details.
