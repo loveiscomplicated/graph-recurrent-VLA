@@ -1,0 +1,13 @@
+trainer: evaluation.gnn.rim_only:evaluate
+family_dataset: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8
+target_filter: detector_rim
+device: cuda:0
+torch_threads: 4
+batch_size: 128
+# Replace with the completed M0 filtered matrix directory.
+training_matrices:
+- /path/to/rim_only_training_matrix
+# Optional: same-seed, same-budget unfiltered M0 matrices for paired comparisons.
+reference_matrices: []
+output:
+  root: outputs/rim_only_evaluation

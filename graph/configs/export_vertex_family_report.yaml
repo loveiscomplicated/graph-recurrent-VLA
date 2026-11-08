@@ -1,0 +1,7 @@
+trainer: evaluation.gnn.vertex_family_report:export
+family_dataset: outputs/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8
+evaluation: outputs/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/evaluation/e12abdeb091645e79eeb767a2d50f0af
+remote_prefix: /workspace/vertex_family
+local_prefix: outputs/vertex_family
+output:
+  root: outputs/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/report

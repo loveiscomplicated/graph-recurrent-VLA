@@ -1,0 +1,11 @@
+trainer: evaluation.gnn.vertex_family:evaluate
+family_dataset: /workspace/vertex_family_all_frames/data/047e52c778a74c81b2520dbad8c564ba
+device: cuda:0
+torch_threads: 4
+batch_size: 128
+output:
+  root: /workspace/vertex_family_full_training/evaluation
+training_matrices:
+- /workspace/vertex_family_full_training/training_seed_0/fe5915d9cee7424bbf636c5d11b7bb24
+- /workspace/vertex_family_full_training/training_seed_1/07d60d00d9a94739819623269d60c697
+- /workspace/vertex_family_full_training/training_seed_2/a2f480bf76564558801b1efc0feb90bc
