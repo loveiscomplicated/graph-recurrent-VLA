@@ -1,5 +1,113 @@
 # Graph team
 
+## Frozen selected-frame M0 with temporal Transformer
+
+With PyTorch, NumPy, PyYAML and Matplotlib installed, provide the original
+contiguous graph cache, matching raw robot observations, selected-M0 manifest,
+parent split and frozen checkpoint. Set their paths in the config, then run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/insertion/train_selected_m0_transformer.yaml
+```
+
+Training selects a Transformer checkpoint on held-out development parents and
+automatically evaluates the 40 original validation episodes and 960 sampled
+frames. See [temporal estimation](../docs/temporal_estimation.md#causal-transformer-with-frozen-m0)
+for feature, cache and comparison details.
+
+## Frozen selected-frame M0 with temporal Mamba
+
+With the original full-episode graph cache, matching observed robot frames,
+parent-disjoint split manifest, selected M0 dataset manifest and a 60-epoch M0
+checkpoint available, configure their paths and run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/insertion/train_selected_m0_mamba.yaml
+```
+
+This trains a Mamba behind a frozen M0, evaluates complete episodes and reports
+the original 960 selected validation frames. See [temporal estimation](../docs/temporal_estimation.md)
+for the split and measurement details.
+
+## M0 Rim-only input
+
+With the existing family development dataset and Torch, NumPy, SciPy, OpenCV and
+PyYAML installed, set the dataset paths and run from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_rim_only.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_rim_only.yaml
+```
+
+Set the trained matrix path in the evaluation config. The default detector-based
+filter keeps PEG and candidate Rim points and excludes other BOX points. An
+`oracle_rim` filter uses GT-certified labels for analysis only. See
+[vertex-family semantics](../docs/vertex_family_semantics.md#m0-rim-only-입력-실험-설정)
+for UNKNOWN handling, comparison requirements and limitations.
+
+## Vertex-family semantic development study
+
+Prerequisites: Torch, NumPy, SciPy, OpenCV, PyYAML and Matplotlib; original TRAIN
+RGB-D plus its frame hashes/parent manifest, or the prepared development dataset.
+Set the dataset and completed-matrix paths in these configs, then run from the
+repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/vertex_family.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_vertex_family.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_vertex_family.yaml
+```
+
+This experimental path keeps the existing AB GNN and Object21D heads, compares
+no family tokens, detector-derived tokens, partial GT-certified Oracle tokens,
+and redundant object-type capacity control on identical graphs. It uses only a
+derived original-TRAIN cohort. See [the measured study](../docs/vertex_family_semantics.md)
+for label limitations, three-seed results, information budgets and reproduction.
+
+## Vertex GNN bottleneck diagnostics
+
+With Python 3.11, Torch, NumPy, PyYAML and Matplotlib, provide the original paired
+predictions, extracted graph cache, parent manifest and the newly trained Baseline
+checkpoint. Set their paths and a new output directory in the recipes:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/analyze_vertex_diagnostics.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_readout_probe.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/analyze_vertex_geometry.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_readout_probe.yaml
+```
+
+The probe captures node features immediately before the original pools, freezes
+all source parameters and trains only freshly initialized existing pools/heads.
+All candidates reuse the same checksummed feature cache, anchors, confidence,
+Object21 loss and paired frames. `prepare_only: true` captures features and raw
+geometry without training. The separate probe budget is batch 256 × 30 epochs;
+seed/capacity controls and execution details are recorded in effective configs.
+See [bottleneck diagnostics](../docs/vertex_gnn_bottlenecks.md) for the measured
+results, oracle definitions and limitations. No original GNN architecture or
+controller is changed.
+
+## Vertex geometry/readout ablation
+
+With Python 3.11, Torch, NumPy and PyYAML installed, supply the original gated
+MPNN checkpoint and its extracted published graph cache. Set `base_config`,
+`reference_checkpoint` and `data.cache_dir` in the training recipe; set the
+resulting `ablation_manifest.json` path in the evaluation recipe. From the root:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_vertex_ablation.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_vertex_ablation.yaml
+```
+
+This trains Baseline/A/B/AB from scratch with the existing trainer and loss,
+then scores all four on the same saved validation frames. Models remain under
+`graph/`, orchestration under `training/gnn/` and `evaluation/gnn/`, and the data
+reader remains the existing cache-only factory. See [vertex ablation](../docs/gnn_training.md#vertex-geometry-and-readout-ablation)
+for the checkpoint audit, AG-Pose/GMT-inspired scope, parameter counts, metric
+definitions, synthetic verification and the real-data comparison status.
+`parallel_models` can run 2–4 independent processes; select `data.num_workers`
+for the available host memory. Both are recorded in the effective recipe.
+
 ## Temporal estimation workflows
 
 Install Torch, NumPy, PyYAML and Matplotlib, then run from the repository root.
@@ -150,3 +258,103 @@ Its training objectives live in
 [training/gnn/loss.py](../training/gnn/loss.py):
 `object21_loss` compares geometry with GT and regularizes endpoint corrections;
 `paired_delta_loss` supervises position changes between paired samples.
+
+## BOX-to-Hole observability diagnostics
+
+With the original prediction/geometry exports and four checkpoints available,
+run from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/analyze_box_hole.yaml
+```
+
+Adjust artifact paths in the config. Torch, NumPy, SciPy, PyYAML and Matplotlib
+are required; validation-seed replay also requires ManiSkill/SAPIEN and Vulkan.
+The evaluation preserves checkpoints and reserved test frames. See
+[BOX-to-Hole observability](../docs/box_hole_observability.md) for GT information
+budgets, missing physical correspondence, measured results and CUDA verification.
+
+## Expanded vertex-family training
+
+Prepare the 590-training-parent cohort with
+`python main.py --config data_collection/configs/vertex_family_expanded.yaml`.
+It preserves the earlier 40 validation parents; set the source paths first.
+Set `family_dataset` to the emitted dataset directory in
+`graph/configs/train_vertex_family_expanded.yaml` and run
+`python main.py --config graph/configs/train_vertex_family_expanded.yaml`.
+The maximum is 60 epochs; after at least 15 epochs, training stops when validation
+loss fails to improve by 0.001 for eight consecutive epochs. The best validation
+checkpoint and actual epoch counts are retained. Equal stopping criteria can
+produce unequal optimization budgets across variants.
+
+For the completed full-frame cohort (590 training episodes / 60,600 frames and
+40 development-validation episodes / 4,102 frames), use
+`python main.py --config graph/configs/train_vertex_family_all_frames.yaml`.
+This recipe starts fresh for four family modes and three seeds, enables CUDA
+compilation and retains the same 60-epoch maximum and early-stopping settings.
+
+To train a fresh temporal estimator with early stopping on a selected frozen GNN,
+set the data and checkpoint paths in
+[`configs/temporal/insertion/train_selected_gnn_mamba_early_stopping.yaml`](configs/temporal/insertion/train_selected_gnn_mamba_early_stopping.yaml)
+or the corresponding Transformer config, then run
+`python main.py --config graph/configs/temporal/insertion/train_selected_gnn_mamba_early_stopping.yaml`.
+The graph cache, raw proprioception, selected GNN checkpoint and split manifest
+must already be available. See [temporal estimation](../docs/temporal_estimation.md)
+for validation selection and resume behavior.
+
+### Joint GNN and temporal fine-tuning
+
+The team-owned configurations `graph/configs/temporal/insertion/train_joint_mamba_0.yaml`
+and `train_joint_transformer_0.yaml` (and their seed 1/2 counterparts) specify a
+20-epoch joint run. They reference the completed 120-epoch continuation's
+best temporal checkpoints and their original matching GNN checkpoints on the
+4175 server. Adjust paths if the artifacts are moved. The running early-stopping
+experiments are separate and are not used as inputs.
+
+Each seed file contains its checkpoint and output paths. Shared settings live in
+`configs/temporal/insertion/joint_mamba.yaml` or `joint_transformer.yaml`.
+Edit the seed file for run-specific paths and the corresponding base for shared
+settings. Paths are relative to the repository root. The launcher combines them
+before invoking the existing trainer, which records the full effective config.
+Seed recipes dispatch to `training.gnn.temporal.joint_finetuning:train_from_base`;
+the resolver lives in `training.gnn.temporal.config`. The old `joint_config`
+module retains aliases for existing external imports and recipes.
+
+From the repository root, after preparing the configured graph cache, raw robot
+observations, pretrained checkpoints, and the Mamba CUDA environment, run for
+example:
+
+```bash
+python main.py --config graph/configs/temporal/insertion/train_joint_mamba_0.yaml
+```
+
+The new optimizer updates both networks, using separate configured learning
+rates. It reuses the temporal checkpoint's train-only normalization, observes the
+same parent-disjoint development split, and resets state at the same window
+boundaries. It saves a baseline evaluation at epoch 0, each epoch's train and
+validation losses, validation physical-error distributions, both network
+weights, optimizer state, effective configuration, and experiment logger records.
+The best checkpoint is selected by validation loss, including the baseline.
+The validation statistics use reset windows and are not a full-episode test;
+no test set or original 960-frame evaluation is run by the training entrypoint.
+After training, copy the training config, set `trainer` to
+`training.gnn.temporal.joint_finetuning:evaluate`, set `joint_checkpoint` to
+the produced `best.pt`, set `evaluation_selection` to the original validation
+frame selection, and change `output.root` to a separate evaluation directory.
+Run this new config with the same root entrypoint. The evaluator loads both
+trained models and writes per-frame errors and physical-condition summaries.
+
+The sample configuration caps each process's CUDA allocator at 10% and is not a
+GPU scheduler. Check other GPU jobs and schedule these six runs conservatively.
+The learning rates are initial experimental choices, not validated optimal values.
+The joint checkpoint is a new format and cannot be loaded by the existing frozen
+GNN evaluation entrypoint; use the paired evaluator above.
+
+Evaluate all completed full-frame seed matrices with
+`python main.py --config graph/configs/evaluate_vertex_family_all_frames.yaml`.
+The evaluator verifies checkpoint/data identities and matching training settings,
+accepts recorded early stopping, and reports all Object21 components plus endpoint
+and relative-vector diagnostics on the same development-validation frames.
+Output includes seed-specific/averaged errors, Parent-clustered intervals and
+label-removal/swapping interventions. No optimizer step or reserved-test read is
+performed. Update the dataset/matrix paths if running on a different host.

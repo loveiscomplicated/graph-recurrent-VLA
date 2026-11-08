@@ -34,6 +34,23 @@
 | `training.gnn.temporal.insertion:train_and_compare` | `graph/configs/temporal/insertion/train_gru_matched.yaml`, root `main.py` | matched GRU training followed by paired validation | reference checkpoint checksum, enforced shared protocol, separate existing train/evaluate run IDs; no watcher |
 | `evaluation.gnn.temporal.insertion:evaluate` | `graph/configs/temporal/insertion/evaluate.yaml`, root `main.py` | paired precision/episode/lag metrics, predictions, protocol matching | explicit validation/reference/independent role, actual cache parity, latency and optional backward throughput |
 | `evaluation.gnn.temporal.insertion:compare_existing_gru` | `graph/configs/temporal/insertion/compare_gru_mamba.yaml`, root `main.py` | four-system validation summary, GRU replay and comparison audit | exact reference-frame/target hashes, preserved checkpoints and train normalization, explicit training differences |
+| `training.gnn.vertex_ablation:train` | `graph/configs/train_vertex_ablation.yaml`, root `main.py` | Baseline/A/B/AB through the existing GNN trainer, per-child checkpoints and matrix manifest | separate matrix/four child UUID runs, actual source settings/hash, shared protocol/data identity, parameter counts |
+| `evaluation.gnn.vertex_ablation:evaluate` | `graph/configs/evaluate_vertex_ablation.yaml`, root `main.py` | paired validation summary, per-frame NPZs and mean comparison table | four newly trained checkpoint hashes/protocols, physical error quantiles, observed-count groups, size/endpoint associations |
+
+The M0 Rim-only training uses `training.gnn.vertex_family:train`, and
+`evaluation.gnn.rim_only:evaluate` records its per-frame and grouped results.
+The selected node filter is included in the effective config and dataset identity;
+no artifacts are automatically published. See [vertex-family semantics](vertex_family_semantics.md).
+
+Vertex bottleneck diagnostics additionally use the same `ExperimentLogger`:
+`training.gnn.readout_probe:train` records each fresh readout/head run with its
+frozen-feature/checkpoint hashes, seed and effective budget;
+`evaluation.gnn.vertex_diagnostics:analyze`,
+`evaluation.gnn.vertex_geometry_diagnostics:analyze` and
+`evaluation.gnn.readout_probe:compare` record separate saved-output, perturbation
+and paired-probe evaluations. Original checkpoints keep their source sidecars.
+No probe workflow publishes artifacts automatically. See
+[the bottleneck study](vertex_gnn_bottlenecks.md) for identities and commands.
 
 학습은 train split의 gradient update와 validation checkpoint 선택을 유지한다.
 평가는 기존 test split 및 선택된 checkpoint를 사용하고 optimizer를 실행하지 않는다.

@@ -1,5 +1,11 @@
 # Episode collection
 
+For the separate Graph-team development cohort that preserves selected original
+TRAIN frames, detector metadata, physical-role certificates and immutable graph
+inputs, see [the vertex-family study](vertex_family_semantics.md). Its
+`data_collection.vertex_family:prepare` workflow uses the root config entrypoint
+and does not change the collection gate, raw image contract or original splits.
+
 Run commands from the repository root after installing `requirements.txt`.
 
 For the explicitly requested 900-episode expert dataset on a Linux CUDA/Vulkan
@@ -214,3 +220,126 @@ Pretrained Mamba, Gate and GNN have already seen the new development parents, so
 this is held out only from the fine-tuning updates. The original reference test is
 also reserved and is not promoted to an independent test. Existing cache checksums,
 raw observed robot joins, frame identities and visibility conventions are reused.
+
+## Physical vertex coverage filtering
+
+`data_collection.physical_vertex_selection:prepare` applies a GT-assisted,
+frame-level filter to all original TRAIN frames from the 590 parents remaining
+after excluding the 40 development-validation parents. Configure paths in
+`data_collection/configs/physical_vertex_selection.yaml` and run:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/physical_vertex_selection.yaml
+```
+
+The detector processes the original RGB-D, with no GT fed to it. For each PEG
+candidate, match to a unique physical peg corner within 3 mm in each GT-local
+coordinate and 2 pixels in projection; unmatched or ambiguous detections do not
+count. The condition requires at least four distinct matched corners, excluding
+any set whose corners all share one physical box face. For the Hole condition,
+the existing GT/RGB-D topology certificate in `vertex_family_labels.py`
+requires three distinct RIM physical IDs; exterior and UNKNOWN candidates do not
+count. The coordinate, projection, face-depth and image-support tests are
+finite-tolerance operational certificates, not proofs of physical identity.
+GT is used in dataset selection and can introduce selection bias; it is not a
+reliable deployable selection method without GT. Passing the gate is evidence
+under these rules, not a claim about every physically visible corner.
+
+The run verifies source frame hashes, retains the original source IDs, and writes
+all decisions to `frames.jsonl` plus aggregate counts and source/config hashes.
+It does not alter the input dataset or exclude frames from other workflows.
+`max_frames` is only for smoke checks; only an unrestricted 590-parent run can
+produce complete population counts. The JSONL can be used as a frame-ID filter
+for a later training workflow; no training is initiated here.
+
+The raw and cached entrypoints share frame selection, input validation, ordered
+spawn-worker execution, aggregation and output recording in
+`data_collection/physical_vertex_selection.py`. The cached entrypoint remains
+available at `data_collection.physical_vertex_cache_selection:prepare`; existing
+config files and commands still work. Raw workers retain detector UV, while
+cached workers project checksum-verified XYZ and exclude padded graph nodes.
+Episode auditing reuses the cached workers and preserves the original 960-frame
+decisions separately. Cached provenance records both the shared implementation
+and the compatibility entrypoint's code hashes.
+
+Run `.venv/bin/python -m unittest tests.test_physical_vertex_selection tests.test_physical_vertex_filter -v`
+for parent/ID validation, frame order, population and smoke counts, checksum
+rejection, distinct pixel-source decisions, preservation of the original
+validation decisions, and actual CPU spawn-worker execution on synthetic native
+RGB-D frames. These checks do not rerun the full server dataset or CUDA detector.
+
+For an expanded vertex-family development cohort, `selection.validation_selection`
+can point to a prior `selection.json` to preserve its validation episodes while
+selecting training parents from the remaining original TRAIN pool. See
+[vertex-family semantics](vertex_family_semantics.md#확장-학습-설정).
+
+`selection.frames_per_parent: null` retains all recorded frames for the selected
+parents. `raw_storage: hardlink` avoids duplicating raw files when the source and
+output are on the same filesystem; the linked raw files share source inodes and
+must be treated as immutable. The default `copy` creates independent files.
+
+### Verified cached-graph selection result
+
+On 2026-11-08 KST, the published graph cache was used for the full 590-parent
+selection with `data_collection/configs/physical_vertex_cached_selection.yaml`.
+Every raw frame and graph archive was hash-checked, and detected UV was recovered
+by projecting cached world XYZ through the saved camera calibration. This is not
+a fresh detection for all frames: on the first 8,952 frames, independent GPU
+re-detection and cached-graph selection produced identical per-frame decisions.
+That check does not prove equivalence on every remaining frame. The detector
+source files match the cache's recorded source hashes; a 150-frame inspection
+showed reconstructed UV differences at most 0.000069 pixels.
+
+| Rule | Frames |
+| --- | ---: |
+| Peg condition | 21,176 |
+| Hole condition | 9,481 |
+| Both | 8,093 |
+
+These totals are under the finite-tolerance GT-assisted rules above and apply
+to the 60,600 recorded original TRAIN frames in 590 parents only. Local
+[summary](../outputs/physical_vertex_selection/7cd80170f5304b69b8384cbf99b457c3/summary.json)
+and [frame decisions](../outputs/physical_vertex_selection/7cd80170f5304b69b8384cbf99b457c3/frames.jsonl)
+contain all IDs; `both_pass` selects the intersection. No model training was run.
+
+For family preparation, `reuse_family` lists dataset roots with completed or
+recovered manifests. Source dataset, label-generating code, settings, archive
+hashes and graph/label node ordering are checked before graph/label files are
+hardlinked into the new dataset. `reuse_graph_cache` points to the original
+cache with metadata/inventory: after obtaining missing detector provenance,
+its graph is reused only if XYZ, object order, confidence, TCP and Object21
+match exactly. Detector mismatches rebuild that frame's graph rather than
+attaching fresh labels to a different node set. Reuse totals are logged and
+recorded in the final manifest. An interrupted run's completed frame archives
+can be recovered after validating their identities and content; incomplete
+archives must be recomputed.
+
+### Physical conditions across complete validation episodes
+
+`data_collection/configs/physical_vertex_episode_selection.yaml` applies the same
+GT-assisted physical vertex criteria to every frame represented in a temporal
+prediction file. Run `python main.py --config data_collection/configs/physical_vertex_episode_selection.yaml`
+after setting the prediction, original 960-frame selection, parent manifest, raw
+frame and cache paths. Raw and cached files are checksum verified. New frames use
+pixels reprojected from cached detector XYZ; the previously selected 960 retain
+the original detector-pixel decisions. The workflow records any disagreements.
+For the seed-0 validation episodes, 4,102 frames across 40 parents were checked;
+all 960 original decisions agreed with the reprojection audit. The result is a
+conservative GT/RGB-D certificate, not a model input or a claim that uncertified
+corners are invisible.
+
+### Restore the frozen-M0 temporal experiment on another host
+
+`data_collection/temporal/restore_hf_temporal.py` restores the already published
+original graph cache and contiguous raw training-pool episodes, plus explicitly
+published temporal checkpoints and the matching runtime/split bundle. It pins
+repository revisions, verifies every archive and selected raw frame against its
+SHA-256, restores only the original 630-episode training pool, and deletes each
+verified raw archive after extraction to limit disk use. The transfer uses a
+private Hugging Face dataset and model repository and requires an existing
+read-capable token supplied to the process; credentials are not written to the
+config, logs or artifact bundle. The six temporal continuations retain the
+original frozen 60-epoch M0 checkpoints; the independently continued GNN is not
+substituted into them. The restored temporal configurations resume epoch 90 with
+Adam and random state, then run 30 additional epochs. Local focused tests cover
+selected archive members and checksum rejection.

@@ -1318,3 +1318,121 @@ restored on CPU; the saved Hybrid diagnostic inputs also passed validation.
 This was input/checkpoint validation, without full reference inference. All 83
 raw artifact links from the original guides were preserved, and local feature
 links and recipe dispatch targets were checked.
+
+## Frozen selected-frame M0 with Mamba
+
+The `graph/configs/temporal/insertion/train_selected_m0_mamba.yaml` recipe trains
+an insertion Mamba while freezing a 60-epoch M0 learned from 8,093 physically
+selected frames. The recipe requires the original complete graph cache and raw
+observed robot frames, the selected M0 manifest and checkpoint, a parent split,
+and the 960-frame validation selection. It requires the Mamba CUDA backend.
+Set the paths and run `python main.py --config graph/configs/temporal/insertion/train_selected_m0_mamba.yaml`.
+
+Temporal training uses the complete cached sequences from 531 parents; 59 other
+parents select the Mamba checkpoint, while the 40 selected-M0 validation parents
+are reserved for temporal evaluation. M0 has already trained on frames from the
+531 and 59 parents, so the latter are held out from Mamba training, not from M0
+training. Evaluation replays the 40 complete episodes causally, then reports the
+same 960 frame IDs as the M0 study and separately the 151 physical-both frames.
+The original graph cache and the selected M0 dataset have checked provenance;
+files reserialized for the 960 validation frames are compared array by array.
+The model uses observed robot and vertex-quality data, not physical selection
+labels, as inputs. Mamba refines poses and relative endpoint geometry; size
+fields remain from the frozen M0. Selection labels are used only for reporting.
+The original 40-parent set has already been used in M0 development and is not an
+independent final test. Experiment outputs and effective settings are local.
+
+### Episode-by-episode condition plots
+
+Run `python main.py --config graph/configs/temporal/insertion/plot_selected_m0_mamba_episodes.yaml`
+after setting the saved temporal predictions and complete-episode physical decision
+paths. The output includes a browsable `index.html`, individual episode PNGs, a
+multipage PDF and group metrics. Each frame's ribbon distinguishes neither rule,
+Peg only, Hole only and both; black dots mark the original 960 validation frames.
+Each plot compares M0 and Mamba errors for the nine physical groups of Object21D;
+size fields remain unchanged by this Mamba. Decision labels use GT only for
+retrospective analysis. The first evaluation uses the completed seed 0 and is
+not a three-seed result.
+
+The insertion trainer saves `last.pt` after every completed epoch, including the
+model, Adam optimizer, best checkpoint, data identity, shuffle generator and
+Python/NumPy/Torch/CUDA random states. A workflow can pass `last.pt` through
+`continuation_checkpoint` to restore training state; the saved data, model and
+relevant optimizer settings are verified before continuing. Evaluation still uses
+`best.pt`. Older weight-only checkpoints cannot restore the missing optimizer or
+random states; continuing them initializes a new Adam and records that fact.
+
+For a fresh 60-epoch Mamba run with a frozen selected M0, use
+`graph/configs/temporal/insertion/train_selected_m0_mamba_60.yaml` after setting
+its input and output paths. Each seed needs a separate config and output root.
+The 60-epoch recipe starts Mamba and Adam from scratch, preserves M0 weights,
+and saves the optimizer-containing `last.pt` each epoch.
+
+The fresh 60-epoch three-seed result can be plotted with
+`graph/configs/temporal/insertion/plot_fresh_mamba_60_episodes.yaml`. It checks
+that all seeds have the same frame IDs, GT, TCP and quality observations as the
+saved physical-audit reference. Each dark curve is the mean of the three
+per-frame physical errors, not an error computed from averaged predictions;
+light blue curves show individual Mamba seeds for pose and relative-position
+panels. The same four GT-assisted categories apply to all 4,102 frames. The
+960-frame scores are checked against the independent saved evaluation summary.
+
+## Causal Transformer with frozen M0
+
+`graph/temporal/causal_transformer.py` adds a pre-normalized causal attention
+backbone to the existing insertion estimator. It consumes the same frozen M0
+Object21, observed robot and vertex-quality features as the Mamba experiment;
+the same output heads, losses, normalization and Object21 assembly are used.
+The selected-M0 training recipe is
+`graph/configs/temporal/insertion/train_selected_m0_transformer.yaml` and the
+standalone evaluation recipe is
+`graph/configs/temporal/insertion/evaluate_selected_m0_transformer.yaml`.
+After setting the paths and prerequisites in the Graph README, run
+`python main.py --config graph/configs/temporal/insertion/train_selected_m0_transformer.yaml`.
+The training entrypoint evaluates the chosen checkpoint on complete held-out
+episodes, then separately reports the same 960 frame IDs and 151 physical-both
+frames. Physical labels are used for analysis, not as Transformer inputs. The
+original 40-parent validation set was already used for M0 development; it is
+not an independent final test.
+
+The initial recipe uses one attention block, width 128, four heads,
+feed-forward width 256 and dropout 0.0. It has 158,092 trainable parameters
+including projection and pose heads; the matching one-layer width-128 Mamba
+has 142,348 under the reference implementation. These counts exclude frozen
+M0. Model size is a starting hypothesis, not an empirical performance claim.
+Sinusoidal positions start at zero at each training window; no observations
+from future positions are visible. Training uses the same 64-frame
+reset-window policy as the existing Mamba. Streaming evaluation instead starts
+at each true episode boundary and keeps the full earlier sequence: the position
+encoding and attention history grow across all episode frames. Per-layer
+normalized states are retained, so streaming memory and per-step work grow with
+episode length; this implementation reprojects past attention states and is not
+a fixed-memory or optimized key/value-cache implementation. Long episodes may
+therefore cost more than the typical roughly 103-frame validation episode.
+Optimizer and random states are written to `last.pt` each epoch.
+
+CPU tests cover causal masking, right padding, full versus frame-by-frame
+inference (including 130 frames), resets, gradients, the full synthetic
+train/evaluate workflow and optimizer checkpoint saving. They do not establish
+Transformer prediction quality. CUDA Transformer training/inference and actual
+robot performance were not executed for this implementation.
+
+### Temporal training with a selected GNN and early stopping
+
+`graph/configs/temporal/insertion/train_selected_gnn_mamba_early_stopping.yaml`
+and `graph/configs/temporal/insertion/train_selected_gnn_transformer_early_stopping.yaml`
+start a fresh temporal estimator over a frozen GNN selected by the physical-frame
+validation loss. Set the checkpoint and data paths for the chosen seed, then run
+`python main.py --config <config.yaml>`. The existing 531/59 temporal training and
+development parent split is unchanged. Early stopping monitors development
+validation loss; the configured patience, minimum epoch and maximum epoch are
+recorded in the effective config. `last.pt` preserves the optimizer, random
+states and early-stopping reference/counter. Resumes require identical stopping
+settings. `best.pt` uses the exact lowest development validation loss.
+
+The GNN checkpoint has already been selected using the 151 condition-matching
+frames among the 40 original validation parents. Thus evaluations on those
+parents are development/reference results, not an independent final test. The
+59 temporal development parents were part of the GNN training pool. The frozen
+GNN and temporal estimator are independently checked and never share optimizer
+updates.

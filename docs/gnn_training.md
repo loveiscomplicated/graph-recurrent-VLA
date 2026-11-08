@@ -5,6 +5,9 @@ resume. It is independent of prediction layout: a task supplies the loss and
 scalar metrics. The first supported training recipe is gated MPNN Object21
 supervision from the Visual corner detector's output and raw saved GT.
 
+For the matched Baseline/A/B/AB experiment, see
+[vertex geometry and readout ablation](#vertex-geometry-and-readout-ablation).
+
 ## Run on the training host
 
 ### Train from a downloaded cache
@@ -109,7 +112,19 @@ resume signature.
 | `training/gnn/checkpoint.py` | Atomic epoch snapshots and RNG/state restoration |
 | `training/gnn/loss.py` | Existing Object21 and paired-delta objective functions |
 | `data_collection/episode_dataset.py` | Approved raw frame/GT reading, no GNN dependency |
+| `data_collection/vertex_family_manifest.py` | Vertex-family manifest hash and parent-split verification, no training dependency |
 | `graph/utils/object21_targets.py` | Raw world GT to Graph-team Object21 targets |
+| `graph/vertex_aggregation.py` | Optional global geometry and multi-seed readout |
+| `training/gnn/vertex_ablation.py` | Matched four-model training through the existing trainer |
+| `evaluation/gnn/vertex_ablation.py`, `vertex_metrics.py` | Paired validation and physical/observation-count diagnostics |
+
+Shared prediction alignment and parent-cluster bootstrap helpers live in
+`evaluation.gnn.vertex_metrics`; their previous imports from
+`evaluation.gnn.vertex_diagnostics` remain available. Vertex-family manifest
+readers use `data_collection.vertex_family_manifest.read_manifest`; the previous
+`training.gnn.vertex_family_data.read_manifest` import remains available.
+Canonical JSON hashing lives in `data_collection.episode_dataset`, with the
+same byte encoding and compatibility import from `training.gnn.data`.
 
 The old `training.gnn_trainer` and `training.gnn_loss` modules moved to the paths
 above. Update external imports accordingly. The common entrypoint remains
@@ -591,7 +606,7 @@ benchmark scripts. From that directory on an idle CUDA host, rerun with
 `OMP_NUM_THREADS=1 TORCHINDUCTOR_COMPILE_THREADS=1 python benchmark.py --variant dense_nodes --compile`.
 The benchmark refuses to start if another CUDA compute process is present.
 
-Local verification deliberately does not run training or generate frame caches.
+The original verification did not run training or generate frame caches.
 Contract tests check targets, splits, collation, both model output contracts in
 validation, settings and checkpoint/RNG round trips using untrained weights:
 
@@ -603,5 +618,566 @@ python -m unittest tests.test_gnn_trainer tests.test_gnn_training \
 The optimizer/resume integration test is disabled by default. On the training
 host it can be explicitly enabled with `RUN_GNN_TRAINING_TESTS=1`; it uses synthetic
 graph fixtures and does not establish dataset quality. Real-dataset training,
-cache materialization, CUDA/MPS training and end-to-end resume were not run on
-this local host. The supplied data path is a placeholder, not a bundled dataset.
+cache materialization and CUDA/MPS training were not run for that original
+verification. The supplied data path is a placeholder, not a bundled dataset.
+The later vertex-ablation checks below include CPU synthetic optimizer/resume
+tests and MPS forward/backward checks.
+
+## Vertex geometry and readout ablation
+
+### Run the matched protocol
+
+Prerequisites: Python 3.11, Torch, NumPy and PyYAML; the original trained gated
+MPNN `best.pt`; and the matching extracted published cache, including both
+metadata JSON files and all inventoried NPZs. No simulator, detector execution,
+remote launcher or artifact publishing is part of this workflow.
+
+Set `reference_checkpoint` and `data.cache_dir` in
+`graph/configs/train_vertex_ablation.yaml`. Its `base_config` points to the
+existing `graph/configs/train_gated_mpnn_cached.yaml`, whose training recipe is
+shared by every variant. Run from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_vertex_ablation.yaml
+# Set manifest in the evaluation YAML to the emitted ablation_manifest.json.
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_vertex_ablation.yaml
+```
+
+The matrix trains **all four models from scratch**. The source checkpoint is
+audited for architecture/data provenance, never reused as the matrix baseline
+score or initialization. The preflight checks the actual saved model settings
+and dataset identity against the selected cache. The loader retains the saved
+split, checksum checks, input tensors, Object21 targets and empty frames. It
+neither reruns the detector nor changes the episode assignments. A different
+cache or changed baseline dimensions/semantic/confidence settings is rejected.
+
+The selected recipe uses seed 0, 30 epochs, batch size 32, AdamW (lr 0.001,
+weight decay 0.0001), StepLR (10 epochs, gamma 0.5), gradient clipping 1.0 and
+the unchanged Object21 loss/normalization. All variants use the same loader
+seed/order, epoch/update budget, optimizer, scheduler and minimum-validation-loss
+checkpoint selection. Shared original weights start identically; A/AB also
+share geometry initialization and B/AB share readout initialization. Optional
+modules preserve the later training RNG through separate initialization scopes.
+CUDA compilation follows the existing recipe; CPU/MPS remain eager. Equal
+settings do not guarantee bitwise accelerator determinism.
+
+`parallel_models` defaults to 1; values 2–4 run independent trainer processes
+using the `spawn` context, including on one shared GPU. Each process owns its
+model, optimizer, seeded RNG and output directory. `data.num_workers` in the
+matrix YAML can override only the loader worker count; it does not alter cached
+samples or their saved split. Set these counts to fit host RAM and GPU memory.
+Parallel console logs are retained under the matrix's `model_logs/`; completed
+checkpoints enter the same audited manifest. Wall time under shared GPU load is
+not an isolated throughput benchmark. The existing epoch loop is unchanged.
+
+Each child keeps the existing trainer's UUID output directory, config snapshot,
+data identity, history, `last.pt` and `best.pt`. The matrix writes a progressively
+updated `ablation_manifest.json` under its own UUID directory, with source and
+new checkpoint SHA256s, effective protocol and parameter counts. Reference
+training-setting differences are recorded if a copied base recipe changes the
+budget. Existing checkpoints are never overwritten. The shared
+`ExperimentLogger` records the matrix, four child training runs and evaluation;
+no new W&B or publishing implementation is introduced. A failed/incomplete
+matrix cannot produce a four-model evaluation table. After a failure, existing
+children remain preserved; the matrix launcher currently starts a new matrix
+rather than automatically resuming an incomplete one.
+
+Evaluation checks all four checkpoint hashes, flags, dataset identities and
+training protocols, then matches sample IDs, targets and observed counts exactly.
+It reads the complete saved validation split and leaves the reserved test split
+unread. This is descriptive validation evidence: the same validation split also
+selects the checkpoints, so it is not an independent test result. For a relocated
+but identical cache, an explicit `data.cache_dir` override may be supplied in the
+evaluation YAML; inventory/identity checks still apply.
+
+### Existing architecture and actual checkpoint
+
+On 2026-11-07, the local source
+`outputs/hybrid_temporal_estimation/inputs/gnn_best.pt` strictly loaded with:
+
+| Item | Saved setting / inspected behavior |
+| --- | --- |
+| Model | `VertexEdgeGatedMPNN`, hidden **64**, **2** layers per object side |
+| Semantic IDs | Vocabulary 16, embedding width 32, **disabled** |
+| Confidence | **Disabled**; present nodes have effective confidence 1 |
+| Other settings | Edge embedding 16, dropout 0, coordinate scale 0.05 m |
+| Size scales | `[0.04, 0.01, 0.01, 0.02]` m |
+| Parameters | **234,927**, including stored but disabled semantic embedding |
+| Checkpoint SHA256 | `f527ab8f2b70129bfe845cf362a304bc2da195ac24e049d6de4cd4c28432100e` |
+| Cache-only dataset SHA256 | `21a03a363ec5d6e1dd391fc014b8e3ad1455c5eaf0489153a9c39eed2d133292` |
+
+The class defaults remain hidden **128**, **3** layers; those are not the saved
+experiment settings. Saved tensor shapes independently confirm node encoder
+`[64,45]`, message input `[64,149]`, and peg head input `[64,66]`. The source
+validation loss is 3.0327817512432054; it is **not** a matched four-model result.
+The original cache is absent on this host, so its full frame inventory, node
+count distribution and split membership could not be independently replayed
+here. Runtime preflight verifies them when that cache is supplied.
+
+The existing flow in `gated_mpnn.py` is:
+
+1. Each node encodes 45 values: object-centered world-axis XYZ / 0.05,
+   effective confidence, observed flag, semantic embedding (32), and object-type
+   embedding (8). The centroid is confidence-weighted when confidence is enabled;
+   unknown confidence is neutral. Disabled/unknown semantics contribute zeros.
+2. Each edge encodes 21 values: sender-minus-receiver XYZ / 0.05, distance /
+   0.05, observed-pair flag, and a 16-value type embedding. Default
+   `GraphBuilder` settings create complete directed edges without self edges.
+   PEG, BOX and HOLE retain separate type IDs. Edges within a type use that type;
+   edges between different types are CROSS, including BOX↔HOLE. Optional kNN
+   selection remains unchanged; tied-neighbor selection is input-order sensitive.
+3. Two separate PEG and target-side message stacks each have two layers. The
+   target stack handles BOX/HOLE intra-type edges; one shared cross layer then
+   processes all CROSS edges. For concatenated sender/receiver/edge features,
+   each message is `sigmoid(gate) * message * sender_confidence`. Receivers sum
+   messages and divide by `max(1, sum(sender_confidence))`, followed by an MLP,
+   residual, dropout and LayerNorm. Unsupported nodes retain their old features.
+4. `ConfidenceAttentionPool` computes one scalar attention per node, adds log
+   confidence, masks padding, and produces one hidden-width weighted sum per
+   side. Each side adds `[present, mean_confidence]`, making 66 head inputs.
+   Empty groups have zero pooled features and summary, but heads still produce
+   their learned prior. BOX/HOLE share target-side readout; `hole_observed`
+   reports actual HOLE nodes separately. The detector's default object_id=1 is
+   BOX; HOLE labels require an explicit upstream classification.
+5. The unchanged peg head emits position3/quaternion4/halfsize3, and hole head
+   emits position3/quaternion4/radius1. Positions offset the observed centroid;
+   identity-offset wxyz quaternions normalize to unit norm; dimensions use
+   softplus and the saved scales. The existing endpoint residual head remains.
+
+Thus all-to-all relative geometry, distance, object centering and learned
+attention already exist. A introduces a different aggregation bias over that
+information; it does not make previously unobserved corners available. B tests
+the single-vector readout's aggregation, while still projecting to the same
+hidden-width head input.
+
+Object21 remains `[peg_pos(0:3), peg_quat(3:7), endpoint_minus_hole(7:10),
+hole_pos(10:13), hole_quat(13:17), peg_halfsize(17:20), hole_radius(20:21)]`.
+Positions are TCP-relative in world axes; the endpoint vector is also in world
+axes, not rotated into the hole frame. Geometry uses the peg's local **+X** tip.
+GT is only a loss/evaluation target and never an aggregation input. Recurrent
+assembly, controller and action head are unchanged.
+
+The unchanged loss uses SmoothL1 for positions/endpoint with 0.01 m units,
+sign-invariant squared quaternion-dot loss, size SmoothL1 with the saved size
+units, and endpoint-residual squared regularization. Weights are peg/hole
+position 1 each, endpoint 2, rotations 0.5 each, size 0.5, consistency 0.05.
+Optional paired-delta loss is not enabled by the saved `Object21Task` recipe.
+
+### A, B and AB mechanisms
+
+| Variant | `model.global_geometry` | `model.readout` | Parameters at hidden=64, layers=2 | Increase |
+| --- | --- | --- | ---: | ---: |
+| Baseline | `false` | `attention` | 234,927 | 0% |
+| A / `geometry` | `true` | `attention` | 239,135 | 1.79% |
+| B / `multiseed` | `false` | `multiseed` | 240,237 | 2.26% |
+| AB / `combined` | `true` | `multiseed` | 244,445 | 4.05% |
+
+The matrix selects these flags automatically. `aggregation` in its YAML exposes
+`geometry_dim: 16`, `readout_seeds: 4`, `readout_dim: 16` and `readout_heads: 4`.
+The regular trainer also accepts these six fields under `model` for a single
+variant. The baseline's omitted flags preserve the original state-dict keys and
+initialization. Resume signatures interpret missing legacy flags as baseline
+defaults, while rejecting a change to an enabled module.
+
+**A: AG-Pose-inspired global geometry.** The
+[CVPR paper](https://arxiv.org/html/2403.19527v1#S3.SS4) uses an averaged
+learned embedding of pairwise keypoint displacements (Eq. 10), an average global
+feature (Eq. 13), and node/global/geometry fusion (Eq. 14). The inspected
+[official GAFA implementation](https://github.com/Leeiieeo/AG-Pose/blob/bfd97ff398d542bb6a55f584e7886c32c5e17368/model/Net_modules.py#L189)
+also adds an embedding of keypoint coordinates before fusion. The repository's
+current README identifies that code as the extended version; the global
+mechanism was cross-checked against the original CVPR paper.
+
+`GlobalGeometryAggregation` applies once after the existing cross layer and
+before readout. For each valid node, it averages a 3→16→16 MLP of displacements
+to every observed node in its group, including self, adds a 3→16→16 embedding
+of its existing object-centered coordinates, and fuses that geometry with its
+node feature and the masked global mean through a bottleneck MLP plus residual
+LayerNorm. PEG and target-side BOX/HOLE are processed separately by the **same
+module weights**. No cross-group geometry or padding enters either mean.
+This is permutation-equivariant and reuses the existing world-axis coordinate
+scale. It adapts the paper to observed sparse vertices, SiLU, LayerNorm and a
+small bottleneck; it does not add keypoint detection, dense local neighborhoods,
+NOCS prediction, reconstruction, GT geometry or new pose/size heads.
+
+**B: GMT-inspired multi-seed pooling.** The
+[GMT paper](https://arxiv.org/html/2102.11533v4#S3.SS2) and
+[official PMA/MAB implementation](https://github.com/JinheonBaek/GMT/blob/a178b590b158b21423ac0dbc3fcf1b41a94fc52a/models/layers.py#L115)
+use learnable seed queries attending to a node multiset. `MultiSeedAttentionPool`
+uses four seeds, Q/K/V projections to width 16, four attention heads, a seed
+residual, LayerNorm, a residual feedforward transform, and a projection of the
+four 16-value tokens back to hidden=64. PEG and target-side pools have separate
+weights under this same general design. Confidence supplies the same log prior
+as the original pool, or neutral ones when disabled. Unknown quality remains
+neutral; zero confidence has the original finite log floor. Invalid nodes get
+zero attention, and entirely empty groups return exactly zero pool/summary.
+
+Unlike the official MAB scaling by the total value width, this implementation
+uses the usual square root of the per-head width. It reuses existing GNN
+features for K/V and omits GMT's additional graph convolutions, self-attention
+between pooled tokens and hierarchical coarsening. It is **GMT-inspired**, not
+full GMT, and does not claim GMT's injectiveness/WL guarantees. Four seeds are
+the initial candidate: at width 16 they concatenate to the existing width 64,
+limiting parameter growth. With fewer than four observed vertices, seeds can be
+redundant; suitability for the actual node distribution remains an empirical
+question. Permuting input nodes leaves the readout invariant; fixed seed order
+does not refer to vertex identity.
+
+**AB** applies A and then B, without another module or head. Parameter counts
+are close but unequal; architecture effects remain confounded with the added
+capacity unless subsequent parameter-matched controls support the conclusion.
+
+### Evaluation and interpretation
+
+`summary.json` reports Mean/Median/P90/P95 for every metric below, with frame
+counts. `comparison.md` contains the mean table; each model also saves per-frame
+predictions, targets, counts, `endpoint_geom`, `endpoint_residual` and errors in
+an NPZ. **Peg half-size X absolute error is the primary metric.** Checkpoints
+are still selected by the existing total validation loss, not that diagnostic.
+
+| Metric | Definition |
+| --- | --- |
+| Peg/Hole position (mm) | L2 position error |
+| Peg/Hole rotation (degree) | Sign-invariant quaternion geodesic angle |
+| Peg half-size X/Y/Z, hole radius (mm) | Per-component absolute error |
+| Endpoint position (mm) | L2 error of `Object21[7:10] + hole_position` |
+| Relative 3D (mm) | L2 error of `Object21[7:10]`, the tip−hole vector |
+| Lateral / axial (mm) | YZ norm / absolute X of relative-vector error in the **GT hole frame**, for scoring only |
+| Endpoint geometry position / relative (mm) | The same two tip metrics before the existing learned residual |
+| Endpoint residual magnitude / gain (mm) | Correction norm / geometric relative error minus corrected relative error; positive gain helps |
+
+The old task metric `endpoint_error_m` is the **relative-vector** error, not
+physical endpoint position error. This evaluator distinguishes both explicitly.
+Residual magnitude alone is not an accuracy metric. Comparing geometric and
+corrected relative errors distinguishes improvements in pose/size geometry from
+benefit of the existing endpoint correction, without assuming causal attribution.
+
+Groups include exact PEG, BOX, HOLE and combined target vertex counts, absent
+PEG/target, empty graphs and configurable high/low support proxies (default:
+at least four PEG and four target nodes). High support does **not** establish
+full visibility, and low support does not prove occlusion: the input contract
+has no expected vertex count, missing-corner identities or occlusion-cause label.
+No group is called fully observed without such evidence. Absent groups have
+null statistics, not zero error.
+
+Within each group, the evaluator records Pearson associations between half-size
+X error and corrected/geometric endpoint errors. Paired comparisons use exactly
+the same frames and report baseline-minus-candidate error distributions,
+correlations between size-X and endpoint improvements, and the proportion of
+size-improved frames whose endpoint also improves. These are descriptive,
+frame-weighted associations, not causal effects or independent episode-level
+significance tests. A single seed and unequal parameter counts further limit
+claims about the bottleneck.
+
+### Verification and real-data result status
+
+2026-11-07, repository source commit `7f1441e` plus this uncommitted change;
+Python 3.11, Torch 2.14.1, macOS. The original source checkpoint strictly loaded,
+and its CPU outputs matched a saved **pre-change** oracle exactly, including
+an empty input. CPU checks cover all variants with confidence on/off, semantic
+IDs enabled, reversed vertex order with matched identities/edges, extra padding,
+one-sided/empty groups, zero confidence, finite outputs/gradients, quaternion
+norms, Object21 geometry consistency, shared initialization/RNG and legacy
+resume signatures. Permutation checks use the actual complete-edge recipe;
+upstream tied kNN graph selection retains its documented limitation.
+
+The synthetic root-CLI test runs real one-epoch optimizer updates for all four
+models, saves checkpoints and evaluates all five validation frames from the
+same 10-train/5-validation fixture. A separate retained smoke uses hidden=64,
+layers=2 with the same synthetic budget. Neither is a convergence experiment.
+The fixture has no observed PEG nodes, so those workflow scores cannot test
+the size-representation hypothesis; separate module tests include PEG/BOX/HOLE.
+MPS forward/backward checks also passed for all four models at hidden=64,
+layers=2. The initial local checks did not execute CUDA, the simulator, or
+real-data 30-epoch training. The subsequent authorized Vast run below exercises
+CUDA; simulator execution and artifact publishing are not part of it.
+
+Run the relevant suite, including the original synthetic resume/optimizer test:
+
+```bash
+WANDB_MODE=disabled RUN_GNN_TRAINING_TESTS=1 .venv/bin/python -m unittest \
+  tests.test_vertex_ablation tests.test_gated_mpnn tests.test_graph_builder \
+  tests.test_gnn_trainer tests.test_gnn_metrics tests.test_gnn_cached_data \
+  tests.test_gnn_training tests.test_gnn_progress \
+  tests.test_experiment_logger tests.test_experiment_artifacts \
+  tests.test_temporal_hole_gru tests.test_gnn_temporal_memory -q
+```
+
+Result: **125 tests passed**, with no skips when the opt-in flag is set. Two
+pre-existing validation tests initially expected `forward()` to validate an
+invalid graph; they now call `GraphBatch.validate()` explicitly, matching the
+existing documented validation boundary. No validation was added to forward.
+Local evidence: [test output](../outputs/vertex_gnn_ablation_verification/test_results.txt),
+[checkpoint audit](../outputs/vertex_gnn_ablation_verification/checkpoint_audit.json),
+[MPS checks](../outputs/vertex_gnn_ablation_verification/mps_smoke.json), and
+[retained synthetic run paths](../outputs/vertex_gnn_ablation_verification/smoke_run.json).
+These ignored files are local verification evidence, not committed datasets.
+The unchanged frozen-GNN memory and hole-GRU workflows also passed their
+regression checks. The [real-cache preflight output](../outputs/vertex_gnn_ablation_verification/real_cache_preflight.txt)
+records the actual root-entrypoint failure before any real-data training.
+
+### Authorized Vast execution and tmux continuation
+
+On 2026-11-07, the user requested continuation on the existing Vast.ai instance
+**59441593 / RTX 3090**. Its original cache was found at
+`/workspace/temporal_insertion_data/gnn_cache` (also `/workspace/gnn_cache`):
+64,702 train frames / 630 episodes and 18,751 validation frames / 180 episodes;
+90 test episodes remain reserved, with no test frames read. The cache-only
+identity and original checkpoint SHA256 match the audit above. Actual CUDA
+forward/backward passed for all four variants; original-checkpoint CPU/CUDA
+maximum output difference was 1.7881393e-7. Remote tests passed 124 cases, with
+one optional W&B SDK check skipped (125 total).
+
+The executed source snapshot is Git `4432d99e5d28b55e27aefb25b3e3fe2a08613d53`,
+archive SHA256 `13bf3b32abe882addf7caa99fb48b9e9a5fc25f7591df82e4c6111e4057118a8`.
+The original local source was `7f1441e` with uncommitted changes; source files
+and their hashes are retained with the launch. All models keep the same 30
+epochs, batch 32, seed 0, loss, optimizer and scheduler. Loader workers changed
+from the original 0 to **4 per model**, and the four independent processes share
+one GPU. This runtime change is recorded; cached samples and splits are unchanged.
+
+At the user's request, checkpoint continuation moved each model from the initial
+process pool to its own tmux session. The stable `last.pt` restores model,
+optimizer, scheduler, best weights and CPU/CUDA/shuffle RNG. Unsaved partial
+epochs are replayed; the final budget remains epoch 30. The stopped pool's logs
+and checkpoints are preserved. CUDA compiled resume is not claimed bitwise equal
+to uninterrupted execution.
+
+| Variant | tmux session | Saved epoch at migration | First resumed epoch |
+| --- | --- | ---: | ---: |
+| Baseline | `vertex_baseline` | 5 | 6 |
+| A | `vertex_geometry` | 4 | 5 |
+| B | `vertex_multiseed` | 4 | 5 |
+| AB | `vertex_combined` | 4 | 5 |
+
+On the instance, use `tmux attach -t vertex_baseline` (or another name above).
+`vertex_ablation_eval` waits for four successful epoch-30 exits, audits the
+continuation checkpoints against the original shared protocol, and invokes
+the existing root-entrypoint paired evaluator automatically. Model logs and
+configs live under
+`/workspace/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux/`.
+The [local migration record](../outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux/migration.json)
+contains exact checkpoint paths, hashes and commands; the
+[launch record](../outputs/vertex_gnn_ablation_verification/remote_launch.json)
+identifies source/runtime paths and the retained partial first attempt.
+
+### Completed matched validation results
+
+All four trainers completed epoch **30**, and automatic paired evaluation
+completed successfully on 2026-11-07 at **17:17 KST**. Every model and the
+evaluation tmux pane exited with status 0. Each model performed **60,660 optimizer
+updates**; the actual saved AdamW step counters were checked. The histories
+before and after tmux migration cover epochs 1–30 exactly once. Every final
+`best.pt` matches the `best_model` stored in its resumable `last.pt`, and each
+selected loss matches the minimum of its complete history. The original
+published checkpoint and all four migration checkpoints retained their hashes.
+
+Evaluation run `b1bc1a57bb494f4aadb43d91c8eedbc5` uses **18,751 identical frames
+from 180 validation episodes**. Sample IDs, targets and PEG/BOX/HOLE counts were
+checked for exact equality across all four prediction files. Training and
+epoch-level validation used the configured CUDA compilation; this final paired
+evaluation uses eager CUDA inference for every model. It evaluates the
+minimum-validation-loss `best.pt`, not the epoch-30 weights:
+
+| Model | Continued training run ID | Selected epoch | Best validation loss |
+| --- | --- | ---: | ---: |
+| Baseline | `38a96f9288f840fab735f48a79343ca0` | 12 | 3.042341 |
+| A | `9eed87b0accd47a593de8687e601600f` | 12 | 3.029630 |
+| B | `e87597b82ed749e09d221e9062e39918` | 11 | 3.023960 |
+| AB | `802284c9d5c247ac807a982c70ab59ff` | 11 | 3.005271 |
+
+Mean errors below are frame-weighted. Distances and sizes are **mm**; rotations
+are **degrees**. Smaller errors are better. Residual magnitude is descriptive;
+positive residual gain means the existing correction reduced relative error.
+
+| Metric | Baseline | A | B | AB |
+| --- | ---: | ---: | ---: | ---: |
+| Peg position | 4.527 | 4.662 | 4.877 | 4.321 |
+| Peg rotation | 3.173 | 2.966 | 2.882 | 2.702 |
+| Hole position | 26.468 | 26.347 | 26.302 | 26.427 |
+| Hole rotation | 5.380 | 5.473 | 5.628 | 5.759 |
+| **Peg half-size X** | **5.439** | **5.348** | **5.199** | **5.067** |
+| Peg half-size Y | 0.716 | 0.627 | 0.879 | 0.774 |
+| Peg half-size Z | 0.733 | 0.639 | 0.878 | 0.760 |
+| Hole radius | 2.677 | 2.694 | 2.690 | 2.691 |
+| Endpoint position | 11.107 | 10.710 | 10.427 | 10.297 |
+| Endpoint−Hole relative 3D | 27.295 | 27.213 | 26.961 | 26.870 |
+| Lateral | 21.561 | 21.641 | 21.600 | 21.702 |
+| Axial | 12.904 | 12.647 | 12.211 | 11.909 |
+| Geometric endpoint position, before residual | 10.756 | 10.618 | 10.221 | 10.078 |
+| Geometric endpoint relative 3D, before residual | 27.340 | 27.403 | 27.338 | 27.128 |
+| Endpoint residual magnitude | 3.142 | 3.523 | 3.688 | 2.819 |
+| Endpoint residual relative-error gain | 0.045 | 0.190 | 0.378 | 0.258 |
+
+For the primary mean half-size X error, A improves by **1.67%**, B by **4.41%**,
+and AB by **6.84%** against the newly trained baseline. AB is lower than B by
+another 0.132 mm (2.54%). This is not a uniform distributional improvement:
+
+| Peg half-size X error, mm | Baseline | A | B | AB |
+| --- | ---: | ---: | ---: | ---: |
+| Mean | 5.439 | 5.348 | 5.199 | 5.067 |
+| Median | 2.829 | 3.013 | 3.220 | 2.873 |
+| P90 | 14.220 | 12.938 | 12.440 | 12.590 |
+| P95 | 20.290 | 19.978 | 17.484 | 18.057 |
+
+The baseline retains the lowest median, while B has the lowest P90/P95. AB's
+physical endpoint position error improves by **7.29%**, but relative 3D improves
+only **1.56%**, and lateral error worsens by **0.66%**. Hole rotation and Peg Y/Z
+size errors also worsen under AB. Thus AB's primary mean advantage does not
+establish an overall Object21 improvement or better insertion control.
+
+### Observation conditions and size/endpoint association
+
+The observed node-count distribution has PEG counts 3–10 and BOX counts 0–11;
+there are **no actual HOLE-type inputs**, missing-PEG frames or empty graphs in
+this validation split. The model predicts the supervised Hole state from the
+BOX target-side observations. Counts above eight further show why detection
+count must not be treated as verified coverage of eight physical corners.
+
+| Condition | Frames | Baseline Size X | A | B | AB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| High support: PEG ≥4 and target ≥4 | 5,884 | 3.026 | 3.001 | 3.602 | 3.318 |
+| Low support: all other frames | 12,867 | 6.542 | 6.421 | 5.929 | 5.866 |
+| Target absent | 2,256 | 17.315 | 17.317 | 13.325 | 14.441 |
+| Target present | 16,495 | 3.814 | 3.710 | 4.087 | 3.785 |
+| PEG ≤4 vertices | 10,352 | 6.349 | 6.420 | 5.723 | 5.798 |
+| PEG 5–6 vertices | 6,056 | 4.462 | 4.053 | 4.677 | 4.274 |
+| PEG ≥7 vertices | 2,343 | 3.942 | 3.955 | 4.228 | 3.887 |
+
+Values are mean absolute half-size X error in mm; rows overlap. The full summary
+retains every exact PEG/BOX/HOLE/target count group and all error quantiles.
+These are observation-count conditions, not confirmed full visibility or labeled
+occlusion. The compared frames inside each row are identical across models;
+different rows are not otherwise matched for pose, size or difficulty.
+
+AB's size-X advantage occurs mainly in low-support frames. On high support it
+is **9.68% worse** than the baseline; B is **19.04% worse**. Target-absent frames
+account for approximately **93.0% of AB's net summed size-X error reduction**.
+For B, the target-absent gain is about twice its net reduction: it is offset by
+*worse* error when the target is present (4.087 versus 3.814 mm). A improves
+target-present error to 3.710 mm, but barely changes target-absent error. Hence
+the overall readout mean advantage cannot be generalized to well-supported
+frames or attributed to recovery of unobserved shape.
+
+Mean size-X and physical endpoint errors both decline, but per-frame changes
+are not equivalent. The correlations below compare each candidate's paired
+baseline-minus-candidate improvements on the same frames:
+
+| Association / conditional fraction | A | B | AB |
+| --- | ---: | ---: | ---: |
+| Size-X improvement vs endpoint-position improvement, Pearson r | 0.489 | 0.469 | 0.553 |
+| Size-X improvement vs relative-3D improvement, Pearson r | 0.094 | 0.085 | 0.116 |
+| Endpoint position improves among size-X-improved frames | 67.92% | 66.59% | 69.84% |
+| Relative 3D improves among size-X-improved frames | 54.49% | 53.68% | 55.75% |
+
+For AB, size X improves on 9,655 frames; physical endpoint position also improves
+on 6,743 of those, and relative 3D on 5,383. This is descriptive evidence of a
+moderate size/physical-tip association and a much weaker size/relative-vector
+association, not a causal isolation of size from pose.
+
+The existing residual has mixed effects. It reduces mean relative error by the
+reported 0.045/0.190/0.378/0.258 mm, but physical endpoint position error is
+higher after correction for every model. For example, AB's geometric physical
+tip error is 10.078 mm and corrected error 10.297 mm. B's raw geometric relative
+error is essentially unchanged from baseline (27.338 versus 27.340 mm), while
+its corrected relative error improves to 26.961 mm. Thus its relative-vector
+gain includes a stronger effect of the **existing** residual head; it is not
+evidence that geometry alone improved by the same amount. No correction head
+was added or changed.
+
+### Research conclusions and remaining limits
+
+1. **Global geometry:** A modestly improves mean size X and improves Y/Z size,
+   but worsens the primary median and raw geometric relative error. The evidence
+   does not establish missing global geometry as the dominant bottleneck.
+2. **Multi-seed readout:** B has a larger overall mean size-X improvement than A
+   and the best P90/P95, but its benefit is concentrated in target-absent/low-
+   support cases. Target-present and high-support size errors worsen.
+3. **Combination:** AB has the lowest mean size-X and physical endpoint errors,
+   with an additional mean benefit over either component. B remains better on
+   primary P90/P95; several other state errors worsen under AB. This is a
+   measured tradeoff, not uniform superiority or demonstrated synergy.
+4. **Partial observation:** Benefits are not confined to high support; the larger
+   aggregate gains occur in low support. True full visibility, occlusion cause,
+   absent-PEG behavior and actual HOLE-input behavior are not established by
+   this validation population.
+5. **Size to endpoint:** Physical endpoint mean improves alongside size, with
+   positive paired associations. Relative/lateral improvements are much weaker
+   or negative, and the residual analysis distinguishes geometry from correction.
+6. **Confounds:** This is one seed, unequal capacity (+1.79%, +2.26%, +4.05%), a
+   reused validation split that selects checkpoints, and CUDA compiled resume
+   at different saved epochs. All four share data, loss and 30-epoch/60,660-update
+   budgets, but these controls do not eliminate capacity or seed effects.
+   Multiple seeds and parameter-matched controls would be needed for a stronger
+   claim about the architectural bottleneck. No default model was changed.
+
+The original required comparison is now executed; CUDA training and evaluation
+ran on the stated Vast host. Simulator execution, controller rollouts, independent
+reserved-test evaluation and Hugging Face publishing were not performed.
+The tmux panes are retained after successful exit, and the instance remains
+available rather than being stopped automatically.
+
+Local retained evidence (ignored artifacts, not committed datasets):
+
+- [Paired summary and Mean/Median/P90/P95](../outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_evaluation/b1bc1a57bb494f4aadb43d91c8eedbc5/summary.json)
+- [Conditional analysis and additional AB-vs-A/B paired comparisons](../outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_evaluation/b1bc1a57bb494f4aadb43d91c8eedbc5/condition_analysis.json)
+- [Complete histories, checkpoint hashes and selection audit](../outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/completion_audit.json)
+- [Four-model manifest](../outputs/vertex_gnn_ablation/launch_e89855513f8647a4a47b1955650ce977/tmux_matrix/970bee1dbb684baf8eb229a5f1c0f8a1/ablation_manifest.json)
+
+The evaluation directory also retains all four per-frame prediction NPZs.
+`tmux_training/<variant>/<run_id>/` retains the selected and last checkpoints,
+effective configs and resumed histories. Earlier epoch histories and migration
+records are preserved with their original paths and hashes.
+
+### Follow-up bottleneck diagnostics
+
+The separate [Vertex GNN bottleneck study](vertex_gnn_bottlenecks.md) examines
+high-support regressions with actual observed coordinates and train-fitted
+constant predictors, compares fresh readout/head probes on identical frozen
+Baseline node features, and decomposes geometric/corrected endpoint–hole errors.
+It preserves the four checkpoints and the existing Object21 metric definitions.
+See that report for provenance, parent-clustered uncertainty and reproducible
+root-entrypoint commands; the original four-model comparison above is unchanged.
+
+### BOX-to-Hole observability and GT-vertex diagnostics
+
+The [BOX-to-Hole observability study](box_hole_observability.md) checks the
+installed simulator geometry, verifies validation-seed fixture replay, evaluates
+frozen checkpoints on full physical-corner references, and separates those
+references from unavailable visibility-preserving coordinate replacement.
+It includes parent bootstrap intervals, input-distribution checks, anchor/offset
+decomposition, 3D cases, source hashes and CPU/CUDA reproduction commands.
+
+### Vertex-family information study
+
+The [vertex-family semantic study](vertex_family_semantics.md) compares the same
+AB architecture with XYZ/type only, retained detector-contour tokens, partial
+GT-certified family tokens, and redundant type tokens as a capacity control.
+It uses a separate original-TRAIN-only development cohort, fresh initialization
+for seeds 0/1/2, identical graphs, and the existing loss/trainer/checkpoint policy.
+The report separates observed label dependence from a validated performance gain;
+neither Oracle labels nor the fixed metadata mapping were added to production.
+
+### Optional early stopping
+
+The GNN trainer accepts `training.early_stopping` with `patience`, `min_epochs`,
+and `min_delta` (nonnegative total validation loss units). A new reference loss
+is recorded only on an improvement greater than `min_delta`; after `patience`
+consecutive epochs without one, training stops once `min_epochs` is reached.
+The best checkpoint still uses the exact minimum validation loss, independently
+of this threshold. Checkpoints retain the early stopping counter/reference and
+resume requires the same stopping settings. Omit this section for the original
+fixed-epoch behavior. Vertex-family matrix and evaluation record and accept
+actual unequal budgets only when early stopping was enabled.
+
+Early stopping can also be enabled when resuming a checkpoint that predates the
+feature. Its reference and patience counter start with the first new validation
+result; model, optimizer, scheduler, random states and the historical best are
+still restored. Subsequent resumes retain the counter and require the same
+settings. The selected-vertex continuation may specify `validation_selection`
+to retain only frames passing both physical conditions. The selection must
+cover the original validation split exactly, and its hash becomes part of the
+new dataset identity. When resuming from the full-validation dataset, the
+current checkpoint is evaluated on the selected frames to initialize a new best
+loss and stopping reference; historical losses from the full split are not
+compared against the new selection.
