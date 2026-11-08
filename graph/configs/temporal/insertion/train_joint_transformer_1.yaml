@@ -1,0 +1,7 @@
+trainer: training.gnn.temporal.joint_finetuning:train_from_base
+base_config: graph/configs/temporal/insertion/joint_transformer.yaml
+seed: 1
+checkpoint: /workspace/selected_vertex_continuation_matched/training_seed_1/03b6af139fec43a89ab150e2f472eba1/training/e8694a2f53e1401bafd3cf1e41e42c4c/final_epoch.pt
+temporal_checkpoint: /workspace/temporal_continuation_120/training/transformer/seed_1/01235cc0fc9e46c0925ebb8a01725105/best.pt
+output:
+  root: /workspace/joint_temporal_finetuning/training/transformer/seed_1

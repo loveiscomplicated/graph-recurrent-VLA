@@ -1,0 +1,7 @@
+trainer: training.gnn.temporal.joint_finetuning:train_from_base
+base_config: graph/configs/temporal/insertion/joint_mamba.yaml
+seed: 1
+checkpoint: /workspace/selected_vertex_continuation_matched/training_seed_1/03b6af139fec43a89ab150e2f472eba1/training/e8694a2f53e1401bafd3cf1e41e42c4c/final_epoch.pt
+temporal_checkpoint: /workspace/temporal_continuation_120/training/mamba/seed_1/313e2998c1ec41b4a8d34f7d0b05e73c/best.pt
+output:
+  root: /workspace/joint_temporal_finetuning/training/mamba/seed_1

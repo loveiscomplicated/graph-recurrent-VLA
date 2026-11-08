@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import yaml
 
 from graph.temporal.hole_gru import TemporalHoleGRU
 from graph.temporal.insertion import TemporalInsertionEstimator, feature_names
@@ -425,4 +426,31 @@ def resolve_insertion_config(config):
         TemporalInsertionEstimator(
             mode=effective["mode"], with_robot=effective["with_robot"], **effective["model"]
         )
+    return effective
+
+
+def resolve_joint_job_config(config):
+    """Combine a model-specific base with the four seed-specific settings.
+
+    Base paths are relative to the repository root, like other Graph config paths.
+    The returned dictionary is the complete config consumed and logged by training.
+    """
+    override_names = ("seed", "checkpoint", "temporal_checkpoint", "output")
+    expected_names = {"trainer", "base_config", *override_names}
+    if set(config) != expected_names:
+        raise ValueError(f"Joint job config must contain exactly: {', '.join(sorted(expected_names))}")
+
+    base_path = Path(config["base_config"])
+    with base_path.open(encoding="utf-8") as file:
+        base = yaml.safe_load(file)
+    if not isinstance(base, dict):
+        raise ValueError(f"Joint base config must be a YAML mapping: {base_path}")
+    if base.get("trainer") != "training.gnn.temporal.joint_finetuning:train":
+        raise ValueError(f"Joint base config has an unexpected trainer: {base_path}")
+    if any(name in base for name in override_names):
+        raise ValueError(f"Joint base config must not contain seed-specific settings: {base_path}")
+
+    effective = deepcopy(base)
+    for name in override_names:
+        effective[name] = deepcopy(config[name])
     return effective
