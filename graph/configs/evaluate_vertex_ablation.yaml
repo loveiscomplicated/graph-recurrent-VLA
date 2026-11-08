@@ -1,0 +1,10 @@
+trainer: evaluation.gnn.vertex_ablation:evaluate
+manifest: /path/to/ablation_manifest.json
+device: auto
+evaluation:
+  batch_size: 64
+  # Observation-count proxies only, not proof of complete surface visibility.
+  sufficient_peg_vertices: 4
+  sufficient_target_vertices: 4
+output:
+  root: outputs/vertex_gnn_ablation_evaluation

@@ -7,6 +7,7 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 
 from graph.build_graph import EdgeType, GraphBatch, NodeType
+from graph.vertex_aggregation import GlobalGeometryAggregation, MultiSeedAttentionPool
 
 
 def mlp(
@@ -203,6 +204,12 @@ class VertexEdgeGatedMPNN(nn.Module):
         size_scales_m: Tuple[float, float, float, float] = (0.04, 0.01, 0.01, 0.02),
         use_semantic_ids: bool = False,
         use_confidence: bool = False,
+        global_geometry: bool = False,
+        geometry_dim: int = 16,
+        readout: str = "attention",
+        readout_seeds: int = 4,
+        readout_dim: int = 16,
+        readout_heads: int = 4,
     ):
         super().__init__()
 
@@ -214,6 +221,16 @@ class VertexEdgeGatedMPNN(nn.Module):
 
         if type(use_semantic_ids) is not bool or type(use_confidence) is not bool:
             raise ValueError("use_semantic_ids and use_confidence must be bool")
+        if type(global_geometry) is not bool:
+            raise ValueError("global_geometry must be bool")
+        for name, value in (("geometry_dim", geometry_dim), ("readout_seeds", readout_seeds),
+                            ("readout_dim", readout_dim), ("readout_heads", readout_heads)):
+            if type(value) is not int or value < 1:
+                raise ValueError(f"{name} must be an integer >= 1")
+        if readout not in ("attention", "multiseed"):
+            raise ValueError("readout must be attention or multiseed")
+        if readout_dim % readout_heads:
+            raise ValueError("readout_dim must be divisible by readout_heads")
         self.hidden = hidden
         self.num_semantic_ids = num_semantic_ids
         self.use_semantic_ids = use_semantic_ids
@@ -278,6 +295,19 @@ class VertexEdgeGatedMPNN(nn.Module):
                 dtype=torch.float32,
             ),
         )
+
+        # Initialize optional modules last: legacy keys, initialization draws and
+        # all existing heads remain identical when the flags are disabled.
+        # Separate RNG scopes also give A/AB identical geometry initialization,
+        # B/AB identical readout initialization and the same later training RNG.
+        with torch.random.fork_rng(devices=[]):
+            self.global_geometry = (
+                GlobalGeometryAggregation(hidden, geometry_dim) if global_geometry else None
+            )
+        with torch.random.fork_rng(devices=[]):
+            if readout == "multiseed":
+                self.peg_pool = MultiSeedAttentionPool(hidden, readout_dim, readout_seeds, readout_heads)
+                self.hole_pool = MultiSeedAttentionPool(hidden, readout_dim, readout_seeds, readout_heads)
 
     def forward(
         self,
@@ -431,6 +461,12 @@ class VertexEdgeGatedMPNN(nn.Module):
         )
 
         h = h.reshape(b, n, -1)
+
+        if self.global_geometry is not None:
+            centered = xyz_centered / coordinate_scale
+            peg_geometry = self.global_geometry(h, centered, peg_obs)
+            target_geometry = self.global_geometry(h, centered, hole_obs)
+            h = peg_geometry + target_geometry
 
         # Object-level readout
         peg_pool, peg_summary = self.peg_pool(

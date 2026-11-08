@@ -99,3 +99,9 @@ def read_frame(path: Path, camera: str) -> tuple[dict, dict]:
     if observation["depth"].dtype != np.int16:
         raise ValueError(f"Frame {path}: raw signed int16 millimetre depth required")
     return observation, ground_truth
+
+
+def canonical_hash(value) -> str:
+    """Hash JSON settings without depending on dictionary insertion order."""
+    encoded = json.dumps(value, sort_keys=True, allow_nan=False).encode()
+    return hashlib.sha256(encoded).hexdigest()

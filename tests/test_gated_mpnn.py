@@ -59,17 +59,17 @@ class ModelValidationTests(unittest.TestCase):
         self.assertEqual(output["object21"].shape, (1, 21))
         self.assertTrue(torch.isfinite(output["object21"]).all().item())
 
-    def test_forward_rejects_invalid_semantic_id(self):
+    def test_explicit_validation_rejects_invalid_semantic_id(self):
         self.batch.semantic_id[0, 0] = 2
 
         with self.assertRaisesRegex(ValueError, "Invalid semantic IDs"):
-            self.model(self.batch)
+            self.batch.validate(num_semantic_ids=self.model.num_semantic_ids)
 
-    def test_forward_rejects_edge_with_wrong_object_type(self):
+    def test_explicit_validation_rejects_edge_with_wrong_object_type(self):
         self.batch.edge_type[0] = 0
 
         with self.assertRaisesRegex(ValueError, "Edge type disagrees"):
-            self.model(self.batch)
+            self.batch.validate(num_semantic_ids=self.model.num_semantic_ids)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@
 
 from dataclasses import asdict, dataclass
 from functools import partial
-import hashlib
 import importlib.metadata
 import json
 from pathlib import Path
@@ -12,7 +11,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from data_collection.episode_dataset import file_sha256, read_episodes, read_frame
+from data_collection.episode_dataset import canonical_hash, file_sha256, read_episodes, read_frame
 from graph.build_graph import ConfidenceSettings, GraphBatch, GraphBuilder, GraphSettings
 from graph.utils.object21_targets import object21_from_gt
 from utils.device_set import set_device
@@ -42,12 +41,6 @@ class DataBundle:
     train: DataLoader
     validation: DataLoader
     identity: dict
-
-
-def canonical_hash(value) -> str:
-    """Hash JSON settings without depending on dictionary insertion order."""
-    encoded = json.dumps(value, sort_keys=True, allow_nan=False).encode()
-    return hashlib.sha256(encoded).hexdigest()
 
 
 def split_episodes(episodes, settings, seed):

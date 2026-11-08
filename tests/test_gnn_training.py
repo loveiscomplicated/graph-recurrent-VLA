@@ -233,3 +233,76 @@ class ServerTrainingTests(unittest.TestCase):
                                'h_dim': 8, 'out_dim': 3, 'edge_dim': 8}
             config['task'] = {'factory': 'tests.test_gnn_training:NodeTask'}
             self.assertTrue((train(config) / 'last.pt').exists())
+
+class EarlyStoppingTests(unittest.TestCase):
+    def test_changed_validation_recalculates_best_from_resume_weights(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+                'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': directory + '/experiments'}):
+            config = load_config('graph/configs/train_gated_mpnn.yaml')
+            config['device'] = 'cpu'
+            config['model'].update(hidden=16, layers=1)
+            config['data'] = {'factory': 'tests.test_gnn_training:fixture_data'}
+            config['output'] = {'root': directory + '/outputs'}
+            config['training'] = {'epochs': 1, 'batch_size': 1}
+            with patch('training.gnn.trainer.run_epoch', side_effect=[{'loss': 1.0}, {'loss': 0.1}]):
+                original = train(config)
+            original_data = fixture_data
+            def selected_data(settings, generator):
+                bundle = original_data(settings, generator)
+                bundle.identity['resume_from_dataset_sha256'] = bundle.identity['dataset_sha256']
+                bundle.identity['dataset_sha256'] = 'selected-validation'
+                return bundle
+            config['resume'] = str(original / 'last.pt')
+            config['training'].update(epochs=2, early_stopping={
+                'patience': 2, 'min_epochs': 1, 'min_delta': 0.0})
+            with patch('tests.test_gnn_training.fixture_data', side_effect=selected_data), \
+                    patch('training.gnn.trainer.run_epoch', side_effect=[
+                        {'loss': 1.5}, {'loss': 1.0}, {'loss': 2.0}]):
+                resumed = train(config)
+            checkpoint = torch.load(resumed / 'last.pt', weights_only=True)
+            self.assertEqual(checkpoint['best_loss'], 1.5)
+            self.assertEqual(checkpoint['early_stopping_state']['stale_epochs'], 1)
+
+    def test_enabling_on_legacy_checkpoint_and_resuming_counter(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+                'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': directory + '/experiments'}):
+            config = load_config('graph/configs/train_gated_mpnn.yaml')
+            config['device'] = 'cpu'
+            config['model'].update(hidden=16, layers=1)
+            config['data'] = {'factory': 'tests.test_gnn_training:fixture_data'}
+            config['output'] = {'root': directory + '/outputs'}
+            config['training'] = {'epochs': 1, 'batch_size': 1}
+            with patch('training.gnn.trainer.run_epoch', side_effect=[{'loss': 1.0}, {'loss': 2.0}]):
+                legacy = train(config)
+            config['resume'] = str(legacy / 'last.pt')
+            config['training'].update(epochs=3, early_stopping={
+                'patience': 2, 'min_epochs': 1, 'min_delta': 0.0})
+            values = iter([1.0, 3.0, 1.0, 3.5])
+            with patch('training.gnn.trainer.run_epoch', side_effect=lambda *a, **k: {'loss': next(values)}):
+                resumed = train(config)
+            config['resume'] = str(resumed / 'last.pt')
+            config['training']['epochs'] = 6
+            with patch('training.gnn.trainer.run_epoch', side_effect=[{'loss': 1.0}, {'loss': 4.0}]):
+                stopped = train(config)
+            checkpoint = torch.load(stopped / 'last.pt', weights_only=True)
+            self.assertEqual(checkpoint['epoch'], 4)
+            self.assertEqual(checkpoint['early_stopping_state']['stale_epochs'], 2)
+
+    def test_training_stops_and_saves_best_and_patience_state(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+                'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': directory + '/experiments'}):
+            config = load_config('graph/configs/train_gated_mpnn.yaml')
+            config['device'] = 'cpu'
+            config['model'].update(hidden=16, layers=1)
+            config['data'] = {'factory': 'tests.test_gnn_training:fixture_data'}
+            config['output'] = {'root': directory + '/outputs'}
+            config['training'] = {'epochs': 6, 'batch_size': 1,
+                                  'early_stopping': {'patience': 2, 'min_epochs': 2, 'min_delta': 0.0}}
+            values = iter([1.0, 3.0, 0.8, 3.1, 0.7, 3.2])
+            with patch('training.gnn.trainer.run_epoch', side_effect=lambda *a, **k: {'loss': next(values)}):
+                output = train(config)
+            checkpoint = torch.load(output / 'last.pt', weights_only=True)
+            best = torch.load(output / 'best.pt', weights_only=True)
+            self.assertEqual(checkpoint['epoch'], 3)
+            self.assertEqual(checkpoint['early_stopping_state']['stale_epochs'], 2)
+            self.assertEqual(best['validation_loss'], 3.0)

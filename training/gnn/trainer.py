@@ -14,6 +14,7 @@ from torch import nn
 
 from graph.basic_gnn import BasicGNN
 from graph.gated_mpnn import VertexEdgeGatedMPNN
+from graph.vertex_aggregation import AGGREGATION_DEFAULTS
 from utils.device_set import set_device
 from utils.experiment_logger import ExperimentLogger
 from data_collection.storage import write_json
@@ -69,6 +70,7 @@ def resolve_config(config: dict) -> dict:
             use_confidence=False,
             coord_scale_m=0.05,
             size_scales_m=[0.04, 0.01, 0.01, 0.02],
+            **AGGREGATION_DEFAULTS,
         )
     else:
         raise ValueError(
@@ -93,6 +95,15 @@ def resolve_config(config: dict) -> dict:
             raise ValueError(f"model.{name} must be bool")
 
     if model_name == "vertex_edge_gated_mpnn":
+        if type(model_config["global_geometry"]) is not bool:
+            raise ValueError("model.global_geometry must be bool")
+        validate_integer_settings(model_config, dict(
+            geometry_dim=1, readout_seeds=1, readout_dim=1, readout_heads=1,
+        ))
+        if model_config["readout"] not in ("attention", "multiseed"):
+            raise ValueError("model.readout must be attention or multiseed")
+        if model_config["readout_dim"] % model_config["readout_heads"]:
+            raise ValueError("model.readout_dim must be divisible by model.readout_heads")
         validate_positive_scale("model.coord_scale_m", model_config["coord_scale_m"])
         scales = model_config["size_scales_m"]
         if not isinstance(scales, (list, tuple)) or len(scales) != 4:
@@ -201,6 +212,15 @@ def resolve_training_settings(config):
         positive_integer(f"training.{name}", training[name])
     if training["gradient_clip_norm"] is not None:
         validate_positive_scale("training.gradient_clip_norm", training["gradient_clip_norm"])
+    early = training.get("early_stopping")
+    if early is not None:
+        if not isinstance(early, dict) or set(early) != {"patience", "min_epochs", "min_delta"}:
+            raise ValueError("training.early_stopping requires patience, min_epochs, and min_delta")
+        positive_integer("training.early_stopping.patience", early["patience"])
+        positive_integer("training.early_stopping.min_epochs", early["min_epochs"])
+        delta = early["min_delta"]
+        if type(delta) not in (int, float) or not math.isfinite(delta) or delta < 0:
+            raise ValueError("training.early_stopping.min_delta must be finite and nonnegative")
     optimizer = config["optimizer"]
     if optimizer["name"] not in ("adam", "adamw", "sgd"):
         raise ValueError("optimizer.name must be adam, adamw or sgd")
@@ -405,18 +425,33 @@ def train(config: dict):
             settings.pop("name")
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, **settings)
         start_epoch, best_loss, best_state = 0, math.inf, None
+        early_settings = effective["training"].get("early_stopping")
+        early_state = {"reference_loss": math.inf, "stale_epochs": 0}
         if effective["resume"]:
             source = Path(effective["resume"]).expanduser().resolve()
             experiment.link_output(source, checkpoint=True)
             payload = load_checkpoint(source, model=model, optimizer=optimizer, scheduler=scheduler,
                                       config=effective, dataset_sha256=bundle.identity["dataset_sha256"],
-                                      device=device, shuffle_generator=shuffle_generator)
+                                      device=device, shuffle_generator=shuffle_generator,
+                                      resume_from_dataset_sha256=bundle.identity.get("resume_from_dataset_sha256"))
             start_epoch = payload["epoch"]
             best_loss, best_state = payload["best_loss"], payload["best_model"]
+            if early_settings:
+                if "early_stopping" in payload["resume_signature"] and "early_stopping_state" not in payload:
+                    raise ValueError("Resume checkpoint lacks early stopping state")
+                early_state = payload.get("early_stopping_state", early_state)
             experiment.record(resume_checkpoint=str(source), resume_epoch=start_epoch)
         # Compile after restoring weights and RNG. Module.compile keeps the
         # original module/parameters, so optimizer and state_dict keys stay valid.
         compilation = configure_model_compilation(model, effective["training"]["compile"], device)
+        if effective["resume"] and payload["dataset_sha256"] != bundle.identity["dataset_sha256"]:
+            baseline = run_epoch(model, bundle.validation, task, device)
+            best_loss = baseline["loss"]
+            best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+            early_state = {"reference_loss": best_loss, "stale_epochs": 0}
+            write_json(output / "baseline_validation.json", {"epoch": start_epoch, **baseline})
+            experiment.link_output(output / "baseline_validation.json")
+            print(f"Validation baseline at epoch {start_epoch}: loss={best_loss:.6f}", flush=True)
         experiment.record(model_compilation=compilation)
         experiment.record(parameter_count=sum(p.numel() for p in model.parameters()),
                           initialization_only=False)
@@ -438,6 +473,11 @@ def train(config: dict):
             if validation_metrics["loss"] < best_loss:
                 best_loss = validation_metrics["loss"]
                 best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+            if early_settings:
+                if validation_metrics["loss"] < early_state["reference_loss"] - early_settings["min_delta"]:
+                    early_state = {"reference_loss": validation_metrics["loss"], "stale_epochs": 0}
+                else:
+                    early_state["stale_epochs"] += 1
             if scheduler is not None:
                 scheduler.step()
             row = {"epoch": epoch, "train": training_metrics, "validation": validation_metrics,
@@ -450,7 +490,8 @@ def train(config: dict):
             save_checkpoint(last_path, model=model, optimizer=optimizer, scheduler=scheduler,
                             epoch=epoch, best_loss=best_loss, best_model_state=best_state,
                             config=effective, dataset_sha256=bundle.identity["dataset_sha256"],
-                            device=device, shuffle_generator=shuffle_generator)
+                            device=device, shuffle_generator=shuffle_generator,
+                            early_stopping_state=early_state if early_settings else None)
             best_path = output / "best.pt"
             atomic_torch_save(best_path, {"kind": "best_weights", "model": best_state,
                                          "validation_loss": best_loss, "config": effective,
@@ -462,5 +503,11 @@ def train(config: dict):
             experiment.link_output(output / "history.json")
             print(f"Epoch {epoch}/{effective['training']['epochs']}: train={training_metrics['loss']:.6f} "
                   f"val={validation_metrics['loss']:.6f}; seconds={row['seconds']:.1f}; output={output}", flush=True)
-        experiment.record(completed_epoch=effective["training"]["epochs"], best_validation_loss=best_loss)
+            if (early_settings and epoch >= early_settings["min_epochs"]
+                    and early_state["stale_epochs"] >= early_settings["patience"]):
+                print(f"Early stopping at epoch {epoch}: validation loss did not improve "
+                      f"for {early_state['stale_epochs']} epochs", flush=True)
+                break
+        experiment.record(completed_epoch=epoch, best_validation_loss=best_loss,
+                          early_stopped=epoch < effective["training"]["epochs"])
         return output
