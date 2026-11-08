@@ -1,0 +1,7 @@
+trainer: training.gnn.selected_vertex_continuation:train
+source_matrix: /workspace/selected_vertex_m0/combined_matrix
+seed: 0
+torch_threads: 4
+target_epoch: 60
+output:
+  root: /workspace/selected_vertex_continuation_matched/training_seed_0

@@ -1,0 +1,15 @@
+trainer: data_collection.physical_vertex_episode_selection:prepare
+predictions: /workspace/selected_m0_mamba/evaluation/seed_0/c3136efc2ad7480b8cc0d514b5da7e72/predictions.npz
+previous_selection: /workspace/selected_m0_mamba/inputs/validation_frames.jsonl
+parent_manifest: /workspace/selected_m0_mamba/inputs/splits.json
+source_root: /workspace/temporal_insertion_data/episodes
+cache_root: /workspace/temporal_insertion_data/gnn_cache
+camera: base_camera
+workers: 4
+certification:
+  coordinate_tolerance_m: 0.003
+  projection_tolerance_px: 2.0
+  face_depth_tolerance_m: 0.0015
+  probe_offsets_m: [0.004, 0.006]
+output:
+  root: /workspace/selected_m0_mamba/episode_physical_conditions
