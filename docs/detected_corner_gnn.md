@@ -51,6 +51,50 @@ full-precision aggregate statistics exactly across the 12 prediction archives,
 with identical frame IDs and GT. The 40-epoch summaries retained their original
 bytes. This audit did not execute model inference.
 
+## Published checkpoint backup
+
+The 2026-11-09 KST backup preserves every checkpoint found in the automatic
+association GNN workflows and their corner-predictor lineage. The private
+[complete checkpoint index](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/blob/53587c96ad1a620a152a0bc6a23774a06b2a2dfd/graph/a6a3d5bc7df34172957302eb9524ba25/artifacts/metrics/25baea12a4f5d553282f75ce256ed6b736e2735a5eb317438498793603ba868c/checkpoint_index.json)
+contains original run IDs, source paths, sizes, SHA-256 and immutable download
+links for each file.
+
+| Workflow | Checkpoints |
+| --- | ---: |
+| Detector-only GNN, initial 20 epochs | 12 |
+| Detector-only GNN, fresh 40 epochs | 12 |
+| Detector-only GNN, resumed early stopping | 12 |
+| Shared corner predictor, initial training | 12 |
+| Shared corner predictor, continuation | 12 |
+| Shared corner predictor, early stopping | 12 |
+| Corner-predictor preflight | 2 |
+| Total | 74 |
+
+Counts include both best/last files for Mamba/Transformer seeds 0/1/2, plus
+the two preflight files. The 18 registered frozen rollout-cache files are also
+preserved. Existing `tools.publish_experiment` published checkpoints, configs,
+metrics and original run metadata to the Model repository; the three comparison
+runs' prediction arrays and metrics use the private Dataset repository.
+Original experiment IDs and training provenance were retained. Source code was
+committed locally as `96cb93d`; this is the backup source revision, rather than
+a replacement for the original runs' recorded Git provenance.
+
+Independent remote checks verified 412 published files and matched all 74
+checkpoints and 18 caches against server-side LFS SHA-256 and sizes. The index
+and its publication files were checked separately. Saved arrays reproduced all
+six full-precision result groups, including the fresh 40-epoch results; all 18
+archives have identical frame IDs and GT. Model inference was not rerun.
+
+Vast.ai instance `59441593` was stopped only after publication and verification:
+the API reported `actual_status=exited`, `cur_state=stopped`, and the instance
+remained present with its disk. No destroy operation was requested; other
+instances were left alone. Local copies and receipts are under
+`outputs/automatic_corner_backup/`, including the [remote verification](../outputs/automatic_corner_backup/remote_verification.json),
+[saved-result audit](../outputs/automatic_corner_backup/six_result_verification.json)
+and [stop confirmation](../outputs/automatic_corner_backup/instance_stop.json).
+Historical notes below about artifacts not being uploaded refer to the state
+at the original experiment's completion.
+
 ## Detector-only corner association
 
 `graph.temporal.detected_corner_tracking.DetectedCornerTracker` builds one
