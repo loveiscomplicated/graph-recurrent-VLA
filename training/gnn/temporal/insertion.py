@@ -2,7 +2,9 @@
 
 from copy import deepcopy
 from pathlib import Path
+import random
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -23,7 +25,7 @@ from training.gnn.temporal.frozen_source import (
     prepare_insertion_sequences,
 )
 from training.gnn.temporal.pose_loss import insertion_loss
-from training.gnn.trainer import seed_everything
+from training.gnn.trainer import atomic_torch_save, seed_everything
 from utils.device_set import set_device
 from utils.experiment_logger import ExperimentLogger
 
@@ -40,6 +42,13 @@ def configure_training_memory(device, settings):
     fraction = settings["cuda_memory_fraction"]
     if device.type == "cuda" and fraction is not None:
         torch.cuda.set_per_process_memory_fraction(float(fraction), device)
+
+
+def update_early_stopping(state, validation_loss, settings):
+    """Track meaningful improvements separately from the exact best checkpoint."""
+    if validation_loss < state["reference_loss"] - settings["min_delta"]:
+        return {"reference_loss": validation_loss, "stale_epochs": 0}
+    return {"reference_loss": state["reference_loss"], "stale_epochs": state["stale_epochs"] + 1}
 
 
 def run_insertion_epoch(model, dataset, device, settings, optimizer=None, generator=None):
@@ -214,9 +223,37 @@ def train_and_compare(config):
         return evaluate(evaluation_config)
 
 
-def train(config, normalization_reference=None):
+def train(config, normalization_reference=None, continuation_checkpoint=None):
     """Train only temporal weights; select best by validation, never read test frames."""
     effective = resolve_insertion_config(config)
+    previous = None
+    starting_epoch = 0
+    if continuation_checkpoint is not None:
+        continuation_path = Path(continuation_checkpoint).expanduser().resolve()
+        previous = torch.load(continuation_path, map_location="cpu", weights_only=True)
+        if previous.get("kind") not in ("temporal_insertion", "temporal_insertion_state"):
+            raise ValueError("Continuation requires a temporal insertion checkpoint")
+        previous_config = previous["config"]
+        for name in ("seed", "mode", "model", "with_robot", "loss"):
+            if previous_config[name] != effective[name]:
+                raise ValueError(f"Continuation checkpoint differs in {name}")
+        starting_epoch = previous["epoch"]
+        restoring_state = previous["kind"] == "temporal_insertion_state"
+        if restoring_state:
+            for name in ("lr", "sequence_length", "episode_batch_size", "context_policy"):
+                if previous_config["training"][name] != effective["training"][name]:
+                    raise ValueError(f"Continuation checkpoint differs in training.{name}")
+            if previous_config['training'].get('early_stopping') != effective['training'].get('early_stopping'):
+                raise ValueError('Continuation checkpoint differs in training.early_stopping')
+            if effective['training'].get('early_stopping') and 'early_stopping_state' not in previous:
+                raise ValueError('Continuation checkpoint lacks early stopping state')
+        effective["continuation"] = {
+            "checkpoint": str(continuation_path),
+            "checkpoint_sha256": file_sha256(continuation_path),
+            "starting_epoch": starting_epoch,
+            "optimizer": "restored" if restoring_state else "new Adam; original optimizer state was not saved",
+            "random_state": "restored" if restoring_state else "newly seeded; original random states were not saved",
+        }
     device = set_device(effective["device"])
     configure_training_memory(device, effective["training"])
     seed_everything(effective["seed"], device)
@@ -224,6 +261,10 @@ def train(config, normalization_reference=None):
     frozen, loaders, identity = prepare_insertion_sequences(
         effective, device, ("train", "validation")
     )
+    if previous is not None:
+        from evaluation.gnn.temporal.insertion import check_development_provenance
+
+        check_development_provenance(previous, effective, identity)
     with ExperimentLogger(
         team="graph",
         model="temporal_insertion_" + effective["model"]["architecture"],
@@ -242,6 +283,10 @@ def train(config, normalization_reference=None):
                 f"{split}: {len(episodes[split])} episodes, {len(data['frame'])} frames", flush=True
             )
         mean, std = fit_observation_normalization(episodes["train"])
+        if previous is not None:
+            saved_normalization = previous["config"]["normalization"]
+            torch.testing.assert_close(mean, torch.tensor(saved_normalization["mean"]))
+            torch.testing.assert_close(std, torch.tensor(saved_normalization["std"]))
         if normalization_reference is not None:
             mean, std = matched_train_normalization(
                 mean, std, effective, identity, normalization_reference
@@ -253,15 +298,39 @@ def train(config, normalization_reference=None):
         }
         model = build_insertion_model(effective).to(device)
         model.set_normalization(mean.to(device), std.to(device))
+        if previous is not None:
+            model.load_state_dict(previous["model"], strict=True)
         windows = {
             split: InsertionWindowDataset(dataset, effective["training"]["sequence_length"])
             for split, dataset in episodes.items()
         }
         optimizer = torch.optim.Adam(model.parameters(), lr=effective["training"]["lr"])
         generator = torch.Generator().manual_seed(effective["seed"])
+        if previous is not None and previous["kind"] == "temporal_insertion_state":
+            optimizer.load_state_dict(previous["optimizer"])
+            generator.set_state(previous["generator_state"])
+            torch.set_rng_state(previous["torch_rng_state"])
+            if device.type == "cuda":
+                if previous["cuda_rng_state"] is None:
+                    raise ValueError("CUDA continuation requires saved CUDA random state")
+                torch.cuda.set_rng_state(previous["cuda_rng_state"], device)
+            random.setstate(previous["python_rng_state"])
+            numpy_state = previous["numpy_rng_state"]
+            np.random.set_state((numpy_state[0], np.array(numpy_state[1], dtype=np.uint32),
+                                 numpy_state[2], numpy_state[3], numpy_state[4]))
         history = []
-        best = float("inf")
+        best_payload = None if previous is None else (
+            previous["best_checkpoint"] if previous["kind"] == "temporal_insertion_state" else previous
+        )
+        best = float("inf") if best_payload is None else best_payload["validation_loss"]
+        early_settings = effective['training'].get('early_stopping')
+        early_state = (previous.get('early_stopping_state') if previous and early_settings else None)
+        if early_settings and early_state is None:
+            early_state = {'reference_loss': float('inf'), 'stale_epochs': 0}
         write_json(output / "effective_config.json", effective)
+        if previous is not None:
+            initial_best = dict(best_payload, config=effective)
+            atomic_torch_save(output / "best.pt", initial_best)
         experiment.record(
             normalization=effective["normalization"],
             parameter_count=sum(p.numel() for p in model.parameters()),
@@ -275,18 +344,21 @@ def train(config, normalization_reference=None):
             test_frames_read=False,
             teacher_forcing=False,
         )
-        for epoch in range(1, effective["training"]["epochs"] + 1):
+        for epoch in range(starting_epoch + 1, starting_epoch + effective["training"]["epochs"] + 1):
             print(f"Insertion {model.architecture} epoch {epoch} starting", flush=True)
             trained = run_insertion_epoch(
                 model, windows["train"], device, effective, optimizer, generator
             )
             validation = run_insertion_epoch(model, windows["validation"], device, effective)
+            if early_settings:
+                early_state = update_early_stopping(early_state, validation['loss'], early_settings)
             row = {"epoch": epoch, "train": trained, "validation": validation}
             history.append(row)
             experiment.log(row, step=epoch)
             if validation["loss"] < best:
                 best = validation["loss"]
-                torch.save(
+                atomic_torch_save(
+                    output / "best.pt",
                     {
                         "kind": "temporal_insertion",
                         "model": model.state_dict(),
@@ -295,16 +367,39 @@ def train(config, normalization_reference=None):
                         "epoch": epoch,
                         "validation_loss": best,
                     },
-                    output / "best.pt",
                 )
                 experiment.link_output(output / "best.pt")
+            numpy_state = np.random.get_state()
+            checkpoint_state = {
+                "kind": "temporal_insertion_state", "config": effective,
+                "dataset_sha256": identity["dataset_sha256"],
+                "model": model.state_dict(), "optimizer": optimizer.state_dict(),
+                "epoch": epoch,
+                "best_checkpoint": torch.load(output / "best.pt", map_location="cpu", weights_only=True),
+                "generator_state": generator.get_state(), "torch_rng_state": torch.get_rng_state(),
+                "cuda_rng_state": torch.cuda.get_rng_state(device) if device.type == "cuda" else None,
+                "python_rng_state": random.getstate(),
+                "numpy_rng_state": (numpy_state[0], numpy_state[1].tolist(), *numpy_state[2:]),
+            }
+            if early_settings:
+                checkpoint_state['early_stopping_state'] = early_state
+            atomic_torch_save(output / "last.pt", checkpoint_state)
+            write_json(output / "history.json", history)
             print(
                 f"Insertion {model.architecture}/{model.mode} epoch {epoch}: "
                 f"train={trained['loss']:.5f}, validation={validation['loss']:.5f}",
                 flush=True,
             )
+            if early_settings and epoch >= early_settings['min_epochs'] and early_state['stale_epochs'] >= early_settings['patience']:
+                print(f"Early stopping at epoch {epoch}: validation loss did not improve "
+                      f"for {early_state['stale_epochs']} epochs", flush=True)
+                break
         write_json(output / "history.json", history)
+        experiment.record(completed_epoch=epoch,
+                          early_stopped=bool(early_settings and early_state['stale_epochs'] >= early_settings['patience']
+                                             and epoch >= early_settings['min_epochs']))
         save_loss_curves(output, history)
         for name in ("effective_config.json", "history.json", "loss_curves.png"):
             experiment.link_output(output / name)
+        experiment.link_output(output / "last.pt")
         return output

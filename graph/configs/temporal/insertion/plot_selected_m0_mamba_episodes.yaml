@@ -1,0 +1,7 @@
+trainer: evaluation.gnn.temporal.episode_condition_plots:plot
+seed: 0
+predictions: outputs/selected_m0_mamba/seed_0/predictions.npz
+decisions: outputs/selected_m0_mamba/seed_0/physical_frames.jsonl
+decision_summary: outputs/selected_m0_mamba/seed_0/physical_summary.json
+output:
+  root: outputs/selected_m0_mamba/episode_plots

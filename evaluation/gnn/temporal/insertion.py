@@ -335,6 +335,9 @@ def benchmark_model(model, data, device, settings, training_settings, loss_setti
         "episode_reset": reset,
         "reset_plus_first_step": cold_step,
         "cache_bytes_batch_one": memory,
+        "cache_history_frames": (
+            int(state["cache"][0].shape[1]) if model.architecture == "transformer" else None
+        ),
         "scope": "feature construction + temporal model + geometry; excludes Frozen GNN, IO, simulation",
         "training_throughput": None,
     }

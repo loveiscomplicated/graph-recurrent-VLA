@@ -340,12 +340,14 @@ def resolve_insertion_config(config):
         position_mode="residual",
         position_scale_m=0.01,
     )
+    if model.get("architecture") == "transformer":
+        defaults.update(n_heads=4, feedforward_dim=256, dropout=0.0)
     if set(model) - set(defaults):
         raise ValueError(f"Unknown insertion model settings: {set(model) - set(defaults)}")
     for name, value in defaults.items():
         model.setdefault(name, value)
-    if model["architecture"] == "gru" and model["backend"] != "torch_reference":
-        raise ValueError("GRU comparison uses backend=torch_reference (reported as torch_gru)")
+    if model["architecture"] in ("gru", "transformer") and model["backend"] != "torch_reference":
+        raise ValueError("GRU and Transformer require backend=torch_reference")
     loss = dict(
         position_unit_m=0.01,
         rotation_unit_rad=0.1,
@@ -380,6 +382,16 @@ def resolve_insertion_config(config):
     effective["training"].setdefault("sequence_length", 64)
     effective["training"].setdefault("context_policy", "reset_windows")
     effective["training"].setdefault("cuda_memory_fraction", None)
+    early = effective["training"].get("early_stopping")
+    if early is not None:
+        if not isinstance(early, dict) or set(early) != {"patience", "min_epochs", "min_delta"}:
+            raise ValueError("training.early_stopping requires patience, min_epochs, and min_delta")
+        for name in ("patience", "min_epochs"):
+            if type(early[name]) is not int or early[name] < 1:
+                raise ValueError(f"training.early_stopping.{name} must be a positive integer")
+        delta = early["min_delta"]
+        if type(delta) not in (int, float) or not math.isfinite(delta) or delta < 0:
+            raise ValueError("training.early_stopping.min_delta must be finite and nonnegative")
     memory_fraction = effective["training"]["cuda_memory_fraction"]
     if memory_fraction is not None and (
         type(memory_fraction) not in (int, float)
@@ -404,7 +416,10 @@ def resolve_insertion_config(config):
     effective["feature_names"] = list(feature_names(effective["with_robot"]))
     effective["observation_contract"] = INSERTION_CONTRACT
     effective["dependencies"] = dependency_versions()
-    effective["implementation_reference"] = "state-spaces/mamba v2.2.6 Mamba-1"
+    effective["implementation_reference"] = (
+        "state-spaces/mamba v2.2.6 Mamba-1" if model["architecture"] == "mamba"
+        else f"PyTorch {model['architecture']}"
+    )
     # Validate before loading datasets, without advancing the training RNG.
     with torch.random.fork_rng(devices=[]):
         TemporalInsertionEstimator(

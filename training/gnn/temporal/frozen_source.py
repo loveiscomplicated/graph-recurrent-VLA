@@ -138,6 +138,10 @@ def infer_pose_data(frozen, loader, device, identity, effective):
 
 def prepare_insertion_sequences(effective, device, requested):
     """Verify frozen source identity and separate reference from independent testing."""
+    if effective.get("selected_m0"):
+        from training.gnn.temporal.selected_m0 import prepare_selected_sequences
+
+        return prepare_selected_sequences(effective, device, requested)
     frozen, source, expected = load_frozen_source(effective, device)
     loaders, identity, manifest = select_insertion_loaders(
         source,
@@ -157,6 +161,7 @@ def prepare_insertion_sequences(effective, device, requested):
     repository = Path(__file__).resolve().parents[3]
     sources = (
         "graph/temporal/insertion.py",
+        "graph/temporal/causal_transformer.py",
         "graph/temporal/pose_observations.py",
         "graph/pose_geometry.py",
         "graph/gated_mpnn.py",

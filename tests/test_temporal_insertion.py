@@ -216,7 +216,7 @@ class TemporalMambaTests(unittest.TestCase):
             self.assertEqual(len(terms), 7)
 
     def test_padding_causal_reset_streaming_state38_and_all_modes(self):
-        for architecture in ("gru", "mamba"):
+        for architecture in ("gru", "mamba", "transformer"):
             for mode in ("hole_only", "peg_only", "joint_peg_hole"):
                 model = TemporalInsertionEstimator(mode=mode, **model_settings(architecture))
                 predictions, _, difference = replay_insertion(model, self.data, torch.device("cpu"))
@@ -337,6 +337,131 @@ class TemporalMambaTests(unittest.TestCase):
         self.assertEqual(thresholds["lateral_lt_1mm_percent"], 25.0)
         self.assertEqual(thresholds["lateral_lt_3mm_percent"], 75.0)
         self.assertAlmostEqual(errors["off"]["lateral"].mean(), 4.0, places=4)
+
+    def test_optimizer_checkpoint_resumes_training(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = workflow_fixture(root)
+            config['model']['architecture'] = 'mamba'
+            config['training']['epochs'] = 2
+            config['output']['root'] = str(root / 'continuous')
+            environment = {'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': str(root / 'experiments')}
+            with patch.dict('os.environ', environment):
+                continuous = train(config)
+                config['training']['epochs'] = 1
+                config['output']['root'] = str(root / 'first')
+                first = train(config)
+                config['output']['root'] = str(root / 'resumed')
+                resumed = train(config, continuation_checkpoint=first / 'last.pt')
+            full_state = torch.load(continuous / 'last.pt', weights_only=True)
+            resumed_state = torch.load(resumed / 'last.pt', weights_only=True)
+            self.assertEqual(full_state['epoch'], 2)
+            self.assertEqual(resumed_state['epoch'], 2)
+            self.assertTrue(resumed_state['optimizer']['state'])
+            for name in full_state['model']:
+                torch.testing.assert_close(full_state['model'][name], resumed_state['model'][name], rtol=0, atol=0)
+
+    def test_transformer_root_train_and_evaluate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = workflow_fixture(root)
+            config['model'].update(architecture='transformer', n_heads=4, feedforward_dim=32, dropout=0.0)
+            config['output']['root'] = str(root / 'training')
+            environment = {'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': str(root / 'experiments')}
+            with patch.dict('os.environ', environment):
+                trained = train(config)
+                state = torch.load(trained / 'last.pt', weights_only=True)
+                self.assertTrue(state['optimizer']['state'])
+                config.update(trainer='evaluation.gnn.temporal.insertion:evaluate',
+                              temporal_checkpoint=str(trained / 'best.pt'))
+                config['output']['root'] = str(root / 'evaluation')
+                config_path = root / 'transformer.yaml'
+                config_path.write_text(json.dumps(config))
+                run(config_path)
+            summary = json.loads(next((root / 'evaluation').glob('*/summary.json')).read_text())
+            self.assertEqual(summary['frames'], 5)
+            self.assertLess(summary['streaming_max_difference']['primary'], 2e-5)
+
+    def test_transformer_long_stream_causality_and_gradients(self):
+        model = TemporalInsertionEstimator(
+            architecture='transformer', d_model=16, n_layers=2, n_heads=4,
+            feedforward_dim=32, head_hidden=8, with_robot=True,
+        ).eval()
+        sample = self.dataset[0][0]
+        sequence = sample.repeat(26, 1)[None].requires_grad_()  # 130 frames, longer than training windows.
+        output = model.forward_sequence(sequence)
+        altered = sequence.detach().clone()
+        altered[:, 64:] += 1
+        torch.testing.assert_close(model.forward_sequence(altered)[:, :64], output[:, :64])
+        cache = model.allocate_cache(1)
+        streamed = []
+        with torch.no_grad():
+            for frame in sequence.detach().unbind(dim=1):
+                result, cache = model.step(frame, cache)
+                streamed.append(result)
+        torch.testing.assert_close(torch.stack(streamed, dim=1), output.detach(), atol=2e-5, rtol=1e-4)
+        self.assertTrue(all(state.shape == (1, 130, 16) for state in cache))
+        output[:, -1, :3].sum().backward()
+        self.assertGreater(float(sequence.grad[:, 0].abs().sum()), 0)
+
+    def test_transformer_configuration_validation(self):
+        with self.assertRaisesRegex(ValueError, 'divide d_model'):
+            TemporalInsertionEstimator(architecture='transformer', d_model=16, n_heads=3)
+        with self.assertRaisesRegex(ValueError, 'dropout'):
+            TemporalInsertionEstimator(architecture='transformer', dropout=1.0)
+        with self.assertRaisesRegex(ValueError, 'torch_reference'):
+            TemporalInsertionEstimator(architecture='transformer', backend='mamba_ssm')
+
+    def test_early_stopping_saves_and_restores_patience(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            config = workflow_fixture(root)
+            config['training'].update(epochs=2, early_stopping={
+                'patience': 2, 'min_epochs': 1, 'min_delta': 0.0})
+            def metrics(loss):
+                return dict(loss=loss, **{name: 0.0 for name in (
+                    'peg_position', 'peg_rotation', 'hole_position', 'hole_rotation',
+                    'relative_position', 'lateral_position', 'relative_orientation')})
+            with patch.dict('os.environ', {'WANDB_MODE': 'disabled', 'EXPERIMENTS_DIR': str(root/'experiments')}):
+                with patch('training.gnn.temporal.insertion.run_insertion_epoch',
+                           side_effect=[metrics(1), metrics(1), metrics(1), metrics(2)]):
+                    first = train(config)
+                config['training']['epochs'] = 5
+                with patch('training.gnn.temporal.insertion.run_insertion_epoch',
+                           side_effect=[metrics(1), metrics(3)]):
+                    resumed = train(config, continuation_checkpoint=first/'last.pt')
+            checkpoint = torch.load(resumed/'last.pt', map_location='cpu', weights_only=True)
+            self.assertEqual(checkpoint['epoch'], 3)
+            self.assertEqual(checkpoint['early_stopping_state']['stale_epochs'], 2)
+            self.assertEqual(checkpoint['best_checkpoint']['epoch'], 1)
+
+    def test_selected_transformer_reports_960_frames_under_correct_name(self):
+        from training.gnn.temporal.selected_estimator import train_and_evaluate
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            checkpoint = root / 'frozen.pt'
+            checkpoint.write_bytes(b'frozen')
+            evaluation = root / 'evaluation'
+            evaluation.mkdir()
+            sample_ids = np.array([f'episode/frame_{index:06d}.npz' for index in range(960)])
+            target = np.zeros((960, 21), dtype=np.float32)
+            target[:, 3] = target[:, 13] = 1
+            np.savez(evaluation / 'predictions.npz', sample_ids=sample_ids,
+                     target=target, gnn_object21=target, primary_object21=target)
+            selection = root / 'frames.jsonl'
+            selection.write_text(''.join(json.dumps({'sample_id': sample_id, 'both_pass': index < 151}) + '\n'
+                                         for index, sample_id in enumerate(sample_ids)))
+            config = {'checkpoint': str(checkpoint), 'model': {'architecture': 'transformer'},
+                      'evaluation': {}, 'output': {}, 'comparison_output': str(evaluation),
+                      'evaluation_selection': str(selection)}
+            with patch('training.gnn.temporal.selected_estimator.train', return_value=root), \
+                 patch('training.gnn.temporal.selected_estimator.evaluate', return_value=evaluation):
+                train_and_evaluate(config)
+            result = json.loads((evaluation / 'original_validation_21d.json').read_text())
+            self.assertEqual(result['counts'], {'all': 960, 'physical_both_pass': 151})
+            self.assertEqual(set(result['metrics']), {'m0', 'transformer'})
+            self.assertEqual(result['metrics']['transformer']['all']['hole_position_error_mm']['mean'], 0)
 
     def test_root_workflow_train_mamba_and_gru_then_paired_evaluation(self):
         with tempfile.TemporaryDirectory() as directory:

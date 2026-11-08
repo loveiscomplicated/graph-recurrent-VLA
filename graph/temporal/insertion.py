@@ -12,6 +12,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from graph.gated_mpnn import assemble_state38
+from graph.temporal.causal_transformer import CausalTransformerBlock, sinusoidal_positions
 from graph.pose_geometry import assemble_refined_object21, hole_frame_vector
 from graph.temporal.pose_gru import MODES
 from graph.temporal.pose_observations import (
@@ -107,7 +108,7 @@ def build_mixer(backend, settings, layer_index):
 
 
 class TemporalInsertionEstimator(nn.Module):
-    """Shared observation contract, pose heads and assembly for Mamba and GRU.
+    """Shared observation contract and pose heads for Mamba, GRU and Transformer.
 
     Residual world-position correction is the default because the frozen Peg
     prediction already provides a useful spatial anchor. Rotation is a learned
@@ -117,10 +118,11 @@ class TemporalInsertionEstimator(nn.Module):
 
     def __init__(self, architecture='mamba', backend='torch_reference', mode='joint_peg_hole',
                  with_robot=True, d_model=128, n_layers=1, d_state=16, d_conv=4, expand=2,
-                 head_hidden=64, position_mode='residual', position_scale_m=.01):
+                 head_hidden=64, position_mode='residual', position_scale_m=.01,
+                 n_heads=4, feedforward_dim=256, dropout=0.0):
         super().__init__()
-        if architecture not in ('mamba', 'gru') or mode not in MODES:
-            raise ValueError('Expected architecture mamba/gru and a supported Peg/Hole mode')
+        if architecture not in ('mamba', 'gru', 'transformer') or mode not in MODES:
+            raise ValueError('Expected architecture mamba/gru/transformer and a supported Peg/Hole mode')
         if type(with_robot) is not bool:
             raise ValueError('with_robot must be boolean')
         dimensions = (('d_model', d_model), ('n_layers', n_layers), ('d_state', d_state),
@@ -132,8 +134,17 @@ class TemporalInsertionEstimator(nn.Module):
             raise ValueError('Expected direct/residual positions and finite positive position_scale_m')
         if backend not in ('torch_reference', 'mamba_ssm'):
             raise ValueError('model.backend must be torch_reference or mamba_ssm')
+        if architecture == 'transformer':
+            if backend != 'torch_reference':
+                raise ValueError('Transformer requires backend=torch_reference')
+            if type(n_heads) is not int or n_heads < 1 or d_model % n_heads:
+                raise ValueError('Transformer n_heads must be positive and divide d_model')
+            if type(feedforward_dim) is not int or feedforward_dim < 1:
+                raise ValueError('Transformer feedforward_dim must be a positive integer')
+            if type(dropout) not in (int, float) or not 0 <= dropout < 1:
+                raise ValueError('Transformer dropout must be in [0, 1)')
         self.architecture = architecture
-        self.backend = backend if architecture == 'mamba' else 'torch_gru'
+        self.backend = backend if architecture == 'mamba' else f'torch_{architecture}'
         self.mode = mode
         self.with_robot = with_robot
         self.position_mode = position_mode
@@ -146,6 +157,11 @@ class TemporalInsertionEstimator(nn.Module):
         self.projection = nn.Sequential(nn.Linear(width, d_model), nn.SiLU())
         if architecture == 'gru':
             self.gru = nn.GRU(d_model, d_model, num_layers=n_layers, batch_first=True)
+        elif architecture == 'transformer':
+            self.transformer = nn.ModuleList([
+                CausalTransformerBlock(d_model, n_heads, feedforward_dim, dropout)
+                for _ in range(n_layers)
+            ])
         else:
             mixer_settings = dict(d_model=d_model, d_state=d_state, d_conv=d_conv, expand=expand)
             self.norms = nn.ModuleList([nn.LayerNorm(d_model) for _ in range(n_layers)])
@@ -195,6 +211,12 @@ class TemporalInsertionEstimator(nn.Module):
         representation = self.projection((observations - self.input_mean) / self.input_std)
         if self.architecture == 'gru':
             representation, _ = self.gru(representation)
+        elif self.architecture == 'transformer':
+            representation = representation + sinusoidal_positions(
+                representation.shape[1], self.d_model, offset=0,
+                device=representation.device, dtype=representation.dtype)[None]
+            for block in self.transformer:
+                representation = block(representation, ~mask)
         else:
             for norm, mixer in zip(self.norms, self.mixers):
                 representation = representation + mixer(norm(representation))
@@ -204,18 +226,35 @@ class TemporalInsertionEstimator(nn.Module):
         return self.forward_sequence(observations, mask)
 
     def allocate_cache(self, batch_size):
-        """Return independent GRU hidden or per-layer official-layout Mamba caches."""
+        """Create independent episode state for the chosen temporal model."""
         if self.architecture == 'gru':
             return self.input_mean.new_zeros(self.n_layers, batch_size, self.d_model)
+        if self.architecture == 'transformer':
+            return [self.input_mean.new_zeros(batch_size, 0, self.d_model)
+                    for _ in self.transformer]
         return [mixer.allocate_inference_cache(batch_size, max_seqlen=1) for mixer in self.mixers]
 
     def step(self, observations, cache):
-        """Advance the actual recurrent/cache state; no history-window recomputation."""
+        """Advance episode state; Transformer attention retains all earlier frames."""
         sequence = observations[:, None]
         mask = self._validate(sequence, None)
         representation = self.projection((sequence - self.input_mean) / self.input_std)
         if self.architecture == 'gru':
             representation, cache = self.gru(representation, cache)
+        elif self.architecture == 'transformer':
+            if len(cache) != len(self.transformer) or any(
+                history.shape != (len(observations), cache[0].shape[1], self.d_model)
+                for history in cache
+            ):
+                raise ValueError('Transformer history must contain aligned per-layer states')
+            representation = representation + sinusoidal_positions(
+                1, self.d_model, offset=cache[0].shape[1],
+                device=representation.device, dtype=representation.dtype)[None]
+            next_cache = []
+            for block, history in zip(self.transformer, cache):
+                representation, history = block.step(representation, history)
+                next_cache.append(history)
+            cache = next_cache
         else:
             next_cache = []
             for norm, mixer, (convolution, selective) in zip(self.norms, self.mixers, cache):
