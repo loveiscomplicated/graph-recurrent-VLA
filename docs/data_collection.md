@@ -191,6 +191,60 @@ states. The attempt budget is finite; insufficient approved episodes produce
 `EXHAUSTED` and a nonzero CLI exit. Use a new output directory for each run;
 existing output is never overwritten and automatic resume is not implemented.
 
+### Paired Object21 demonstrations for BC
+
+Use `data_collection.collect_object21_bc:collect` and
+`data_collection.object21_bc:export` with the root launcher. The first
+workflow reuses the raw shard collector and independent verification. Keep the
+raw collection settings from `data_collection/configs/visible_peg.yaml`,
+change the output directory and seed range, and set `publish: false`.
+Provide a JSON exclusion inventory with the original 900 seeds in
+`original_collection_seeds`, the 630 Graph development seeds in
+`graph_development_seeds`, and their dataset and collection identities in
+`graph_dataset_sha256` and `original_collection_run_id`.
+
+```bash
+WANDB_MODE=disabled python main.py --config /path/to/collect.yaml
+WANDB_MODE=disabled python main.py --config /path/to/export.yaml
+```
+
+The collection YAML supplies `trainer`, `collection` (path to the raw settings)
+and `excluded_seeds` (path to the inventory). The export YAML supplies
+`trainer`, `raw_root`, `output`, `device`, `workers`, `split_seed`,
+`split_counts`, and `models`. Set `split_counts` to the intended numbers
+of train, validation and test episodes. For each of `models.transformer`
+and `models.mamba`, supply `gnn`, its `sha256` and the matching `corner`
+checkpoint. Use the resumed seed-0 pairs from the
+[checkpoint index](detected_corner_gnn.md#published-checkpoint-backup).
+Export needs CUDA, the official Mamba selective scan extension and the
+[corner detector dependencies](corner_detection.md#install-and-run).
+
+The exporter may run alongside collection and processes only verified shards.
+It fixes split positions by sorted episode seed before inference and stores both
+models' predictions for each expert action. Each split contains aligned
+`robot_state`, `object21_transformer`, `object21_mamba`, and
+`expert_action` arrays. Use `episode_offsets` to recover trajectories. The
+Object21 export supplies the 9D robot input used by the corner tracker.
+
+For the Recurrent BC release, run `data_collection.recurrent_bc_dataset:export`
+with `raw_root`, `object21_root` and a new `output` in its YAML. It joins
+Robot15 by reset seed and step, matching
+`recurrent.features.FEATURE_LAYOUT`. The primary inputs are
+`state36_transformer` and `state36_mamba`, each `[Robot15, Object21]` with
+the same expert action and episode splits. The README includes the legacy
+clean-observation State38 adapter, appending `[obs_fresh=1, obs_age=0]`.
+The compact archive includes a loader example, split checksums and model
+provenance. Publish it after export through
+[the shared publisher](huggingface_artifacts.md).
+
+The first [paired Recurrent BC release](https://huggingface.co/datasets/Graph-Recurrent-VLA/graph-recurrent-rollouts/tree/eca8ba8b122e7d2e7007e7dc20200dad5d3e3725/integration/293fbe2c68764fb8901a40f857a1ade6)
+contains 900 fresh successful episodes with 92,566 aligned action rows. The
+train/validation/test splits have 720/90/90 episodes and
+74,053/9,201/9,312 action rows. Reset seeds range from 200005 to 229115 and
+have zero overlap with the previous 900-episode collection, including its 630
+Graph development episodes. The archive's SHA-256 is
+`aec78bdef35d8f873d0cc8215d1e986050940c9041e7e0948e21081d5531c1f0`.
+
 ## Visibility
 
 `data_collection/visibility.py` extracts the historical GT/depth gate, including its calibration
