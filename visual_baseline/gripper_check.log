@@ -1,0 +1,4 @@
+act_main/eval_0100000_chunk10_stages.json: success=7/100 stages={'success': 7, 'aligned': 7, 'misaligned': 86, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 13.7 ms p95 31.6 ms
+act_main/eval_0100000_chunk10_bingrip.json: success=3/100 stages={'success': 3, 'aligned': 7, 'misaligned': 90, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 14.0 ms p95 32.4 ms
+diffusion_main/eval_0100000_bingrip.json: success=9/100 stages={'success': 9, 'aligned': 7, 'misaligned': 84, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 16.5 ms p95 252.0 ms
+done Tue Nov 10 08:13:04 UTC 2026

@@ -1,0 +1,38 @@
+{
+  "near_hole_depth_m": [
+    -0.25,
+    -0.05
+  ],
+  "results": [
+    {
+      "name": "main_rgbd_256",
+      "cameras": "main_rgbd",
+      "size": 256,
+      "steps": 4000,
+      "mae_mm_xyz": [
+        8.92,
+        18.61,
+        9.72
+      ],
+      "lateral_norm_mm_median": 15.38,
+      "lateral_norm_mm_p90": 53.56,
+      "target_lateral_std_mm": 78.57,
+      "seconds": 442
+    },
+    {
+      "name": "both_256_x3",
+      "cameras": "both",
+      "size": 256,
+      "steps": 12000,
+      "mae_mm_xyz": [
+        9.77,
+        18.42,
+        8.92
+      ],
+      "lateral_norm_mm_median": 13.75,
+      "lateral_norm_mm_p90": 54.23,
+      "target_lateral_std_mm": 78.57,
+      "seconds": 1348
+    }
+  ]
+}

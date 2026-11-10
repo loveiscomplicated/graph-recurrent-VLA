@@ -1,0 +1,11 @@
+mix episodes 1500
+== act_nostate 0060000 -> outputs/visual_baseline/act_nostate/eval_0060000.json (Tue Nov 10 08:33:27 UTC 2026)
+success=1/100 stages={'success': 1, 'aligned': 13, 'misaligned': 86, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 24.7 ms p95 29.3 ms
+== act_dart 0060000 -> outputs/visual_baseline/act_dart/eval_0060000.json (Tue Nov 10 10:15:32 UTC 2026)
+success=5/100 stages={'success': 5, 'aligned': 7, 'misaligned': 88, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 14.0 ms p95 32.3 ms
+== act_dart 0060000 -> outputs/visual_baseline/act_dart/train_0060000.json (Tue Nov 10 10:22:08 UTC 2026)
+success=9/50 stages={'success': 9, 'aligned': 10, 'misaligned': 31, 'lifted': 0, 'no_lift': 0} (expert 1.00) step latency p50 15.2 ms p95 34.3 ms
+== act_dart 0040000 -> outputs/visual_baseline/act_dart/eval_0040000.json (Tue Nov 10 10:25:52 UTC 2026)
+success=6/100 stages={'success': 6, 'aligned': 9, 'misaligned': 85, 'lifted': 0, 'no_lift': 0} (expert 0.98) step latency p50 14.1 ms p95 31.8 ms
+== act_nostate 0060000 -> outputs/visual_baseline/act_nostate/train_0060000.json (Tue Nov 10 10:31:56 UTC 2026)
+success=18/50 stages={'success': 18, 'aligned': 18, 'misaligned': 14, 'lifted': 0, 'no_lift': 0} (expert 1.00) step latency p50 33.4 ms p95 39.8 ms

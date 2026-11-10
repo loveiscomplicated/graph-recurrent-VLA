@@ -1,0 +1,14 @@
+== outputs/visual_baseline/act_main/checkpoint_0100000.pt -> outputs/visual_baseline/act_main/eval_0100000_chunk10.json --policy-override temporal_ensemble_coeff=null --policy-override n_action_steps=10 (Tue Nov 10 07:00:17 UTC 2026)
+success=7/100 stages={'success': 7, 'near_hole': 0, 'lifted': 93, 'no_lift': 0} (expert 0.98) step latency p50 13.6 ms p95 30.4 ms
+== outputs/visual_baseline/act_main/checkpoint_0100000.pt -> outputs/visual_baseline/act_main/eval_0100000_replan1.json --policy-override temporal_ensemble_coeff=null --policy-override n_action_steps=1 (Tue Nov 10 07:05:08 UTC 2026)
+success=1/100 stages={'success': 1, 'near_hole': 0, 'lifted': 97, 'no_lift': 2} (expert 0.98) step latency p50 31.7 ms p95 37.2 ms
+== outputs/visual_baseline/diffusion_main/checkpoint_0075000.pt -> outputs/visual_baseline/diffusion_main/eval_0075000.json  (Tue Nov 10 07:10:58 UTC 2026)
+success=11/100 stages={'success': 11, 'near_hole': 0, 'lifted': 89, 'no_lift': 0} (expert 0.98) step latency p50 16.4 ms p95 254.1 ms
+== outputs/visual_baseline/act_main/checkpoint_0050000.pt -> outputs/visual_baseline/act_main/eval_0050000.json  (Tue Nov 10 07:20:48 UTC 2026)
+success=5/100 stages={'success': 5, 'near_hole': 0, 'lifted': 95, 'no_lift': 0} (expert 0.98) step latency p50 33.4 ms p95 39.8 ms
+== outputs/visual_baseline/diffusion_main/checkpoint_0050000.pt -> outputs/visual_baseline/diffusion_main/eval_0050000.json  (Tue Nov 10 07:26:37 UTC 2026)
+success=1/100 stages={'success': 1, 'near_hole': 0, 'lifted': 99, 'no_lift': 0} (expert 0.98) step latency p50 16.7 ms p95 253.6 ms
+== outputs/visual_baseline/act_main/checkpoint_0025000.pt -> outputs/visual_baseline/act_main/eval_0025000.json  (Tue Nov 10 07:36:27 UTC 2026)
+success=2/100 stages={'success': 2, 'near_hole': 0, 'lifted': 98, 'no_lift': 0} (expert 0.98) step latency p50 32.8 ms p95 39.5 ms
+== outputs/visual_baseline/diffusion_main/checkpoint_0025000.pt -> outputs/visual_baseline/diffusion_main/eval_0025000.json  (Tue Nov 10 07:42:46 UTC 2026)
+success=6/100 stages={'success': 6, 'near_hole': 0, 'lifted': 94, 'no_lift': 0} (expert 0.98) step latency p50 15.6 ms p95 254.3 ms

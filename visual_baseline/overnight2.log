@@ -1,0 +1,7 @@
+== diffusion_main 0100000 -> outputs/visual_baseline/diffusion_main/eval_0100000.json (Tue Nov 10 06:34:33 UTC 2026)
+success=7/100 stages={'success': 7, 'near_hole': 0, 'lifted': 93, 'no_lift': 0} (expert 0.98) step latency p50 15.0 ms p95 206.9 ms
+== diffusion_main 0100000 -> outputs/visual_baseline/diffusion_main/train_0100000.json (Tue Nov 10 06:43:43 UTC 2026)
+success=12/50 stages={'success': 12, 'near_hole': 0, 'lifted': 38, 'no_lift': 0} (expert 1.00) step latency p50 15.4 ms p95 201.7 ms
+== act_main 0075000 -> outputs/visual_baseline/act_main/eval_0075000.json (Tue Nov 10 06:48:42 UTC 2026)
+success=4/100 stages={'success': 4, 'near_hole': 0, 'lifted': 96, 'no_lift': 0} (expert 0.98) step latency p50 33.0 ms p95 38.8 ms
+== diffusion_main 0075000 -> outputs/visual_baseline/diffusion_main/eval_0075000.json (Tue Nov 10 06:55:01 UTC 2026)

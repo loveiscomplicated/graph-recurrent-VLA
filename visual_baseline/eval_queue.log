@@ -1,0 +1,4 @@
+training pid 75634 exited at Sat Nov  7 19:03:58 UTC 2026
+== act_main 0100000 -> outputs/visual_baseline/act_main/eval_0100000.json (Sat Nov  7 19:03:58 UTC 2026)
+success=4/100 (expert 0.98) step latency p50 7008.3 ms p95 9298.9 ms
+== diffusion_main 0100000 -> outputs/visual_baseline/diffusion_main/eval_0100000.json (Sat Nov  7 22:14:16 UTC 2026)
