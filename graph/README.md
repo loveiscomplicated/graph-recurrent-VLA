@@ -2,6 +2,35 @@
 
 ## Corner prediction and tracking
 
+
+To render a continuously moving box and Hole with the leaderboard Transformer
+and GNN, configure the checkpoint paths in
+`graph/configs/temporal/visualize_moving_hole.yaml` and run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/visualize_moving_hole.yaml
+```
+
+Use `graph/configs/temporal/visualize_jumping_hole.yaml` for a single abrupt
+translation. Both recipes use a time window and a GT-based proximity guard.
+By default they step the simulator with zero actions; configure an existing
+`module:factory` policy to exercise robot motion.
+
+For the existing GT-guided scripted expert, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/visualize_moving_hole_expert.yaml
+```
+
+This recipe uses `pd_ee_delta_pose`, requires the repository's ManiSkill and
+Pinocchio dependencies, and stops motion when the expert enters insertion.
+For a single abrupt translation with the same expert and guards, use
+`graph/configs/temporal/visualize_jumping_hole_expert.yaml`.
+
+This requires ManiSkill, the RGB-D corner detector dependencies, trusted local
+checkpoints and FFmpeg. See [moving Hole visualization](../docs/detected_corner_gnn.md#moving-hole-visualization)
+for the motion and video limitations.
+
 Run recipes from the repository root with Python 3.11, Torch, NumPy, SciPy and
 PyYAML. Set dataset, checkpoint and checksum paths before running. Official
 `mamba_ssm` requires CUDA; camera videos also require OpenCV and FFmpeg with
@@ -458,3 +487,18 @@ add the resume fields from `configs/temporal/train_detected_corner_gnn_resume.ya
 and run `python main.py --config /path/to/effective_resume.yaml`. This requires
 its 40-epoch checkpoints and frozen rollout cache; see
 [temporal estimation](../docs/temporal_estimation.md) for early stopping details.
+
+## Random-action corner diagnostics
+
+With trusted local leaderboard seed-0 checkpoints, ManiSkill, Pinocchio,
+OpenCV, Matplotlib and FFmpeg installed, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/random_action_diagnostics.yaml
+```
+
+The config selects environment/action seeds, action amplitude, checkpoint paths
+and output directory. It records expert controls, random rollouts, per-frame
+results, diagnostic GT substitutions and videos using `ExperimentLogger`.
+See [random-action diagnostics](../docs/detected_corner_gnn.md#random-action-diagnostics)
+for the GT intervention limits and measured results.
