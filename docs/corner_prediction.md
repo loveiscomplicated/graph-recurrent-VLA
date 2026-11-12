@@ -378,3 +378,41 @@ of the 113 events with gaps of at least 21 frames were peg events. Effective
 config, per-event distances, thresholds, and seed summaries are retained in
 `outputs/fixed_id_reappearance/c837be49b0544e6ea8295350b43c2a0d/` and its
 remote experiment. No validation threshold is claimed as calibrated.
+
+## 6D TCP rotation input
+
+`graph/configs/temporal/fixed_id_corner_rotation_6d.yaml` trains a new
+fixed-ID corner predictor using the existing, checksummed sequence dataset.
+Set its data root and expected hash before running the command in the
+[Graph README](../graph/README.md#corner-prediction-and-tracking). No data
+conversion or recollection is required. The configured architecture, optimizer,
+seed and device are recorded with the run by `ExperimentLogger`; the input
+mean and standard deviation are fitted on valid training rows only and saved
+in each checkpoint. This new training workflow starts from scratch; it does
+not implement continuation.
+
+The model accepts the existing 13 raw values per frame and converts the TCP
+wxyz quaternion to the first two rotation-matrix columns internally. The
+network consumes 15 normalized values. It uses the same conversion in
+training and inference and ignores padded quaternion values. Invalid or zero
+quaternions in valid frames raise an error. Checkpoints have the distinct
+`fixed_id_corner_rotation_6d_v1` format and input schema; legacy 13D
+checkpoints cannot be loaded by the new loader.
+
+After training, a detector-only tracker can be created with:
+
+```python
+from graph.temporal.corner_rotation_6d import load_tracker
+
+tracker, checkpoint = load_tracker("/path/to/best.pt", distance_limit_m=0.03, device="cpu")
+# tracker.step(detections_xyz, detector_kinds, robot9)
+```
+
+`robot9` remains TCP world XYZ, TCP wxyz, and two finger positions. The
+tracker requires a distance gate calibrated for the new model; 0.03 above is
+an example, not a validated gate. Recreate the tracker per episode. Existing
+leaderboard loaders, evaluation recipes, frozen caches and checkpoints remain
+on their original input contract. The new checkpoint is not accepted by those
+legacy workflows; downstream evaluation and GNN retraining for the new tracker
+need separate integration and validation. No accuracy or success-rate claim is
+made until those experiments are run.
