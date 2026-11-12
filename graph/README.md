@@ -2,6 +2,17 @@
 
 ## Corner prediction and tracking
 
+The separate 6D TCP rotation corner-predictor recipe uses existing fixed-ID
+sequence data. After setting the dataset path and checksum, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_id_corner_rotation_6d.yaml
+```
+
+The default Mamba recipe requires CUDA and `mamba_ssm`; Transformer can also run
+on CPU with `model.architecture: transformer`, `training.device: cpu`, and
+`training.precision: float32`. For the model contract and detector-only
+inference example, see [6D TCP rotation input](../docs/corner_prediction.md#6d-tcp-rotation-input).
 
 To render a continuously moving box and Hole with the leaderboard Transformer
 and GNN, configure the checkpoint paths in
