@@ -188,6 +188,97 @@ illustrations; configs retain their exact settings under
 `graph/configs/temporal/visualize_moving_hole_expert_120mm.yaml` and
 `graph/configs/temporal/visualize_jumping_hole_expert_120mm.yaml`.
 
+#### Camera position for the moving-Hole example
+
+On 2026-11-11, a camera position was selected for the continuous 120 mm,
+seed 0 expert episode above to reduce robot occlusion of the Hole before
+insertion. The camera is fixed in the world frame; positions are in metres:
+
+| Setting | Value |
+| --- | --- |
+| `base_camera` position (`eye`) | `[0.65, -0.30, 0.65]` |
+| Look-at point (`target`) | `[0.065, 0.297, 0.11]` |
+| Resolution | 512 × 512 |
+
+For another caller using the shared environment factory, the pose can be set
+explicitly at creation:
+
+```python
+from mani_skill.utils import sapien_utils
+from envs.maniskill import make_peg_insertion_env
+
+camera_pose = sapien_utils.look_at(
+    eye=[0.65, -0.30, 0.65],
+    target=[0.065, 0.297, 0.11],
+)
+env = make_peg_insertion_env(
+    seed=0,
+    obs_mode="rgb+depth",
+    sensor_configs={"base_camera": {"width": 512, "height": 512, "pose": camera_pose}},
+)
+```
+
+This snippet configures the camera only; it does not reproduce the moving-Hole
+episode or its control settings. The existing `evaluation.moving_hole:visualize`
+workflow currently fixes its sensor configuration internally and does not read
+`camera_view` from YAML. The recorded run used a local wrapper to override the
+base-camera pose while retaining the existing evaluation implementation.
+
+The comparison tested the task's original camera plus 12 candidates, all on
+the same 152-frame episode. For each frame, 49 points on the front opening
+were projected into the image and checked against rendered depth with a 3 mm
+tolerance; off-screen, back-facing, and invalid-depth samples counted as not
+visible. Segmentation identified robot- and peg-occluded samples. This is a
+sampled visibility measure, not a pixel-exact certificate. Insertion was
+excluded from selection because the motion guard stops box movement then.
+
+| Metric | Original camera | Selected camera |
+| --- | ---: | ---: |
+| Mean opening visibility before insertion | 10.1% | 88.1% |
+| Mean opening visibility during actual movement (3.55–6.50 s) | 0.0% | 75.0% |
+| Robot-occluded sample fraction during actual movement | 74.8% | 0.0% |
+| Peg-occluded sample fraction during actual movement | 25.2% | 25.0% |
+
+The [camera comparison video](../outputs/moving_hole/414c77586d65416cb96e8f5d3accb5c5/camera_visibility/comparison.mp4)
+shows the original view on the left and selected view on the right; green and
+red marks show visible and blocked opening samples. The
+[per-frame visibility results](../outputs/moving_hole/414c77586d65416cb96e8f5d3accb5c5/camera_visibility/visibility_results.json)
+and [scan script](../outputs/moving_hole/414c77586d65416cb96e8f5d3accb5c5/camera_visibility/scan_hole_cameras.py)
+record the candidates and method. The 13 sampled positions and one episode do
+not establish a globally optimal camera location or visibility across episodes.
+
+The [selected-camera model video](../outputs/moving_hole/camera_model_runs/2a87ac49cc854f9880cca35d5e7536b9/moving_hole.mp4)
+shows GT Hole center in green and the predicted center in magenta. It runs the
+seed 0 early-stopped resumed Transformer + GNN, the overall 4,102-frame
+leaderboard's first-ranked model family, using the same checkpoint hashes as
+the original video. Yellow points are detected tracks and blue points are
+unmatched track forecasts. The [per-frame model results](../outputs/moving_hole/camera_model_runs/2a87ac49cc854f9880cca35d5e7536b9/results.json),
+[effective settings](../outputs/moving_hole/camera_model_runs/config.yaml) and
+[local camera wrapper](../outputs/moving_hole/camera_model_runs/run_camera_visualization.py)
+are available alongside the video. On this episode, mean Hole-position error
+before insertion was 28.31 mm with the original camera and 12.52 mm with the
+selected camera; during actual movement it was 57.40 mm and 18.40 mm,
+respectively. Maximum movement-period error with the selected camera was
+51.56 mm. The same recorded peg-tip and Hole-center positions and expert phases
+matched at every frame; this does not establish generalization to other episodes.
+
+The [Hole error and unmatched-track plot](../outputs/moving_hole/camera_model_runs/hole_error_and_unmatched_tracks.png)
+and [Box-track position plot](../outputs/moving_hole/camera_model_runs/hole_and_unmatched_box_positions.png)
+share the episode time axis. The latter also shows predicted and GT Hole center
+coordinates. Unmatched means an existing track had no detection assigned in that
+frame; the Box-track average is over forecast positions, with a possibly changing
+set of tracks, and is not expected to equal the Hole center. Its source
+[per-frame CSV](../outputs/moving_hole/camera_model_runs/hole_and_unmatched_box_positions.csv)
+and [unmatched Box-track records](../outputs/moving_hole/camera_model_runs/unmatched_box_replay.json)
+are available for inspection. The tracking counts and positions were captured
+in separate reruns whose saved frame records matched the selected-camera model
+run exactly.
+
+All linked `outputs/` files are ignored local artifacts, not files guaranteed
+to be present in another checkout. These runs used the Mac CPU simulator and
+CPU inference; CUDA was not executed. The GNN and tracker implementation and
+the preserved leaderboard results were not modified.
+
 For a view without a moving arm crossing the Hole, zero-action 120 mm examples
 show [continuous movement](../outputs/moving_hole/4d1a71156d3648e79a6008801509d229/moving_hole.mp4)
 and an [abrupt jump](../outputs/moving_hole/ba42aebd6ec3497985938c7fab78d924/moving_hole.mp4).
