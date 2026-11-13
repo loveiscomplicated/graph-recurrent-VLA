@@ -1,5 +1,18 @@
 # Graph team
 
+## Independent generalization evaluation
+
+With the frozen test dataset and original Transformer/GNN checkpoints available
+at the paths in the config, evaluate the independent test on CPU with:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/independent_test_evaluation.yaml
+```
+
+The dataset, checkpoint, and detector prerequisites, visibility-matched
+follow-up, and limits of the original leaderboard replay are documented in
+[independent generalization test](../docs/detected_corner_gnn.md#independent-generalization-test-and-leaderboard-replay).
+
 ## Corner prediction and tracking
 
 The separate 6D TCP rotation corner-predictor recipe uses existing fixed-ID
@@ -513,3 +526,28 @@ and output directory. It records expert controls, random rollouts, per-frame
 results, diagnostic GT substitutions and videos using `ExperimentLogger`.
 See [random-action diagnostics](../docs/detected_corner_gnn.md#random-action-diagnostics)
 for the GT intervention limits and measured results.
+
+The random-action diagnostic also has a selected-camera recipe:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/random_action_selected_camera.yaml
+```
+
+It requires the same simulator, detector and checkpoint prerequisites as the
+original recipe. The recorded paired results and camera comparison are in
+[the detector-only GNN guide](../docs/detected_corner_gnn.md#selected-camera-random-action-comparison).
+
+To replay the seed-2 camera failure and inspect its exact detector and GNN
+inputs, run `WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_input_diagnostics.yaml`
+with the recorded results and checkpoints present. See the
+[Hole input inspection](../docs/detected_corner_gnn.md#seed-2-selected-camera-hole-input-inspection).
+
+To scan camera poses against saved random-action states, configure and run
+`graph/configs/temporal/camera_visibility_search.yaml`. The evaluation and
+visibility limits, held-out comparison recipes and recorded results are in the
+[multi-state camera search](../docs/detected_corner_gnn.md#multi-state-camera-visibility-search-and-held-out-action-comparison).
+
+For the broader randomized camera study, configure
+`graph/configs/temporal/camera_distribution_search.yaml` and its separate
+held-out counterpart. The sample construction and results are described in
+[the camera study](../docs/detected_corner_gnn.md#broader-random-position-camera-study).

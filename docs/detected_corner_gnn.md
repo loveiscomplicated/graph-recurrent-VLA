@@ -531,3 +531,353 @@ The [run results](../outputs/random_action_diagnostics/5a5605be3d2c4d71b97b94508
 [main plot](../outputs/random_action_diagnostics/5a5605be3d2c4d71b97b945082601647/diagnostics.png),
 [stage plot](../outputs/random_action_diagnostics/5a5605be3d2c4d71b97b945082601647/stage_diagnostics.png)
 and per-episode videos are local, ignored verification artifacts.
+
+### Selected-camera random-action comparison
+
+The selected moving-Hole camera can be used in the same diagnostic workflow:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/random_action_selected_camera.yaml
+```
+
+`camera_view` specifies a fixed world `eye` and `target`; omitting it retains
+ManiSkill's original camera. The recipe uses the same five environment seeds,
+two action seeds and model checkpoint as the earlier default-camera run. All
+15 expert/random episodes reached the same switch and recorded 35 post-switch
+steps with grasp maintained. The comparison checked every paired frame's action,
+Peg GT and Hole GT: the maximum absolute difference was zero. The selected
+camera's live `cam2world_gl` translation was independently checked against
+`[0.65, -0.30, 0.65]` metres.
+
+| Random post-switch metric | Default camera | Selected camera |
+| --- | ---: | ---: |
+| Peg position mean | 51.01 mm | 19.52 mm |
+| Hole position mean | 11.63 mm | 30.62 mm |
+| No detections | 107 / 350 frames | 0 / 350 frames |
+| Detected point to nearest same-kind reference RMSE | 3.21 mm | 4.97 mm |
+| Birth-assigned predicted-track RMSE | 18.72 mm | 39.85 mm |
+
+The selected-camera Hole mean is dominated by both random trajectories from
+environment seed 2 (115.2 mm each); the error was already 115.2 mm at the
+switch, before random actions. For the other four environment seeds the Hole
+means were 10.41 mm default and 9.46 mm selected. In that seed-2 random
+trajectory none of the 35 post-switch frames had a detected point whose nearest
+GT reference was an aperture-mouth corner. This nearest-reference observation
+is not a visibility certificate, and it does not by itself establish the cause
+of the Hole error. Correction of assigned tracked coordinates did not remove
+it. The selected camera was chosen using one moving-Hole episode, not optimized
+for all initial states or this action distribution.
+
+The [paired comparison](../outputs/camera_diagnostics_comparison/87b24df5ad27461ba5a13800a38d27dc/comparison.json),
+[comparison figure](../outputs/camera_diagnostics_comparison/87b24df5ad27461ba5a13800a38d27dc/camera_comparison.png),
+[side-by-side seed-2 video](../outputs/camera_diagnostics_comparison/87b24df5ad27461ba5a13800a38d27dc/env_2_camera_comparison.mp4),
+and [selected-camera results](../outputs/random_action_diagnostics/0919f71ee5f84fd09d4d32df6384cdf5/results.json)
+are local ignored artifacts. Re-run the paired audit using
+`graph/configs/temporal/compare_camera_diagnostics.yaml` after updating its two
+result paths. CPU inference was executed on this host; CUDA and model seeds 1/2
+were not executed. The node RMSEs use different node subsets, and remain subject
+to the approximate birth-assignment and unassigned-node limitations above.
+
+### Seed-2 selected-camera Hole input inspection
+
+Re-run the frame-level inspection with:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_input_diagnostics.yaml
+```
+
+It replays the original saved actions for the default and selected cameras,
+reconstructs tracking from frame zero, and verifies Peg GT, Hole GT and the
+original Hole prediction against the recorded results at every frame. It saves
+frames 0, 68 (random-action switch), and 78, including actual detector and graph
+nodes, per-target pooling weights, GT geometry, counterfactuals and figures.
+
+For seed 2, the near opening on frame 0 projects to a 17.5 × 19.7-pixel
+axis-aligned box from the default camera, versus 3.8 × 12.5 pixels from the
+selected camera. Its view angle relative to the opening-plane normal is 25.8°
+versus 76.6°. These are GT geometric projections, not proof of visibility.
+At the center pixel of the near opening in the selected image, measured depth
+was 1.017 m versus 0.994 m to the GT opening plane; this single depth sample
+alone does not establish the visibility of the entire contour.
+
+On selected-camera frame 68, all five target-side GNN nodes are currently
+detected box vertices, each 2.3–2.9 mm from its nearest GT exterior vertex;
+none is nearest an aperture vertex. The graph contains 8 Peg and 5 Box nodes
+and 156 directed edges. Target pooling weights on Box nodes 0 and 5 sum to
+0.919. This is a readout statistic, not an isolated causal contribution.
+The target anchor is 73.5 mm from the Hole GT and the learned position offset
+is approximately `[46.6, 0.0, 11.2]` mm in world axes, producing 115.2 mm
+error. The same frame in the default-camera run retains four aperture-near
+tracks and yields 18.7 mm error, although none is currently detected then.
+
+Diagnostic input interventions for this frame leave the frozen GNN unchanged:
+removing Peg nodes yields 107.3 mm, snapping the five target nodes within 10 mm
+to their nearest GT references yields 115.9 mm, and appending all eight GT
+aperture corners as observed Box nodes yields 22.3 mm. The last probe uses
+hidden GT and changes the node distribution, so it is evidence of sensitivity
+to opening-corner support, not a deployment result or proof of a unique cause.
+The selected camera's error is already 116.0 mm at frame 0, before grasping or
+random actions. The evidence points to an oblique low-resolution aperture,
+missing aperture-near detections, and the GNN extrapolation from exterior nodes;
+it does not establish which detector component rejected the opening or whether
+this generalizes across initial states.
+
+Local evidence: [aperture comparison](../outputs/hole_input_diagnostics/6acece0f46454f7ab970c56c9fef769b/aperture_comparison.png),
+[selected frame graph](../outputs/hole_input_diagnostics/6acece0f46454f7ab970c56c9fef769b/selected_frame_68.png),
+[error timeline](../outputs/hole_input_diagnostics/6acece0f46454f7ab970c56c9fef769b/hole_error_timeline.png),
+and [numeric snapshots](../outputs/hole_input_diagnostics/6acece0f46454f7ab970c56c9fef769b/snapshots.json).
+CPU inference and CPU simulator were run on this host; CUDA was not tested.
+
+### Multi-state camera visibility search and held-out action comparison
+
+The candidate search reuses saved expert-prefix/random-action trajectories and
+restores their physical states before rendering each camera. It verifies Peg and
+Hole GT positions on replay and restoration. Run with
+`graph/configs/temporal/camera_visibility_search.yaml` and the source results
+configured there. Ten fixed viewpoints were examined on environment seeds
+0–2 and action seeds 73/74. Six states per trajectory were sampled: the initial
+frame and steps 0, 9, 18, 27 and 35 after lifting. The identical initial state
+is consequently counted once per action seed.
+
+At each state the scan projects a 7×7 grid on the front Hole opening and
+compares each point with rendered depth, using a 3 mm tolerance and simulator
+segmentation to identify robot/peg blockage. Back-facing, off-screen and invalid
+samples count as not visible. This is a sparse GT-based diagnostic, not a
+pixel-exact visibility certificate; nearby grid points may map to the same
+pixel, especially at oblique views. Camera ranking maximizes the minimum of the
+three per-environment mean visibility scores; ties use mean visibility, lower
+robot blockage and then minimum projected width. The fixed target is
+`[0.065, 0.297, 0.11]` metres. The selected eye was `[0.35, -0.30, 0.35]`.
+A second candidate `[-0.35, -0.30, 0.35]` was added after inspecting the
+selection results because its worst-seed visibility was above 95% and its
+minimum projected opening width was larger. Its choice is exploratory.
+
+Separate evaluation used environment seeds 3–6, with two saved random-action
+seeds and an expert continuation for each environment. Seeds 3–6 were not used
+for camera selection; this does not establish that they are outside the model's
+training data. Initial-state visibility filtering was not applied. The original
+seed-0 Transformer/GNN pair was fixed throughout. Actions, Peg GT positions and
+Hole GT positions matched exactly at every frame of all 12 paired episodes;
+the comparison does not separately verify every robot joint or object rotation.
+Each random episode contributes 35 post-lift frames and maintained grasp.
+
+| Camera | Eye (m) | Sampled Hole visibility | Robot-blocked samples | Random Hole mean | Random Peg mean |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Default | simulator default | 63.6% | 36.4% | 11.02 mm | 64.58 mm |
+| Previous | `[0.65, -0.30, 0.65]` | 99.0% | 0.0% | 44.78 mm | 18.00 mm |
+| Visibility-selected | `[0.35, -0.30, 0.35]` | 99.7% | 0.3% | 14.11 mm | 71.96 mm |
+| Wider-opening candidate | `[-0.35, -0.30, 0.35]` | 100.0% | 0.0% | 24.04 mm | 70.89 mm |
+
+Visibility figures are means over 48 sampled states in the held-out scan, with
+49 projected points per state; they should not be interpreted as a guarantee
+across continuous time. Error means use all 280 random-action frames for each
+camera. The previous-camera Hole mean is affected by both seed-6 random runs
+at about 151.5 mm, while the visibility-selected Peg mean includes both seed-3
+runs around 146 mm. Better projected Hole visibility alone therefore did not
+identify a camera with stable Hole **and** Peg predictions. The small set of
+initial states and reused action sequences are not an independent deployment
+benchmark. No full inference evaluation was run on CUDA or model seeds 1/2.
+
+[Selection results](../outputs/camera_visibility_search/0dc652a1bcd84916b1519bd0814dc8d9/search_results.json),
+[held-out visibility](../outputs/camera_visibility_holdout/cad2bf22360a44baa261a75f84cfbf4e/search_results.json),
+[paired numerical results](../outputs/camera_holdout_comparison/d78175519f5d409d99c451740cd1bc40/holdout_results.json),
+[paired error figure](../outputs/camera_holdout_comparison/d78175519f5d409d99c451740cd1bc40/heldout_camera_comparison.png),
+and [four-camera video](../outputs/camera_holdout_comparison/d78175519f5d409d99c451740cd1bc40/env_6_four_cameras.mp4)
+are local ignored artifacts. Individual evaluation and comparison configs are
+under `graph/configs/temporal/`; paths refer to the saved runs and must be updated
+when the experiments are repeated.
+
+### Broader random-position camera study
+
+The 2026-11-13 follow-up samples 40 independently seeded simulator initial
+states (100–139), with 100–119 used to choose a camera and 120–139 held out
+for visibility verification. The source action collector is configured in
+`data_collection/configs/camera_visibility_trajectories.yaml`: it records the
+expert approach and grasp, then 35 random arm actions with the gripper closed.
+The NumPy action RNG uses `73 + environment_seed`. Failed grasps are retained
+with their expert-prefix samples; in this run all 40 reached the lift switch.
+No initial visibility filter was applied. Across these 40 resets, the initial
+Hole center ranges in world metres were approximately X `[-0.056, 0.064]`, Y
+`[0.201, 0.393]`, Z `[0.061, 0.164]`; Box and Hole poses were randomized by the
+installed simulator. Held-out means only held out from **camera selection**,
+not proven disjoint from the predictor's original training dataset.
+
+The [selection config](../graph/configs/temporal/camera_distribution_search.yaml)
+compares 13 fixed camera positions on eight samples per trajectory: reset, three
+approach/grasp points, lift switch, and random steps 10, 20 and 35. It maximizes
+mean sampled opening visibility across the 20 selection seeds, breaking ties by
+the 10th percentile of per-seed visibility, robot blockage and minimum projected
+width. The choice was eye `[0.45, -0.30, 0.35]` m and target
+`[0.065, 0.297, 0.11]` m. The scan uses the 7×7 depth/segmentation procedure
+above, with the same caveats: points may coincide in image pixels, aperture
+samples are GT-based, and eight frames cannot cover every occlusion in time.
+The run replays actions and verifies saved Peg and Hole positions and restored
+states for each sampled frame.
+
+On the separate 20 held-out seeds, each seed's sampled mean opening visibility
+improved over the default camera: mean 41.44% → 99.68%, 10th percentile of
+per-seed means 12.50% → 99.85%, and mean robot-blocked samples 55.06% → 0.32%.
+These are sample-based comparisons, not a guarantee of an unoccluded physical
+camera. The selected camera's minimum projected opening bounding-box width on
+these states was 8.3 pixels (default 14.8), so the view is smaller even when
+less occluded. The held-out comparison is configured in
+`graph/configs/temporal/camera_distribution_comparison.yaml`.
+
+The 10 even-numbered held-out seeds were also replayed end-to-end through the
+fixed seed-0 Transformer/GNN for both views, using the exact saved actions. All
+10 paired episodes matched in recorded actions, Peg positions and Hole positions
+at every frame. Over 350 post-lift frames per view, no-detection frames changed
+37 → 0 and mean Peg position error 38.50 → 32.51 mm, but mean Hole error rose
+7.56 → 25.07 mm. Nine of ten episodes had higher mean Hole error under the new
+camera. This model result should not be conflated with camera visibility: the
+cause of the error increase and the benefit of retraining have not been tested.
+CPU simulation/rendering and CPU inference ran locally; CUDA and the other
+model seeds were not run.
+
+[Camera selection](../outputs/camera_distribution_search/ecec199d855f4879bdec9cda5cb672b7/search_results.json),
+[held-out visibility scan](../outputs/camera_distribution_holdout/af05ceee263248688d872620da2c02b9/search_results.json),
+[paired visibility statistics](../outputs/camera_distribution_comparison/311588939ada4c6b815ca5f4154dafbe/distribution_results.json),
+[visibility figure](../outputs/camera_distribution_comparison/311588939ada4c6b815ca5f4154dafbe/distribution_comparison.png),
+[example views](../outputs/camera_distribution_comparison/311588939ada4c6b815ca5f4154dafbe/distribution_scenes.png)
+and [model comparison](../outputs/camera_distribution_model_comparison/f97458193f0f49a9a3ec2575eea5557a/comparison.json)
+are local, ignored artifacts. The saved-source paths in configs must be updated
+when reproducing the study with new runs.
+
+#### Additional 60-state validation
+
+A follow-up retained the 40 states above and collected 60 new simulator seeds
+140–199 using the same collector and action settings. The camera remained fixed
+at `[0.45, -0.30, 0.35]`; the new states were not used to select it. Three new
+states (143, 167, 186) did not reach the lift switch and remain in the visibility
+scan with six expert-prefix samples each; the other 57 have eight samples each.
+The 100-state total therefore contains 794 sampled states. The original 20
+selection seeds are included in that total and are not independent validation.
+
+Over all 100 initial states, the equally weighted per-seed mean opening
+visibility was 39.25% for the default camera and 99.06% for the selected camera.
+Considering only the 60 new seeds, the corresponding means were 38.23% and
+98.59%; 59 of 60 per-seed means improved. Seed 193 fell from 67.09% to 46.43%,
+so the chosen view is not uniformly better. These figures use the sparse 7×7
+GT/depth diagnostic and its limitations described above, not continuous-time
+visibility guarantees. On the new sample, minimum projected opening width was
+16.16 pixels for the default view and 6.77 pixels for the selected view.
+
+The fixed seed-0 Transformer/GNN was also run on all 57 newly collected
+trajectories with a completed lift and 35 random steps; the three failed-lift
+cases cannot contribute post-lift model metrics. Paired actions and recorded Peg
+and Hole GT positions matched exactly for every frame. Across 1,995 post-lift
+frames per view, zero-detection frames fell from 408 to 0; mean Peg position
+error changed from 59.84 to 52.72 mm and mean Hole error from 11.94 to 17.89 mm.
+Hole error increased in 41 of 57 episode means. These are model-seed-0 results,
+not an independent model test: the relation of simulator seeds to the original
+training data is unknown. Failed grasps are not represented in the post-lift
+metrics. CPU simulation and CPU model inference were used; rendering used the
+host's SAPIEN macOS backend with MoltenVK on Apple M4 Pro. CUDA and other model
+seeds were not evaluated.
+
+[Run configs, summary and analysis script](../outputs/camera_expanded_study/),
+[visibility and model comparison figure](../outputs/camera_expanded_study/comparison.png),
+[visibility results](../outputs/camera_expanded_study/visibility/59df67e3ab8c4aa490956d76160ca4b7/search_results.json),
+and [paired model results](../outputs/camera_expanded_study/model_comparison/36dd73af6f604719afb797a5d7cef4de/comparison.json)
+are local ignored artifacts. The runs used the dirty working tree; the Git commit
+alone does not capture their code. No checkpoints or artifacts were published.
+
+## Independent generalization test and leaderboard replay
+
+The fixed unfiltered test protocol is
+[protocol.json](../outputs/independent_generalization_test/protocol.json),
+SHA-256 `9f0052660248e4934656eca7a0a23b750346e98786455e23b920ff250a70e49d`.
+Before test observations or model results, 20 reset seeds were drawn from
+1,000,000–1,999,999 with a fixed RNG. They do not overlap the verified original
+900 collection seeds, its 630 Graph development seeds, the separate 900-episode
+BC collection inventory, or explored seeds 0–139. The Graph exclusion inventory's
+dataset hash was checked against all three GNN checkpoints. Disjointness from
+other unknown external datasets is not established.
+
+The protocol fixes the original default 512×512 base camera, the three
+leaderboard Transformer/GNN checkpoint pairs, the 30 mm tracking gate, a
+GT-guided scripted expert, and two trajectories per reset: expert continuation
+or 35 random 6-D arm actions after confirmed grasp/lift. Random seeds are
+`73 + reset_seed`. No visibility or success filter and no replacement are used.
+All 40 planned cases reached the lift switch; one expert trajectory terminated
+at 31 post-lift actions. Its final terminal observation was not archived, so
+its post-lift metric contains 30 rather than 35 frames. All other cases reached
+the planned 35-frame post-lift window. Full native base-camera RGB-D,
+calibration, robot observations, GT, and actions are saved with per-frame hashes
+in the [raw manifest](../outputs/independent_generalization_test/raw/manifest.json).
+The same 1,342 prefix frames per mode were verified equal in images, robot
+observations, GT and pre-switch actions. Expert GT guides the controller; it is
+not supplied to the detector, tracker or GNN.
+
+The single detector is run once per raw frame, then all three model pairs receive
+identical detections. The main statistic follows the leaderboard convention:
+average the three model-seed errors per frame, then average over frames. The
+[unfiltered evaluation](../outputs/independent_generalization_test/evaluation/3758115c26414a729b7a0d6c3e83de9f/results.json)
+contains every frame, per-seed prediction and missing-output counts:
+
+| Unfiltered test | Frames | Peg mean / p90 | Hole mean / p90 |
+| --- | ---: | ---: | ---: |
+| Expert, all observed frames | 2,037 | 60.23 / 137.49 mm | 11.79 / 25.04 mm |
+| Expert, after lift | 695 | 17.33 / 45.87 mm | 5.35 / 14.40 mm |
+| Random after lift | 700 | 58.24 / 127.69 mm | 10.54 / 20.93 mm |
+
+A [post-hoc initial-visibility audit](../outputs/independent_generalization_test/visibility_audit/245bbff060224c4baa557e528187c42b/initial_visibility.json)
+found only 4/20 resets pass the historical ends-and-grasp initial gate. These
+four expert trajectories averaged Peg 1.13 mm and Hole 2.77 mm over all
+frames; the other sixteen averaged 72.87 mm and 13.71 mm. At reset, their
+average Peg detection counts were 6.5 versus 2.6. This grouping was not a
+filter, and it does not prove the gate itself caused the error.
+
+A separate [matched-visibility follow-up protocol](../outputs/independent_matched_visibility_test/protocol.json),
+SHA-256 `01bc87ff10cc64c2066f4e22e24581ae0ac090206704d9ac78d321585037639d`,
+was preregistered after seeing the first test. It applies the original initial
+gate to a fixed candidate order and retains the first 20 passing new seeds; no
+model error was used for selection. Twenty passed among 59 attempts. The test
+seeds are disjoint from the first test and both verified collection inventories;
+initial RGB-D/pose fingerprints were checked again during collection. All 40
+planned expert/random cases and all 35 post-lift frames per case were evaluated.
+The follow-up [results](../outputs/independent_matched_visibility_test/evaluation/640bd18751a54fdd819f66301d8a7aa0/results.json)
+show:
+
+| Matched-visibility follow-up | Frames | Peg mean / p90 | Hole mean / p90 |
+| --- | ---: | ---: | ---: |
+| Expert, all observed frames | 1,810 | 2.02 / 4.81 mm | 6.80 / 5.65 mm |
+| Expert, after lift | 700 | 2.38 / 4.81 mm | 4.66 / 9.11 mm |
+| Random after lift | 700 | 12.45 / 24.88 mm | 12.50 / 15.43 mm |
+
+The Hole mean exceeds p90 due to a small number of large errors; one follow-up
+episode averaged 47.1 mm expert and 133.4 mm random Hole error after lift.
+The follow-up only matches the initial visibility condition, not all training
+trajectory or success-filter conditions. Its design was prompted by the first
+test, so it is a separate hypothesis-follow-up result, not part of the original
+preregistered test. Do not tune models on either test and continue to call them
+untouched held-out tests. [Comparison figure](../outputs/independent_generalization_test/cohort_comparison/bd941dfa11a44ee3b5bbc48fa4de405d/cohort_comparison.png).
+
+For the original leaderboard, all three frozen Transformer rollout caches were
+downloaded from the pinned backup and matched their checkpoint SHA-256. The
+protected evaluator was run unchanged on all 4,102 original validation frames
+on CPU. Across seeds, GNN-only mean Peg/Hole errors were 1.4248108/1.8311576 mm,
+versus stored 1.4248109/1.8311574 mm. CPU predictions were **not bit-identical**
+to the original CUDA arrays; maximum absolute Object21 element differences were
+`2.98e-7`, `3.58e-7`, and `3.58e-7` for seeds 0/1/2. This is a CPU rerun of
+frozen tracker graph inputs, not exact original-device reproduction or a rerun
+of detection/tracking. [GNN replay](../outputs/leaderboard_reproduction/evaluation/e089802df1504215993e8f1c04d3d72c/reproduction.json).
+
+For 960 hash-verified original validation RGB-D frames present locally, the
+current CPU detector's same-type point sets matched original cached detection
+counts on 959 frames, with one missing recorded point across the remaining
+frame. Of 7,654 matched points, mean distance was 0.0041 mm, p90 0.00047 mm,
+and maximum 4.94 mm; these are not bit-exact outputs. Original CUDA and current
+CPU detector runtime differ. [Detector audit](../outputs/leaderboard_reproduction/detector_audit/16f3fcdbe12c40caa3c3cd1af4907ebe/detector_audit.json).
+
+The pinned raw shard `shard_000000.tar` was downloaded and verified by SHA-256.
+Its four full validation episodes (412 contiguous frames) were rerun causally
+from RGB-D through detector, Transformer tracker and GNN using model seed 0.
+Recomputed Object21 GT matched exactly. Reference versus current CPU mean Peg
+error was 1.176 versus 1.193 mm; Hole was 1.347 versus 1.325 mm. Node matching
+found provenance/type or count differences in two frames. This is a close but
+not exact CPU replay on **4/40 episodes**, not a full original-pipeline replay
+of all 4,102 raw frames. [Full-pipeline subset replay](../outputs/leaderboard_reproduction/raw_replay/4650bb50aaaa4073950edb7c4345066c/raw_replay.json).
+The remaining 36 raw episodes and the original CUDA numerical environment are
+still required for complete end-to-end/exact reproduction. No protected
+leaderboard implementation or dependency was changed.

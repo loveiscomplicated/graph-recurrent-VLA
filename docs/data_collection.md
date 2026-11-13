@@ -315,6 +315,43 @@ unsuccessful attempts in `rejected_seed_*/`, outside the approved manifest.
 `--save-step-gt` adds raw `ground_truth/` fields after each action, in addition to
 the existing initial GT. These options are opt-in; initial-only defaults remain.
 
+### Moving Hole collection
+
+The existing sharded collection workflow can opt into the same motion schedule
+as the Graph moving-Hole visualization. For a local example, run:
+
+```bash
+WANDB_MODE=disabled python -m data_collection.collect_dataset \
+  --config data_collection/configs/moving_hole_collection.yaml
+```
+
+This example collects one successful expert episode with CPU physics and keeps
+the output local. It uses the visualization's fixed 60 mm world +X translation,
+3.5–9 s motion window, 3 s duration, 80 mm peg-tip-to-hole guard and expert
+insertion-phase stop. These are example settings, not an agreed experiment
+distribution; the 120 mm visualization uses `[0.12, 0, 0]`. `hole_motion`
+accepts `continuous` or `jump`; distance and direction remain fixed by
+`translation_m` for every episode. Per-episode randomization is not implemented.
+Omit `hole_motion` for the original stationary collection. Motion collection
+currently requires one CPU physics environment per worker, a positive start time,
+and, when `stop_expert_insert` is true, a policy exposing `phase` after reset.
+
+The Hole belongs to the box, so the whole kinematic box moves. The schedule is
+reset for each accepted episode. After each nonterminal simulator step, the
+collector applies the scheduled translation and refreshes the observation, GT
+and evaluation info before saving and supplying the next policy input. The saved
+action, reward and termination flags come from the preceding simulator step,
+before that translation; they are not recomputed after moving the box. There is
+no further movement after a terminal or truncated step or a success that ends
+collection. Each frame additionally records `hole_motion/offset_m` and
+`hole_motion/status`, and the effective settings are saved in `config.json`.
+The initial visibility gate and both visibility modes are unchanged.
+
+The lower-level `collect_episodes` CLI accepts the same mapping as a JSON string
+via `--hole-motion`; use `--save-step-gt` to save GT after every action. The
+sharded workflow passes the YAML mapping to each worker and retains its normal
+success filtering, verification and explicit publishing behavior.
+
 ## GPU observations
 
 Add `--render-backend cuda --observation-device cuda` on a supported Linux GPU
@@ -540,3 +577,40 @@ original frozen 60-epoch M0 checkpoints; the independently continued GNN is not
 substituted into them. The restored temporal configurations resume epoch 90 with
 Adam and random state, then run 30 additional epochs. Local focused tests cover
 selected archive members and checksum rejection.
+
+## Camera visibility trajectory source
+
+`data_collection/configs/camera_visibility_trajectories.yaml` records seeded,
+camera-independent expert-prefix and random-action episodes for camera studies.
+It saves raw action sequences, Peg/Hole/Box GT positions, Hole orientation,
+sampling frames and whether grasp/lift succeeded; failures remain in the
+manifest. Each environment seed receives a distinct deterministic random-action
+RNG stream. After configuring seeds and output, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/camera_visibility_trajectories.yaml
+```
+
+This collection provides no model training or RGB-D dataset.
+See [the broader camera study](detected_corner_gnn.md#broader-random-position-camera-study)
+for replay, sample selection and limitations.
+
+## Frozen independent simulator tests
+
+`data_collection.independent_test_protocol:freeze` checks the named original
+collection and Graph-development seed inventories before drawing test resets,
+records checkpoint hashes and fixes policy/camera settings. Its configuration is
+`data_collection/configs/independent_test_protocol.yaml`. The separate
+`data_collection.independent_test_collection:collect` workflow then records
+all planned expert and random-action cases without silently filtering failures.
+Native base-camera RGB-D and calibration, observed robot state, raw GT and the
+applied action are stored with per-frame hashes. The source protocol and output
+paths cannot be overwritten by these workflows.
+
+The separate matched-visibility follow-up is generated with
+`data_collection/configs/matched_visibility_test_selection.yaml`. It fixes the
+candidate seed order before using the existing GT-assisted initial visibility
+gate and records every attempted seed, including failures. It was designed after
+the first unfiltered test and must remain identified as a follow-up. Full
+criteria, limitations and saved results are in the
+[independent test and leaderboard replay guide](detected_corner_gnn.md#independent-generalization-test-and-leaderboard-replay).
