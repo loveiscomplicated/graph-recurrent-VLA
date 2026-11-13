@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import copy
+import math
 import os
 import platform
 from pathlib import Path
@@ -27,6 +29,27 @@ _configure_macos_vulkan()
 import gymnasium as gym  # noqa: E402
 import mani_skill.envs  # noqa: E402,F401 - registers PegInsertionSide-v1
 import torch  # noqa: E402
+from mani_skill.utils import sapien_utils  # noqa: E402
+
+
+def _camera_configs_with_defaults(sensor_configs: dict | None) -> dict:
+    """Apply shared base-camera defaults while honoring ManiSkill overrides."""
+    overrides = copy.deepcopy(sensor_configs) if sensor_configs is not None else {}
+    base_camera = {
+        "width": 512,
+        "height": 512,
+        "fov": math.pi / 2,
+        "pose": sapien_utils.look_at(
+            eye=[0.65, -0.30, 0.65], target=[0.065, 0.297, 0.11]
+        ),
+    }
+    # ManiSkill applies global overrides first and camera-specific overrides second.
+    for key in base_camera:
+        if key in overrides:
+            base_camera[key] = overrides[key]
+    base_camera.update(overrides.get("base_camera", {}))
+    overrides["base_camera"] = base_camera
+    return overrides
 
 
 def make_peg_insertion_env(
@@ -51,8 +74,8 @@ def make_peg_insertion_env(
     the output boundary. It does not select a physics or renderer backend.
     An explicit ``render_backend="cuda"`` can expose native CUDA camera images
     while retaining ``device="cpu"`` physics on a supported Linux GPU host.
-    ``sensor_configs`` forwards ManiSkill's raw camera configuration overrides;
-    omitting it preserves the task's default camera settings.
+    ``sensor_configs`` overrides the shared base-camera defaults and forwards
+    other camera settings to ManiSkill.
     """
     if num_envs < 1:
         raise ValueError("num_envs must be positive")
@@ -93,8 +116,7 @@ def make_peg_insertion_env(
         kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode
-    if sensor_configs is not None:
-        kwargs["sensor_configs"] = sensor_configs
+    kwargs["sensor_configs"] = _camera_configs_with_defaults(sensor_configs)
     if max_episode_steps is not None:
         kwargs["max_episode_steps"] = max_episode_steps
     original_cwd = Path.cwd()

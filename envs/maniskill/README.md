@@ -3,8 +3,17 @@
 ## Observation output device and camera configuration
 
 `make_peg_insertion_env` also accepts `render_backend`, `observation_device` and
-`sensor_configs`. Existing arguments retain their meaning. CPU physics defaults
-to the CPU renderer; explicitly select the CUDA renderer for native GPU RGB-D:
+`sensor_configs`. CPU physics defaults to the CPU renderer.
+
+The factory defaults `base_camera` to world position `[0.65, -0.30, 0.65]` m,
+looking at `[0.065, 0.297, 0.11]` m, with a 90-degree vertical FOV and
+512 × 512 resolution. `sensor_configs` can override these values globally or
+per camera; camera-specific values take precedence. `hand_camera` retains the
+installed ManiSkill defaults unless overridden. This changes newly rendered
+images and may affect visibility filters and models evaluated on new frames;
+previously saved observations are unchanged.
+
+Explicitly select the CUDA renderer for native GPU RGB-D:
 
 ```python
 env = make_peg_insertion_env(
@@ -143,20 +152,20 @@ vector, or sequence is constructed here.
 
 ## Cameras and images
 
-Runtime `obs_mode="rgb"` exposed `base_camera` and robot-mounted
-`hand_camera`. Each produced `sensor_data[name]["rgb"]` as
-`[1,128,128,3]` `torch.uint8` in 0–255. In a reset, the observed pixel ranges
-were 0–231 for base and 35–255 for hand. `sensor_param[name]` contained
+Runtime `obs_mode="rgb"` exposes `base_camera` and robot-mounted
+`hand_camera`. With factory defaults their RGB shapes are `[1,512,512,3]`
+and `[1,128,128,3]`, respectively, both `torch.uint8` in 0–255.
+`sensor_param[name]` contains
 `intrinsic_cv` `[1,3,3]`, `extrinsic_cv` `[1,3,4]`, and `cam2world_gl`
 `[1,4,4]`, all float32. The CV extrinsic is a world-to-camera transform;
 `cam2world_gl` is camera-to-world in the OpenGL frame. The live task also has
 `render_camera`; with `render_mode="rgb_array"`, `env.render()` returned
 `[1,512,512,3]` `torch.uint8`.
 
-`obs_mode="rgb+depth+segmentation"` returned those three channels for both
-sensors. RGB was `[1,128,128,3]` uint8; depth and segmentation were
-`[1,128,128,1]` int16. ManiSkill documents depth units as millimetres, but a
-base-camera pixel reached `-32768` in this run; inspect invalid/overflow values
+`obs_mode="rgb+depth+segmentation"` returns those three channels for both
+sensors. Depth and segmentation use the corresponding image dimensions, one
+channel, and int16 dtype. ManiSkill documents depth units as millimetres, but a
+base-camera pixel reached `-32768` in an earlier run; inspect invalid/overflow values
 before using raw depth numerically. Segmentation IDs were present (0–19 in the
 base-camera reset). `python examples/render_episode.py` saves a short PNG frame
 sequence plus one `render_camera.png` without a video encoder.
