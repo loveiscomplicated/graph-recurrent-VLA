@@ -16,6 +16,7 @@ from data_collection.collect_episodes import initial_visibility
 from envs.maniskill import get_gt_state
 from envs.maniskill.wrappers import peg_task
 from exp2_train import build, features, q_conj, q_rot, seed_list
+from hole_motion import BoxMover, HoleMotion, add_args, sample_translation
 
 STEP_TYPES = ["mlp_step", "stack_mlp_step", "gru_step", "mamba_step", "gru_step_nohf"]
 CHUNK_TYPES = ["stack_mlp_chunk", "gru_chunk", "mamba_chunk"]
@@ -159,10 +160,16 @@ def reaction(lat, start):
     return None
 
 
-def loop(env, graph, dec, obs, t0, cfg, log):
+def loop(env, graph, dec, obs, t0, cfg, log, motion=None, mover=None):
     success, t = False, t0
+    freq = float(env.unwrapped.control_freq)
     for t in range(t0, HORIZON):
         tip, hole, rel, peg_z = geometry(env)
+        if motion is not None:
+            if mover.apply(motion.update(t, t / freq, tip, hole[:3])):
+                obs = env.unwrapped.get_obs()
+                tip, hole, rel, peg_z = geometry(env)
+            log.setdefault("moff", []).append(round(float(np.linalg.norm(mover.applied)) * 1000, 1))
         if log.get("trigger") is not None and t >= 20 and peg_z > log["peg_z0"] + 0.02 \
                 and np.linalg.norm(tip - hole[:3]) < cfg.trigger_m:
             log["trigger"](t, obs)
@@ -200,7 +207,11 @@ def run_job(env, graph, dec, eseed, cfg):
         log["trigger"] = None
 
     log = {"err": [], "lat": [], "ghole": [], "peg_z0": peg_z0, "trigger": trigger}
-    ok, steps = loop(env, graph, dec, obs, 0, cfg, log)
+    motion = mover = None
+    if cfg.motion != "none":
+        motion, mover = HoleMotion(cfg, sample_translation(eseed, cfg)), BoxMover(peg_task(env))
+        log["trigger"] = None
+    ok, steps = loop(env, graph, dec, obs, 0, cfg, log, motion, mover)
     err = np.array(log["err"])
     none = {"success": ok, "steps": steps, "triggered": "t" in saved, "trigger_step": saved.get("t"),
             "err_mean_mm": round(float(err.mean()), 2), "err_p90_mm": round(float(np.percentile(err, 90)), 2),
@@ -209,6 +220,7 @@ def run_job(env, graph, dec, eseed, cfg):
             "epeg_mm": [round(e, 1) for e in log.get("epeg", [])],
             "ehole_mm": [round(e, 1) for e in log.get("ehole", [])],
             "ntr": log.get("ntr", []), "final_rel_mm": log.get("final_rel"), "fxyz_mm": log.get("fyz", []),
+            "motion": None if motion is None else motion.summary(), "moff_mm": log.get("moff", []),
             "searches": None if dec.search is None else dec.search.searches,
             "pushes": None if dec.search is None else dec.search.pushes}
     if cfg.no_move or "t" not in saved:
@@ -579,6 +591,7 @@ def main():
     p.add_argument("--paths", default="/workspace/graph_ckpt/paths.json")
     p.add_argument("--cands", default="all")
     p.add_argument("--ens", default="")
+    add_args(p)
     p.add_argument("--train-seeds", default="0-4")
     p.add_argument("--episodes", type=int, default=20)
     p.add_argument("--env-offset", type=int, default=0)

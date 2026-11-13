@@ -7,7 +7,8 @@ import torch
 
 from data_collection.scripted_policy import make_policy
 from envs.maniskill import make_peg_insertion_env
-from exp2_eval import gt_object21, robot15, shift_box, geometry, is_success, to_np
+from exp2_eval import gt_object21, robot15, shift_box, geometry, is_success, to_np, peg_task
+from hole_motion import BoxMover, HoleMotion, add_args, sample_translation
 
 
 def make(graph_mode):
@@ -21,16 +22,23 @@ def episode(env, policy, graph, seed, cfg):
     rng = np.random.default_rng([seed, 2])
     plan_rng = np.random.default_rng([seed, 1])
     plan = None
-    if plan_rng.random() < cfg.perturb_frac:
+    if cfg.motion == "none" and plan_rng.random() < cfg.perturb_frac:
         plan = (int(plan_rng.integers(40, 81)), float(plan_rng.choice([-1.0, 1.0]) * plan_rng.uniform(0.01, 0.025)))
     obs, _ = env.reset(seed=seed)
     policy.reset(env, seed)
     if graph is not None:
         graph.reset()
-    states, acts, gts, counts, ok = [], [], [], [], False
+    motion = HoleMotion(cfg, sample_translation(seed, cfg))
+    mover = BoxMover(peg_task(env))
+    freq = float(env.unwrapped.control_freq)
+    states, acts, gts, counts, offs, ok = [], [], [], [], [], False
     for t in range(cfg.horizon):
         if plan is not None and t == plan[0]:
             shift_box(env, geometry(env)[1][3:], abs(plan[1]), np.sign(plan[1]))
+        tip, hole = geometry(env)[:2]
+        if mover.apply(motion.update(t, t / freq, tip, hole[:3], getattr(policy, "phase", None))):
+            obs = env.unwrapped.get_obs()
+        offs.append(mover.applied.copy())
         gt = gt_object21(env)
         o21 = graph.step(obs)[0] if graph is not None else gt
         r15 = robot15(env)
@@ -44,7 +52,8 @@ def episode(env, policy, graph, seed, cfg):
         if is_success(info):
             ok = True
             break
-    return ok, np.stack(states).astype(np.float32), np.stack(acts).astype(np.float32), np.stack(gts).astype(np.float32), np.array(counts, np.int16)
+    return (ok, np.stack(states).astype(np.float32), np.stack(acts).astype(np.float32), np.stack(gts).astype(np.float32),
+            np.array(counts, np.int16), np.stack(offs).astype(np.float32), motion.summary())
 
 
 def work(args):
@@ -79,6 +88,7 @@ def main():
     p.add_argument("--new", type=int, default=0)
     p.add_argument("--plus-dataset", action="store_true")
     p.add_argument("--seed-start", type=int, default=800000)
+    add_args(p)
     cfg = p.parse_args()
     seeds = []
     if not cfg.new or cfg.plus_dataset:
@@ -100,11 +110,17 @@ def main():
     key = "state36_transformer" if cfg.graph else "state36_gt"
     Path(cfg.out).mkdir(parents=True, exist_ok=True)
     arrays = {key: np.concatenate([r[2] for r in kept]), "expert_action": np.concatenate([r[3] for r in kept]),
-              "episode_offsets": off, "reset_seed": np.array([r[0] for r in kept])}
+              "episode_offsets": off, "reset_seed": np.array([r[0] for r in kept]),
+              "box_offset": np.concatenate([r[6] for r in kept])}
     if cfg.graph:
         arrays["state36_gt"] = np.concatenate([r[4] for r in kept])
         arrays["counts"] = np.concatenate([r[5] for r in kept])
     np.savez(Path(cfg.out) / "train.npz", **arrays)
+    import json
+    (Path(cfg.out) / "motion.json").write_text(json.dumps({int(r[0]): r[7] for r in kept}))
+    moved = [r[7]["moved_mm"] for r in kept if r[7]["translation_mm"] is not None]
+    if moved:
+        print(f"motion episodes {len(moved)} moved_mm mean {np.mean(moved):.1f} full {np.mean([m > 55 for m in moved]) * 100:.0f}%", flush=True)
     print(f"episodes {len(rows)} kept {len(kept)} rows {off[-1]} mean_len {off[-1] / max(len(kept), 1):.1f}", flush=True)
 
 

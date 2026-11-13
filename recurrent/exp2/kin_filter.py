@@ -52,12 +52,13 @@ class Pool:
 
 
 class KinFilter:
-    def __init__(self, min_box=0, min_peg=0, robust=False, close_ratio=0.75, stable=5e-4, prior=None, hole_corr=None, hole_frames=0, peg_frames=0):
+    def __init__(self, min_box=0, min_peg=0, robust=False, close_ratio=0.75, stable=5e-4, prior=None, hole_corr=None, hole_frames=0, peg_frames=0, hole_reset_mm=0.0, hole_reset_k=3):
         self.min_box, self.min_peg, self.robust = min_box, min_peg, robust
         self.prior = None if prior is None else (np.asarray(prior["coef"], np.float64), np.asarray(prior["use"], bool))
         self.hole_corr = None if hole_corr is None else np.asarray(hole_corr, np.float64)
         self.close_ratio, self.stable = close_ratio, stable
         self.hole_frames, self.peg_frames = hole_frames, peg_frames
+        self.hole_reset_mm, self.hole_reset_k = hole_reset_mm, hole_reset_k
         self.reset()
 
     def reset(self):
@@ -65,16 +66,30 @@ class KinFilter:
         self.peg_good, self.peg_all = Pool(self.robust), Pool(self.robust)
         self.shape = []
         self.gmax, self.gprev = 0.0, None
+        self.hole_miss, self.hole_resets = [], 0
 
     def step(self, s, counts=None):
         s = np.asarray(s, np.float64)
         tcp, tq, grip, o = s[0:3], unit(s[3:7]), float(s[13] + s[14]), s[15:36]
         n_peg, n_box = (99, 99) if counts is None else (int(counts[0]), int(counts[1]))
         hole_w, hq = o[10:13] + tcp, unit(o[13:17])
-        if not self.hole_frames or len(self.hole_all.p) < self.hole_frames:
-            self.hole_all.add(hole_w, hq)
-        if n_box >= self.min_box and (not self.hole_frames or len(self.hole_good.p) < self.hole_frames):
-            self.hole_good.add(hole_w, hq)
+        frames = [(hole_w, hq, n_box)]
+        if self.hole_reset_mm > 0 and self.hole_all.p:
+            ref = (self.hole_good if self.hole_good.p else self.hole_all).get()[0]
+            if np.linalg.norm(hole_w - ref) * 1000 > self.hole_reset_mm:
+                self.hole_miss.append((hole_w, hq, n_box))
+                frames = []
+                if len(self.hole_miss) >= self.hole_reset_k:
+                    self.hole_good, self.hole_all = Pool(self.robust), Pool(self.robust)
+                    frames, self.hole_miss = self.hole_miss, []
+                    self.hole_resets += 1
+            else:
+                self.hole_miss = []
+        for hw, q, nb in frames:
+            if not self.hole_frames or len(self.hole_all.p) < self.hole_frames:
+                self.hole_all.add(hw, q)
+            if nb >= self.min_box and (not self.hole_frames or len(self.hole_good.p) < self.hole_frames):
+                self.hole_good.add(hw, q)
         hole_p, hole_q = (self.hole_good if self.hole_good.p else self.hole_all).get()
         if self.hole_corr is not None:
             hole_p = hole_p + hole_features(hole_p, hole_q) @ self.hole_corr
