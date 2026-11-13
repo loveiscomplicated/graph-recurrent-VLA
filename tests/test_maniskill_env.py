@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import patch
 
+import numpy as np
 import torch
 
 from envs.maniskill import get_gt_state, make_peg_insertion_env
@@ -57,11 +58,35 @@ class ManiSkillEnvironmentTest(unittest.TestCase):
         self.assertEqual(tuple(state.success.shape), (1,))
 
     def test_rgb_and_render(self):
-        env = make_peg_insertion_env(obs_mode="rgb", render_mode="rgb_array")
+        env = make_peg_insertion_env(obs_mode="rgb+depth", render_mode="rgb_array")
         try:
             obs, _ = env.reset(seed=0)
-            self.assertEqual(tuple(obs["sensor_data"]["base_camera"]["rgb"].shape), (1, 128, 128, 3))
+            camera = obs["sensor_data"]["base_camera"]
+            params = obs["sensor_param"]["base_camera"]
+            self.assertEqual(tuple(camera["rgb"].shape), (1, 512, 512, 3))
+            self.assertEqual(tuple(camera["depth"].shape), (1, 512, 512, 1))
+            self.assertEqual(camera["rgb"].dtype, torch.uint8)
+            self.assertEqual(camera["depth"].dtype, torch.int16)
+            transform = params["cam2world_gl"][0].cpu().numpy()
+            eye = np.array([0.65, -0.30, 0.65])
+            target = np.array([0.065, 0.297, 0.11])
+            direction = (target - eye) / np.linalg.norm(target - eye)
+            np.testing.assert_allclose(transform[:3, 3], eye, atol=1e-6)
+            np.testing.assert_allclose(-transform[:3, 2], direction, atol=1e-6)
+            intrinsic = params["intrinsic_cv"][0].cpu().numpy()
+            np.testing.assert_allclose([intrinsic[0, 0], intrinsic[1, 1]], [256, 256], atol=1e-4)
             self.assertEqual(tuple(env.render().shape), (1, 512, 512, 3))
+        finally:
+            env.close()
+
+    def test_camera_overrides(self):
+        configs = {"width": 96, "base_camera": {"height": 64}}
+        env = make_peg_insertion_env(obs_mode="rgb", sensor_configs=configs)
+        try:
+            obs, _ = env.reset(seed=0)
+            self.assertEqual(tuple(obs["sensor_data"]["base_camera"]["rgb"].shape), (1, 64, 96, 3))
+            self.assertEqual(tuple(obs["sensor_data"]["hand_camera"]["rgb"].shape), (1, 128, 96, 3))
+            self.assertEqual(configs, {"width": 96, "base_camera": {"height": 64}})
         finally:
             env.close()
 
