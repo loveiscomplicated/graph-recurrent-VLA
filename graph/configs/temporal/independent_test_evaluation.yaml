@@ -1,0 +1,9 @@
+trainer: evaluation.independent_test:evaluate
+protocol: outputs/independent_generalization_test/protocol.json
+protocol_sha256: 9f0052660248e4934656eca7a0a23b750346e98786455e23b920ff250a70e49d
+raw_root: outputs/independent_generalization_test/raw
+device: cpu
+detector_device: cpu
+cpu_threads: 2
+gate_m: 0.03
+output_root: outputs/independent_generalization_test/evaluation

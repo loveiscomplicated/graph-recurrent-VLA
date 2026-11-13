@@ -1,0 +1,5 @@
+trainer: evaluation.independent_test_visibility_audit:evaluate
+protocol: outputs/independent_matched_visibility_test/protocol.json
+protocol_sha256: 01bc87ff10cc64c2066f4e22e24581ae0ac090206704d9ac78d321585037639d
+raw_root: outputs/independent_matched_visibility_test/raw
+output_root: outputs/independent_matched_visibility_test/visibility_audit

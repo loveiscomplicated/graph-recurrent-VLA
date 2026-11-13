@@ -1,0 +1,10 @@
+trainer: data_collection.matched_visibility_test:select
+base_protocol: outputs/independent_generalization_test/protocol.json
+base_protocol_sha256: 9f0052660248e4934656eca7a0a23b750346e98786455e23b920ff250a70e49d
+training_exclusions: outputs/object21_bc/excluded_seeds.json
+additional_exclusions: outputs/object21_bc/raw_collection_manifest.json
+candidate_seed_generator: 20261114
+candidate_seed_range: [2000000, 3000000]
+candidate_count: 200
+required_passes: 20
+output_root: outputs/independent_matched_visibility_test
