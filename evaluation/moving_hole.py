@@ -11,6 +11,7 @@ import torch
 from mani_skill.utils.structs import Pose
 
 from data_collection.episode_dataset import file_sha256
+from data_collection.hole_motion import HoleMotion
 from envs.maniskill import get_gt_state, make_peg_insertion_env
 from evaluation.fixed_id_corner_video import project_world
 from graph.gated_mpnn import VertexEdgeGatedMPNN
@@ -49,58 +50,6 @@ def infer_gnn(model, tracked, tracker, tcp, device):
     graph, source = graph_batch(xyz, kinds, valid, observed, tcp_tensor)
     with torch.inference_mode():
         return model(graph, source)['object21'][0].float().cpu().numpy()
-
-
-class HoleMotion:
-    """Schedule a single translation and latch the insertion-proximity guard."""
-
-    def __init__(self, settings):
-        self.mode = settings['mode']
-        self.start = float(settings['start_seconds'])
-        self.end = float(settings['end_seconds'])
-        self.duration = float(settings['duration_seconds'])
-        self.minimum_distance = float(settings['minimum_distance_m'])
-        self.translation = np.asarray(settings['translation_m'], dtype=np.float64)
-        if self.mode not in ('continuous', 'jump'):
-            raise ValueError("motion.mode must be 'continuous' or 'jump'")
-        if not (0 <= self.start < self.end and self.duration > 0 and self.minimum_distance > 0):
-            raise ValueError('motion needs 0 <= start_seconds < end_seconds, positive duration and minimum distance')
-        if self.translation.shape != (3,) or not np.isfinite(self.translation).all():
-            raise ValueError('motion.translation_m must be a finite three-vector')
-        self.offset = np.zeros(3, dtype=np.float64)
-        self.stopped = False
-        self.status = 'waiting'
-
-    def update(self, seconds, peg_tip, hole):
-        """Advance only when the full proposed displacement stays outside the guard."""
-        peg_tip = np.asarray(peg_tip, dtype=np.float64)
-        hole = np.asarray(hole, dtype=np.float64)
-        if np.linalg.norm(peg_tip - hole) <= self.minimum_distance:
-            self.stopped = True
-            self.status = 'blocked: peg near hole'
-        if self.stopped:
-            return self.offset.copy()
-        if seconds < self.start:
-            self.status = 'waiting'
-            return self.offset.copy()
-        if seconds >= self.end:
-            self.stopped = True
-            self.status = 'window closed'
-            return self.offset.copy()
-        progress = 1.0 if self.mode == 'jump' else min((seconds - self.start) / self.duration, 1.0)
-        target = self.translation * progress
-        delta = target - self.offset
-        # Conservatively reject the entire move if its path intersects the guard.
-        denominator = float(delta @ delta)
-        fraction = 0.0 if denominator == 0 else np.clip((peg_tip - hole) @ delta / denominator, 0.0, 1.0)
-        closest = hole + fraction * delta
-        if np.linalg.norm(peg_tip - closest) <= self.minimum_distance:
-            self.stopped = True
-            self.status = 'blocked: proposed path near peg'
-            return self.offset.copy()
-        self.offset = target
-        self.status = 'complete' if progress >= 1.0 else 'moving'
-        return self.offset.copy()
 
 
 def make_policy(config):

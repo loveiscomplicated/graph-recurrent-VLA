@@ -46,6 +46,16 @@ def load_config(path):
                 "render_backend", "observation_device"):
         if not isinstance(config.get(key), str) or not config[key]:
             raise ValueError(f"{key} must be a nonempty string")
+    if config.get("hole_motion") is not None:
+        if not isinstance(config["hole_motion"], dict):
+            raise ValueError("hole_motion must be a mapping")
+        from .hole_motion import HoleMotion
+
+        motion = HoleMotion(config["hole_motion"])
+        if motion.start <= 0:
+            raise ValueError("collection motion.start_seconds must be greater than zero")
+        if config["device"] != "cpu":
+            raise ValueError("hole motion collection requires CPU physics")
     return config
 
 
@@ -62,6 +72,8 @@ def shard_command(config, output, count, seed):
     for key, value in settings.items():
         command.extend([f"--{key}", str(value)])
     command.extend(["--require-success", "--save-step-gt"])
+    if config.get("hole_motion") is not None:
+        command.extend(["--hole-motion", json.dumps(config["hole_motion"])])
     return command
 
 

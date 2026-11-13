@@ -159,6 +159,51 @@ class CollectionTests(unittest.TestCase):
             with np.load(root / "episode_000000/frame_000002.npz") as saved:
                 np.testing.assert_array_equal(saved["ground_truth/t"], [2])
 
+    @patch("data_collection.collect_episodes.initial_visibility", side_effect=gate)
+    def test_moving_box_refreshes_saved_frame_and_policy_observation(self, _):
+        class MovingEnv(FakeEnv):
+            def get_info(self):
+                return {"success": torch.tensor([False])}
+
+            def get_obs(self, info):
+                return {"raw": torch.tensor([99], dtype=torch.int16)}
+
+        class Motion:
+            def __init__(self, env, settings, policy):
+                self.offset = 0
+
+            def advance(self, step, policy):
+                self.offset = step
+                return True
+
+            def frame_data(self):
+                return {"offset_m": [self.offset, 0, 0], "status": "moving"}
+
+        class RecordingPolicy(ZeroActions):
+            def reset(self, env, seed):
+                super().reset(env, seed)
+                self.inputs = []
+
+            def act(self, observation):
+                self.inputs.append(observation["raw"].item())
+                return self.action
+
+        settings = dict(mode="continuous", start_seconds=0.1, end_seconds=2,
+                        duration_seconds=1, minimum_distance_m=0.08,
+                        translation_m=[0.06, 0, 0])
+        policy = RecordingPolicy()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "dataset"
+            with patch("data_collection.collect_episodes.EpisodeHoleMotion", Motion):
+                collect_episodes(MovingEnv(), root, num_episodes=1, max_attempts=1,
+                                 start_seed=1, steps=2, policy=policy, hole_motion=settings)
+            self.assertEqual(policy.inputs, [1, 99])
+            with np.load(root / "episode_000000/frame_000001.npz") as saved:
+                self.assertEqual(saved["observation/raw"].item(), 99)
+                np.testing.assert_array_equal(saved["hole_motion/offset_m"], [1, 0, 0])
+            with np.load(root / "episode_000000/frame_000002.npz") as saved:
+                np.testing.assert_array_equal(saved["hole_motion/offset_m"], [1, 0, 0])
+
 
 if __name__ == "__main__":
     unittest.main()

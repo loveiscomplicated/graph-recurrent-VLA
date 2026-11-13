@@ -1,6 +1,7 @@
 """Dataset verification must reject resized or misaligned source frames."""
 
 import tempfile
+import json
 import unittest
 from pathlib import Path
 
@@ -38,6 +39,14 @@ class DatasetWorkflowTests(unittest.TestCase):
         self.assertEqual(command[command.index("--max-attempts") + 1], "1000")
         self.assertIn("--require-success", command)
         self.assertIn("--save-step-gt", command)
+
+    def test_moving_hole_settings_are_forwarded_to_workers(self):
+        config_path = Path(__file__).resolve().parents[1] / "data_collection/configs/moving_hole_collection.yaml"
+        config = load_config(config_path)
+        command = shard_command(config, Path("new_shard"), 1, 0)
+        settings = json.loads(command[command.index("--hole-motion") + 1])
+        self.assertEqual(settings, config["hole_motion"])
+        self.assertFalse(config["publish"])
 
 
 if __name__ == "__main__":
