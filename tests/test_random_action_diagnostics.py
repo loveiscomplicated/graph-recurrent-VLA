@@ -4,10 +4,29 @@ import unittest
 
 import numpy as np
 
-from evaluation.random_action_diagnostics import episode_summary, nearest_references
+from evaluation.random_action_diagnostics import episode_summary, make_sensor_configs, nearest_references
+from evaluation.compare_camera_diagnostics import validate_pair
 
 
 class RandomActionDiagnosticsTests(unittest.TestCase):
+    def test_paired_comparison_rejects_different_actions(self):
+        frame = {'frame': 0, 'relative_step': 0, 'grasp': True, 'peg_gt': [0, 0, 0],
+                 'hole_gt': [1, 0, 0], 'action': [0, 0]}
+        episode = {'environment_seed': 0, 'action_seed': 73, 'switch_frame': 0, 'frames': [frame]}
+        self.assertEqual(validate_pair(episode, episode), 0)
+        changed = dict(episode, frames=[dict(frame, action=[0, 1])])
+        with self.assertRaisesRegex(ValueError, 'action mismatch'):
+            validate_pair(episode, changed)
+
+    def test_camera_position_is_optional_and_validated(self):
+        self.assertNotIn('pose', make_sensor_configs(None)['base_camera'])
+        sensors = make_sensor_configs({'eye': [0.65, -0.30, 0.65], 'target': [0.065, 0.297, 0.11]})
+        np.testing.assert_allclose(sensors['base_camera']['pose'].p[0], [0.65, -0.30, 0.65])
+        with self.assertRaisesRegex(ValueError, 'camera_view.eye'):
+            make_sensor_configs({'eye': [0, 0], 'target': [0, 0, 1]})
+        with self.assertRaisesRegex(ValueError, 'must differ'):
+            make_sensor_configs({'eye': [0, 0, 0], 'target': [0, 0, 0]})
+
     def test_nearest_reference_respects_detector_kind(self):
         truth = np.zeros((24, 3), dtype=np.float32)
         truth[:8, 0] = 1.0

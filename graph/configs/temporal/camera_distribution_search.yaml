@@ -1,0 +1,25 @@
+trainer: evaluation.camera_visibility_search:search
+source_results: outputs/camera_visibility_trajectories/a21710c52c0b4e3199b66af02a8e4113/trajectories.json
+selection_environment_seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119]
+action_seeds: [73]
+ranking_rule: mean_then_p10
+control_mode: pd_ee_delta_pose
+max_frames: 150
+surface_sample_count: 7
+depth_tolerance_m: 0.003
+camera_target: [0.065, 0.297, 0.11]
+candidates:
+  - {name: default, eye: null}
+  - {name: previous, eye: [0.65, -0.30, 0.65]}
+  - {name: positive_035_low, eye: [0.35, -0.30, 0.35]}
+  - {name: negative_035_low, eye: [-0.35, -0.30, 0.35]}
+  - {name: negative_040_low, eye: [-0.40, -0.30, 0.25]}
+  - {name: negative_030_high, eye: [-0.30, -0.30, 0.45]}
+  - {name: negative_015_mid, eye: [-0.15, -0.30, 0.35]}
+  - {name: positive_015_mid, eye: [0.15, -0.30, 0.35]}
+  - {name: positive_045_mid, eye: [0.45, -0.30, 0.35]}
+  - {name: negative_030_far, eye: [-0.30, -0.50, 0.35]}
+  - {name: central_far, eye: [0.0, -0.50, 0.35]}
+  - {name: positive_030_far, eye: [0.30, -0.50, 0.35]}
+  - {name: positive_045_far_high, eye: [0.45, -0.50, 0.50]}
+output_root: outputs/camera_distribution_search

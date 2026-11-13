@@ -1,0 +1,44 @@
+trainer: evaluation.camera_visibility_search:search
+source_results: outputs/camera_visibility_inputs/heldout_source.json
+selection_environment_seeds:
+- 3
+- 4
+- 5
+- 6
+action_seeds:
+- 73
+- 74
+steps_after_lift:
+- 0
+- 9
+- 18
+- 27
+- 35
+include_initial_frame: true
+control_mode: pd_ee_delta_pose
+max_frames: 150
+surface_sample_count: 7
+depth_tolerance_m: 0.003
+camera_target:
+- 0.065
+- 0.297
+- 0.11
+candidates:
+- name: default
+  eye: null
+- name: earlier_selected
+  eye:
+  - 0.65
+  - -0.3
+  - 0.65
+- name: x_negative_low
+  eye:
+  - -0.35
+  - -0.3
+  - 0.35
+- name: x_mid_low
+  eye:
+  - 0.35
+  - -0.3
+  - 0.35
+output_root: outputs/camera_visibility_holdout

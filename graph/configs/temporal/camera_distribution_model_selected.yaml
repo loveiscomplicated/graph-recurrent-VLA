@@ -1,0 +1,39 @@
+trainer: evaluation.random_action_diagnostics:evaluate
+model_seed: 0
+environment_seeds:
+- 120
+- 122
+- 124
+- 126
+- 128
+- 130
+- 132
+- 134
+- 136
+- 138
+action_seeds:
+- 73
+device: cpu
+detector_device: cpu
+control_mode: pd_ee_delta_pose
+gate_m: 0.03
+identity_birth_gate_m: 0.01
+random_steps: 35
+random_arm_limit: 0.25
+minimum_lift_m: 0.03
+max_frames: 150
+fps: 20
+temporal_checkpoint: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_0/5755e14cbb2b4bdc8323f18ed23c27d0/best.pt
+gnn_checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+output_root: outputs/camera_distribution_model_selected
+include_expert_control: false
+trajectory_source: outputs/camera_visibility_trajectories/a21710c52c0b4e3199b66af02a8e4113/trajectories.json
+camera_view:
+  eye:
+  - 0.45
+  - -0.3
+  - 0.35
+  target:
+  - 0.065
+  - 0.297
+  - 0.11

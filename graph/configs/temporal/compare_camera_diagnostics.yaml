@@ -1,0 +1,4 @@
+trainer: evaluation.compare_camera_diagnostics:compare
+default_results: outputs/random_action_diagnostics/5a5605be3d2c4d71b97b945082601647/results.json
+selected_results: outputs/random_action_diagnostics/0919f71ee5f84fd09d4d32df6384cdf5/results.json
+output_root: outputs/camera_diagnostics_comparison

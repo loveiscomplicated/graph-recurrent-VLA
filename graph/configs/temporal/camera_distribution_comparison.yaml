@@ -1,0 +1,5 @@
+trainer: evaluation.camera_distribution_comparison:compare
+selection_results: outputs/camera_distribution_search/ecec199d855f4879bdec9cda5cb672b7/search_results.json
+heldout_results: outputs/camera_distribution_holdout/af05ceee263248688d872620da2c02b9/search_results.json
+expected_candidate: positive_045_mid
+output_root: outputs/camera_distribution_comparison

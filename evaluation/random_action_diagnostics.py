@@ -10,6 +10,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+from mani_skill.utils import sapien_utils
 
 from data_collection.episode_dataset import file_sha256
 from data_collection.scripted_policy import ScriptedPegPolicy
@@ -108,13 +109,30 @@ def annotate(rgb, frame, phase, tracked, intrinsics, extrinsics, result):
     return image
 
 
-def run_episode(config, env_seed, action_seed, temporal, gnn, detector, output):
+def make_sensor_configs(camera_view):
+    """Build the standard sensors, optionally placing the base camera in world coordinates."""
+    sensors = {name: {'width': 512, 'height': 512} for name in ('base_camera', 'hand_camera')}
+    if camera_view is None:
+        return sensors
+    for name in ('eye', 'target'):
+        value = np.asarray(camera_view.get(name), dtype=np.float64)
+        if value.shape != (3,) or not np.isfinite(value).all():
+            raise ValueError(f'camera_view.{name} must be a finite world-coordinate 3-vector')
+    if np.allclose(camera_view['eye'], camera_view['target']):
+        raise ValueError('camera_view.eye and camera_view.target must differ')
+    sensors['base_camera']['pose'] = sapien_utils.look_at(
+        eye=camera_view['eye'], target=camera_view['target'],
+    )
+    return sensors
+
+
+def run_episode(config, env_seed, action_seed, temporal, gnn, detector, output, source_episode=None):
     """Replay the expert prefix, then continue with expert or random actions."""
     device = torch.device(config['device'])
     tracker = DetectedCornerTracker(temporal, config['gate_m'], device)
     policy = ScriptedPegPolicy()
     rng = np.random.default_rng(action_seed) if action_seed is not None else None
-    sensors = {name: {'width': 512, 'height': 512} for name in ('base_camera', 'hand_camera')}
+    sensors = make_sensor_configs(config.get('camera_view'))
     env = make_peg_insertion_env(seed=env_seed, obs_mode='rgb+depth', sensor_configs=sensors,
                                  control_mode=config['control_mode'], max_episode_steps=config['max_frames'])
     label = f'env_{env_seed}_' + (f'random_{action_seed}' if rng else 'expert')
@@ -136,7 +154,20 @@ def run_episode(config, env_seed, action_seed, temporal, gnn, detector, output):
             state = get_gt_state(env)
             grasp = bool(task.agent.is_grasping(task.peg)[0].item())
             lift = float(state.peg_pose[0, 2]) - initial_z
-            if not switched and policy.phase == 'align' and grasp and lift > config['minimum_lift_m']:
+            if source_episode is not None:
+                expected = source_episode['frames'][frame]
+                peg = state.peg_pose[0, :3].cpu().numpy()
+                hole = state.hole_pose[0, :3].cpu().numpy()
+                if not np.allclose(peg, expected['peg_gt'], rtol=0, atol=1e-6):
+                    raise ValueError(f'Peg GT differs from source at seed {env_seed}, frame {frame}')
+                if not np.allclose(hole, expected['hole_gt'], rtol=0, atol=1e-6):
+                    raise ValueError(f'Hole GT differs from source at seed {env_seed}, frame {frame}')
+                should_switch = frame == source_episode['switch_frame']
+                if should_switch and not (grasp and lift > config['minimum_lift_m']):
+                    raise ValueError(f'Grasp/lift differs from source at seed {env_seed}, frame {frame}')
+            else:
+                should_switch = policy.phase == 'align' and grasp and lift > config['minimum_lift_m']
+            if not switched and should_switch:
                 switched = True
                 switch_frame = frame
             sensor = obs['sensor_data']['base_camera']
@@ -188,6 +219,8 @@ def run_episode(config, env_seed, action_seed, temporal, gnn, detector, output):
             metrics = {name: errors(value, robot[:3], state) for name, value in predictions.items()}
             prediction = predictions['original']
             phase = ('random' if rng else 'expert_control') if switched else policy.phase
+            if source_episode is not None:
+                phase = source_episode['frames'][frame]['phase']
             result = dict(frame=frame, relative_step=steps_after if switched else None, phase=phase,
                           grasp=grasp, lift_m=lift, tracks=len(positions), detections=int(observed.sum()),
                           new_tracks=int(tracked['new_tracks']), detection_nearest_mm=detection_distances,
@@ -205,7 +238,10 @@ def run_episode(config, env_seed, action_seed, temporal, gnn, detector, output):
                 process.stdin.write(np.zeros((590, 512, 3), dtype=np.uint8).tobytes())
             if switched and steps_after >= config['random_steps']:
                 break
-            if switched and rng is not None:
+            if source_episode is not None:
+                action = torch.as_tensor(source_episode['frames'][frame]['action'], dtype=torch.float32,
+                                         device=task.device).reshape(env.action_space.shape)
+            elif switched and rng is not None:
                 action = np.concatenate((rng.uniform(-config['random_arm_limit'], config['random_arm_limit'], 6), [-1])).astype(np.float32)
                 action = torch.as_tensor(action, device=task.device).reshape(env.action_space.shape)
             else:
@@ -312,14 +348,29 @@ def evaluate(config):
     device = torch.device(config['device'])
     temporal, gnn = load_models(config, device)
     detector = TorchCornerDetector(device=config['detector_device'])
+    source_episodes = None
+    if config.get('trajectory_source'):
+        source = json.loads(Path(config['trajectory_source']).read_text())
+        source_episodes = {(episode['environment_seed'], episode['action_seed']): episode
+                           for episode in source['episodes']}
     with ExperimentLogger(team='graph', model='random_action_diagnostics', config=config,
                           seed=config['model_seed'], job_type='evaluation') as logger:
         output = Path(config['output_root']) / logger.run_id
         output.mkdir(parents=True, exist_ok=False)
         episodes = []
         for env_seed in config['environment_seeds']:
-            for action_seed in [None, *config['action_seeds']]:
-                episode = run_episode(config, env_seed, action_seed, temporal, gnn, detector, output)
+            action_seeds = list(config['action_seeds'])
+            if config.get('include_expert_control', True):
+                action_seeds.insert(0, None)
+            for action_seed in action_seeds:
+                source_episode = None
+                if source_episodes is not None:
+                    source_episode = source_episodes.get((env_seed, action_seed))
+                    if source_episode is None or not source_episode['switched']:
+                        raise ValueError(f'No lifted source trajectory for seed {env_seed}, action {action_seed}')
+                    if source_episode['random_steps'] < config['random_steps']:
+                        raise ValueError(f'Source trajectory is too short for seed {env_seed}, action {action_seed}')
+                episode = run_episode(config, env_seed, action_seed, temporal, gnn, detector, output, source_episode)
                 episode['summary'] = episode_summary(episode)
                 episodes.append(episode)
                 # Persist progress so interrupted experiments retain completed episodes.
