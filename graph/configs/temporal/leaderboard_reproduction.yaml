@@ -1,0 +1,17 @@
+trainer: evaluation.leaderboard_reproduction:evaluate
+device: cpu
+cpu_threads: 2
+runs:
+  - seed: 0
+    checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+    cache: outputs/leaderboard_reproduction/inputs/transformer_seed_0_rollout_inputs.pt
+    reference: outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_0_predictions.npz
+  - seed: 1
+    checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_1/acfe559cf95b429fb1c0e03e15d9e7b8/best.pt
+    cache: outputs/leaderboard_reproduction/inputs/transformer_seed_1_rollout_inputs.pt
+    reference: outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_1_predictions.npz
+  - seed: 2
+    checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_2/68adb1f4baa74facbb26b05337f60b0a/best.pt
+    cache: outputs/leaderboard_reproduction/inputs/transformer_seed_2_rollout_inputs.pt
+    reference: outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_2_predictions.npz
+output_root: outputs/leaderboard_reproduction/evaluation

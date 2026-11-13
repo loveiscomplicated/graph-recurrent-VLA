@@ -1,0 +1,8 @@
+trainer: evaluation.leaderboard_detector_audit:evaluate
+device: cpu
+cpu_threads: 2
+raw_root: outputs/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8
+manifest: outputs/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8/manifest.json
+cache: outputs/leaderboard_reproduction/inputs/transformer_seed_0_rollout_inputs.pt
+checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+output_root: outputs/leaderboard_reproduction/detector_audit
