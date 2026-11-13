@@ -1,0 +1,7 @@
+trainer: evaluation.gnn.readout_probe:compare
+runs: /path/to/completed_probe_runs
+original_predictions: /path/to/original/paired_predictions
+parent_manifest: /path/to/original_parent_manifest.json
+bootstrap_repetitions: 2000
+output:
+  root: outputs/frozen_readout_comparison

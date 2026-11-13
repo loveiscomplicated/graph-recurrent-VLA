@@ -1,8 +1,55 @@
 # Graph Recurrent VLA: shared ManiSkill prototype environment
 
+## Corner detection
+
+`visual/corner_detection/` provides standalone current-frame RGB-D corner
+detection for the peg and box. Use `detect_tensors` for device-resident results,
+`detect` for a CPU dictionary, or `detect_cpu` for the explicit NumPy reference.
+See [corner detection](docs/corner_detection.md) for inputs, backend requirements,
+the saved-frame example, and the CPU/MPS extraction verification.
+
+## Data collection and GPU observations
+
+`data_collection/` selects episodes by the first Main frame's peg visibility.
+The default requires both ends and the grasp band; full camera-facing surface
+confirmation is an explicit alternative. The simulator also supports native
+CUDA RGB-D rendering and a separate raw observation output device.
+
+- [Data collection](docs/data_collection.md): filtering, policies and saved data.
+- [GPU observations](docs/gpu_observations.md): rendering and device checks.
+- [Collection verification](docs/data_collection_verification.md): results and limits.
+
+```bash
+python -m data_collection.collect_episodes --output outputs/initial_frames \
+  --num-episodes 10 --max-attempts 1000
+```
+
+This command uses CPU physics/rendering and saves approved initial observations.
+To collect trajectories, provide a policy and step count as described in the guide.
+
+## Elapsed-time measurements
+
+For elapsed-time measurements of user-selected functions, callable modules, or
+code regions, use `utils.timer.Timer`. See [timing](docs/timing.md) for wrappers,
+decorators, per-name aggregates, and optional accelerator synchronization.
+
 ## Get started
 
 Use Python 3.11 from the repository root:
+
+For PyTorch device selection, `utils.device_set.set_device()` chooses CUDA,
+then MPS, then CPU. Pass `"cpu"`, `"mps"`, or `"cuda:0"` to request a
+specific device; an unavailable accelerator raises an error. NumPy arrays
+remain on CPU:
+
+```python
+from utils.device_set import set_device
+import torch
+
+device = set_device()  # or set_device("cpu")
+tensor = torch.ones(3, device=device)
+array = tensor.detach().cpu().numpy()
+```
 
 ```bash
 python3.11 -m venv .venv
@@ -30,6 +77,20 @@ available in the factory but has not been run on this host.
 
 ## Start a team prototype
 
+New workflows can use the root entrypoint with a team-owned YAML config:
+
+```yaml
+trainer: training.my_trainer:train
+device: auto
+```
+
+Run `python main.py --config path/to/config.yaml` from the repository root.
+The `trainer` value identifies an importable module and callable; the callable
+receives the complete config dictionary. Each team defines its remaining config
+fields and is responsible for recording the effective config with its experiment.
+The example target must be implemented by the team before it can run. Existing
+workflows retain their documented entrypoints.
+
 The repository shares only `PegInsertionSide-v1` simulator creation, observations,
 rendering examples, and model-independent ground truth. The root `visual/`,
 `graph/`, and `recurrent/` directories are team-owned. Each team chooses
@@ -53,7 +114,7 @@ finally:
 The teams can work independently. No cross-team interface or final architecture
 is fixed during this feasibility stage. See [ManiSkill details](envs/maniskill/README.md)
 for control modes, coordinate frames, cameras, geometry access, and known limits;
-see [project context](docs/PROJECT_CONTEXT.md) for scope.
+see [project context](docs/project_context.md) for scope.
 
 The Graph team's independent surface-geometry comparison prototype is documented
 in [graph/prototype/README.md](graph/prototype/README.md), with its measured
@@ -83,5 +144,6 @@ and publishing are explicit commands; training only records a local manifest.
 
 To forward a tmux session and selected train/eval log files to Discord, run the
 standalone [Discord notifier](docs/discord_notifications.md) with
-`DISCORD_WEBHOOK_URL` in its environment. It batches output, respects rate-limit
+`DISCORD_WEBHOOK_URL` in the repository-root `.env` (with `python-dotenv` installed)
+or its environment. It batches output, respects rate-limit
 responses, and keeps local pane capture while delivery is unavailable.

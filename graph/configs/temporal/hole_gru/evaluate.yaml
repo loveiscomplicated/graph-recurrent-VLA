@@ -1,0 +1,28 @@
+trainer: evaluation.gnn.temporal.hole_gru:evaluate
+device: cpu
+seed: 0
+checkpoint: outputs/gnn_training/4186cdeb0fdb449ea443f28e3bddc936/best.pt
+split_manifest: /workspace/gnn_cache/metadata/temporal_gate_splits.json
+data:
+  cache_dir: /workspace/gnn_cache
+gru_checkpoint: /workspace/temporal_gru/RUN_ID/best.pt
+gru:
+  hidden: 64
+  layers: 1
+  position_scale_m: 0.1
+evaluation:
+  batch_size: 64
+  visibility_labels: null
+  bad_error_mm: 10.0
+  long_occlusion_frames: 20
+  plot_episodes: 3
+  latency_warmup_steps: 10
+  latency_steps: 100
+rule_memory:
+  min_target_nodes: 5
+  min_mean_confidence: 0.82
+  min_confidence_fraction: 1.0
+  consecutive_frames: 3
+  max_spread_m: 0.01
+output:
+  root: outputs/temporal_gru_evaluation

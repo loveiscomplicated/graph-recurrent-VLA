@@ -1,0 +1,10 @@
+trainer: evaluation.gnn.selected_vertex_m0:evaluate
+selected_dataset: /workspace/selected_vertex_m0/data
+reference_dataset: /workspace/rim_only_experiment/data
+selected_matrix: /path/to/selected_m0_matrix
+reference_matrix: /workspace/rim_only_experiment/reference
+device: cuda:0
+torch_threads: 4
+batch_size: 128
+output:
+  root: /workspace/selected_vertex_m0/evaluation

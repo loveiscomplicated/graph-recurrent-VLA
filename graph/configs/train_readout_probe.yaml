@@ -1,0 +1,19 @@
+# Frozen Baseline node features; no end-to-end GNN or controller training.
+trainer: training.gnn.readout_probe:train
+checkpoint: /path/to/newly_trained_baseline/best.pt
+cache_dir: /path/to/original/gnn_cache
+parent_manifest: /path/to/original_parent_manifest.json
+device: auto
+seeds: [0, 1, 2]
+epochs: 30
+# A separate, matched probe budget: 253 updates/epoch on 64,702 frozen frames.
+batch_size: 256
+capacity_control: true
+seed_count_controls: true
+compile: true
+cpu_threads: 2
+num_workers: 4
+extraction_batch_size: 256
+prepare_only: false
+output:
+  root: outputs/frozen_readout_probe/unique_run_directory

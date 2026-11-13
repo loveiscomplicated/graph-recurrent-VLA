@@ -1,0 +1,13 @@
+trainer: training.gnn.selected_vertex_continuation:train
+# Set source_matrix to the directory containing the seed's completed matrix.json.
+source_matrix: /workspace/gnn_continuation_90/training_seed_0/09c7daa85bb5444d905b098d75410f6d
+seed: 0
+torch_threads: 2
+target_epoch: 300
+validation_selection: /workspace/selected_vertex_m0/validation_physical_frames.jsonl
+early_stopping:
+  patience: 15
+  min_epochs: 110
+  min_delta: 0.0
+output:
+  root: /workspace/gnn_early_stopping/training_seed_0

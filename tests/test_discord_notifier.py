@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from uuid import uuid4
 
 from tools.discord_notifier import (
-    Delivery, DeliveryWorker, DiscordTransport, FileTailer, LogBuffer, Monitor,
+    DEFAULT_ENV_FILE, Delivery, DeliveryWorker, DiscordTransport, FileTailer, LogBuffer, Monitor,
     Sanitizer, TerminalLines, Tmux, main, units,
 )
 
@@ -224,6 +224,36 @@ class DiscordNotifierTests(unittest.TestCase):
             self.assertEqual(main(['--session', 'test']), 2)
             panes.assert_not_called()
             self.assertIn('DISCORD_WEBHOOK_URL', stderr.getvalue())
+
+    def test_cli_loads_dotenv_before_transport_and_sanitizer(self):
+        self.assertEqual(DEFAULT_ENV_FILE, Path(__file__).resolve().parents[1] / '.env')
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            env_file.write_text(f'DISCORD_WEBHOOK_URL="{FAKE_WEBHOOK}"\nAPI_TOKEN=file-secret\n')
+            with (
+                patch.dict(os.environ, {}, clear=True),
+                patch('tools.discord_notifier.DEFAULT_ENV_FILE', env_file),
+                patch('tools.discord_notifier.DiscordTransport') as transport,
+                patch.object(Tmux, 'panes', side_effect=OSError),
+                patch('sys.stderr', new_callable=io.StringIO),
+            ):
+                self.assertEqual(main(['--session', 'test']), 2)
+                transport.assert_called_once_with(FAKE_WEBHOOK)
+                self.assertEqual(Sanitizer()('file-secret'), '[REDACTED]')
+
+    def test_cli_dotenv_preserves_existing_environment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_file = Path(directory) / '.env'
+            env_file.write_text('DISCORD_WEBHOOK_URL="file-value"\n')
+            with (
+                patch.dict(os.environ, {'DISCORD_WEBHOOK_URL': FAKE_WEBHOOK}, clear=True),
+                patch('tools.discord_notifier.DEFAULT_ENV_FILE', env_file),
+                patch('tools.discord_notifier.DiscordTransport') as transport,
+                patch.object(Tmux, 'panes', side_effect=OSError),
+                patch('sys.stderr', new_callable=io.StringIO),
+            ):
+                self.assertEqual(main(['--session', 'test']), 2)
+                transport.assert_called_once_with(FAKE_WEBHOOK)
 
     def test_pane_disappearing_during_attach_does_not_stop_other_panes(self):
         tmux = Mock()

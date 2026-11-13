@@ -1,0 +1,20 @@
+# 저장소 루트: python main.py --config graph/configs/train_gnn.yaml
+# 현재는 모델·device·logger 초기화만 수행합니다. 학습은 실행하지 않습니다.
+trainer: training.gnn.trainer:train
+mode: initialize
+device: auto
+seed: 0
+
+# BasicGNN 생성자에 전달할 예시 값입니다.
+# 데이터와 목표가 정해지면 각 feature 차원을 맞춰 변경하세요.
+model:
+  name: basic_gnn
+  n_layers: 2
+  # GraphBatch adapter: relative xyz + type one-hot + quality and validity.
+  in_dim: 8
+  h_dim: 64
+  out_dim: 16
+  # Relative xyz + distance + edge type one-hot.
+  edge_dim: 8
+  use_confidence: false
+  dropout: 0.1

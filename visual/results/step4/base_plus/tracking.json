@@ -1,0 +1,278 @@
+{
+ "model": "base_plus",
+ "camera": "base_camera",
+ "vis_min_px": 200,
+ "model_load_s": 3.08,
+ "episodes": {
+  "ep000": {
+   "frames": 122,
+   "timing": {
+    "load_frames_ms": 8005.1,
+    "add_box_ms": 289.6,
+    "first_step_ms": 40.5,
+    "per_frame_ms": 58.2,
+    "per_frame_ms_p95": 58.7
+   },
+   "peg": {
+    "n": 122,
+    "mean": 0.9524,
+    "min": 0.8146,
+    "hit50": 1.0
+   },
+   "box": {
+    "n": 100,
+    "mean": 0.963,
+    "min": 0.6667,
+    "hit50": 1.0
+   },
+   "hidden_frames": {
+    "peg": 0,
+    "box": 22
+   },
+   "false_positive_when_hidden": {
+    "peg": 0,
+    "box": 1
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 14,
+     "mean": 0.9901,
+     "min": 0.9893,
+     "hit50": 1.0,
+     "frames": [
+      0,
+      13
+     ]
+    },
+    "gripper": {
+     "n": 108,
+     "mean": 0.9475,
+     "min": 0.8146,
+     "hit50": 1.0,
+     "frames": [
+      14,
+      121
+     ]
+    },
+    "insertion": {
+     "n": 14,
+     "mean": 0.8587,
+     "min": 0.8411,
+     "hit50": 1.0,
+     "frames": [
+      108,
+      121
+     ]
+    },
+    "arm_hidden": {
+     "n": 0
+    }
+   },
+   "logit_corr": {
+    "peg": 0.663,
+    "box": 0.528
+   },
+   "failure_frames": {
+    "gripper": [
+     14,
+     87,
+     107
+    ],
+    "insertion": [
+     108,
+     121
+    ]
+   }
+  },
+  "ep001": {
+   "frames": 136,
+   "timing": {
+    "load_frames_ms": 8843.4,
+    "add_box_ms": 16.0,
+    "first_step_ms": 6.6,
+    "per_frame_ms": 57.9,
+    "per_frame_ms_p95": 58.5
+   },
+   "peg": {
+    "n": 92,
+    "mean": 0.2479,
+    "min": 0.0,
+    "hit50": 0.25
+   },
+   "box": {
+    "n": 68,
+    "mean": 0.929,
+    "min": 0.8511,
+    "hit50": 1.0
+   },
+   "hidden_frames": {
+    "peg": 44,
+    "box": 68
+   },
+   "false_positive_when_hidden": {
+    "peg": 0,
+    "box": 0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 18,
+     "mean": 0.9935,
+     "min": 0.9872,
+     "hit50": 1.0,
+     "frames": [
+      0,
+      17
+     ]
+    },
+    "gripper": {
+     "n": 74,
+     "mean": 0.0665,
+     "min": 0.0,
+     "hit50": 0.068,
+     "frames": [
+      18,
+      135
+     ]
+    },
+    "insertion": {
+     "n": 14,
+     "mean": 0.0,
+     "min": 0.0,
+     "hit50": 0.0,
+     "frames": [
+      122,
+      135
+     ]
+    },
+    "arm_hidden": {
+     "n": 44
+    }
+   },
+   "logit_corr": {
+    "peg": 0.949,
+    "box": 0.464
+   },
+   "peg_reacquire_after_hidden": null,
+   "failure_frames": {
+    "gripper": [
+     18,
+     70,
+     121
+    ],
+    "insertion": [
+     122,
+     135
+    ],
+    "arm_hidden": [
+     23,
+     67,
+     69,
+     76
+    ]
+   }
+  },
+  "ep002": {
+   "frames": 146,
+   "timing": {
+    "load_frames_ms": 10610.1,
+    "add_box_ms": 16.0,
+    "first_step_ms": 6.7,
+    "per_frame_ms": 57.9,
+    "per_frame_ms_p95": 58.5
+   },
+   "peg": {
+    "n": 128,
+    "mean": 0.8694,
+    "min": 0.0,
+    "hit50": 0.992
+   },
+   "box": {
+    "n": 123,
+    "mean": 0.9732,
+    "min": 0.6949,
+    "hit50": 1.0
+   },
+   "hidden_frames": {
+    "peg": 18,
+    "box": 23
+   },
+   "false_positive_when_hidden": {
+    "peg": 0,
+    "box": 0
+   },
+   "peg_by_phase": {
+    "clean": {
+     "n": 44,
+     "mean": 0.9782,
+     "min": 0.9075,
+     "hit50": 1.0,
+     "frames": [
+      0,
+      62
+     ]
+    },
+    "gripper": {
+     "n": 84,
+     "mean": 0.8123,
+     "min": 0.0,
+     "hit50": 0.988,
+     "frames": [
+      19,
+      145
+     ]
+    },
+    "insertion": {
+     "n": 14,
+     "mean": 0.8604,
+     "min": 0.7348,
+     "hit50": 1.0,
+     "frames": [
+      132,
+      145
+     ]
+    },
+    "arm_hidden": {
+     "n": 18
+    }
+   },
+   "logit_corr": {
+    "peg": 0.15,
+    "box": 0.238
+   },
+   "peg_reacquire_after_hidden": 2,
+   "failure_frames": {
+    "gripper": [
+     19,
+     126,
+     131
+    ],
+    "insertion": [
+     132,
+     145
+    ],
+    "arm_hidden": [
+     28,
+     72,
+     74,
+     81
+    ]
+   }
+  }
+ },
+ "gpu_peak_gb": 3.0,
+ "all": {
+  "peg": {
+   "n": 342,
+   "mean": 0.7318,
+   "min": 0.0,
+   "hit50": 0.795
+  },
+  "box": {
+   "n": 291,
+   "mean": 0.9593,
+   "min": 0.6667,
+   "hit50": 1.0
+  },
+  "per_frame_ms": 58.0
+ }
+}

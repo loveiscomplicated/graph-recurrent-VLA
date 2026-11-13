@@ -13,7 +13,7 @@ import torch
 from PIL import Image, ImageDraw
 
 from envs.maniskill import get_gt_state, make_peg_insertion_env
-from graph.gt_nodes import get_gt_node_positions
+from graph.utils.gt_nodes import get_gt_node_positions
 
 
 COLORS = {

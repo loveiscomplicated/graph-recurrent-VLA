@@ -1,0 +1,12 @@
+trainer: evaluation.gnn.temporal.episode_condition_plots:plot
+seed: 0
+seeds: [0, 1, 2]
+reference_predictions: outputs/selected_m0_mamba/seed_0/predictions.npz
+predictions:
+  - outputs/selected_m0_mamba/fresh_60/seed_0/predictions.npz
+  - outputs/selected_m0_mamba/fresh_60/seed_1/predictions.npz
+  - outputs/selected_m0_mamba/fresh_60/seed_2/predictions.npz
+decisions: outputs/selected_m0_mamba/seed_0/physical_frames.jsonl
+decision_summary: outputs/selected_m0_mamba/seed_0/physical_summary.json
+output:
+  root: outputs/selected_m0_mamba/fresh_60/episode_plots

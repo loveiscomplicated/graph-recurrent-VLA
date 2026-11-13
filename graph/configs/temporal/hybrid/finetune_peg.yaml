@@ -1,0 +1,52 @@
+trainer: training.gnn.temporal.hybrid_finetuning:run
+action: run  # audit replays H1 without creating an optimizer.
+device: cpu
+inference_device: cpu  # Frozen streaming may run on CPU while the Peg head trains on CUDA.
+math_threads: 1
+seed: 0
+data:
+  cache_dir: /workspace/temporal_insertion_data/gnn_cache
+  raw_root: /workspace/temporal_insertion_data/episodes
+  independent_cache_dir: null
+  independent_raw_root: null
+  require_robot: true
+data_identity: outputs/temporal_insertion_smoke/8e066415885e4395ae3a824472bc94b1/published_inputs/data_identity.json
+reference_evaluation: outputs/hybrid_temporal_estimation/inputs/reference
+reference_predictions_sha256: 37a4a9ab4063db9542b75a3f0db5b898e76db596f7c3ee65e7c24b151b0c612a
+gnn_checkpoint: outputs/hybrid_temporal_estimation/inputs/gnn_best.pt
+mamba_checkpoint: outputs/hybrid_temporal_estimation/inputs/mamba_best.pt
+gate_checkpoint: outputs/hybrid_temporal_estimation/inputs/learned_gate.pt
+mamba_backend: torch_reference  # mamba_ssm requires inference_device: cuda:0.
+training:
+  epochs: 15
+  batch_size: 512
+  patience: 5
+  lr: 0.00003
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  calibration_frames: 2048
+loss:
+  position_unit_m: 0.01
+  rotation_unit_rad: 0.1
+  peg_position_weight: 1.0
+  peg_rotation_weight: 1.0
+  # Coefficients are fixed using original-training-frame gradients BEFORE fitting.
+  relative_gradient_ratio: 0.1
+  lateral_gradient_ratio: 0.05
+  auxiliary_weight_bounds: [0.001, 0.2]
+selection:
+  peg_position_tolerance_mm: 0.2
+  peg_rotation_tolerance_deg: 0.1
+  axial_tolerance_mm: 0.2
+  moving_peg_tolerance_mm: 0.2
+  score_weights:
+    relative_mean: 1.0
+    lateral_mean: 0.5
+    relative_p95: 0.1
+    lateral_p95: 0.1
+expected_episodes: 126
+expected_frames: 12841
+bootstrap_resamples: 10000
+development_fraction: 0.2
+output:
+  root: outputs/hybrid_geometry_finetuning

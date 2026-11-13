@@ -5,7 +5,7 @@
 
 ## 저장소 분석과 적용 범위
 
-2026-10-15 작업 시점의 실제 파일 기준이다. `docs/PROJECT_CONTEXT.md`의
+2026-10-15 작업 시점의 실제 파일 기준이다. `docs/project_context.md`의
 팀 디렉터리가 비어 있다는 설명과 달리 Graph prototype은 구현되어 있다.
 이 작업은 공통 관측 도구를 추가하며 팀의 모델·데이터·학습 설계를 정하지 않는다.
 
@@ -21,10 +21,36 @@
 | `graph.subtasks.reach_bc.train` | v2 TOML, 고정 seed, CLI 경로 | training JSON, `checkpoints/best.pt` | 정식 train + 최종 test summary |
 | `graph.prototype.evaluate` | checkpoint config + CLI | offline/latency/선택 rollout JSON | 평가 summary |
 | `graph.prototype.v2.analyze`의 `offline()` | checkpoint config | offline/phase/latency 결과 | 모델별 평가 run |
+| `graph.prototype.low_data` | 고정된 10-episode subset, 3 seeds, parameter matching | v2 train/offline 재사용, 비교 Markdown/JSON | 기존 모델별 run + 공통 Logger의 compare run |
 | `graph.prototype.v2.diagnostics` | CLI, checkpoint config | rollout stages JSON | stage별 평가 summary |
 | `graph.prototype.v3.compare` | candidate/baseline checkpoint + CLI | paired comparison JSON | 비교 평가 run |
 | `graph.prototype.v4.evaluate` | checkpoint config + CLI | offline/cache latency/rollout JSON | 평가 summary |
 | `graph.subtasks.reach_bc.evaluate` | 고정 paired manifest + CLI | held_out/fresh/latency JSON, 영상 | 평가 summary, episode별 partial summary |
+| `training.gnn.temporal.hole_gru:train` | `graph/configs/temporal/hole_gru/train.yaml`, root `main.py` | GRU-only best.pt, effective config, history | epoch train/validation, frozen/source/data identity |
+| `evaluation.gnn.temporal.hole_gru:evaluate` | `graph/configs/temporal/hole_gru/evaluate.yaml`, root `main.py` | paired summary, predictions, events, PNG traces | GNN/rule/GRU error, parameter/latency/device-memory metadata |
+| `training.gnn.temporal.pose_gru:train` | `graph/configs/temporal/pose_gru/train_*.yaml` / `graph/configs/temporal/precision/train_*.yaml`, root `main.py` | mode-specific best.pt, train-only normalization, config, pose/geometry history | frozen/data/parent/feature identity, effective loss weights, validation geometry/motion selection |
+| `evaluation.gnn.temporal.pose_gru:evaluate` | `graph/configs/temporal/pose_gru/evaluate.yaml`, root `main.py` | paired pose/episode/motion/occlusion metrics, predictions, traces | configured baseline/mode comparison, streaming checks, parameter/latency/memory |
+| `training.gnn.temporal.insertion:train` | `graph/configs/temporal/insertion/train_mamba.yaml`, root `main.py` | Mamba/GRU best.pt, train-only normalization, seven-term history and curves | shared feature/parent/source identity, backend/dependencies, explicit reset-window context |
+| `training.gnn.temporal.insertion:train_and_compare` | `graph/configs/temporal/insertion/train_gru_matched.yaml`, root `main.py` | matched GRU training followed by paired validation | reference checkpoint checksum, enforced shared protocol, separate existing train/evaluate run IDs; no watcher |
+| `evaluation.gnn.temporal.insertion:evaluate` | `graph/configs/temporal/insertion/evaluate.yaml`, root `main.py` | paired precision/episode/lag metrics, predictions, protocol matching | explicit validation/reference/independent role, actual cache parity, latency and optional backward throughput |
+| `evaluation.gnn.temporal.insertion:compare_existing_gru` | `graph/configs/temporal/insertion/compare_gru_mamba.yaml`, root `main.py` | four-system validation summary, GRU replay and comparison audit | exact reference-frame/target hashes, preserved checkpoints and train normalization, explicit training differences |
+| `training.gnn.vertex_ablation:train` | `graph/configs/train_vertex_ablation.yaml`, root `main.py` | Baseline/A/B/AB through the existing GNN trainer, per-child checkpoints and matrix manifest | separate matrix/four child UUID runs, actual source settings/hash, shared protocol/data identity, parameter counts |
+| `evaluation.gnn.vertex_ablation:evaluate` | `graph/configs/evaluate_vertex_ablation.yaml`, root `main.py` | paired validation summary, per-frame NPZs and mean comparison table | four newly trained checkpoint hashes/protocols, physical error quantiles, observed-count groups, size/endpoint associations |
+
+The M0 Rim-only training uses `training.gnn.vertex_family:train`, and
+`evaluation.gnn.rim_only:evaluate` records its per-frame and grouped results.
+The selected node filter is included in the effective config and dataset identity;
+no artifacts are automatically published. See [vertex-family semantics](vertex_family_semantics.md).
+
+Vertex bottleneck diagnostics additionally use the same `ExperimentLogger`:
+`training.gnn.readout_probe:train` records each fresh readout/head run with its
+frozen-feature/checkpoint hashes, seed and effective budget;
+`evaluation.gnn.vertex_diagnostics:analyze`,
+`evaluation.gnn.vertex_geometry_diagnostics:analyze` and
+`evaluation.gnn.readout_probe:compare` record separate saved-output, perturbation
+and paired-probe evaluations. Original checkpoints keep their source sidecars.
+No probe workflow publishes artifacts automatically. See
+[the bottleneck study](vertex_gnn_bottlenecks.md) for identities and commands.
 
 학습은 train split의 gradient update와 validation checkpoint 선택을 유지한다.
 평가는 기존 test split 및 선택된 checkpoint를 사용하고 optimizer를 실행하지 않는다.
@@ -36,6 +62,9 @@ Logger가 구현·연결되어 있으며 팀의 기존 JSON writer도 유지된�
 report/figure/video 도구, 기존 JSON을 합치는 v2/v4 compare 등은 자동 run 생성 대상이 아니다.
 v2 analyze의 summary/probes는 모델별 offline 평가와 다른 경로이며 추가 연결 대상이다.
 `run_matrix` 등 launcher가 통합된 train/evaluate 모듈을 실행하면 자식 실행에서 기록된다.
+`v2.analyze --dataset PATH --checkpoint PATH`는 사용자 dataset hash/split을 검사한다.
+Offline 기록은 checkpoint의 실제 seed를 사용하며, low-data 호출은 episode별 지표와
+checkpoint hash도 저장한다. `low_data`의 `plan.json`은 학습 전에 subset과 예산을 고정한다.
 Visual/Recurrent의 미래 entrypoint는 아래 예제로 연결해야 한다. 없는 학습 시스템을
 새로 만들거나 다른 branch의 코드를 통합한 것으로 간주하지 않는다.
 

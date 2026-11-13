@@ -1,0 +1,16 @@
+trainer: evaluation.gnn.temporal.node_token_comparison:compare
+evaluation_selection: /workspace/temporal_continuation_120/inputs/validation_frames.jsonl
+methods:
+  node_early:
+  - /workspace/node_token_early_stopping/training/seed_0
+  - /workspace/node_token_early_stopping/training/seed_1
+  - /workspace/node_token_early_stopping/training/seed_2
+  mamba_early:
+  - /workspace/temporal_early_stopping/evaluation/mamba/seed_0
+  - /workspace/temporal_early_stopping/evaluation/mamba/seed_1
+  - /workspace/temporal_early_stopping/evaluation/mamba/seed_2
+  node_120:
+  - /workspace/node_token_mamba/training/seed_0
+  - /workspace/node_token_mamba/training/seed_1
+  - /workspace/node_token_mamba/training/seed_2
+output_root: /workspace/node_token_early_stopping/comparison

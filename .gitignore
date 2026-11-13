@@ -237,3 +237,7 @@ __marimo__/
 .secrets/
 wandb.env
 hf.env
+
+# Local experiments
+local_corner_probe_10i_20261104/
+visual/results/

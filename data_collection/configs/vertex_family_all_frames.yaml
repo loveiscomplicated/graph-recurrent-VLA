@@ -1,0 +1,24 @@
+trainer: data_collection.vertex_family:prepare
+source_root: /workspace/episodes
+source_identity: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_data_identity.json
+source_parent_manifest: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_parent_manifest.json
+camera: base_camera
+selection:
+  seed: 91374
+  train_parents: 590
+  validation_parents: 40
+  frames_per_parent: null
+  validation_selection: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8/selection.json
+raw_storage: hardlink
+detector:
+  device: cuda:0
+  parameters: {}
+output:
+  root: /workspace/vertex_family_all_frames/data
+reuse_graph_cache: /workspace/gnn_cache
+reuse_family:
+- root: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8
+- root: /workspace/vertex_family_expanded/data/076e5955e109491494b1116ff008ca16
+  manifest: recovered_manifest.json
+- root: /workspace/vertex_family_all_frames/data/5234c17b0acf42d2ae9e254f1763f344
+  manifest: recovered_manifest.json

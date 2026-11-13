@@ -1,0 +1,7 @@
+trainer: evaluation.detected_corner_gnn_comparison:compare
+runs_root: /path/to/training/runs
+reference_validation: /path/to/reference_validation.npz
+reference_sha256: /reference/sha256
+device: cuda:0
+output:
+  root: outputs/detected_corner_gnn_comparison

@@ -1,0 +1,10 @@
+trainer: evaluation.gnn.temporal.hybrid_finetuning_analysis:analyze
+math_threads: 1
+seed: 0
+reference_predictions: outputs/hybrid_temporal_estimation/inputs/reference/predictions.npz
+source_run: outputs/hybrid_geometry_finetuning/cd65c40b572b476aad496c356ffd495a
+baseline_config: graph/configs/temporal/hybrid/evaluate.yaml
+bootstrap_resamples: 10000
+analyze_last_heads: true
+output:
+  root: outputs/hybrid_geometry_analysis

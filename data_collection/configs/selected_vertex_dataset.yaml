@@ -1,0 +1,6 @@
+trainer: data_collection.selected_vertex_dataset:prepare
+cache_root: /workspace/gnn_cache
+selection_frames: /workspace/physical_vertex_selection/cached_results/7cd80170f5304b69b8384cbf99b457c3/frames.jsonl
+validation_dataset: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8
+output:
+  root: /workspace/selected_vertex_dataset

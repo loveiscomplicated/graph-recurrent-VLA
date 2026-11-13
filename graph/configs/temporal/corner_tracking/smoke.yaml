@@ -1,0 +1,24 @@
+trainer: training.gnn.temporal.corner_tracking:compare
+base_config: graph/configs/temporal/corner_tracking/compare.yaml
+seeds: [0]
+data:
+  kind: synthetic
+  seed: 19
+  frames: 18
+  training_episodes: 2
+model:
+  d_model: 16
+  d_state: 4
+  d_conv: 2
+gnn:
+  hidden: 16
+  layers: 1
+  global_geometry: false
+  readout: attention
+calibration:
+  minimum_samples: 4
+training:
+  pretrain_epochs: 1
+  joint_epochs: 1
+output:
+  root: outputs/corner_tracking_smoke

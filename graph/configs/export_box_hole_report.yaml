@@ -1,0 +1,10 @@
+{
+  "trainer": "evaluation.gnn.box_hole_report:export",
+  "evaluation": "outputs/box_hole_observability/c5eba001023d4e27a41f14d0ba8c3d76",
+  "summary_sha256": "ed6f959343ea68f3db0a79e4a4041f146d68117ddec8e57373c2b65bcd782216",
+  "validation_geometry": "outputs/vertex_gnn_diagnostics/08c9f60da5ed43e8bf64b30de2b95253/validation_geometry.npz",
+  "collection_source_identity": "outputs/visible_peg_dataset/collection_source_identity.json",
+  "output": {
+    "root": "outputs/box_hole_observability/report"
+  }
+}

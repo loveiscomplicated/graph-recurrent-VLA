@@ -1,0 +1,46 @@
+{
+ "peg": {
+  "const": {
+   "auroc_pooled": 0.5,
+   "ap_pooled": 0.2938,
+   "pos_rate": 0.2969,
+   "n_pts": 1505607
+  },
+  "geom": {
+   "auroc_pooled": 0.9411,
+   "ap_pooled": 0.8387,
+   "pos_rate": 0.2969,
+   "n_pts": 1505607,
+   "auroc_frame_median": 1.0
+  },
+  "dist": {
+   "auroc_pooled": 0.729,
+   "ap_pooled": 0.7189,
+   "pos_rate": 0.2969,
+   "n_pts": 1505607,
+   "auroc_frame_median": 0.9346
+  }
+ },
+ "box": {
+  "const": {
+   "auroc_pooled": 0.5,
+   "ap_pooled": 0.0351,
+   "pos_rate": 0.0366,
+   "n_pts": 1305008
+  },
+  "geom": {
+   "auroc_pooled": 1.0,
+   "ap_pooled": 0.9987,
+   "pos_rate": 0.0366,
+   "n_pts": 1305008,
+   "auroc_frame_median": 1.0
+  },
+  "dist": {
+   "auroc_pooled": 0.8767,
+   "ap_pooled": 0.1518,
+   "pos_rate": 0.0366,
+   "n_pts": 1305008,
+   "auroc_frame_median": 0.9916
+  }
+ }
+}

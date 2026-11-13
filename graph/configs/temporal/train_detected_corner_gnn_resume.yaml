@@ -1,0 +1,8 @@
+# Fill from the completed 40-epoch run's effective config. Keep all model,
+# data, optimizer and seed settings unchanged; set training.epochs to 100.
+trainer: training.detected_corner_gnn_resume:train
+resume:
+  checkpoint: /path/to/completed_40_epoch/last.pt
+  checkpoint_sha256: /last/checkpoint/sha256
+  best_sha256: /best/checkpoint/sha256
+  patience: 10

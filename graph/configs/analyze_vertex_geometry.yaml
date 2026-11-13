@@ -1,0 +1,16 @@
+trainer: evaluation.gnn.vertex_geometry_diagnostics:analyze
+predictions: /path/to/original/paired_predictions
+train_geometry: /path/to/frozen_probe/train_geometry.npz
+validation_geometry: /path/to/frozen_probe/validation_geometry.npz
+parent_manifest: /path/to/original_parent_manifest.json
+cache_dir: /path/to/original/gnn_cache
+device: auto
+sensitivity: true
+sensitivity_frames_per_group: 256
+checkpoints:
+  baseline: /path/to/newly_trained_baseline/best.pt
+  geometry: /path/to/geometry/best.pt
+  multiseed: /path/to/multiseed/best.pt
+  combined: /path/to/combined/best.pt
+output:
+  root: outputs/vertex_geometry_diagnostics

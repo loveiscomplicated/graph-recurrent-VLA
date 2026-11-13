@@ -1,0 +1,15 @@
+trainer: evaluation.detected_corner_tracking:calibrate
+seed: 0
+device: cuda:0
+data:
+  source_dataset: /path/to/observed_corner_tracks
+  source_sha256: /source/dataset/sha256
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+temporal:
+  architecture: mamba
+  checkpoint: /path/to/temporal/best.pt
+  sha256: /checkpoint/sha256
+calibration:
+  thresholds_mm: [5, 10, 15, 20, 30]
+output:
+  root: outputs/detected_corner_calibration

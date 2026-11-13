@@ -38,15 +38,26 @@ def make_peg_insertion_env(
     control_mode: str | None = None,
     render_mode: str | None = None,
     sim_backend: str | None = None,
+    observation_device: str | torch.device | None = None,
     render_backend: str | None = None,
+    sensor_configs: dict | None = None,
+    max_episode_steps: int | None = None,
 ):
     """Make the task; ``seed`` also resets its first user episode.
 
     ``control_mode=None`` selects ManiSkill's own default. Returned observations,
     rewards and flags are batched torch tensors, including when ``num_envs=1``.
+    ``observation_device`` optionally transfers raw reset/step observations at
+    the output boundary. It does not select a physics or renderer backend.
+    An explicit ``render_backend="cuda"`` can expose native CUDA camera images
+    while retaining ``device="cpu"`` physics on a supported Linux GPU host.
+    ``sensor_configs`` forwards ManiSkill's raw camera configuration overrides;
+    omitting it preserves the task's default camera settings.
     """
     if num_envs < 1:
         raise ValueError("num_envs must be positive")
+    if max_episode_steps is not None and max_episode_steps < 1:
+        raise ValueError("max_episode_steps must be positive")
     if device not in {"cpu", "cuda"}:
         raise ValueError("device must be 'cpu' or 'cuda'")
     backend = sim_backend or ("physx_cpu" if device == "cpu" else "physx_cuda")
@@ -58,6 +69,12 @@ def make_peg_insertion_env(
         raise ValueError("ManiSkill 3.0.1 physx_cpu requires num_envs=1")
     if device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA is unavailable in this PyTorch installation")
+    target = None if observation_device is None else torch.device(observation_device)
+    if target is not None:
+        if target.type not in {"cpu", "cuda"}:
+            raise ValueError("observation_device must be CPU or CUDA")
+        if target.type == "cuda" and not torch.cuda.is_available():
+            raise RuntimeError("CUDA observation_device requested but CUDA is unavailable")
 
     kwargs = dict(
         num_envs=num_envs,
@@ -65,20 +82,29 @@ def make_peg_insertion_env(
         render_mode=render_mode,
         sim_backend=backend,
     )
-    # CPU simulation uses host image readback even when Torch can see CUDA.
+    # CPU simulation defaults to host image readback even when Torch sees CUDA.
     # Otherwise ManiSkill's default GPU renderer asks SAPIEN for cuda:0,
     # which may have no matching Vulkan physical device (e.g. lavapipe).
-    # SAPIEN 3.0 cannot switch render devices within a process.
+    # Explicit render_backend opts out; SAPIEN 3.0 cannot switch render devices
+    # within a process.
     if render_backend is not None:
         kwargs["render_backend"] = render_backend
     elif device == "cpu":
         kwargs["render_backend"] = "cpu"
     if control_mode is not None:
         kwargs["control_mode"] = control_mode
+    if sensor_configs is not None:
+        kwargs["sensor_configs"] = sensor_configs
+    if max_episode_steps is not None:
+        kwargs["max_episode_steps"] = max_episode_steps
     original_cwd = Path.cwd()
     env = None
     try:
         env = gym.make("PegInsertionSide-v1", **kwargs)
+        if target is not None:
+            from .observation_device import ObservationDevice
+
+            env = ObservationDevice(env, target)
         if seed is not None:
             env.reset(seed=seed)
         return env

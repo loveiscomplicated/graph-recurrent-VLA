@@ -1,0 +1,16 @@
+trainer: data_collection.vertex_family:prepare
+source_root: /workspace/episodes
+source_identity: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_data_identity.json
+source_parent_manifest: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_parent_manifest.json
+camera: base_camera
+selection:
+  seed: 91374
+  train_parents: 590
+  validation_parents: 40
+  frames_per_parent: 24
+  validation_selection: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8/selection.json
+detector:
+  device: cuda:0
+  parameters: {}
+output:
+  root: /workspace/vertex_family_expanded/data

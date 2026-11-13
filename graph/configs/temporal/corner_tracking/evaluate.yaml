@@ -1,0 +1,5 @@
+trainer: evaluation.gnn.temporal.corner_tracking:evaluate
+checkpoint: /path/to/corner_tracking/best.pt
+device: cpu
+output:
+  root: outputs/corner_tracking_evaluation

@@ -1,0 +1,37 @@
+trainer: training.detected_corner_gnn:train
+seed: 0
+device: cuda:0
+data:
+  fixed_id_dataset: /path/to/fixed_id_corner_sequences
+  source_dataset: /path/to/observed_corner_tracks
+  frame_cache: /path/to/synchronized_object21/frames.pt
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+  source_sha256: /source/dataset/sha256
+temporal:
+  architecture: mamba
+  checkpoint: /path/to/temporal/best.pt
+  sha256: /checkpoint/sha256
+selection_file: /path/to/selected_threshold.json
+selection_sha256: /selection/sha256
+source_validation: {path: /path/to/validation.json, sha256: /validation/sha256}
+gnn:
+  num_semantic_ids: 24
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  extra_node_dim: 1
+training:
+  epochs: 20
+  batch_size: 96
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  cpu_threads: 2
+  log_every_batches: 100
+  rollout_log_every_episodes: 10
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m: [0.04, 0.01, 0.01, 0.02]
+output:
+  root: outputs/detected_corner_gnn_training

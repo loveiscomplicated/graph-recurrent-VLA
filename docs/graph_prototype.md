@@ -348,3 +348,11 @@ Next experiments should retain held-out episode splits, match encoder capacity,
 repeat seeds, expand expert coverage, examine phase errors and compounding
 rollout failure, and assess surface density/cross-edge sparsity on training or
 validation data before any further test comparison.
+
+## GNN training entrypoint
+
+The original initialization-only skeleton has been extended under
+`training/gnn/`. See [GNN training](gnn_training.md) for the gated MPNN training
+recipe, model/task/data factory contracts, resume, and verification limits.
+BasicGNN's example retains explicit initialization mode. It returns nonnegative
+node features and needs its own task/readout for training.

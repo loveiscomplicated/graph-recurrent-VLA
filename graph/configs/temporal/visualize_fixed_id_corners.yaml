@@ -1,0 +1,31 @@
+trainer: evaluation.fixed_id_corner_video:render
+device: cuda:0
+fps: 12
+data:
+  corner_dataset: /path/to/fixed_id_corner_sequences
+  family_dataset: /path/to/vertex_family_dataset
+  dataset_sha256: 989ad1a9096d3841a5e0d903eb7afea35a598c9cd57820205ddc9e9e14354d3e
+models:
+  mamba:
+    checkpoint: /path/to/mamba_best.pt
+    sha256: b005edb5c295a2fd1a0e1db87f2ac4190d81f8f5b2d0cfb8735b7d1698b3c5bc
+  transformer:
+    checkpoint: /path/to/transformer_best.pt
+    sha256: fb555e95493a64b3e0a8d1e3138fc21adcc7d07d6cd9ec62ff1efcb79b88c076
+clips:
+  - name: peg_long_gap
+    episode: shard_000011/episode_000011
+    vertex_id: 4
+    gap_start: 21
+    gap_end: 71
+    context_before: 8
+    context_after: 10
+  - name: peg_short_gap
+    episode: shard_000020/episode_000010
+    vertex_id: 6
+    gap_start: 61
+    gap_end: 76
+    context_before: 8
+    context_after: 10
+output:
+  root: outputs/fixed_id_corner_videos

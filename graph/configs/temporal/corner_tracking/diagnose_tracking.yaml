@@ -1,0 +1,6 @@
+trainer: evaluation.gnn.temporal.corner_tracking_diagnostics:evaluate
+checkpoint: /path/to/frozen_corner_tracking_last.pt
+episodes: 8
+associations: [baseline, recent_first, absolute_distance]
+output:
+  root: outputs/corner_tracking_diagnostics

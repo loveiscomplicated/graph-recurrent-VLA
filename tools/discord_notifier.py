@@ -1,7 +1,7 @@
 """Forward selected tmux output and log files to a Discord incoming webhook.
 
-Run on the same host as tmux. Uses only the Python standard library; it does
-not create experiments, inspect models, or control the programs being watched.
+Run on the same host as tmux. Optional python-dotenv support loads the repository
+.env file. Does not create experiments, inspect models, or control watched programs.
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ import time
 from urllib import error, parse, request
 from uuid import uuid4
 
-
+DEFAULT_ENV_FILE = Path(__file__).resolve().parents[1] / '.env'
 SECRET_NAME = re.compile(r'api.?key|token|password|secret|credential|webhook', re.I)
 WEBHOOK = re.compile(r'https?://(?:(?:canary|ptb)\.)?discord(?:app)?\.com/api/(?:v\d+/)?webhooks/[^\s\x1b\'"`<>]+', re.I)
 
@@ -578,6 +578,16 @@ def main(argv=None):
     parser.add_argument('--output-dir', type=Path, default=Path('outputs/discord_notifier'),
                         help='parent directory for local pane capture')
     args = parser.parse_args(argv)
+    # tmux launches this file directly for relays, which return above without
+    # repository imports. Direct notifier invocations need the repository path.
+    repository_root = str(Path(__file__).resolve().parents[1])
+    if repository_root not in sys.path:
+        sys.path.insert(0, repository_root)
+    from utils.experiment_logger import load_env_file
+
+    # Resolve against the repository, not the tmux pane's working directory.
+    # Load before sanitization so credentials from the file are also redacted.
+    load_env_file(DEFAULT_ENV_FILE)
     sanitize = Sanitizer()
     def status(text):
         print(sanitize(text), file=sys.stderr, flush=True)

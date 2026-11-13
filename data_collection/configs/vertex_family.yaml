@@ -1,0 +1,16 @@
+# Original TRAIN-only derived development cohort; edit source paths for your host.
+trainer: data_collection.vertex_family:prepare
+source_root: /workspace/episodes
+source_identity: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_data_identity.json
+source_parent_manifest: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_parent_manifest.json
+camera: base_camera
+selection:
+  seed: 91374
+  train_parents: 120
+  validation_parents: 40
+  frames_per_parent: 24
+detector:
+  device: cuda:0
+  parameters: {}
+output:
+  root: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data

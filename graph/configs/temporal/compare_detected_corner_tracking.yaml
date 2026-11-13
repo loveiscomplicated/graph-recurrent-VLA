@@ -1,0 +1,4 @@
+trainer: evaluation.detected_corner_tracking:compare
+validation_root: /path/to/validation_runs
+output:
+  root: outputs/detected_corner_comparison

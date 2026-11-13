@@ -1,18 +1,50 @@
 # tmux 로그를 Discord로 전달하기
 
 독립 notifier가 지정한 tmux 세션의 pane 출력과 선택한 로그 디렉터리를 감시한다.
-훈련·평가와 같은 호스트에서 실행하며 Python 3.11과 tmux만 필요하다.
+훈련·평가와 같은 호스트에서 실행하며 Python 3.11과 tmux가 필요하다.
 공용 `ExperimentLogger`의 로컬/W&B 기록과 병행해서 쓰는 운영 도구다.
 실험 ID를 만들거나 checkpoint를 게시하지 않는다.
 
 ## 실행
 
-Discord 채널의 Incoming Webhook URL을 notifier 프로세스의
-`DISCORD_WEBHOOK_URL` 환경 변수로 설정한다. 플랫폼의 비밀 환경변수나 Git 밖의
-비밀 파일에서 주입하고 실제 URL을 command line, shell history, config에 적지 않는다.
-notifier는 dotenv나 W&B 인증 파일을 자동으로 읽지 않는다.
-이미 실행 중인 tmux 서버는 나중에 설정한 shell 환경변수를 자동으로 받지 않을 수
-있으므로, **notifier를 실행할 창 안에서** 환경변수가 제공되는지 확인한다.
+저장소 루트의 `.env`에 Discord 채널의 Incoming Webhook URL을 저장한다.
+실제 URL은 command line, shell history, config에 적지 않는다. `.env`는 Git 제외 대상이다.
+
+```dotenv
+DISCORD_WEBHOOK_URL="실제 Discord Incoming Webhook URL"
+```
+
+```bash
+.venv/bin/python -m pip install -r requirements-tracking.txt
+chmod 600 .env
+```
+
+notifier는 공용 dotenv 로더로 시작 시 저장소 루트의 `.env`를 자동으로 읽는다.
+현재 작업 디렉터리와 무관하며 tmux 창 안에서 별도로 `source`할 필요가 없다.
+기존 프로세스 환경변수가 파일보다 우선한다. 변경된 파일을 적용하려면 notifier를 재시작한다.
+W&B 인증 파일은 읽지 않는다. 파일이 없거나 `python-dotenv`가 설치되지 않았다면
+파일 로딩을 생략하므로 플랫폼의 비밀 환경변수 등으로 `DISCORD_WEBHOOK_URL`을 제공한다.
+환경변수를 직접 주입할 경우 notifier를 실행할 tmux 창에 설정해야 한다.
+
+### 실제 웹훅 전송 테스트
+
+저장소 루트에서 다음 명령으로 Discord에 테스트 메시지 한 건을 보낸다.
+Vast.ai처럼 이미 활성화된 Python 환경이 있다면 `.venv`를 만들 필요 없이
+그 환경의 `python`을 사용한다.
+
+```bash
+python -m pip install python-dotenv
+python -m tools.check_discord_webhook
+```
+
+notifier와 동일한 `.env` 로더와 `DiscordTransport`를 사용하며 기존 환경변수가
+`.env`보다 우선한다. tmux는 필요 없다. 성공하면 `Test message sent successfully`가
+출력되며 채널에서 메시지를 확인할 수 있다. 종료 코드는 성공 `0`, 전송 실패 `1`,
+웹훅 누락·잘못된 URL `2`다. URL과 응답 본문은 출력하지 않는다.
+한 번만 전송을 시도하며 자동 재시도하지 않는다. 전송 제한 시 안내된 시간 뒤에
+다시 실행한다. 이 명령은 웹훅 전송을 확인하며 tmux 로그 수집은 아래 검증과 별도다.
+
+### tmux 로그 전달
 
 훈련 세션이 `recurrent`라면 별도의 tmux 창을 열고 아래를 실행한다.
 저장소 루트에서 실행하며 notifier 자신의 pane은 자동으로 제외한다.

@@ -1,0 +1,70 @@
+trainer: training.gnn.temporal.joint_finetuning:train
+device: cuda:0
+split_manifest: /workspace/temporal_continuation_120/inputs/splits.json
+selected_m0:
+  dataset: /workspace/selected_vertex_m0/data
+  cache_source_checkpoint: /workspace/temporal_continuation_120/inputs/cache_source_best.pt
+data:
+  cache_dir: /workspace/temporal_continuation_120/data/gnn_cache
+  raw_root: /workspace/temporal_continuation_120/data/episodes
+  independent_cache_dir: null
+  independent_raw_root: null
+  require_robot: true
+mode: joint_peg_hole
+model:
+  architecture: mamba
+  backend: mamba_ssm
+  d_model: 128
+  n_layers: 1
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  head_hidden: 64
+  position_mode: residual
+  position_scale_m: 0.01
+training:
+  epochs: 20
+  episode_batch_size: 4
+  sequence_length: 64
+  context_policy: reset_windows
+  lr: 0.001
+  gradient_clip_norm: 1.0
+  cuda_memory_fraction: 0.1
+  loss: huber
+  huber_delta_m: 0.01
+loss:
+  position_unit_m: 0.01
+  rotation_unit_rad: 0.1
+  ablation: pose_relative_full
+  rotation_objective: geodesic_huber
+  weights:
+    peg_position: 1.0
+    peg_rotation: 1.0
+    hole_position: 1.0
+    hole_rotation: 1.0
+    relative_position: 1.0
+    lateral_position: 1.0
+    relative_orientation: 1.0
+evaluation:
+  batch_size: 64
+  split: test
+  plot_episodes: 3
+  latency_warmup_steps: 10
+  latency_steps: 100
+  visibility_labels: null
+  bad_error_mm: 10.0
+  long_occlusion_frames: 20
+  motion_threshold_m: 0.001
+  motion_threshold_rad: 0.01
+  recovery_rotation_deg: 10.0
+  lag_max_frames: 10
+  co_motion_tolerance_m: 0.002
+  direction_change_cosine: 0.0
+  alignment_axial_min_m: -0.05
+  alignment_axial_max_m: 0.02
+  alignment_lateral_m: 0.01
+  phase_labels: null
+  benchmark_training: false
+joint_finetuning:
+  gnn_lr: 1.0e-05
+  temporal_lr: 0.0001

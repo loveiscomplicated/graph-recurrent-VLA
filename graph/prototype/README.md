@@ -107,3 +107,10 @@ versions, seeds and CPU timings are recorded. See
 ## Follow-up controller diagnostics
 
 The independent v2 experiment and its commands are in [v2/README.md](v2/README.md). V1 checkpoints, data and results remain preserved.
+
+For a small parameter-matched Flat/Surface comparison with 10 training episodes
+and three initialization seeds, see [LOW_DATA.md](LOW_DATA.md):
+
+```bash
+WANDB_MODE=disabled .venv/bin/python -m graph.prototype.low_data
+```

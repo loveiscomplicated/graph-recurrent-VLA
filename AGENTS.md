@@ -1,6 +1,6 @@
 # Agent guidance
 
-Read `README.md`, `envs/maniskill/README.md`, and `docs/PROJECT_CONTEXT.md`
+Read `README.md`, `envs/maniskill/README.md`, and `docs/project_context.md`
 before changing code. This is the independent feasibility prototype stage.
 
 Keep shared simulator code limited to the working ManiSkill simulator, its raw GT
@@ -14,8 +14,94 @@ prototype evidence.
 Verify simulator API claims against the installed package and runnable examples.
 State clearly when a backend or device was not executed on the current host.
 
+## Code readability
+
+- Prioritize readability for the next maintainer. Write code whose purpose and
+  execution flow can be understood on a first read; do not compress it merely
+  to reduce line count.
+- Give functions one clear responsibility. Separate distinct steps such as
+  loading configuration, resolving a trainer, and executing it into meaningfully
+  named functions when doing so makes the flow easier to follow. Avoid excessive
+  fragmentation or unnecessary abstraction.
+- Use descriptive variable and function names. Keep control flow explicit;
+  avoid semicolon-separated statements, dense one-liners, and nested expressions
+  that hide intermediate steps. Separate logical blocks with blank lines.
+- Add concise docstrings for function responsibilities and comments for
+  non-obvious intent, conventions, or transformations. Include a concrete example
+  when a string format or dynamic import would otherwise be hard to understand.
+  Do not substitute comments for clear code.
+- Keep validation close to the input it checks, and write error messages that
+  identify the problem and the expected input. Before finishing, review changed
+  code for readability as well as correctness.
+
+## Worktree and branch cleanup
+
+- Before finishing work, release branches checked out in temporary agent
+  worktrees so the user can check them out in their main working directory.
+- If the worktree must remain, run `git switch --detach` in that worktree after
+  preserving the work on its intended branch. Otherwise, archive or remove the
+  temporary worktree using the appropriate worktree tool. If cleanup is blocked,
+  detach HEAD to release the branch and report the remaining worktree.
+- Verify with `git worktree list` that completed temporary worktrees no longer
+  hold the feature or integration branches used by the task, including
+  `develop` and `graph`. Do not wait for the user to encounter a checkout error.
+- Preserve uncommitted changes and existing staging. Never discard work, force
+  worktree removal, or switch branches in the user's main working directory
+  merely to perform cleanup. Leave worktrees used by other active tasks alone.
+
+## Naming and documentation
+
+- Name directories, modules, scripts and documents after their function, using
+  descriptive lowercase `snake_case` names. Examples: `corner_detection`,
+  `geometry.py`, `corner_detection.md`.
+- Do not use legacy experiment/task identifiers (such as `10i`, `task10g`,
+  `stage3`, or `plan_a`) as names or prefixes for new code, documentation or
+  output directories. Do not recreate the old `visual-graph-integration` report
+  hierarchy on this branch.
+- Keep feature guides directly under `docs/`, such as `corner_detection.md`.
+  Component-local READMEs may link to these guides.
+  Update the relevant existing feature document instead of creating a report
+  for every task, chat, stage or date. Use Git history for change chronology.
+- Record dates, source experiment IDs and commit hashes inside a document when
+  needed for evidence or reproducibility; do not put them in new document names.
+  Preserve the actual names of referenced historical artifacts and external APIs.
+- When moving documentation, update all links and agent instructions, including
+  `CLAUDE.md`, and preserve relative links to raw verification artifacts.
+
+For corner-detection changes, also read `docs/corner_detection.md`.
+For collection changes, also read `docs/data_collection.md`; for simulator
+output-device changes, read `docs/gpu_observations.md`.
+
+For Graph corner prediction or tracking changes, read the relevant guide:
+[fixed-ID prediction](docs/corner_prediction.md),
+[lifecycle tracking](docs/corner_tracking.md), or
+[detector-only association and GNN](docs/detected_corner_gnn.md).
+The six detector-only GNN leaderboard results (20 epochs, fresh 40 epochs and
+early-stopped continuation, each Mamba/Transformer) require exact evaluation
+reproduction when their implementation or numerical dependencies change. Follow
+the [preservation criteria](docs/detected_corner_gnn.md#evaluation-preservation);
+keep the affected code intact until the required reference inputs and execution
+environment are available.
+
+Keep dataset selection and storage in `data_collection/`, outside the raw
+simulator. Preserve the ends-plus-grasp versus full-surface visibility modes
+and raw RGB/depth shape, dtype and device behavior. Reuse these extracted
+features without importing legacy experiment packages.
+
 ## Development and experiment infrastructure
 
+- For new training/evaluation workflows, keep experiment
+  settings in a team-owned config file, preferably YAML under a `configs/` directory,
+  and accept a config path at execution. Include relevant data, model, training,
+  evaluation, and output settings as applicable; document a short runnable command
+  and prerequisites near the beginning of the team's README. Record the effective
+  config and any CLI overrides for reproducibility. Teams choose their own schema
+  and internal structure. Do not impose a shared config schema.
+- For new training/evaluation workflows, use the repository-root `main.py` as
+  the common entrypoint (for example, `python main.py --config path/to/config.yaml`).
+  It may dispatch to team-owned implementations. Document the runnable command,
+  config path, and prerequisites in the relevant team README. These rules apply
+  going forward; existing implementations do not need to be changed to comply.
 - Follow [engineering rules](docs/engineering_rules.md) for the work sequence,
   experiment identity, verification, and completion report.
 - For training/evaluation, reuse `utils.experiment_logger.ExperimentLogger`;
@@ -30,3 +116,18 @@ State clearly when a backend or device was not executed on the current host.
 - Check the current branch's implementation before using an API. If an interface
   is missing, report the gap and consider a shared extension before adding a
   parallel implementation. Update the corresponding docs when interfaces change.
+
+- For new code, use `visual/`, `graph/`, and `recurrent/` for each team's models
+  and model-specific internal modules. Put training code under `training/` and
+  evaluation code under `evaluation/`; team-specific implementations may remain
+  separate there. Extract common code when there is evidence of shared needs,
+  rather than requiring a common trainer. Keep data collection and storage in
+  `data_collection/`. Existing code does not need to be moved to comply.
+- `training/` contains training orchestration: load or construct the selected
+  team model, prepare its training data, run the team-defined training process,
+  and save checkpoints and metrics. `evaluation/` contains evaluation
+  orchestration: load the selected model and checkpoint, run the team-defined
+  evaluation, and record its metrics or results. The root `main.py` reads the
+  config and dispatches to the appropriate workflow; model definitions remain in
+  their team directories. These roles do not prescribe training or evaluation
+  methods, model interfaces, or a shared implementation.

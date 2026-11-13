@@ -1,0 +1,4 @@
+trainer: training.gnn.temporal.corner_tracking:train
+base_config: graph/configs/temporal/corner_tracking/compare.yaml
+architectures: [transformer]
+seeds: [0]

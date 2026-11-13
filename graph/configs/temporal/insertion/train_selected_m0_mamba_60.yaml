@@ -1,0 +1,46 @@
+trainer: training.gnn.temporal.selected_estimator:train_and_evaluate
+device: cuda:0
+seed: 0
+checkpoint: /workspace/selected_m0_mamba/inputs/seed_0.pt
+split_manifest: /workspace/selected_m0_mamba/inputs/splits.json
+selected_m0:
+  dataset: /workspace/selected_m0_mamba/inputs/selected_dataset
+  cache_source_checkpoint: /workspace/temporal_insertion_data/published_inputs/best.pt
+data:
+  cache_dir: /workspace/temporal_insertion_data/gnn_cache
+  raw_root: /workspace/temporal_insertion_data/episodes
+  require_robot: true
+mode: joint_peg_hole
+model:
+  architecture: mamba
+  backend: mamba_ssm
+  d_model: 128
+  n_layers: 1
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  head_hidden: 64
+  position_mode: residual
+  position_scale_m: 0.01
+training:
+  epochs: 60
+  episode_batch_size: 4
+  sequence_length: 64
+  context_policy: reset_windows
+  lr: 0.001
+  gradient_clip_norm: 1.0
+  cuda_memory_fraction: 0.25
+loss:
+  ablation: pose_relative_full
+  position_unit_m: 0.01
+  rotation_unit_rad: 0.1
+evaluation:
+  batch_size: 64
+  split: test
+  plot_episodes: 3
+  latency_warmup_steps: 10
+  latency_steps: 100
+output:
+  root: /workspace/selected_m0_mamba/fresh_60/training/seed_0
+comparison_output: /workspace/selected_m0_mamba/fresh_60/evaluation/seed_0
+evaluation_selection: /workspace/selected_m0_mamba/inputs/validation_frames.jsonl

@@ -1,0 +1,18 @@
+# Same 30-epoch protocol as the actual hidden=64, layers=2 checkpoint.
+# Needs the original extracted published graph cache; does not regenerate it.
+trainer: training.gnn.vertex_ablation:train
+base_config: graph/configs/train_gated_mpnn_cached.yaml
+reference_checkpoint: outputs/hybrid_temporal_estimation/inputs/gnn_best.pt
+device: auto
+# Independent processes may share one GPU; each keeps the same epoch/update budget.
+parallel_models: 1
+aggregation:
+  geometry_dim: 16
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+data:
+  cache_dir: /workspace/gnn_cache
+  num_workers: 0
+output:
+  root: outputs/vertex_gnn_ablation

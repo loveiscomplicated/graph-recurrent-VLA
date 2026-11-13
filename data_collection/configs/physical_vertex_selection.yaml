@@ -1,0 +1,18 @@
+trainer: data_collection.physical_vertex_selection:prepare
+source_root: /workspace/episodes
+source_identity: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_data_identity.json
+source_parent_manifest: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/source/inputs/original_parent_manifest.json
+development_selection: /workspace/vertex_family/4f97338a378b4cffbcb55750fa6ec9ff/development_data/df3405c1fafb40859178964271731ad8/selection.json
+camera: base_camera
+detector:
+  device: cuda:0
+  parameters: {}
+workers: 4
+max_frames: null
+certification:
+  coordinate_tolerance_m: 0.003
+  projection_tolerance_px: 2.0
+  face_depth_tolerance_m: 0.0015
+  probe_offsets_m: [0.004, 0.006]
+output:
+  root: /workspace/physical_vertex_selection

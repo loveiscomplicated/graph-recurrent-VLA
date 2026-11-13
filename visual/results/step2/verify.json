@@ -1,0 +1,134 @@
+{
+ "ep000": {
+  "frames": 122,
+  "cams": [
+   "base_camera",
+   "hand_camera"
+  ],
+  "first_success": 111,
+  "image_hw": [
+   512,
+   512
+  ],
+  "K_base": [
+   [
+    256.0,
+    0.0,
+    256.0
+   ],
+   [
+    0.0,
+    256.0,
+    256.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "base_cam_static": true,
+  "depth_valid_frac": 0.792361243826444,
+  "depth_range_m": [
+   0.10000000149011612,
+   30.72599983215332
+  ],
+  "peg_inside_frac_mean": 1.0,
+  "peg_inside_frac_min": 1.0,
+  "peg_max_outside_mm": 0.9888498948281838,
+  "peg_centroid_err_mean_m": 0.08424368657124223,
+  "box_centroid_err_mean_m": 0.12847605358491906,
+  "peg_px_min": 1194,
+  "peg_px_max": 11747,
+  "box_px_min": 0,
+  "box_px_max": 11130
+ },
+ "ep001": {
+  "frames": 136,
+  "cams": [
+   "base_camera",
+   "hand_camera"
+  ],
+  "first_success": 125,
+  "image_hw": [
+   512,
+   512
+  ],
+  "K_base": [
+   [
+    256.0,
+    0.0,
+    256.0
+   ],
+   [
+    0.0,
+    256.0,
+    256.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "base_cam_static": true,
+  "depth_valid_frac": 0.8694865002351648,
+  "depth_range_m": [
+   0.009999999776482582,
+   30.72599983215332
+  ],
+  "peg_inside_frac_mean": 1.0,
+  "peg_inside_frac_min": 1.0,
+  "peg_max_outside_mm": 1.2595677115395247,
+  "peg_centroid_err_mean_m": 0.07536205685885901,
+  "box_centroid_err_mean_m": 0.12381026492941705,
+  "peg_px_min": 0,
+  "peg_px_max": 16312,
+  "box_px_min": 0,
+  "box_px_max": 9185
+ },
+ "ep002": {
+  "frames": 146,
+  "cams": [
+   "base_camera",
+   "hand_camera"
+  ],
+  "first_success": 135,
+  "image_hw": [
+   512,
+   512
+  ],
+  "K_base": [
+   [
+    256.0,
+    0.0,
+    256.0
+   ],
+   [
+    0.0,
+    256.0,
+    256.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "base_cam_static": true,
+  "depth_valid_frac": 0.8469390085298721,
+  "depth_range_m": [
+   0.01600000075995922,
+   30.72599983215332
+  ],
+  "peg_inside_frac_mean": 1.0,
+  "peg_inside_frac_min": 1.0,
+  "peg_max_outside_mm": 1.259436475614037,
+  "peg_centroid_err_mean_m": 0.06269305814386048,
+  "box_centroid_err_mean_m": 0.1138432535284379,
+  "peg_px_min": 0,
+  "peg_px_max": 9847,
+  "box_px_min": 0,
+  "box_px_max": 10638
+ }
+}

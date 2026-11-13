@@ -1,0 +1,14 @@
+trainer: evaluation.object21_video:render
+seed: 0
+fps: 12
+comparison: /path/to/comparison.json
+comparison_sha256: /comparison/sha256
+family_dataset: /path/to/vertex_family_dataset
+family_dataset_sha256: /family/dataset/sha256
+rollout_cache: /path/to/rollout_inputs.pt
+rollout_cache_sha256: /cache/sha256
+episodes:
+  - {name: long_gap, episode: shard_000011/episode_000011}
+  - {name: short_gap, episode: shard_000020/episode_000010}
+output:
+  root: outputs/object21_videos

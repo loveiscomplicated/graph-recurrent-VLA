@@ -1,0 +1,12 @@
+trainer: training.gnn.temporal.corner_tracking:compare
+base_config: graph/configs/temporal/corner_tracking/compare.yaml
+device: cuda:0
+execution:
+  compile: true
+  compile_mode: default
+  float32_matmul_precision: highest
+  optimizer_fused: true
+  graph_batch_size: 32
+  compile_recompile_limit: 64
+output:
+  root: outputs/corner_tracking_compiled

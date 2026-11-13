@@ -7,20 +7,25 @@ from time import perf_counter
 import numpy as np
 import torch
 from ..common import seed_all, write_json
-from ..data import load_dataset, split_indices, PHASES
+from ..data import load_dataset, split_indices, sha256, PHASES
 from ..metrics import action_metrics
 from .diagnostics import load_predictor, qvel_dataset, ReplaySession, run_episode
 
 
-def offline(checkpoint,data,geometry,qvel):
-    predict,ck,model,norm,builder,sn=load_predictor(checkpoint,data)
-    with ExperimentLogger(team='graph', config=ck['config'], seed=0, model=ck['model_name'], job_type='evaluate') as experiment:
+def offline(checkpoint,data,geometry,qvel,dataset_path='outputs/graph/dataset.pt',*,per_episode=False,output=None):
+    predict,ck,model,norm,builder,sn=load_predictor(checkpoint,data,dataset_path)
+    with ExperimentLogger(team='graph', config=dict(parameters=ck['config'],dataset=str(Path(dataset_path).resolve())), seed=ck['config']['seed'], model=ck['model_name'], job_type='evaluate') as experiment:
         experiment.link_output(checkpoint, checkpoint=True)
+        experiment.record(dataset_sha256=ck['dataset_sha256'],environment=data['manifest']['config'])
         ids=split_indices(data,'test')
+        if not len(ids):raise ValueError('test split is empty')
         with torch.inference_mode():
             pred=torch.cat([predict(geometry.select(i),qvel[i]) for i in ids.split(32)])
             metrics=action_metrics(pred,data['actions'][ids])
-            phases={p:dict(samples=int((data['phase'][ids]==k).sum()),**action_metrics(pred[data['phase'][ids]==k],data['actions'][ids][data['phase'][ids]==k])) for k,p in enumerate(PHASES)}
+            phases={}
+            for k,p in enumerate(PHASES):
+                mask=data['phase'][ids]==k
+                phases[p]=dict(samples=int(mask.sum()),**(action_metrics(pred[mask],data['actions'][ids][mask]) if mask.any() else {}))
             construction=[];state=[];network=[]
             for t in range(60):
                 index=ids[(t*23)%len(ids):((t*23)%len(ids))+1];g=geometry.select(index)
@@ -29,11 +34,20 @@ def offline(checkpoint,data,geometry,qvel):
                 result=model(inputs,shared) if sn else model(inputs);end3=perf_counter()
                 if t>=10:
                     construction.append((end-start)*1000);state.append((end2-end)*1000);network.append((end3-end2)*1000)
-            latency=dict(graph_stats=inputs.stats if ck['model_name']!='flat' else None,geometry_feature_or_graph_ms=float(np.mean(construction)),shared_state_ms=float(np.mean(state)),network_ms=float(np.mean(network)),total_ms=float(np.mean(construction)+np.mean(state)+np.mean(network)),repeats=50,device='cpu',threads=4)
+            latency=dict(graph_stats=inputs.stats if ck['model_name']!='flat' else None,geometry_feature_or_graph_ms=float(np.mean(construction)),shared_state_ms=float(np.mean(state)),network_ms=float(np.mean(network)),total_ms=float(np.mean(construction)+np.mean(state)+np.mean(network)),repeats=50,device='cpu',threads=torch.get_num_threads())
             distribution=dict(expert_mean=data['actions'][ids].mean(0).tolist(),predicted_mean=pred.mean(0).tolist(),expert_std=data['actions'][ids].std(0).tolist(),predicted_std=pred.std(0).tolist(),clipped_fraction=float((pred.abs()>1).float().mean()),gripper_sign_accuracy=float(((pred[:,6]>0)==(data['actions'][ids,6]>0)).float().mean()))
-        report = dict(checkpoint=str(checkpoint),model=ck['model_name'],parameters=ck['parameters'],checkpoint_epoch=ck['epoch'],offline=metrics,phase_offline=phases,latency=latency,distribution=distribution)
+        report = dict(checkpoint=str(checkpoint),checkpoint_sha256=sha256(checkpoint),model=ck['model_name'],seed=ck['config']['seed'],dataset_sha256=ck['dataset_sha256'],splits=data['manifest']['splits'],parameters=ck['parameters'],checkpoint_epoch=ck['epoch'],offline=metrics,phase_offline=phases,latency=latency,distribution=distribution)
+        if per_episode:
+            report['episode_offline']=[]
+            for eid in data['manifest']['splits']['test']:
+                mask=data['episode_id'][ids]==eid
+                if not mask.any():raise ValueError(f'test episode {eid} has no samples')
+                report['episode_offline'].append(dict(episode_id=eid,samples=int(mask.sum()),**action_metrics(pred[mask],data['actions'][ids][mask])))
 
         experiment.log(report, prefix='eval')
+        if output is not None:
+            write_json(output,report)
+            experiment.link_output(output)
         return report
 
 
@@ -82,13 +96,14 @@ def summarize(paths):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True)
+    p.add_argument('--dataset',type=Path,default=Path('outputs/graph/dataset.pt'))
     p.add_argument('--probes',action='store_true');p.add_argument('--summary',action='store_true');p.add_argument('--checkpoint',type=Path)
-    args=p.parse_args();seed_all(0,4);data,geometry=load_dataset('outputs/graph/dataset.pt')
+    args=p.parse_args();seed_all(0,4);data,geometry=load_dataset(args.dataset)
     paths={n:Path(f'outputs/graph/runs/{n}/best.pt') for n in ('flat','center','surface')}
     if args.probes:result=probes(data,geometry,paths)
     elif args.summary:result=summarize({n:f'outputs/graph/v2/diagnostics/{n}_v0.json' for n in paths})
-    elif args.checkpoint:result=offline(args.checkpoint,data,geometry,qvel_dataset(data))
-    else:result={n:offline(path,data,geometry,qvel_dataset(data)) for n,path in paths.items()}
+    elif args.checkpoint:result=offline(args.checkpoint,data,geometry,qvel_dataset(data),args.dataset,output=args.output)
+    else:result={n:offline(path,data,geometry,qvel_dataset(data),args.dataset) for n,path in paths.items()}
     write_json(args.output,result);print(json.dumps(result,indent=2)[:10000])
 
 if __name__=='__main__':main()
