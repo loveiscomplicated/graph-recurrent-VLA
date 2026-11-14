@@ -1,0 +1,15 @@
+condition,corruption_levels,equal_weight_mean_success,model
+normal,4,0.26944444444444443,mlp
+hole_shift,4,0.26944444444444443,mlp
+normal,4,0.30833333333333335,stack_mlp
+hole_shift,4,0.3138888888888889,stack_mlp
+normal,4,0.28611111111111115,gru
+hole_shift,4,0.2472222222222222,gru
+normal,4,0.2527777777777778,lstm
+hole_shift,4,0.25555555555555554,lstm
+normal,4,0.26111111111111107,cfc
+hole_shift,4,0.2611111111111111,cfc
+normal,4,0.20555555555555557,rkn
+hole_shift,4,0.17777777777777778,rkn
+normal,4,0.26944444444444443,mamba
+hole_shift,4,0.26944444444444443,mamba

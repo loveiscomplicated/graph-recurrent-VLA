@@ -47,6 +47,9 @@ class Corruptor:
             out[3:] = quat_mul(dq, out[3:])
         return out
 
+    def _zeros(self, value):
+        return np.zeros_like(value)
+
     def step(self, raw: dict):
         c = self.cfg
         self.history.append({k: raw[k] for k in OBJECT_KEYS})
@@ -65,7 +68,7 @@ class Corruptor:
         if dropped:
             self.age += 1
             for k in OBJECT_KEYS:
-                out[k] = self.last[k] if c["fill_mode"] == "hold" else np.zeros_like(raw[k])
+                out[k] = self.last[k] if c["fill_mode"] == "hold" else self._zeros(raw[k])
             return out, 0.0, float(self.age)
         scale = c["burst_scale"] if (c["burst_prob"] > 0 and self.rng.random() < c["burst_prob"]) else 1.0
         for k in OBJECT_KEYS:
