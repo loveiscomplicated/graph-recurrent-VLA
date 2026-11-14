@@ -1,0 +1,9 @@
+trainer: evaluation.independent_test:evaluate
+protocol: outputs/independent_matched_visibility_test/protocol.json
+protocol_sha256: 01bc87ff10cc64c2066f4e22e24581ae0ac090206704d9ac78d321585037639d
+raw_root: outputs/independent_matched_visibility_test/raw
+device: cpu
+detector_device: cpu
+cpu_threads: 2
+gate_m: 0.03
+output_root: outputs/independent_matched_visibility_test/evaluation

@@ -1,0 +1,13 @@
+trainer: evaluation.leaderboard_raw_replay:evaluate
+model_seed: 0
+device: cpu
+cpu_threads: 2
+gate_m: 0.03
+shard_name: shard_000000
+raw_shard: /Users/jeong-yunseong/.cache/huggingface/hub/datasets--Graph-Recurrent-VLA--graph-recurrent-rollouts/snapshots/94cb85e8009f20b5b47063e8295f6c69040549c1/integration/c555bed7462d4fc09e55ae3bb04421a1/artifacts/trajectory/6266848ff4b1fd1e8478288d9e43841947f2b31e18c5bb4c8a7383986d3c26a5/shard_000000.tar
+raw_shard_sha256: 6266848ff4b1fd1e8478288d9e43841947f2b31e18c5bb4c8a7383986d3c26a5
+cache: outputs/leaderboard_reproduction/inputs/transformer_seed_0_rollout_inputs.pt
+reference: outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_0_predictions.npz
+temporal_checkpoint: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_0/5755e14cbb2b4bdc8323f18ed23c27d0/best.pt
+gnn_checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+output_root: outputs/leaderboard_reproduction/raw_replay

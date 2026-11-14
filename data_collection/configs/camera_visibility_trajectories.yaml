@@ -1,0 +1,10 @@
+trainer: data_collection.camera_visibility_trajectories:collect
+seeds: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139]
+control_mode: pd_ee_delta_pose
+expert_step_limit: 110
+random_steps: 35
+random_arm_limit: 0.25
+random_seed: 73
+minimum_lift_m: 0.03
+max_frames: 150
+output_root: outputs/camera_visibility_trajectories

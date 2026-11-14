@@ -1,0 +1,10 @@
+trainer: evaluation.independent_cohort_comparison:compare
+unfiltered_results: outputs/independent_generalization_test/evaluation/3758115c26414a729b7a0d6c3e83de9f/results.json
+matched_results: outputs/independent_matched_visibility_test/evaluation/640bd18751a54fdd819f66301d8a7aa0/results.json
+unfiltered_protocol: outputs/independent_generalization_test/protocol.json
+matched_protocol: outputs/independent_matched_visibility_test/protocol.json
+references:
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_0_predictions.npz
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_1_predictions.npz
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_2_predictions.npz
+output_root: outputs/independent_generalization_test/cohort_comparison

@@ -1,0 +1,4 @@
+trainer: data_collection.mixed_trajectory_audit:audit
+collection_root: outputs/mixed_trajectory_pilot
+output_root: outputs/mixed_trajectory_pilot_audit
+workers: 3

@@ -107,24 +107,26 @@
 
 | 순위 | 실험 / 체크포인트 | Peg 위치 | Peg 회전 | 끝점−Hole 상대 위치 | Hole 위치 | Hole 회전 |
 | ---: | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | [GNN 조기 종료 + 노드 토큰 Mamba 조기 종료](#checkpoint-23) | 9.735 mm | 0.937° | 13.969 mm | 14.679 mm | 1.583° |
-| 2 | [GNN 조기 종료 + Mamba 조기 종료](#checkpoint-21) | 9.678 mm | 0.956° | 14.100 mm | 14.930 mm | 1.689° |
-| 3 | [Mamba · 120 epoch 한도 best](#checkpoint-11) | 9.159 mm | 1.121° | 15.241 mm | 14.935 mm | 1.821° |
-| 4 | [Mamba · 프레임별 노드 토큰 · 120 epoch 한도 best](#checkpoint-20) | 9.851 mm | 1.083° | 14.674 mm | 15.148 mm | 1.739° |
-| 5 | [Mamba · 90 epoch 한도 best](#checkpoint-17) | 9.933 mm | 1.139° | 14.824 mm | 15.164 mm | 1.951° |
-| 6 | [Mamba · 60 epoch 한도 best](#checkpoint-15) | 9.653 mm | 1.302° | 15.858 mm | 16.078 mm | 2.105° |
-| 7 | [GNN 조기 종료 + Transformer 조기 종료](#checkpoint-22) | 10.839 mm | 1.972° | 17.968 mm | 18.432 mm | 3.236° |
-| 8 | [Transformer · 90 epoch 한도 best](#checkpoint-18) | 11.102 mm | 2.237° | 21.015 mm | 20.489 mm | 3.604° |
-| 9 | [Transformer · 120 epoch 한도 best](#checkpoint-12) | 11.915 mm | 2.103° | 19.234 mm | 20.713 mm | 3.579° |
-| 10 | [Transformer · 60 epoch 한도 best](#checkpoint-16) | 11.297 mm | 2.393° | 21.324 mm | 21.690 mm | 4.117° |
-| 11 | [M0 원래 개발셋 · best](#checkpoint-13) | 8.285 mm | 18.714° | 30.246 mm | 45.745 mm | 9.114° |
-| 12 | [M0 · detector Rim-only](#checkpoint-6) | 10.463 mm | 19.134° | 67.266 mm | 82.788 mm | 10.200° |
-| 13 | [Selected M0 · 60 epoch 한도 best](#checkpoint-4) | 42.583 mm | 15.811° | 120.431 mm | 120.178 mm | 28.477° |
-| 14 | [Selected M0 · 30 epoch 한도 best](#checkpoint-1) | 42.695 mm | 15.626° | 121.466 mm | 120.581 mm | 28.299° |
-| 15 | [GNN · 물리151 검증 조기 종료](#checkpoint-5) | 45.414 mm | 17.783° | 115.206 mm | 129.254 mm | 43.651° |
-| 16 | [Selected M0 · epoch 90 last](#checkpoint-14) | 45.460 mm | 17.752° | 115.204 mm | 129.276 mm | 43.659° |
-| 17 | [Selected M0 · epoch 60 last](#checkpoint-3) | 45.640 mm | 17.774° | 115.321 mm | 129.561 mm | 43.781° |
-| 18 | [Selected M0 · epoch 30 last](#checkpoint-2) | 45.950 mm | 17.391° | 116.971 mm | 131.016 mm | 43.900° |
+| 1 | [조기 종료 GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-24) | 2.332 mm | 0.419° | 5.446 mm | 5.413 mm | 0.804° |
+| 2 | [60-epoch GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-25) | 2.486 mm | 0.427° | 5.777 mm | 5.817 mm | 0.811° |
+| 3 | [GNN 조기 종료 + 노드 토큰 Mamba 조기 종료](#checkpoint-23) | 9.735 mm | 0.937° | 13.969 mm | 14.679 mm | 1.583° |
+| 4 | [GNN 조기 종료 + Mamba 조기 종료](#checkpoint-21) | 9.678 mm | 0.956° | 14.100 mm | 14.930 mm | 1.689° |
+| 5 | [Mamba · 120 epoch 한도 best](#checkpoint-11) | 9.159 mm | 1.121° | 15.241 mm | 14.935 mm | 1.821° |
+| 6 | [Mamba · 프레임별 노드 토큰 · 120 epoch 한도 best](#checkpoint-20) | 9.851 mm | 1.083° | 14.674 mm | 15.148 mm | 1.739° |
+| 7 | [Mamba · 90 epoch 한도 best](#checkpoint-17) | 9.933 mm | 1.139° | 14.824 mm | 15.164 mm | 1.951° |
+| 8 | [Mamba · 60 epoch 한도 best](#checkpoint-15) | 9.653 mm | 1.302° | 15.858 mm | 16.078 mm | 2.105° |
+| 9 | [GNN 조기 종료 + Transformer 조기 종료](#checkpoint-22) | 10.839 mm | 1.972° | 17.968 mm | 18.432 mm | 3.236° |
+| 10 | [Transformer · 90 epoch 한도 best](#checkpoint-18) | 11.102 mm | 2.237° | 21.015 mm | 20.489 mm | 3.604° |
+| 11 | [Transformer · 120 epoch 한도 best](#checkpoint-12) | 11.915 mm | 2.103° | 19.234 mm | 20.713 mm | 3.579° |
+| 12 | [Transformer · 60 epoch 한도 best](#checkpoint-16) | 11.297 mm | 2.393° | 21.324 mm | 21.690 mm | 4.117° |
+| 13 | [M0 원래 개발셋 · best](#checkpoint-13) | 8.285 mm | 18.714° | 30.246 mm | 45.745 mm | 9.114° |
+| 14 | [M0 · detector Rim-only](#checkpoint-6) | 10.463 mm | 19.134° | 67.266 mm | 82.788 mm | 10.200° |
+| 15 | [Selected M0 · 60 epoch 한도 best](#checkpoint-4) | 42.583 mm | 15.811° | 120.431 mm | 120.178 mm | 28.477° |
+| 16 | [Selected M0 · 30 epoch 한도 best](#checkpoint-1) | 42.695 mm | 15.626° | 121.466 mm | 120.581 mm | 28.299° |
+| 17 | [GNN · 물리151 검증 조기 종료](#checkpoint-5) | 45.414 mm | 17.783° | 115.206 mm | 129.254 mm | 43.651° |
+| 18 | [Selected M0 · epoch 90 last](#checkpoint-14) | 45.460 mm | 17.752° | 115.204 mm | 129.276 mm | 43.659° |
+| 19 | [Selected M0 · epoch 60 last](#checkpoint-3) | 45.640 mm | 17.774° | 115.321 mm | 129.561 mm | 43.781° |
+| 20 | [Selected M0 · epoch 30 last](#checkpoint-2) | 45.950 mm | 17.391° | 116.971 mm | 131.016 mm | 43.900° |
 
 ### 기존 검증 표본 중 두 물리 조건 충족 · 151프레임
 
@@ -135,21 +137,23 @@
 | 1 | [GNN · 물리151 검증 조기 종료](#checkpoint-5) | 1.030 mm | 0.737° | 1.503 mm | 0.993 mm | 0.716° |
 | 2 | [Selected M0 · epoch 90 last](#checkpoint-14) | 1.039 mm | 0.742° | 1.533 mm | 0.999 mm | 0.718° |
 | 3 | [Selected M0 · epoch 60 last](#checkpoint-3) | 1.077 mm | 0.774° | 1.600 mm | 1.049 mm | 0.755° |
-| 4 | [GNN 조기 종료 + Transformer 조기 종료](#checkpoint-22) | 1.362 mm | 0.783° | 2.266 mm | 1.473 mm | 0.792° |
-| 5 | [Selected M0 · epoch 30 last](#checkpoint-2) | 1.399 mm | 0.981° | 2.362 mm | 1.524 mm | 0.909° |
-| 6 | [GNN 조기 종료 + Mamba 조기 종료](#checkpoint-21) | 1.329 mm | 0.700° | 2.174 mm | 1.582 mm | 0.898° |
-| 7 | [Transformer · 120 epoch 한도 best](#checkpoint-12) | 1.371 mm | 0.740° | 2.264 mm | 1.591 mm | 0.825° |
-| 8 | [GNN 조기 종료 + 노드 토큰 Mamba 조기 종료](#checkpoint-23) | 1.288 mm | 0.687° | 2.181 mm | 1.592 mm | 0.782° |
-| 9 | [Mamba · 90 epoch 한도 best](#checkpoint-17) | 1.331 mm | 0.727° | 2.173 mm | 1.608 mm | 0.974° |
-| 10 | [Mamba · 프레임별 노드 토큰 · 120 epoch 한도 best](#checkpoint-20) | 1.364 mm | 0.793° | 2.427 mm | 1.679 mm | 0.842° |
-| 11 | [Mamba · 120 epoch 한도 best](#checkpoint-11) | 1.344 mm | 0.717° | 2.283 mm | 1.714 mm | 0.987° |
-| 12 | [Transformer · 90 epoch 한도 best](#checkpoint-18) | 1.407 mm | 0.807° | 2.391 mm | 1.744 mm | 0.861° |
-| 13 | [Mamba · 60 epoch 한도 best](#checkpoint-15) | 1.389 mm | 0.788° | 2.439 mm | 1.775 mm | 0.932° |
-| 14 | [Transformer · 60 epoch 한도 best](#checkpoint-16) | 1.495 mm | 0.906° | 2.531 mm | 1.809 mm | 0.861° |
-| 15 | [Selected M0 · 60 epoch 한도 best](#checkpoint-4) | 3.062 mm | 2.360° | 6.158 mm | 5.244 mm | 3.005° |
-| 16 | [Selected M0 · 30 epoch 한도 best](#checkpoint-1) | 3.137 mm | 2.416° | 6.415 mm | 5.502 mm | 3.041° |
-| 17 | [M0 원래 개발셋 · best](#checkpoint-13) | 5.072 mm | 4.354° | 10.630 mm | 13.018 mm | 6.895° |
-| 18 | [M0 · detector Rim-only](#checkpoint-6) | 5.829 mm | 7.257° | 15.152 mm | 18.372 mm | 6.460° |
+| 4 | [조기 종료 GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-24) | 1.255 mm | 0.495° | 1.874 mm | 1.376 mm | 0.460° |
+| 5 | [GNN 조기 종료 + Transformer 조기 종료](#checkpoint-22) | 1.362 mm | 0.783° | 2.266 mm | 1.473 mm | 0.792° |
+| 6 | [60-epoch GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-25) | 1.320 mm | 0.507° | 1.984 mm | 1.479 mm | 0.453° |
+| 7 | [Selected M0 · epoch 30 last](#checkpoint-2) | 1.399 mm | 0.981° | 2.362 mm | 1.524 mm | 0.909° |
+| 8 | [GNN 조기 종료 + Mamba 조기 종료](#checkpoint-21) | 1.329 mm | 0.700° | 2.174 mm | 1.582 mm | 0.898° |
+| 9 | [Transformer · 120 epoch 한도 best](#checkpoint-12) | 1.371 mm | 0.740° | 2.264 mm | 1.591 mm | 0.825° |
+| 10 | [GNN 조기 종료 + 노드 토큰 Mamba 조기 종료](#checkpoint-23) | 1.288 mm | 0.687° | 2.181 mm | 1.592 mm | 0.782° |
+| 11 | [Mamba · 90 epoch 한도 best](#checkpoint-17) | 1.331 mm | 0.727° | 2.173 mm | 1.608 mm | 0.974° |
+| 12 | [Mamba · 프레임별 노드 토큰 · 120 epoch 한도 best](#checkpoint-20) | 1.364 mm | 0.793° | 2.427 mm | 1.679 mm | 0.842° |
+| 13 | [Mamba · 120 epoch 한도 best](#checkpoint-11) | 1.344 mm | 0.717° | 2.283 mm | 1.714 mm | 0.987° |
+| 14 | [Transformer · 90 epoch 한도 best](#checkpoint-18) | 1.407 mm | 0.807° | 2.391 mm | 1.744 mm | 0.861° |
+| 15 | [Mamba · 60 epoch 한도 best](#checkpoint-15) | 1.389 mm | 0.788° | 2.439 mm | 1.775 mm | 0.932° |
+| 16 | [Transformer · 60 epoch 한도 best](#checkpoint-16) | 1.495 mm | 0.906° | 2.531 mm | 1.809 mm | 0.861° |
+| 17 | [Selected M0 · 60 epoch 한도 best](#checkpoint-4) | 3.062 mm | 2.360° | 6.158 mm | 5.244 mm | 3.005° |
+| 18 | [Selected M0 · 30 epoch 한도 best](#checkpoint-1) | 3.137 mm | 2.416° | 6.415 mm | 5.502 mm | 3.041° |
+| 19 | [M0 원래 개발셋 · best](#checkpoint-13) | 5.072 mm | 4.354° | 10.630 mm | 13.018 mm | 6.895° |
+| 20 | [M0 · detector Rim-only](#checkpoint-6) | 5.829 mm | 7.257° | 15.152 mm | 18.372 mm | 6.460° |
 
 ### 기존 검증 에피소드 전체 — 선택 M0·시계열 계열 · 4,102프레임
 
@@ -1415,6 +1419,8 @@ BOX/Rim 관측이 있는 프레임만 사용합니다. 4,102개 전체 평가와
 | [M1 Detector family](#checkpoint-8) | seed별 경로·SHA-256 확인 |
 | [M2 Oracle family · GT 입력 참고](#checkpoint-9) | seed별 경로·SHA-256 확인 |
 | [용량 통제](#checkpoint-10) | seed별 경로·SHA-256 확인 |
+| [60-epoch GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-25) | seed별 원격 체크포인트·SHA-256 확인 |
+| [조기 종료 GNN 출발 · 노드 토큰 Mamba 공동 학습](#checkpoint-24) | seed별 원격 체크포인트·SHA-256 확인 |
 | [GNN 조기 종료 + 노드 토큰 Mamba 조기 종료](#checkpoint-23) | seed별 경로·SHA-256 확인 |
 | [GNN 조기 종료 + Mamba 조기 종료](#checkpoint-21) | seed별 경로·SHA-256 확인 |
 | [GNN 조기 종료 + Transformer 조기 종료](#checkpoint-22) | seed별 경로·SHA-256 확인 |
@@ -1561,6 +1567,42 @@ BOX/Rim 관측이 있는 프레임만 사용합니다. 4,102개 전체 평가와
 | 1 | 6 | `/workspace/vertex_family_full_training/training_seed_1/07d60d00d9a94739819623269d60c697/type_control/seed_1/d3c88be49b834b3ba5f423aa9a9e5a24/best.pt` | `ee55fa842a34b88ba2f36df3b43bce18172788a2b34b1f8a93800dd763b8675a` | 일치 사본 미확인 |
 | 2 | 12 | `/workspace/vertex_family_full_training/training_seed_2/a2f480bf76564558801b1efc0feb90bc/type_control/seed_2/2519eb933f8147da8eab3dd86f8c6b11/best.pt` | `9d61b52160fd4d436e16375c07ca543cdba390ad359b4e483bc2924e1fad0bdd` | 일치 사본 미확인 |
 
+<a id="checkpoint-25"></a>
+### 60-epoch GNN 출발 · 노드 토큰 Mamba 공동 학습
+
+60 epoch GNN과 노드 토큰 Mamba의 기존 공동 학습 best를 이어서 두 모델을 함께 학습했다. seed 0·1은 조기 종료했고 seed 2는 500 epoch 한도에 도달했다. 시작 공동 학습 epoch는 20 / 18 / 20이다.
+
+| Seed | Best epoch | 종료 epoch | 평가 기록 | 체크포인트 SHA-256 |
+| ---: | ---: | ---: | --- | --- |
+| 0 | 404 | 434 | [평가 JSON](../outputs/joint_node_token_continuation/evaluation/seed_0/0aacd636cb094f0688e5f19cf57b1710/original_validation_21d.json) | `b15ab24f70213ee0a495bcc9f1a8cd9453a3516bc154dc57c2e0df5277edab03` |
+| 1 | 190 | 220 | [평가 JSON](../outputs/joint_node_token_continuation/evaluation/seed_1/d4c50cbec5124c61a770356d2f58513a/original_validation_21d.json) | `9ca8200c05776cbb79073ceaa33080ab08415e60916dd8d0b7adaa24d1a56ad5` |
+| 2 | 488 | 500 | [평가 JSON](../outputs/joint_node_token_continuation/evaluation/seed_2/e243222b2e8e4530b3f3ef0da1b9bb23/original_validation_21d.json) | `4de1b29f371e9edcb56242a0a979aefe5f0a68e884ba71e4309f37a64eb22af8` |
+
+원격 체크포인트 경로는 seed 순서대로 다음과 같다.
+
+- `/workspace/joint_node_token_continuation/training/seed_0/0e8f638f6760402e917b96e5ad034f86/best.pt`
+- `/workspace/joint_node_token_continuation/training/seed_1/bdab5a89b1f54d088937dcdf655cf06a/best.pt`
+- `/workspace/joint_node_token_continuation/training/seed_2/4ebd4382b1dd4dacbe6ce9e716f6f171/best.pt`
+ 평가 JSON과 함께 보존한 raw 오류 배열에서 seed별 프레임과 GT 일치를 확인했다.
+
+<a id="checkpoint-24"></a>
+### 조기 종료 GNN 출발 · 노드 토큰 Mamba 공동 학습
+
+물리151 검증으로 선택한 GNN과 조기 종료된 노드 토큰 Mamba에서 출발해 두 모델을 함께 학습했다. 세 seed 모두 조기 종료했다. 물리151은 출발 GNN 선택에도 사용됐다.
+
+| Seed | Best epoch | 종료 epoch | 평가 기록 | 체크포인트 SHA-256 |
+| ---: | ---: | ---: | --- | --- |
+| 0 | 355 | 385 | [평가 JSON](../outputs/joint_node_token_early_stopping/evaluation/seed_0/109ceb7b7f854ae0ad586325cbd2ded9/original_validation_21d.json) | `3c39b2e762d2dccf10aa5f0cfff6ea073524e9e553cf336a4b86a6733233df73` |
+| 1 | 373 | 403 | [평가 JSON](../outputs/joint_node_token_early_stopping/evaluation/seed_1/921142ff4f2f40c4a28a77230b61d882/original_validation_21d.json) | `e5e99c69f27efa1692ecb423bb3bebf886cb025ed067009ac70ea66a489af023` |
+| 2 | 412 | 442 | [평가 JSON](../outputs/joint_node_token_early_stopping/evaluation/seed_2/9b6ff101518147e2a77fe4be4d595092/original_validation_21d.json) | `ca3c0ef217b661b3f133055d21a48fb31801816501b09ad8c182e528b74af021` |
+
+원격 체크포인트 경로는 seed 순서대로 다음과 같다.
+
+- `/workspace/joint_node_token_early_stopping/training/seed_0/c24b5c810c4e47a6b5deb30a9bda5fca/best.pt`
+- `/workspace/joint_node_token_early_stopping/training/seed_1/fb8ceb9f4c564a778a95961fe197bffe/best.pt`
+- `/workspace/joint_node_token_early_stopping/training/seed_2/8a34475119314a9dbdc1ae91f81fb5fb/best.pt`
+ 평가 JSON과 함께 보존한 raw 오류 배열에서 seed별 프레임과 GT 일치를 확인했다.
+
 <a id="checkpoint-23"></a>
 ### GNN 조기 종료 + 노드 토큰 Mamba 조기 종료
 
@@ -1683,7 +1725,7 @@ seed 0의 training_output 디렉터리는 기록되었으나 평가에 사용한
 ## 범위와 검증
 
 - 동일 실험의 중복 복사본과 대조군은 중복 등록하지 않았다. seed가 1개뿐인 초기 Mamba는 상세 참고표로만 남겼다.
-- 물리 선택 자체, 데이터 복원·컴파일 벤치마크, random-rollout 수집, loss만 있는 기록은 3-seed 21D 예측 결과가 아니므로 순위에서 제외했다. 완료된 3-seed 평가 파일이 없는 joint fine-tuning 결과는 추가하지 않았다.
+- 물리 선택 자체, 데이터 복원·컴파일 벤치마크, random-rollout 수집, loss만 있는 기록은 3-seed 21D 예측 결과가 아니므로 순위에서 제외했다.
 - raw per-frame archive가 있는 결과는 순서/프레임 집합을 확인하고 3-seed 통계량을 재계산했다. 90-epoch temporal 오차 파일에는 sample ID가 없으므로 원래 960개 순서로 해석하고 전체/151개 집계가 기존 요약과 일치하는지 교차 검증했다.
 - 집계 요약만 있는 GNN epoch 90·Transformer 60은 그 요약을 인용했다. 전체 4,102프레임 시계열 비교와 vertex-family 비교는 별도 cohort로 유지했다.
 - 출처·SHA-256·정규화된 표 데이터와 검증 목록: [verification.json](../outputs/experiment_leaderboard/verification.json). 원본 `outputs/`는 Git 제외 대상이므로 저장소를 옮기면 원본 링크가 없을 수 있다. 이 Markdown 자체에는 표의 모든 수치를 포함했다.

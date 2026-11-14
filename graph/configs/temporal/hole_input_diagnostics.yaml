@@ -1,0 +1,20 @@
+trainer: evaluation.hole_input_diagnostics:evaluate
+model_seed: 0
+environment_seed: 2
+action_seed: 73
+capture_frames: [0, 68, 78]
+switch_frame: 68
+control_mode: pd_ee_delta_pose
+device: cpu
+detector_device: cpu
+gate_m: 0.03
+random_arm_limit: 0.25
+max_frames: 100
+temporal_checkpoint: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_0/5755e14cbb2b4bdc8323f18ed23c27d0/best.pt
+gnn_checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+default_results: outputs/random_action_diagnostics/5a5605be3d2c4d71b97b945082601647/results.json
+selected_results: outputs/random_action_diagnostics/0919f71ee5f84fd09d4d32df6384cdf5/results.json
+camera_view:
+  eye: [0.65, -0.30, 0.65]
+  target: [0.065, 0.297, 0.11]
+output_root: outputs/hole_input_diagnostics

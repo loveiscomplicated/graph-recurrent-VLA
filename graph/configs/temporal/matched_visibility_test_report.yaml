@@ -1,0 +1,8 @@
+trainer: evaluation.independent_test_report:report
+results: outputs/independent_matched_visibility_test/evaluation/640bd18751a54fdd819f66301d8a7aa0/results.json
+visibility_audit: outputs/independent_matched_visibility_test/visibility_audit/498e9f7c1df54f02859e2c424b2b0721/initial_visibility.json
+references:
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_0_predictions.npz
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_1_predictions.npz
+  - outputs/detected_corner_gnn_resume/comparison/a6a3d5bc7df34172957302eb9524ba25/transformer_seed_2_predictions.npz
+output_root: outputs/independent_matched_visibility_test/report

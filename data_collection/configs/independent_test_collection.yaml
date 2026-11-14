@@ -1,0 +1,4 @@
+trainer: data_collection.independent_test_collection:collect
+protocol: outputs/independent_generalization_test/protocol.json
+protocol_sha256: 9f0052660248e4934656eca7a0a23b750346e98786455e23b920ff250a70e49d
+output_root: outputs/independent_generalization_test/raw

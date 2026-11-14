@@ -1,0 +1,20 @@
+trainer: evaluation.moving_hole:visualize
+seed: 0
+device: cpu
+detector_device: cpu
+control_mode: pd_ee_delta_pose
+frames: 250
+fps: 20
+policy: data_collection.scripted_policy:make_policy
+gate_m: 0.03
+motion:
+  mode: jump
+  start_seconds: 3.5
+  end_seconds: 9.0
+  duration_seconds: 3.0
+  minimum_distance_m: 0.08
+  stop_expert_insert: true
+  translation_m: [0.06, 0.0, 0.0]
+temporal_checkpoint: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_0/5755e14cbb2b4bdc8323f18ed23c27d0/best.pt
+gnn_checkpoint: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt
+output_root: outputs/moving_hole

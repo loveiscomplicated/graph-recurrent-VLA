@@ -1,0 +1,21 @@
+trainer: evaluation.camera_holdout_comparison:compare
+environment_seeds: [3, 4, 5, 6]
+action_seeds: [73, 74]
+camera_results:
+  Default:
+    - outputs/random_action_diagnostics/5a5605be3d2c4d71b97b945082601647/results.json
+    - outputs/camera_evaluation_default_new_seeds/bebe213a27df48ac82ebe74b784d085f/results.json
+  Previous:
+    - outputs/random_action_diagnostics/0919f71ee5f84fd09d4d32df6384cdf5/results.json
+    - outputs/camera_evaluation_previous_new_seeds/19b32f15ad37434caa7ddedf0724fc67/results.json
+  Visibility:
+    - outputs/camera_evaluation_candidate_holdout/429f43dd63fe4b689f0b4a156cd0f73e/results.json
+  Wider:
+    - outputs/camera_evaluation_wide_holdout/d633f62ceace46438b7de64b2820e132/results.json
+output_root: outputs/camera_holdout_comparison
+visibility_results: outputs/camera_visibility_holdout/cad2bf22360a44baa261a75f84cfbf4e/search_results.json
+visibility_name_map:
+  Default: default
+  Previous: earlier_selected
+  Visibility: x_mid_low
+  Wider: x_negative_low

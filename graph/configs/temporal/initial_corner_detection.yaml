@@ -1,0 +1,14 @@
+trainer: evaluation.initial_corner_detection:evaluate
+output_root: outputs/initial_corner_detection
+peg_audits:
+  - outputs/peg_robot_occlusion/results.json
+  - outputs/peg_robot_occlusion_expanded/results.json
+hole_audit: outputs/hole_corner_occlusion/results.json
+seed_start: 200
+seed_stop: 1400
+camera_eye_m: [0.65, -0.30, 0.65]
+camera_target_m: [0.065, 0.297, 0.11]
+resolution: [512, 512]
+vertical_fov_deg: 90
+thresholds_mm: [3, 5]
+torch_threads: 2

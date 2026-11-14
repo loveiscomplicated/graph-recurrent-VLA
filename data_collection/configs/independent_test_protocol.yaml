@@ -1,0 +1,26 @@
+trainer: data_collection.independent_test_protocol:freeze
+seed_generator: 20261113
+seed_range: [1000000, 2000000]
+count: 20
+training_exclusions: outputs/object21_bc/excluded_seeds.json
+additional_exclusions: outputs/object21_bc/raw_collection_manifest.json
+prior_explored_seed_ranges: [[0, 139]]
+output_root: outputs/independent_generalization_test
+policy:
+  control_mode: pd_ee_delta_pose
+  expert: data_collection.scripted_policy:make_policy
+  modes: [expert, random_after_lift]
+  random_generator_base_seed: 73
+  random_arm_limit: 0.25
+  random_steps: 35
+  minimum_lift_m: 0.03
+  max_frames: 250
+  camera: default
+  resolution: 512
+  visibility_filter: none
+  require_success: false
+  no_replacements: true
+models:
+  - {seed: 0, gnn: outputs/detected_corner_gnn_resume/runs/transformer/seed_0/a1fd52b4ab53496693a8737596f92baf/best.pt, temporal: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_0/5755e14cbb2b4bdc8323f18ed23c27d0/best.pt}
+  - {seed: 1, gnn: outputs/detected_corner_gnn_resume/runs/transformer/seed_1/acfe559cf95b429fb1c0e03e15d9e7b8/best.pt, temporal: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_1/20016101c0e94fa3991c7c8befc1040e/best.pt}
+  - {seed: 2, gnn: outputs/detected_corner_gnn_resume/runs/transformer/seed_2/68adb1f4baa74facbb26b05337f60b0a/best.pt, temporal: outputs/fixed_id_corner_early_stopping/runs/transformer/seed_2/5439879feb664125a8350e100f9269cf/best.pt}

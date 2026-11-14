@@ -1,0 +1,26 @@
+output: outputs/moving_hole_collection
+num_episodes: 1
+episodes_per_shard: 1
+workers: 1
+start_seed: 0
+attempts_per_shard: 100
+resolution: 512
+steps: 250
+max_episode_steps: 250
+visibility_mode: ends_and_grasp
+policy: data_collection.scripted_policy:make_policy
+control_mode: pd_ee_delta_pose
+device: cpu
+render_backend: cpu
+observation_device: cpu
+require_success: true
+save_step_gt: true
+publish: false
+hole_motion:
+  mode: continuous
+  start_seconds: 3.5
+  end_seconds: 9.0
+  duration_seconds: 3.0
+  minimum_distance_m: 0.08
+  stop_expert_insert: true
+  translation_m: [0.06, 0.0, 0.0]

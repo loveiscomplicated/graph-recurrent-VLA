@@ -8,12 +8,15 @@ policy factory via --policy module:factory, or --zero-actions for smoke checks.
 import argparse
 import importlib
 import importlib.metadata
+import json
 import subprocess
 from pathlib import Path
 
 import torch
 
 from envs.maniskill import get_gt_state, make_peg_insertion_env
+from envs.maniskill.observation_device import ObservationDevice
+from .hole_motion import EpisodeHoleMotion, HoleMotion
 from .storage import append_attempt, save_frame, to_numpy, write_json
 from .visibility import CameraObservation, evaluate
 
@@ -54,6 +57,7 @@ def collect_episodes(
     metadata=None,
     require_success=False,
     save_step_gt=False,
+    hole_motion=None,
 ):
     """A policy has reset(env, seed) and act(observation) -> native action.
 
@@ -69,6 +73,16 @@ def collect_episodes(
         raise ValueError("trajectory collection requires an explicit policy")
     if require_success and not steps:
         raise ValueError("require_success needs a trajectory with positive steps")
+    if hole_motion is not None:
+        if not steps:
+            raise ValueError("hole_motion requires a trajectory with positive steps")
+        if not isinstance(hole_motion, dict):
+            raise ValueError("hole_motion must be a mapping")
+        schedule = HoleMotion(hole_motion)
+        if schedule.start <= 0:
+            raise ValueError("collection motion.start_seconds must be greater than zero")
+        if not isinstance(hole_motion.get("stop_expert_insert", False), bool):
+            raise ValueError("motion.stop_expert_insert must be a boolean")
     keys = {"ends_and_grasp": "requested_pass", "full_surface": "strict_100_pass"}
     if visibility_mode not in keys:
         raise ValueError("unknown visibility mode")
@@ -83,6 +97,7 @@ def collect_episodes(
         metadata=metadata or {},
         require_success=require_success,
         save_step_gt=save_step_gt,
+        hole_motion=hole_motion,
     )
     write_json(output / "config.json", config)
     episodes = []
@@ -107,15 +122,20 @@ def collect_episodes(
             pending = output / (name + ".partial")
             pending.mkdir()
             write_json(pending / "visibility.json", visibility)
-            save_frame(
-                pending / "frame_000000.npz", observation, info=info, ground_truth=gt
-            )
             length = 0
             terminated = truncated = False
             success = False
             if steps:
                 manifest["expert_attempted"] += 1
                 policy.reset(env, seed)
+            motion = None
+            if hole_motion is not None:
+                motion = EpisodeHoleMotion(env, hole_motion, policy)
+            initial_extra = {"hole_motion": motion.frame_data()} if motion else {}
+            save_frame(
+                pending / "frame_000000.npz", observation, info=info, ground_truth=gt,
+                **initial_extra,
+            )
             for step in range(steps):
                 action = torch.as_tensor(
                     policy.act(observation), device=env.unwrapped.device
@@ -131,8 +151,21 @@ def collect_episodes(
                 command = to_numpy(action)
                 observation, reward, term, trunc, info = env.step(action)
                 length = step + 1
+                terminated, truncated = bool(term.item()), bool(trunc.item())
+                step_succeeded = bool(to_numpy(info.get("success", False)).any())
+                should_continue = not (
+                    terminated or truncated or (require_success and step_succeeded)
+                )
+                if motion and should_continue and motion.advance(length, policy):
+                    # Refresh the frame after moving the actor, including evaluation info.
+                    info = env.unwrapped.get_info()
+                    observation = env.unwrapped.get_obs(info)
+                    if isinstance(env, ObservationDevice):
+                        observation = env.observation(observation)
                 success = success or bool(to_numpy(info.get("success", False)).any())
                 extra = {}
+                if motion:
+                    extra["hole_motion"] = motion.frame_data()
                 if save_step_gt:
                     extra["ground_truth"] = vars(get_gt_state(env))
                 save_frame(
@@ -145,7 +178,6 @@ def collect_episodes(
                     info=info,
                     **extra,
                 )
-                terminated, truncated = bool(term.item()), bool(trunc.item())
                 if terminated or truncated or (require_success and success):
                     break
             receipt = dict(
@@ -202,6 +234,7 @@ def main():
     parser.add_argument("--max-episode-steps", type=int, default=None)
     parser.add_argument("--require-success", action="store_true")
     parser.add_argument("--save-step-gt", action="store_true")
+    parser.add_argument("--hole-motion", help="JSON motion settings; omit for a stationary box")
     behavior = parser.add_mutually_exclusive_group()
     behavior.add_argument(
         "--policy", help="Python module:factory; factory() returns reset/act policy"
@@ -231,6 +264,12 @@ def main():
         parser.error("--steps requires --policy or --zero-actions")
     if args.require_success and not args.steps:
         parser.error("--require-success requires positive --steps")
+    try:
+        hole_motion = json.loads(args.hole_motion) if args.hole_motion else None
+    except json.JSONDecodeError as exc:
+        parser.error(f"--hole-motion must be a JSON object: {exc}")
+    if hole_motion is not None and not isinstance(hole_motion, dict):
+        parser.error("--hole-motion must be a JSON object")
     policy = ZeroActions() if args.zero_actions else None
     if args.policy:
         module, attribute = args.policy.split(":", 1)
@@ -287,6 +326,7 @@ def main():
             metadata=metadata,
             require_success=args.require_success,
             save_step_gt=args.save_step_gt,
+            hole_motion=hole_motion,
         )
         if result["status"] != "COMPLETE":
             raise SystemExit(

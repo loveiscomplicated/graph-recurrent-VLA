@@ -1,0 +1,4 @@
+trainer: evaluation.compare_camera_diagnostics:compare
+default_results: outputs/camera_distribution_model_default/9364324a85c04c72abb3d5b86a4fc15f/results.json
+selected_results: outputs/camera_distribution_model_selected/f08ee452c4864327b20305eac16527ca/results.json
+output_root: outputs/camera_distribution_model_comparison

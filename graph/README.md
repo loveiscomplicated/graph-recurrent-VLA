@@ -1,5 +1,55 @@
 # Graph team
 
+## Initial-state corner detector evaluation
+
+With the restored Peg and Hole audit JSONs listed in the config and the shared
+ManiSkill/PyTorch environment, re-render the 1,200 initial states and evaluate
+the CPU RGB-D detector:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/initial_corner_detection.yaml
+```
+
+## Pilot corner detector evaluation
+
+With the completed local mixed-trajectory pilot and shared ManiSkill/PyTorch
+environment, run the CPU RGB-D detector and GT-supported scoring with:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/pilot_corner_detection.yaml
+```
+
+The fixed sampling, approximate visibility criterion and measured results are
+described in [corner detection](../docs/corner_detection.md#pilot-trajectory-corner-detection-evaluation).
+
+## Hole opening recovery evaluation
+
+With the restored reset audits, the completed pilot dataset, their baseline
+evaluation JSONs, and the shared ManiSkill/PyTorch environment, run the paired
+CPU evaluations from the repository root. Each command compares the base
+detector, the original opening recovery, and the refined opening recovery.
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_reset.yaml
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_pilot.yaml
+```
+
+See [Hole opening recovery](../docs/corner_detection.md#hole-opening-recovery)
+for the detector option, stage definitions, and results.
+
+## Independent generalization evaluation
+
+With the frozen test dataset and original Transformer/GNN checkpoints available
+at the paths in the config, evaluate the independent test on CPU with:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/independent_test_evaluation.yaml
+```
+
+The dataset, checkpoint, and detector prerequisites, visibility-matched
+follow-up, and limits of the original leaderboard replay are documented in
+[independent generalization test](../docs/detected_corner_gnn.md#independent-generalization-test-and-leaderboard-replay).
+
 ## Corner prediction and tracking
 
 The separate 6D TCP rotation corner-predictor recipe uses existing fixed-ID
@@ -13,6 +63,34 @@ The default Mamba recipe requires CUDA and `mamba_ssm`; Transformer can also run
 on CPU with `model.architecture: transformer`, `training.device: cpu`, and
 `training.precision: float32`. For the model contract and detector-only
 inference example, see [6D TCP rotation input](../docs/corner_prediction.md#6d-tcp-rotation-input).
+
+To render a continuously moving box and Hole with the leaderboard Transformer
+and GNN, configure the checkpoint paths in
+`graph/configs/temporal/visualize_moving_hole.yaml` and run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/visualize_moving_hole.yaml
+```
+
+Use `graph/configs/temporal/visualize_jumping_hole.yaml` for a single abrupt
+translation. Both recipes use a time window and a GT-based proximity guard.
+By default they step the simulator with zero actions; configure an existing
+`module:factory` policy to exercise robot motion.
+
+For the existing GT-guided scripted expert, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/visualize_moving_hole_expert.yaml
+```
+
+This recipe uses `pd_ee_delta_pose`, requires the repository's ManiSkill and
+Pinocchio dependencies, and stops motion when the expert enters insertion.
+For a single abrupt translation with the same expert and guards, use
+`graph/configs/temporal/visualize_jumping_hole_expert.yaml`.
+
+This requires ManiSkill, the RGB-D corner detector dependencies, trusted local
+checkpoints and FFmpeg. See [moving Hole visualization](../docs/detected_corner_gnn.md#moving-hole-visualization)
+for the motion and video limitations.
 
 Run recipes from the repository root with Python 3.11, Torch, NumPy, SciPy and
 PyYAML. Set dataset, checkpoint and checksum paths before running. Official
@@ -470,3 +548,43 @@ add the resume fields from `configs/temporal/train_detected_corner_gnn_resume.ya
 and run `python main.py --config /path/to/effective_resume.yaml`. This requires
 its 40-epoch checkpoints and frozen rollout cache; see
 [temporal estimation](../docs/temporal_estimation.md) for early stopping details.
+
+## Random-action corner diagnostics
+
+With trusted local leaderboard seed-0 checkpoints, ManiSkill, Pinocchio,
+OpenCV, Matplotlib and FFmpeg installed, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/random_action_diagnostics.yaml
+```
+
+The config selects environment/action seeds, action amplitude, checkpoint paths
+and output directory. It records expert controls, random rollouts, per-frame
+results, diagnostic GT substitutions and videos using `ExperimentLogger`.
+See [random-action diagnostics](../docs/detected_corner_gnn.md#random-action-diagnostics)
+for the GT intervention limits and measured results.
+
+The random-action diagnostic also has a selected-camera recipe:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/random_action_selected_camera.yaml
+```
+
+It requires the same simulator, detector and checkpoint prerequisites as the
+original recipe. The recorded paired results and camera comparison are in
+[the detector-only GNN guide](../docs/detected_corner_gnn.md#selected-camera-random-action-comparison).
+
+To replay the seed-2 camera failure and inspect its exact detector and GNN
+inputs, run `WANDB_MODE=disabled python main.py --config graph/configs/temporal/hole_input_diagnostics.yaml`
+with the recorded results and checkpoints present. See the
+[Hole input inspection](../docs/detected_corner_gnn.md#seed-2-selected-camera-hole-input-inspection).
+
+To scan camera poses against saved random-action states, configure and run
+`graph/configs/temporal/camera_visibility_search.yaml`. The evaluation and
+visibility limits, held-out comparison recipes and recorded results are in the
+[multi-state camera search](../docs/detected_corner_gnn.md#multi-state-camera-visibility-search-and-held-out-action-comparison).
+
+For the broader randomized camera study, configure
+`graph/configs/temporal/camera_distribution_search.yaml` and its separate
+held-out counterpart. The sample construction and results are described in
+[the camera study](../docs/detected_corner_gnn.md#broader-random-position-camera-study).
