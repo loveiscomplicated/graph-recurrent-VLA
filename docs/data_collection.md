@@ -247,6 +247,69 @@ Graph development episodes. The archive's SHA-256 is
 
 ## Visibility
 
+### Initial Peg placement under the current main camera
+
+The installed ManiSkill 3.0.1 `PegInsertionSide-v1` initialization draws the
+Peg center uniformly from X `[-0.1, 0.1]` m and Y `[-0.3, 0]` m. Its Z is
+the randomly configured half-width, `[0.015, 0.025]` m. The half-length is
+`[0.085, 0.125]` m and yaw is in `[30°, 150°]`; roll and pitch are zero.
+These are pre-dynamics initialization bounds, not a post-action trajectory.
+
+For the shared 512×512 camera at `[0.65, -0.30, 0.65]` m looking at
+`[0.065, 0.297, 0.11]` m, an analytical enclosing box for the entire Peg is
+X `[-0.25, 0.25]`, Y `[-0.45, 0.15]`, Z `[0, 0.05]` m. Its positive-depth
+vertices project to U `[5.65, 265.01]`, V `[253.21, 488.50]` pixels. Since
+the box is entirely in front of the camera, its projected convex hull encloses
+every allowed Peg geometry and lies inside the image. This proves the initial
+Peg is geometrically in frame under these settings; it does not prove visible
+surface area or prevent occlusion. Robot joints are randomized and the task
+also contains the box, so visibility cannot be settled from the spawn bounds
+alone. The box used for projection is deliberately larger than the realizable
+Peg volume and its margins are conservative, not observed extremal values.
+
+The analysis used the camera pose and FOV in the shared factory and checked
+the resulting calibration against a previously saved frame, without sampling
+Peg initial states. [Geometry figure](../outputs/peg_initial_geometry/peg_initial_geometry.png),
+[analysis and bounds](../outputs/peg_initial_geometry/analysis.json), and
+[calculation script](../outputs/peg_initial_geometry/analyze.py) are local
+ignored artifacts. CPU-side geometry was evaluated; CUDA was not run.
+
+### Initial Hole opening occlusion under the current main camera
+
+On 2026-11-14, a separate diagnostic rendered one initial state for each of
+the 1,200 simulator seeds 200–1399 with the current 512×512 main camera. It
+used the four physical corners of the negative-local-X Hole opening. All four
+projected corners were in frame and the opening was front-facing in every
+sample. Only reset frames were tested; these counts do not describe grasping,
+motion, other cameras or the complete seed space.
+
+The existing 7×7 opening-interior depth/segmentation diagnostic found at least
+one robot-blocked sample in 47/1,200 frames (3.92%). In 32 of those 47 frames
+(68.1%), the nearest projected pixel of at least two of the four corners was
+robot-labelled and at least 1.5 mm closer than the corner. Across all frames,
+the per-corner robot-blocked counts were 0: 1,144, 1: 22, 2: 19, 3: 9 and
+4: 6; hence at least two were robot-blocked in 34/1,200 frames (2.83%). The
+interior grid and corner pixels measure different points, so their counts do
+not have to be nested. The 7×7 grid covers only 70% of the radius in each
+opening direction and neighboring samples can land on the same pixel.
+
+As a separate approximation, a corner is supported if a box-labelled surface
+within its 7×7-pixel neighborhood lies within 6 mm of the 3-D GT corner.
+Thirty frames had two or more unsupported corners; 25 of the 34 frames with
+two or more robot-blocked corner pixels also had two or more unsupported
+corners. The two measurements need not agree at boundaries: the neighborhood
+can contain box support even when the nearest corner pixel belongs to the
+robot. The measurements are raster/depth diagnostics, not exact continuous
+visibility or detector performance. A 3×3 robot-neighborhood sensitivity check
+marked at least two corners in 43 frames, versus 34 at the nearest pixel.
+
+[Example images](../outputs/hole_corner_occlusion/examples.png),
+[summary](../outputs/hole_corner_occlusion/summary.json),
+[per-frame data](../outputs/hole_corner_occlusion/results.json), and the
+[calculation](../outputs/hole_corner_occlusion/analyze.py) are local ignored
+artifacts. The run used CPU physics and SAPIEN/MoltenVK rendering on the Mac;
+CUDA was not run. GT and simulator segmentation are diagnostic inputs only.
+
 `data_collection/visibility.py` extracts the historical GT/depth gate, including its calibration
 checks, signed depth handling, pixel centers and expert grasp-band calculation.
 It imports no Graph, perception, tracker or model packages from this repository.
@@ -614,3 +677,97 @@ gate and records every attempted seed, including failures. It was designed after
 the first unfiltered test and must remain identified as a follow-up. Full
 criteria, limitations and saved results are in the
 [independent test and leaderboard replay guide](detected_corner_gnn.md#independent-generalization-test-and-leaderboard-replay).
+
+## Unfiltered mixed trajectory collection
+
+The mixed trajectory workflow freezes pilot and main reset seeds and split
+membership before collection, excludes the configured historical seed inventories,
+and records Expert, Random, and Expert→Random from each same initial state. It
+uses the explicitly configured main camera and preserves unsuccessful episodes,
+unreached transition phases and terminal observations. RGB, depth, segmentation,
+calibration, robot state, action, GT and status are stored as native arrays in
+per-frame NPZ files. Frames `0..T-1` contain the action applied from that
+observation; frame `T` is the terminal observation with `action_valid=false`.
+The source expert uses live GT and is not a learned policy.
+
+Run the 100-state pilot with Python 3.11 and the shared simulator dependencies:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_pilot.yaml
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_pilot_audit.yaml
+```
+
+Pilot and all main split assignments, phase choices, delays and random streams
+are preregistered in the saved protocol. Each run also records the effective
+config and hashes through the shared `ExperimentLogger`. Run the main config
+only after the pilot audit; choose a sufficiently large, writable output path in
+`data_collection/configs/mixed_trajectory_main.yaml`. The main workflow checks
+that its protocol matches the audited pilot and that at least 120% of the
+pilot-based storage estimate plus the configured reserve is available before it
+creates an output directory. `outputs/` is local and ignored; nothing is uploaded.
+The audit checks all frame hashes, camera position, action alignment and split
+membership, and reports initial Peg and sampled Hole visibility. These are
+GT/depth diagnostics, not exact visibility throughout the trajectories.
+
+Output directories cannot be overwritten. An interrupted collection keeps its
+partial episodes and manifest for inspection; it does not currently support
+in-place resumption. Keep these files when planning a retry. On macOS use CPU
+physics and the host SAPIEN/MoltenVK renderer; CUDA has not been tested for this
+workflow on this host.
+
+### Mixed trajectory pilot results
+
+On 2026-11-14, the pilot collected 100 reset seeds and all 300 planned
+trajectories with the explicit main camera. A sequential prefix was interrupted
+for partitioned collection; completed overlapping episodes and the interrupted
+partial directory were preserved separately. The merged manifest records both
+collector source hashes and links the worker manifests. The post-merge audit
+verified 62,395 frame hashes, action-valid alignment, camera position, initial
+state fingerprints and exact case/split coverage. All 100 initial states passed
+the existing GT/depth ends-and-grasp visibility diagnostic; this is not a
+continuous-time visibility guarantee.
+
+| Mode | Episodes | Successes | Mean maximum Peg displacement | P90 maximum Peg displacement |
+| --- | ---: | ---: | ---: | ---: |
+| Expert | 100 | 98 | 364.17 mm | 512.47 mm |
+| Random from reset | 100 | 0 | 1.12 mm | 0.0012 mm |
+| Expert→Random | 100 | 4 | 103.05 mm | 268.09 mm |
+
+Displacement is the maximum relative to the initial Peg position across the
+whole episode, so the Expert→Random figure includes its expert prefix. Full
+Random rarely moved the Peg substantially, even though its robot actions were
+random; the mean is influenced by a small number of larger movements. Of 100
+Expert→Random episodes, 96 switched; all four non-switches had a target `close`
+phase that ended before the selected delay. No failures were discarded.
+
+An exploratory recovery probe replayed one case per expert phase through 35
+random steps, verified Peg/Hole pose and robot joint state at the replay point,
+then restarted the GT-guided expert for up to 100 steps. Two of six succeeded.
+The six selected cases and reset-based expert restart are not a recovery success
+rate estimate.
+
+The pilot occupied 17,505,350,273 bytes. Linear scaling estimates approximately
+175 GB for 3,000 main episodes; the preflight requires approximately 215 GB
+including a 20% margin and 5 GiB reserve. The current filesystem had only about
+18 GB available, and the main collector correctly stopped before creating its
+output. The weak reset-Random Peg movement should also be considered before
+scaling the same protocol. Results used CPU physics and inference/diagnostics,
+with SAPIEN/MoltenVK rendering on this Mac; CUDA was not executed.
+
+[Audit and statistics](../outputs/mixed_trajectory_pilot_audit/audit.json),
+[collection manifest](../outputs/mixed_trajectory_pilot/manifest.json),
+[frozen protocol](../outputs/mixed_trajectory_pilot/protocol.json), and the
+[recovery probe](../outputs/mixed_trajectory_recovery_probe/results.json) are
+local ignored artifacts. The original worker and overlap directories remain on
+disk; merged episode files share hard links with the worker copies.
+
+A separate five-step-sampled analysis found that reset-Random brought the TCP
+within 100 mm of the Peg center in 6/100 episodes; the median episode's minimum
+sampled distance was 180.2 mm. The Peg moved more than 10 mm in 4/100 episodes.
+This distance is to the Peg center, not a contact test, and sampling can miss
+brief approaches. It supports the explanation that many reset-Random episodes
+never approach the object closely, without proving why the Peg stayed still.
+For the 96 switched Expert→Random cases, 71 moved the Peg over 10 mm after the
+switch on sampled frames. The 18 reach-phase switches included only one such
+case; all 16 align and all 12 insert switches did. See the local
+[sampled proximity and movement results](../outputs/mixed_trajectory_pilot_diagnostics/results.json).
