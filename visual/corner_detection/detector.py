@@ -6,16 +6,19 @@ descriptors and final candidates cross the CPU boundary explicitly. This is a
 hybrid detector, not an assertion of an entirely GPU-resident pipeline.
 """
 
-from dataclasses import dataclass, asdict
+import time
+from dataclasses import asdict, dataclass
 from functools import lru_cache
 from itertools import combinations, product
-import time
+
 import cv2
 import numpy as np
 import torch
-from .geometry import Parameters, _face_envelopes
-from .candidates import material_masks, ContourProposals, _corner_features
+
 from .backends import torch_ops as K
+from .candidates import ContourProposals, _corner_features, material_masks
+from .geometry import Parameters, _face_envelopes
+from .hole_rim import opening_corners
 
 
 @dataclass
@@ -90,9 +93,31 @@ class TensorResult:
 
 
 class TorchCornerDetector:
-    def __init__(self, device="auto", parameters=None):
+    # The paired evaluator overrides this to replay the first opening implementation.
+    _refine_opening = True
+
+    def __init__(
+        self,
+        device="auto",
+        parameters=None,
+        *,
+        hole_rgb_merge_radius_m=None,
+        recover_hole_rim=False,
+    ):
         self.device = K.resolve_device(device)
         self.parameters = parameters or Parameters()
+        if hole_rgb_merge_radius_m is not None and (
+            self.device.type != "cpu"
+            or not np.isfinite(hole_rgb_merge_radius_m)
+            or hole_rgb_merge_radius_m <= 0
+        ):
+            raise ValueError(
+                "hole_rgb_merge_radius_m must be positive and finite on CPU"
+            )
+        self.hole_rgb_merge_radius_m = hole_rgb_merge_radius_m
+        if recover_hole_rim and self.device.type != "cpu":
+            raise ValueError("recover_hole_rim currently requires the CPU detector")
+        self.recover_hole_rim = recover_hole_rim
 
     def tensor(self, value, dtype=torch.float32):
         if isinstance(value, np.ndarray) and not value.flags.writeable:
@@ -721,6 +746,34 @@ class TorchCornerDetector:
         ]
         self.add(data, points, uv, selected, metadata, stage=2)
 
+    def box_openings(self, data):
+        """Queue verified opening corners after all existing Box candidates."""
+        for plane, corners, rectangular, verified in opening_corners(
+            self.depth.numpy(),
+            data.support_cpu,
+            data.planes_cpu,
+            data.eligible_cpu,
+            self.k_cpu,
+        ):
+            points = self.tensor(corners)
+            if self._refine_opening:
+                # Counter the observed subpixel raster bias at fitted rim edges.
+                # Keep the adjustment local to the opening recovery path.
+                pixel_shift = 0.25 / self.k.diag()[:2]
+                points[:, :2] += points[:, 2:] * pixel_shift
+            uv = K.project(points, self.k)
+            metadata = [
+                {
+                    "method": "box_opening",
+                    "plane": plane,
+                    "contour_hole": True,
+                    "rectangular": rectangular,
+                }
+                for _ in corners
+            ]
+            selected = torch.full((len(corners),), verified, dtype=torch.bool)
+            self.add(data, points, uv, selected, metadata, stage=3)
+
     def merge(self):
         if not self.blocks:
             return (
@@ -754,7 +807,7 @@ class TorchCornerDetector:
         camera_cpu = points.cpu().numpy()
         chosen = []
         # Stable greedy order matches the V2 -> V3 -> V4 accuracy contract.
-        for stage in (0, 1, 2):
+        for stage in (0, 1, 2, 3):
             rows = [r for r in rows_valid if r["stage"] == stage]
             if stage < 2:
                 rows.sort(
@@ -780,6 +833,23 @@ class TorchCornerDetector:
                 rows = [
                     r for r in rows if r["feature"] is None or front[r["feature"]] is r
                 ]
+            if stage == 3 and self._refine_opening:
+                # A jointly fitted opening replaces nearby legacy concave points.
+                # Outer corners and points without concavity evidence keep priority.
+                opening_indices = [int(offsets[r["block"]] + r["row"]) for r in rows]
+                opening_points = camera_cpu[opening_indices]
+                chosen = [
+                    entry
+                    for entry in chosen
+                    if entry["oid"] != 1
+                    or not entry["meta"].get("contour_hole")
+                    or not (
+                        np.linalg.norm(
+                            opening_points - camera_cpu[entry["index"]], axis=1
+                        )
+                        < 0.008
+                    ).any()
+                ]
             for row in rows:
                 index = int(offsets[row["block"]] + row["row"])
                 oid = self.blocks[row["block"]][2]
@@ -788,6 +858,14 @@ class TorchCornerDetector:
                     if stage == 0
                     else self.parameters.additional_merge_radius_m
                 )
+                if stage == 3:
+                    radius = 0.003
+                if (
+                    self.hole_rgb_merge_radius_m is not None
+                    and row["meta"].get("method") == "box_rgb_quadrants"
+                    and row["meta"].get("contour_hole")
+                ):
+                    radius = self.hole_rgb_merge_radius_m
                 near = next(
                     (
                         r
@@ -884,6 +962,8 @@ class TorchCornerDetector:
             features = _corner_features(rgb_cpu, box.support_cpu)
             self.box_cube(box, features)
             self.box_rgb(box, features)
+        if self.recover_hole_rim:
+            self.box_openings(box)
         points, uv, object_id, metadata = self.merge()
         world = (points - self.ext[:, 3]) @ self.ext[:, :3]
         diagnostics = [

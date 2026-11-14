@@ -1,0 +1,4 @@
+trainer: evaluation.pilot_corner_detection:evaluate
+dataset: outputs/mixed_trajectory_pilot
+output_root: outputs/pilot_corner_detection
+workers: 3

@@ -1,0 +1,6 @@
+trainer: evaluation.hole_rim_recovery:evaluate
+cohort: pilot
+baseline: outputs/pilot_corner_detection/f5546623ea134ee4adfa13c8818ab24c/results.json
+dataset: outputs/mixed_trajectory_pilot
+output_root: outputs/hole_rim_recovery
+workers: 5

@@ -1,5 +1,42 @@
 # Graph team
 
+## Initial-state corner detector evaluation
+
+With the restored Peg and Hole audit JSONs listed in the config and the shared
+ManiSkill/PyTorch environment, re-render the 1,200 initial states and evaluate
+the CPU RGB-D detector:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/initial_corner_detection.yaml
+```
+
+## Pilot corner detector evaluation
+
+With the completed local mixed-trajectory pilot and shared ManiSkill/PyTorch
+environment, run the CPU RGB-D detector and GT-supported scoring with:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/pilot_corner_detection.yaml
+```
+
+The fixed sampling, approximate visibility criterion and measured results are
+described in [corner detection](../docs/corner_detection.md#pilot-trajectory-corner-detection-evaluation).
+
+## Hole opening recovery evaluation
+
+With the restored reset audits, the completed pilot dataset, their baseline
+evaluation JSONs, and the shared ManiSkill/PyTorch environment, run the paired
+CPU evaluations from the repository root. Each command compares the base
+detector, the original opening recovery, and the refined opening recovery.
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_reset.yaml
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_pilot.yaml
+```
+
+See [Hole opening recovery](../docs/corner_detection.md#hole-opening-recovery)
+for the detector option, stage definitions, and results.
+
 ## Independent generalization evaluation
 
 With the frozen test dataset and original Transformer/GNN checkpoints available
