@@ -1,0 +1,5 @@
+trainer: evaluation.sam2_mlx_replay:evaluate
+checkpoint: visual/checkpoints/sam2.1_hiera_small_mlx.safetensors
+clip: outputs/sam2_stream_benchmark/frames.npz
+warmup_frames: 16
+repeats: 2

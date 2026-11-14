@@ -2,6 +2,16 @@
 
 ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출) → SAM2(추적) → 물체별 point cloud와 6D pose**를 만드는 Vision prototype이다. 공용 코드(`envs/`)와 다른 팀 폴더는 건드리지 않는다.
 
+## Apple Silicon SAM2 추적
+
+MLX/Metal에서 peg와 box를 추적하고 카메라 해상도의 GPU 마스크를 반환한다.
+Apple Silicon, MLX 환경, 변환한 SAM2.1 Small 가중치와 RGB·초기 박스가 담긴
+로컬 NPZ가 필요하다. [환경 설치 및 입력 형식](../docs/sam2_mlx.md)을 참조한다.
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config evaluation/configs/sam2_mlx_replay.yaml
+```
+
 ## 독립 꼭짓점 검출기
 
 `corner_detection/`은 현재 RGB-D 한 프레임에서 관측으로 지지되는 peg/box 꼭짓점을

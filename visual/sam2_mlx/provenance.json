@@ -1,0 +1,13 @@
+{
+  "upstream": "https://github.com/avbiswas/sam2-mlx",
+  "revision": "fbeafa7531be454b8f42d89c13d1e90024a63f6b",
+  "mlx_version": "0.32.4",
+  "mlx_metal_version": "0.32.4",
+  "model": "facebook/sam2.1-hiera-small",
+  "torch_checkpoint": "visual/checkpoints/sam2.1_hiera_small.pt",
+  "torch_checkpoint_sha256": "6d1aa6f30de5c92224f8172114de081d104bbd23dd9dc5c58996f0cad5dc4d38",
+  "mlx_checkpoint": "visual/checkpoints/sam2.1_hiera_small_mlx.safetensors",
+  "mlx_checkpoint_sha256": "9b6098ce116442fa723c48058b43c4811c74793f53789d93e1b53bb5e43b2c0e",
+  "tested_python": "3.11",
+  "upstream_supported_python": ">=3.14"
+}
