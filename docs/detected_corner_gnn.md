@@ -794,7 +794,7 @@ BC collection inventory, or explored seeds 0–139. The Graph exclusion inventor
 dataset hash was checked against all three GNN checkpoints. Disjointness from
 other unknown external datasets is not established.
 
-The protocol fixes the original default 512×512 base camera, the three
+The protocol fixes the original ManiSkill default 512×512 base camera, the three
 leaderboard Transformer/GNN checkpoint pairs, the 30 mm tracking gate, a
 GT-guided scripted expert, and two trajectories per reset: expert continuation
 or 35 random 6-D arm actions after confirmed grasp/lift. Random seeds are
@@ -881,3 +881,44 @@ of all 4,102 raw frames. [Full-pipeline subset replay](../outputs/leaderboard_re
 The remaining 36 raw episodes and the original CUDA numerical environment are
 still required for complete end-to-end/exact reproduction. No protected
 leaderboard implementation or dependency was changed.
+
+### Current main camera on the same held-out trajectories
+
+On 2026-11-13, the 20 unfiltered held-out seeds and both action modes above
+were collected again using the shared factory's current base-camera position,
+`[0.65, -0.30, 0.65]` m, target `[0.065, 0.297, 0.11]` m and 512×512 resolution.
+The earlier independent test used the original ManiSkill camera at
+`[0, -0.30, 0.20]` m; it did **not** use the current factory default. Camera
+positions were checked in the saved `cam2world_gl` matrices. The two recordings
+have identical actions, action-valid flags, robot observations, all saved GT,
+grasp and lift labels for all 4,079 frames across 40 trajectories. The same
+three checkpoint pairs and existing detector/tracker/GNN evaluator were used.
+
+| Evaluation | Camera | Frames | Normalized aggregate error | Peg mean / p90 | Hole mean / p90 |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Expert, all | Original | 2,037 | 1.9216 | 60.23 / 137.49 mm | 11.79 / 25.04 mm |
+| Expert, all | Current | 2,037 | 2.2395 | 13.10 / 25.16 mm | 62.20 / 132.78 mm |
+| Expert, post-lift | Original | 695 | 0.6550 | 17.33 / 45.87 mm | 5.35 / 14.40 mm |
+| Expert, post-lift | Current | 695 | 2.2610 | 16.54 / 31.30 mm | 60.18 / 133.29 mm |
+| Random, post-lift | Original | 700 | 1.9262 | 58.24 / 127.69 mm | 10.54 / 20.93 mm |
+| Random, post-lift | Current | 700 | 2.4296 | 19.44 / 33.97 mm | 62.40 / 133.03 mm |
+
+The normalized score uses the nine leaderboard scales and the same frame-wise
+three-seed error aggregation; no model output was missing. For expert full
+trajectories, Hole error increased in 17 of 20 episode means, while Peg error
+increased in 5. On the current camera the expert Hole median is 48.73 mm, so
+the large mean is not solely a few outlier frames. Average detected points per
+expert frame rose from 5.76 to 11.97; this count combines object types and does
+not establish whether useful Hole opening corners were detected. The camera
+change is paired, but it does not isolate which detection, tracking or GNN
+mechanism caused the errors. Both cameras have now been inspected on this test;
+the test is no longer untouched for future model or camera selection.
+
+CPU physics and CPU inference ran on the Mac host; rendering used the SAPIEN
+macOS backend with MoltenVK, and CUDA was not evaluated. The frozen protocol
+still says `camera: default`: the effective camera pose therefore comes from
+the saved calibration and current factory, not that ambiguous string. The
+original protocol and protected model code were not changed. Local ignored
+artifacts include [configs and comparison](../outputs/main_camera_held_out/),
+[trajectory verification](../outputs/main_camera_held_out/pair_verification.json),
+and [full results](../outputs/main_camera_held_out/evaluation/87299f25494b4be78d93f6c43798fb74/results.json).
