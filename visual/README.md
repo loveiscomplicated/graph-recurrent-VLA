@@ -2,6 +2,11 @@
 
 ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출) → SAM2(추적) → 물체별 point cloud와 6D pose**를 만드는 Vision prototype이다. 공용 코드(`envs/`)와 다른 팀 폴더는 건드리지 않는다.
 
+## TAPNext++ 포인트 추적
+
+공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.
+가중치 다운로드와 두 프레임 추론 예제는 [TAPNext++ 가이드](../docs/tapnextpp.md)를 참고한다.
+
 ## Apple Silicon SAM2 추적
 
 MLX/Metal에서 peg와 box를 추적하고 카메라 해상도의 GPU 마스크를 반환한다.
@@ -75,7 +80,7 @@ visual/
 └── requirements.lock.txt, requirements.step7.lock.txt, constraints.txt
 ```
 
-git에 넣지 않는 것(다시 만들 수 있음): `data/`(수집 데이터, E9 export), `results/v1/**/runs/`(mask npz), `checkpoints/`, `third_party/`(SAM2, SAMURAI, EfficientTAM, DAM4SAM, SAM2Long 소스), `cache/`, `logs/`.
+git에 넣지 않는 것(다시 만들 수 있음): `data/`(수집 데이터, E9 export), `results/v1/**/runs/`(mask npz), `checkpoints/`, `third_party/`의 로컬 소스(SAM2, SAMURAI, EfficientTAM, DAM4SAM, SAM2Long 소스), `cache/`, `logs/`.
 
 ## 주요 스크립트
 
