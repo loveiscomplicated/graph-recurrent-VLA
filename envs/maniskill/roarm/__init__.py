@@ -57,9 +57,21 @@ class RoArmM2S(BaseAgent):
         delta = PDJointPosControllerConfig(
             **common, lower=-0.05, upper=0.05, use_delta=True, normalize_action=True
         )
+        # Optional simulation gains for slow guarded trajectory tracking. Existing
+        # position/delta modes keep their original gains and action conventions.
+        guarded = PDJointPosControllerConfig(
+            joint_names=JOINT_NAMES,
+            lower=None,
+            upper=None,
+            normalize_action=False,
+            stiffness=[160, 160, 120, 10],
+            damping=[2, 2, 1.5, 0.2],
+            force_limit=[5, 5, 5, 0.5],
+        )
         return {
             "pd_joint_pos": {"joints": absolute, "balance_passive_force": False},
             "pd_joint_delta_pos": {"joints": delta, "balance_passive_force": False},
+            "pd_joint_pos_guarded": {"joints": guarded, "balance_passive_force": False},
         }
 
     def _after_loading_articulation(self):
