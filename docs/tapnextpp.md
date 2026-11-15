@@ -194,13 +194,13 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
   .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
 ```
 
-이 명령은 Apple Silicon의 [MLX 온라인 추적](#mlx-온라인-추적)을 사용한다.
+이 명령은 Apple Silicon의 [관측 기반 MLX 이동 영역](#현재-관측으로-이동하는-mlx-작업-영역)을 사용한다.
 아래 PyTorch MPS 전체 화면 재생 결과를 재현하려면
 `visual/configs/tapnextpp_surface_tracking_mps.yaml` 복사본에서
 `tap_native_patch_crop_xyxy`, `tap_mps_fp16_vit`,
 `tap_mps_fp16_recurrent_mlp`를 제거한다.
 
-CUDA 기본 설정은 전체 화면 256×256과 FP16 autocast 가중치 캐시를 사용한다.
+CUDA 기본 설정은 [관측 기반 이동 영역과 CUDA Graph](#cuda-이동-영역과-graph-재사용)를 사용한다.
 
 ```bash
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
@@ -411,7 +411,7 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 
 #### MLX 연산 및 상태 배치 최적화
 
-현재 MLX 기본 경로에는 다음 최적화를 함께 적용한다. 입력 해상도, 576패치,
+아래 고정 영역 비교에서는 다음 최적화를 함께 적용했다. 입력 해상도, 576패치,
 32개 표면 query, 모델 가중치 및 FP16/FP32 구성을 유지한다.
 
 - 마지막 공간 Transformer는 query 행의 attention 출력과 MLP만 계산한다.
@@ -435,7 +435,7 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 | 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | 기존 MLX | 47.17 / 48.24 | 47.10 / 48.18 | 83.10 / 89.85 | 211/240 | 37/66 |
-| 최적화 MLX 기본 경로 | 44.19 / 44.84 | 44.07 / 44.34 | 80.43 / 86.41 | 211/240 | 37/66 |
+| 최적화 MLX 고정 영역 | 44.19 / 44.84 | 44.07 / 44.34 | 80.43 / 86.41 | 211/240 | 37/66 |
 
 추적 평균은 6.32%, P95는 7.03% 감소했다. 초기 query, GT, 평가 mask,
 검출 결과, 표면점 가시성 및 복원 가능 여부가 같고, 가림 240건과 삽입 66건의
@@ -505,3 +505,91 @@ Attention을 별도 행렬곱과 softmax로 분리한 후보는 평균 44.65ms�
 [재생 비교](../outputs/tapnextpp_mlx_verification/ad38ee23447f437f9c55d7f478f5eaed/replay_comparison.json) ·
 [블록별 계측](../outputs/tapnextpp_mlx_layer_profile/c168e1a102364351af0e1987c25deef3/summary.json) ·
 [입력·상태 검증](../outputs/tapnextpp_mlx_verification/ad38ee23447f437f9c55d7f478f5eaed/summary.json)
+
+#### 현재 관측으로 이동하는 MLX 작업 영역
+
+MLX 기본 설정은 모델에 들어갈 패치를
+매 프레임 관측에서 정한다. 시각 모듈은 첫 query, 현재 선택적 물체 mask와
+직전의 가시 query만 받는다. 재생에서는 기존 RGB-D 검출기의 Peg mask를
+전달한다. Expert 단계, 이후 프레임, GT를 영역 선택에 사용하지 않는다.
+Mask 또는 query의 경계에 2패치 여유를 더하고 12, 16, 24, 32 중 필요한
+크기의 정사각형을 고른다. 기존 영역이 같은 크기이고 새 경계를 포함하면
+그대로 쓴다. 관측이 없으면 이전 가시점 주변에서 검색을 넓히고, 신뢰할
+가시점이 없거나 빈 mask가 3프레임 이어지면 전체 화면을 처리한다.
+
+선택 영역의 픽셀만 MLX로 옮겨 원래 위치 임베딩으로 투영한다. 이동 시
+겹치는 절대 패치 좌표의 recurrent 이력과 query 이력을 이어받고,
+새로 들어온 패치의 상태는 초기화한다. 이 동작은 패치와 query의 행 순서가
+달라져도 상태를 다른 위치나 다른 query로 옮기지 않는다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking_mlx.yaml
+```
+
+2026-11-15 M4 Pro, MLX 0.32.4에서 검출기를 `bb01149`로 고정하고 같은
+149프레임을 기준 → 이동 영역 → 이동 영역 → 기준 순으로 재생했다. 아래 시간은
+각 조건의 초기 프레임을 제외한 두 실행을 합산했다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 기준 576패치 | 43.47 / 43.81 | 43.41 / 43.78 | 78.87 / 86.85 | 211/240 | 37/66 |
+| 관측 기반 이동 영역 | 17.97 / 24.23 | 18.40 / 25.60 | 53.80 / 65.81 | 236/240 | 62/66 |
+
+이 재생의 모든 프레임에서 144패치를 썼고, 영역은 프레임 86, 104, 119에서
+이동했다. 삽입에서 기존 성공 2건이 실패로 바뀌고 27건이 새로 성공했다.
+영역 선택과 결과 배열은 두 반복에서 일치했다. 고정 영역의 결과는 변경 전
+기록과도 일치했다. 256/512px 입력에서 별도로 관측을 이동시키거나 끊어,
+겹치는 패치와 query 상태, 새 패치 초기화, 전체 화면으로 확장하고 다시
+관측된 영역을 따라가는 동작을 확인했다.
+
+이 결과는 순차 재생 평가다. 이동 창이 실제 제어 행동에 미치는 영향과
+검출이 끊긴 뒤의 추적 정확도 및 지연 시간은 별도의 closed-loop 평가가
+필요하다. 위 비교는 MLX로 실행했다. CUDA 결과는 아래에 따로 기록했다.
+
+[비교 결과](../outputs/tapnextpp_surface_tracking/ed1b96295de7459e8d993c71a7a75f82/adaptive_comparison.json) ·
+[이동/관측 끊김 검증](../outputs/tapnextpp_surface_tracking/ed1b96295de7459e8d993c71a7a75f82/check_adaptive.log) ·
+[프레임별 영역](../outputs/tapnextpp_surface_tracking/ed1b96295de7459e8d993c71a7a75f82/tracks.npz)
+
+#### CUDA 이동 영역과 Graph 재사용
+
+CUDA 기본 설정은 MLX와 같은 관측 기반
+영역 선택을 CUDA FP16 autocast에 적용한다. 영역이 움직이면 절대 패치
+좌표로 이어지는 상태를 찾고, 새 패치는 upstream의 초기 recurrent 연산으로
+처리한다. 144패치 영역이 그대로인 연속 프레임에서는 CUDA Graph를
+재사용한다. 초기 프레임, 영역 이동, 검색 범위 확대는 일반 CUDA 호출로
+처리한다. Graph 이전에 반환한 상태도 이후 호출에서 계속 사용할 수 있다.
+`tap_cuda_graph: false`로 설정하면 같은 이동 영역을 일반 CUDA 호출로 실행한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config visual/configs/tapnextpp_surface_tracking_cuda.yaml
+```
+
+2026-11-15 RTX 3090, PyTorch 2.14.1+cu130에서 `bb01149` 검출기와 같은
+149프레임으로 비교했다. 전체 화면 → 이동 영역 → 이동 영역 → 전체 화면
+순으로 실행한 뒤 Graph를 추가한 경로를 두 번 재생했다. 조건마다 첫 프레임을
+제외한 두 실행의 시간을 합산했다. Graph 경로의 워밍업은 약 290ms였다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 전체 화면, CUDA FP16 캐시 | 22.01 / 22.51 | 22.04 / 22.39 | 86.64 / 89.12 | 199/240 | 25/66 |
+| 이동 영역, 일반 CUDA 호출 | 21.94 / 22.18 | 21.65 / 21.92 | 87.28 / 90.57 | 236/240 | 62/66 |
+| 이동 영역, CUDA Graph | 9.43 / 8.95 | 8.85 / 9.11 | 75.51 / 78.42 | 236/240 | 62/66 |
+
+Graph와 일반 호출에서 시간 외 결과 배열이 일치했다. 기존 4px 성공은
+모두 유지했고, 삽입 37건이 새로 성공했다. 이 영상에서는 144패치를 계속
+사용했고, 영역이 실제 이동한 세 프레임은 Graph 설정에서도 평균 38.11ms,
+최대 39.37ms였다. 별도 관측 이동 및 끊김 테스트에서 CUDA 상태의 재배치,
+전체 화면 확대, 재관측 후 복귀, Graph를 반복 호출한 뒤에도 앞선 상태를
+다시 사용할 수 있음을 확인했다. 영역 선택을 공유하도록 정리한 뒤 MLX
+재생의 시간 외 결과도 기존 기록과 일치했다. 제어 정책을 실행하는
+closed-loop의 지연 시간과 성공률은 이번 측정에 포함되지 않았다.
+
+기존 고정 영역 비교를 재현하려면 설정 복사본에서 MLX는
+`tap_adaptive_crop: false`와 `tap_native_patch_crop_xyxy: [0, 7, 24, 31]`을,
+CUDA는 `tap_adaptive_crop: false`와 `tap_cuda_graph: false`를 사용한다.
+
+[CUDA 비교 결과](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/cuda_adaptive_comparison.json) ·
+[CUDA 상태 검증](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/check_cuda_graph.log) ·
+[Graph 프레임별 기록](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/tracks.npz)

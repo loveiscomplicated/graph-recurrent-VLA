@@ -139,7 +139,7 @@ class OnlineBlock:
         next_history = window[1:].transpose(1, 0, 2)
         return convolved + self.weights[prefix + "b"], next_history
 
-    def _recurrent(self, x, state):
+    def _recurrent(self, x, state, fresh=None):
         prefix = "ssm_block.recurrent_block."
         x = mx.fast.rms_norm(x, self.temporal_gain, self.rms_eps)
         paired = _linear(x, self.paired_projection_weight, self.paired_projection_bias)
@@ -156,7 +156,8 @@ class OnlineBlock:
         if state is not None:
             decay_gate = decay_gate.transpose(1, 0, 2).reshape(convolved.shape)
             log_decay = (-8.0 * decay_gate) * self.decay
-            gated = mx.exp(log_decay) * state.hidden + gated * mx.sqrt(1 - mx.exp(2 * log_decay))
+            continued = mx.exp(log_decay) * state.hidden + gated * mx.sqrt(1 - mx.exp(2 * log_decay))
+            gated = continued if fresh is None else mx.where(fresh[:, None], gated, continued)
         output = self._project(gated * gate_y, prefix + "linear_out")
         return output, RecurrentState(next_history, gated)
 
@@ -169,7 +170,8 @@ class OnlineBlock:
     def _layer_norm(self, x, name, eps):
         return mx.fast.layer_norm(x, self.weights[name + ".weight"], self.weights[name + ".bias"], eps)
 
-    def _spatial(self, x):
+    def _spatial(self, x, output_start=None):
+        output_start = self.output_start if output_start is None else output_start
         x = x.astype(mx.float16)
         normalized = self._layer_norm(x, "vit_block.ln_1", self.vit_eps[0])
         prefix = "vit_block.self_attention."
@@ -179,9 +181,9 @@ class OnlineBlock:
                    for part in mx.split(packed, 3, axis=-1))
         # The last block only feeds query heads. All tokens still supply K/V and
         # update recurrent state, but its image attention/MLP outputs are unused.
-        q = q[:, :, self.output_start:]
+        q = q[:, :, output_start:]
         attention = mx.fast.scaled_dot_product_attention(q, k, v, scale=self.head_scale)
-        output_tokens = x[self.output_start:]
+        output_tokens = x[output_start:]
         attention = attention.transpose(0, 2, 1, 3).reshape(output_tokens.shape)
         residual = output_tokens + self._project(attention, prefix + "out_proj")
         normalized = self._layer_norm(residual, "vit_block.ln_2", self.vit_eps[1])
@@ -189,11 +191,11 @@ class OnlineBlock:
         hidden = self.spatial_gelu[expanded.view(mx.uint16)]
         return (residual + self._project(hidden, "vit_block.mlp.3")).astype(mx.float32)
 
-    def __call__(self, tokens, state=None):
+    def __call__(self, tokens, state=None, *, output_start=None, fresh=None):
         """Process one frame, keeping recurrence and residual inputs in FP32."""
-        temporal, state = self._recurrent(tokens, state)
+        temporal, state = self._recurrent(tokens, state, fresh)
         residual = tokens + temporal
-        return self._spatial(residual + self._recurrent_mlp(residual)), state
+        return self._spatial(residual + self._recurrent_mlp(residual), output_start), state
 
 
 def compile_continuation(block):
@@ -281,27 +283,36 @@ class OnlineTracker:
 
     def _image_tokens(self, frame_bgr):
         """Transfer the BGR input once; compile its crop, resize and embedding on GPU."""
+        self._frame_scale(frame_bgr)
+        return self._compiled_image_embedding(mx.array(frame_bgr))
+
+    def _frame_scale(self, frame_bgr):
         size = self.input_resolution
         if frame_bgr.ndim != 3 or frame_bgr.shape[2] != 3:
             raise ValueError("TAPNext++ MLX expects a BGR frame with shape [height, width, 3]")
         if frame_bgr.shape[:2] not in ((size, size), (2 * size, 2 * size)):
             raise ValueError("TAPNext++ MLX expects a 256x256 or 512x512 BGR frame")
-        return self._compiled_image_embedding(mx.array(frame_bgr))
+        return frame_bgr.shape[0] // size
 
     def _embed_image(self, image_bgr):
         """Embed only the native patch crop, preserving the original RGB sampling."""
         scale = image_bgr.shape[0] // self.input_resolution
         vertical, horizontal = self.crop
-        image = image_bgr[vertical.start * scale:vertical.stop * scale,
-                          horizontal.start * scale:horizontal.stop * scale, ::-1].astype(mx.float32)
+        crop = image_bgr[vertical.start * scale:vertical.stop * scale,
+                         horizontal.start * scale:horizontal.stop * scale]
+        return self._embed_patch_region(crop, self.image_pos, scale)
+
+    def _embed_patch_region(self, image_bgr, positions, scale):
+        """Project a patch-aligned crop with the original image's position embeddings."""
+        image = image_bgr[..., ::-1].astype(mx.float32)
         if scale == 2:
             # Half-pixel bilinear sampling at exactly 2x gives four equal weights.
-            height = vertical.stop - vertical.start
-            width = horizontal.stop - horizontal.start
+            height = image.shape[0] // 2
+            width = image.shape[1] // 2
             image = image.reshape(height, 2, width, 2, 3).mean(axis=(1, 3))
         image = image / 127.5 - 1
         patches = mx.conv2d(image[None], self.patch_weight, stride=self.patch_size)
-        return patches.reshape(-1, self.width) + self.patch_bias + self.image_pos
+        return patches.reshape(-1, self.width) + self.patch_bias + positions
 
     def _initial_queries(self, points_xy):
         # align_corners=False evaluates model-space pixel centres at x/y - 0.5.
@@ -320,13 +331,11 @@ class OnlineTracker:
                 sampled = sampled + embedding * (x_weight * y_weight * valid)[:, None]
         return sampled
 
-    def track_frame(self, frame_bgr, query_points_xy=None, state=None, autocast=False):
-        """Return source-pixel coordinates, visibility and the next MLX state."""
+    def _run_frame(self, image_tokens, frame_shape, query_points_xy, state, step):
+        """Run the model and heads on the selected image tokens."""
         from tapnet.tapnextpp.votsp2026 import utils
 
-        if autocast:
-            raise ValueError("CUDA autocast does not apply to TAPNext++ MLX")
-        height, width = frame_bgr.shape[:2]
+        height, width = frame_shape
         if state is None:
             if query_points_xy is None or len(query_points_xy) == 0:
                 raise ValueError("The initial frame requires at least one query")
@@ -338,15 +347,11 @@ class OnlineTracker:
                 raise ValueError("TAPNext++ MLX accepts queries only on the initial frame")
             query_count, caches = state
             queries = mx.broadcast_to(self.mask_token, (query_count, self.width))
-        x = mx.concatenate((self._image_tokens(frame_bgr), queries))
+        x = mx.concatenate((image_tokens, queries))
         next_caches = []
-        for index, block in enumerate(self.blocks):
-            if state is None:
-                x, cache = block(x)
-            else:
-                prior = caches[index]
-                x, history, hidden = self.continuations[index](x, prior.history, prior.hidden)
-                cache = RecurrentState(history, hidden)
+        for index in range(len(self.blocks)):
+            prior = None if state is None else caches[index]
+            x, cache = step(index, x, prior)
             next_caches.append(cache)
 
         queries = mx.fast.layer_norm(x[-query_count:], *self.norm)
@@ -360,3 +365,16 @@ class OnlineTracker:
         mx.eval(yx, visible, [(cache.history, cache.hidden) for cache in next_caches])
         xy = utils.model_to_display(np.asarray(yx)[:, ::-1], height, width, self.input_resolution)
         return xy, np.asarray(visible), (query_count, next_caches)
+
+    def _step_block(self, index, tokens, prior):
+        if prior is None:
+            return self.blocks[index](tokens)
+        output, history, hidden = self.continuations[index](tokens, prior.history, prior.hidden)
+        return output, RecurrentState(history, hidden)
+
+    def track_frame(self, frame_bgr, query_points_xy=None, state=None, autocast=False):
+        """Return source-pixel coordinates, visibility and the next MLX state."""
+        if autocast:
+            raise ValueError("CUDA autocast does not apply to TAPNext++ MLX")
+        image_tokens = self._image_tokens(frame_bgr)
+        return self._run_frame(image_tokens, frame_bgr.shape[:2], query_points_xy, state, self._step_block)

@@ -117,8 +117,8 @@ def read_frames(config, episode):
     return frames
 
 
-def track_surface_frame(tracker, config, bgr, query=None, state=None):
-    """Track in a fixed crop and return positions in source image pixels."""
+def track_surface_frame(tracker, config, bgr, query=None, state=None, observation_mask=None):
+    """Track one frame and return positions in source image pixels."""
     crop = config.get("tap_crop_xyxy")
     if crop is not None:
         if not isinstance(crop, (list, tuple)) or len(crop) != 4 or any(
@@ -135,9 +135,11 @@ def track_surface_frame(tracker, config, bgr, query=None, state=None):
             query = query - offset
             if np.any(query < 0) or np.any(query >= [right - left, bottom - top]):
                 raise ValueError("tap_crop_xyxy must contain every initial query")
+    options = {"observation_mask": observation_mask} if config.get("tap_adaptive_crop") else {}
     tracked, visible, state = tracker.track_frame(
         bgr, query_points_xy=query, state=state,
         autocast=config.get("tap_cuda_autocast", False),
+        **options,
     )
     if crop is not None:
         tracked += offset
@@ -166,7 +168,7 @@ def replay(config, frames, tracker, detector):
                 raise ValueError("Detector returned no initial Peg corners")
         start = perf_counter()
         tracked, visible, state = track_surface_frame(
-            tracker, config, bgr, query if index == 0 else None, state,
+            tracker, config, bgr, query if index == 0 else None, state, observation_mask=mask,
         )
         synchronize(tracker.device)
         track_end = perf_counter()
@@ -193,6 +195,8 @@ def replay(config, frames, tracker, detector):
             total_ms=(end - begin) * 1000, raw_corners_xy=corners_xy,
             raw_corners_xyz=corners_xyz,
         ))
+        if config.get("tap_adaptive_crop"):
+            rows[-1]["tap_patch_xyxy"] = state.crop
         if index % 25 == 0:
             print(f"Frame {index}: {inliers} rigid inliers", flush=True)
     return query, template, rows
@@ -257,6 +261,14 @@ def report(config, frames, rows, template):
 def load_tracker(config):
     """Load the configured online implementation and its inference optimizations."""
     native_crop = config.get("tap_native_patch_crop_xyxy")
+    adaptive = config.get("tap_adaptive_crop", False)
+    graph = config.get("tap_cuda_graph", False)
+    if graph and (not adaptive or config["device"] == "mlx" or torch.device(config["device"]).type != "cuda"):
+        raise ValueError("tap_cuda_graph requires adaptive CUDA tracking")
+    if adaptive:
+        supported = config["device"] == "mlx" or torch.device(config["device"]).type == "cuda"
+        if not supported or native_crop is not None or config.get("tap_crop_xyxy") is not None:
+            raise ValueError("tap_adaptive_crop requires MLX or CUDA and selects its own patch window")
     if native_crop is not None and config.get("tap_crop_xyxy") is not None:
         raise ValueError("Choose either tap_native_patch_crop_xyxy or tap_crop_xyxy")
     if config["device"] == "mlx":
@@ -270,14 +282,28 @@ def load_tracker(config):
         )
         if any(config[key] for key in torch_options):
             raise ValueError("TAPNext++ MLX requires the PyTorch-specific flags to be disabled")
-        return OnlineTracker.from_checkpoint(
+        if adaptive:
+            from visual.tapnextpp_adaptive import AdaptiveOnlineTracker
+
+            tracker_type = AdaptiveOnlineTracker
+        else:
+            tracker_type = OnlineTracker
+        return tracker_type.from_checkpoint(
             config["checkpoint"], config["tap_input_resolution"], native_crop,
         )
-    tracker = TAPNextPP.from_checkpoint(
+    if adaptive:
+        from visual.tapnextpp_cuda import AdaptiveCudaTracker
+
+        tracker_type = AdaptiveCudaTracker
+    else:
+        tracker_type = TAPNextPP
+    tracker = tracker_type.from_checkpoint(
         config["checkpoint"],
         device=config["device"],
         input_resolution=config["tap_input_resolution"],
     )
+    if adaptive:
+        tracker.cuda_graph_enabled = graph
     if config["tap_mps_fp16_vit"]:
         enable_mps_fp16_vit(tracker)
     if config["tap_mps_fp16_recurrent_mlp"]:
@@ -321,7 +347,8 @@ def evaluate(config):
         # Warm up on frame zero with disposable state before the measured replay.
         rgb, depth, intrinsic, extrinsic = frames[0]
         warm = detector(rgb, depth, intrinsic, extrinsic)
-        query = choose_points(warm.masks[0].cpu().numpy(), depth, config["surface_queries"])
+        warm_mask = warm.masks[0].cpu().numpy()
+        query = choose_points(warm_mask, depth, config["surface_queries"])
         scope = nullcontext()
         if config["tap_cache_cuda_autocast"]:
             if tracker.device.type != "cuda" or not config["tap_cuda_autocast"]:
@@ -332,13 +359,13 @@ def evaluate(config):
         with scope:
             warm_frame = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
             warm_start = perf_counter()
-            _, _, warm_state = track_surface_frame(tracker, config, warm_frame, query)
-            if config["device"] == "mlx":
+            _, _, warm_state = track_surface_frame(tracker, config, warm_frame, query, observation_mask=warm_mask)
+            if config["device"] == "mlx" or config.get("tap_adaptive_crop"):
                 # The initial and continuation calls have different cache signatures.
-                track_surface_frame(tracker, config, warm_frame, state=warm_state)
+                track_surface_frame(tracker, config, warm_frame, state=warm_state, observation_mask=warm_mask)
             del warm_state
             synchronize(tracker.device)
-            if config["device"] == "mlx":
+            if config["device"] == "mlx" or config.get("tap_adaptive_crop"):
                 logger.record(tracker_compile_warmup_ms=(perf_counter() - warm_start) * 1000)
             query, template, rows = replay(config, frames, tracker, detector)
         result, xy = report(config, frames, rows, template)
@@ -349,6 +376,8 @@ def evaluate(config):
         scalars = {key: np.asarray([row[key] for row in rows]) for key in
                    ("pose_inliers", "surface_rgbd_valid", "surface_xy", "surface_visible",
                     "detector_ms", "initialization_ms", "tap_ms", "fusion_ms", "total_ms")}
+        if config.get("tap_adaptive_crop"):
+            scalars["tap_patch_xyxy"] = np.asarray([row["tap_patch_xyxy"] for row in rows])
         np.savez_compressed(trace, query_xy=query, frame_indices=np.arange(len(rows)), **xy, **scalars)
         logger.link_output(trace)
         logger.log(result, prefix="eval")

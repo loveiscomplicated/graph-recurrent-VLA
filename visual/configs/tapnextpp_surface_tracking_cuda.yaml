@@ -15,3 +15,5 @@ detection_gate_m: 0.012
 tap_input_resolution: 256
 tap_cuda_autocast: true
 tap_cache_cuda_autocast: true
+tap_adaptive_crop: true
+tap_cuda_graph: true

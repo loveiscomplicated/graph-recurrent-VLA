@@ -17,8 +17,8 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 
 좌표·시각·채점 검증과 산출물은 [보조점 감사](../docs/tapnextpp.md#보조점-구현-감사-및-네-조건-비교)를 참고한다.
 
-Apple Silicon 기본 설정은 MLX로 Peg 표면점을 추적하고 RGB-D 강체 정합으로
-가려진 꼭짓점을 복원한다.
+Apple Silicon 기본 설정은 [MLX 이동 영역](../docs/tapnextpp.md#현재-관측으로-이동하는-mlx-작업-영역)에서
+Peg 표면점을 추적하고 RGB-D 강체 정합으로 가려진 꼭짓점을 복원한다.
 
 ```bash
 uv pip install --python .venv/bin/python 'mlx==0.32.4' 'mlx-metal==0.32.4'
@@ -29,7 +29,8 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 지원 입력과 검증 결과는 [MLX 온라인 추적](../docs/tapnextpp.md#mlx-온라인-추적)에 있다.
 PyTorch MPS 비교에는 `visual/configs/tapnextpp_surface_tracking_mps.yaml`을 사용한다.
 
-CUDA 기본 설정은 전체 화면 256×256과 FP16 autocast 가중치 캐시를 사용한다.
+CUDA 기본 설정은 관측 기반 이동 영역과 CUDA Graph를 사용한다.
+[CUDA 검증 결과](../docs/tapnextpp.md#cuda-이동-영역과-graph-재사용)를 참고한다.
 
 ```bash
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \

@@ -12,4 +12,4 @@ ransac_seed: 42
 inlier_threshold_m: 0.005
 detection_gate_m: 0.012
 
-tap_native_patch_crop_xyxy: [0, 7, 24, 31]
+tap_adaptive_crop: true
