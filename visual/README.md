@@ -12,6 +12,30 @@ Apple Silicon, MLX 환경, 변환한 SAM2.1 Small 가중치와 RGB·초기 박�
 WANDB_MODE=disabled .venv/bin/python main.py --config evaluation/configs/sam2_mlx_replay.yaml
 ```
 
+## SAM2 CUDA TF32 스트림
+
+`visual.sam2_cuda.CudaObjectStream`은 CPU의 uint8 NumPy RGB 프레임(HWC)을
+JPEG로 인코딩·디코딩한 뒤 CUDA에서 SAM2.1 Small로 추적한다. 기본 내부 해상도는
+512이고 공간 메모리는 3개다. [Visual 환경과 체크포인트](#installation-single-supported-environment)를
+준비하고 저장소 루트에서 `source visual/env.sh`로 환경을 활성화한다.
+
+```python
+from visual.sam2_cuda import CudaObjectStream
+
+stream = CudaObjectStream("visual/checkpoints/sam2.1_hiera_small.pt")
+try:
+    first_masks = stream.start(rgb0, {1: [20, 40, 100, 80]})
+    next_masks = stream.track(rgb1, timestep=1)
+finally:
+    stream.reset()
+```
+
+첫 프레임에는 물체의 정수 ID와 카메라 픽셀 좌표의 XYXY 박스를 전달한다. 이후
+프레임은 순서대로 전달한다. 반환값은 물체 ID별 카메라 해상도의 `torch.bool`
+CUDA 텐서다. `reset()` 후에는 모델을 다시 로드하지 않고 새 영상에 사용할 수 있다.
+프레임 호출마다 PyTorch의 TF32 설정을 복원한다. 호출 중 설정은 프로세스 전체에
+적용되므로 다른 정밀도 설정을 사용하는 CUDA 작업과 겹치지 않게 한다.
+
 ## 독립 꼭짓점 검출기
 
 `corner_detection/`은 현재 RGB-D 한 프레임에서 관측으로 지지되는 peg/box 꼭짓점을
