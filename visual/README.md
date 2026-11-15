@@ -7,6 +7,26 @@ ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출)
 공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.
 가중치 다운로드와 두 프레임 추론 예제는 [TAPNext++ 가이드](../docs/tapnextpp.md)를 참고한다.
 
+## CoTracker3 Online 포인트 추적
+
+공식 구현은 `visual/third_party/co_tracker` Git 서브모듈에 있다.
+CUDA PyTorch 환경과 기존 TAPNext++ 실행의 `tracks.npz`, `summary.json`,
+같은 ManiSkill RGB 프레임이 필요하다. 다른 롤아웃을 비교하려면
+`visual/configs/cotracker_online.yaml`의 `source`와 `reference_run`을 함께 변경한다.
+
+```bash
+git submodule update --init visual/third_party/co_tracker
+mkdir -p visual/checkpoints/co_tracker
+curl -fL https://huggingface.co/facebook/cotracker3/resolve/main/scaled_online.pth \
+  -o visual/checkpoints/co_tracker/scaled_online.pth
+PYTHONPATH="visual/third_party/co_tracker${PYTHONPATH:+:$PYTHONPATH}" WANDB_MODE=disabled \
+  python main.py --config visual/configs/cotracker_online.yaml
+```
+
+초기 좌표는 TAPNext++ 실행에서 그대로 읽는다. CoTracker3는 16프레임
+윈도우를 8프레임씩 이동하며, 프레임별 최초 출력과 출력이 가능해진 입력
+프레임 번호를 저장한다. GT 배열은 비교 결과의 채점에 사용된다.
+
 ## Apple Silicon SAM2 추적
 
 MLX/Metal에서 peg와 box를 추적하고 카메라 해상도의 GPU 마스크를 반환한다.

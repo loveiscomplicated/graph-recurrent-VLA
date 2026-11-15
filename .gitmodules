@@ -1,3 +1,6 @@
 [submodule "visual/tapnet"]
 	path = visual/third_party/tapnet
 	url = https://github.com/google-deepmind/tapnet.git
+[submodule "visual/co_tracker"]
+	path = visual/third_party/co_tracker
+	url = https://github.com/facebookresearch/co-tracker.git
