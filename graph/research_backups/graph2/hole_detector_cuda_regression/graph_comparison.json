@@ -1,0 +1,70 @@
+{
+  "350": {
+    "previous": {
+      "hole_center_mm": 5.843583742729113,
+      "axis_deg": 3.067645413054913,
+      "tip_lateral_mm": 13.137512308724377
+    },
+    "grid": {
+      "hole_center_mm": 96.94491639854036,
+      "axis_deg": 6.203182022837303,
+      "tip_lateral_mm": 112.28710439545308
+    },
+    "ransac": {
+      "hole_center_mm": 5.843559716274461,
+      "axis_deg": 3.067641432766759,
+      "tip_lateral_mm": 13.13753258006258
+    }
+  },
+  "800": {
+    "previous": {
+      "hole_center_mm": 3.5280568405894432,
+      "axis_deg": 1.5010997339703354,
+      "tip_lateral_mm": 4.766486727258216
+    },
+    "grid": {
+      "hole_center_mm": 95.8441216614453,
+      "axis_deg": 82.04927618197082,
+      "tip_lateral_mm": 87.5287579521037
+    },
+    "ransac": {
+      "hole_center_mm": 3.528057369339155,
+      "axis_deg": 1.501109318969504,
+      "tip_lateral_mm": 4.766492437558625
+    }
+  },
+  "950": {
+    "previous": {
+      "hole_center_mm": 4.196455925730656,
+      "axis_deg": 1.9207376834352357,
+      "tip_lateral_mm": 4.457033166540975
+    },
+    "grid": {
+      "hole_center_mm": 5.423755838245897,
+      "axis_deg": 2.1237120468711472,
+      "tip_lateral_mm": 3.0936487893353277
+    },
+    "ransac": {
+      "hole_center_mm": 4.19644606729136,
+      "axis_deg": 1.9207567652707433,
+      "tip_lateral_mm": 4.4570222427088195
+    }
+  },
+  "1175": {
+    "previous": {
+      "hole_center_mm": 15.219136330501664,
+      "axis_deg": 6.185449365860072,
+      "tip_lateral_mm": 17.169203351228887
+    },
+    "grid": {
+      "hole_center_mm": 91.74903236549054,
+      "axis_deg": 114.57896572709235,
+      "tip_lateral_mm": 97.94404696486625
+    },
+    "ransac": {
+      "hole_center_mm": 15.219144076225557,
+      "axis_deg": 6.1854643745853455,
+      "tip_lateral_mm": 17.169177896860806
+    }
+  }
+}

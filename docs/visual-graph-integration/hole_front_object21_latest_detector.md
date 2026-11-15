@@ -1,0 +1,44 @@
+# 새 Main 카메라에서 최신 검출기의 Graph Object21 재평가
+
+## 실험 설정
+
+[이전 Hole 입구 실험](hole_front_object21_ablation.md)의 동일한 초기 상태와 전문가 궤적을 사용해 최신 검출 경로가 최종 Graph 21D에 미치는 영향을 측정했다. 시뮬레이터는 고정 Hole `PegInsertionSide-v1`이며 Main 위치 `[0.65, -0.30, 0.65]` m, 목표 `[0.065, 0.297, 0.11]` m, 수직 FOV 90°, 해상도 512×512다.
+
+| 조건 | Commit | 검출 경로 |
+| --- | --- | --- |
+| 이전 | `bb01149` | `TorchCornerDetector.main(optimized=False, compile_cuda_edges=False)` |
+| 최신 | `2b6c40e` | `TorchCornerDetector.main(device=cuda:0)`. CUDA 기본값인 grid 평면 피팅 및 TorchInductor 검증 사용. |
+
+두 조건에서 같은 GNN·Transformer 가중치와 30 mm 추적 매칭 기준을 유지했다. 평가 시드 200–1399와 전문가 궤적 시드 16개, 위치·각도 지표의 정의도 이전 실험과 동일하다. 최신 검출기에 대해서도 현재 검출, 입구 검출점 제거, 가시 GT 입구 점 교체 세 조건을 다시 실행했다. TAPNext++, Recurrent, KinFilter는 평가 경로에 포함하지 않았다.
+
+이번 비교는 팀 검출기 벤치마크의 속도를 검증하는 실험과 구분된다. 원래 입력과 같이 NumPy RGB-D·캘리브레이션을 사용했고, 새 CUDA 검출 기본 설정을 통째로 적용했다. 결과는 검출기 버전과 기본 설정이 함께 바뀐 영향이며, grid 피팅이나 검증 경로 하나의 효과를 따로 추정하지 않는다.
+
+## 결과
+
+구버전·신버전 출력은 seed, step, 평가 구간 기준으로 1,839프레임이 모두 짝지어졌다. 수집 중 전문가의 종료 상태와 저장된 GT 21D 값도 일치했다. 전문가 16개 시드 중 15개가 삽입 단계에 진입했고, 875번은 구·신 버전 모두 200 step에서 종료됐다.
+
+| 평가 구간 | 프레임 | Hole 중심 P50 / P90 (mm) | 삽입축 P50 / P90 (°) | Peg 끝점 횡방향 P50 / P90 (mm) |
+| --- | ---: | ---: | ---: | ---: |
+| 초기 | 1,200 | 4.38 / 15.95 → 5.64 / 87.33 | 1.29 / 4.72 → 1.53 / 83.78 | 5.17 / 16.41 → 6.37 / 86.66 |
+| 첫 파지 | 15 | 7.72 / 24.71 → 13.85 / 67.26 | 1.81 / 5.92 → 2.69 / 59.63 | 3.67 / 17.40 → 9.71 / 66.70 |
+| 파지 유지 및 정렬 | 624 | 4.65 / 17.55 → 9.53 / 90.32 | 1.78 / 6.16 → 2.28 / 91.64 | 6.27 / 24.60 → 14.09 / 87.43 |
+| 삽입 직전 | 75 | 4.72 / 23.46 → 10.88 / 95.50 | 1.55 / 6.15 → 1.89 / 82.04 | 6.63 / 17.62 → 15.47 / 97.61 |
+
+모든 항목은 이전 검출기 → 최신 검출기다. 삽입 직전은 expert가 삽입 단계에 진입한 15개 궤적의 마지막 파지 중 정렬 프레임을 각 5개씩 사용했다. 최신 경로에서 이 구간의 횡방향 오차는 75프레임 중 58개에서 증가했다. seed별 평균 변화량의 95% bootstrap 구간은 횡방향 +6.04 ~ +40.75 mm였다.
+
+### Hole 입구 입력
+
+- 초기 프레임에서 검출기가 입구로 표시한 점이 하나도 없었던 경우는 45/1,200 → 186/1,200으로 늘었다. 입구로 표시한 점 중 앞쪽 GT 꼭짓점 5 mm 이내에 있는 점이 하나도 없었던 프레임은 48 → 191개였다. 이 수치는 일대일 매칭 재현율과 다르다.
+- 최신 경로의 파지 유지·정렬 구간에서 횡방향 오차가 50 mm를 넘은 113프레임 중 101프레임은 위 5 mm 근접 조건을 충족하는 태그가 붙은 입구 점이 없었다.
+- 최신 검출기의 입구 점을 가시 GT 점으로 교체하면 삽입 직전 Hole 중심 P90은 95.50 → 25.19 mm, 횡방향 P90은 97.61 → 29.79 mm였다. 입구 검출·추적 입력이 크게 영향을 준다. 다른 점의 품질과 추적 이력도 남아 있어 각 CUDA 최적화의 효과를 이 비교에서 분리할 수 없다.
+- 이 결과는 동일 21D 파이프라인의 짝지은 평가다. 팀 문서의 별도 2,073프레임 검출 벤치마크는 코호트, 세부 입력 경로, 지표가 다르다.
+
+## 검증 및 파일
+
+Vast.ai RTX 3090에서 ManiSkill 3.0.1, PyTorch 2.14.1+cu132로 CPU PhysX, CUDA 렌더링·추론을 실행했다. 세 시드 소규모 검증 후 300개 시드씩 네 작업으로 실행했다. 네 원격 실험의 완료 상태, Git commit, 가중치와 평가 설정 일치, GT 및 가시 GT 입구 수 일치, 21D 유한값, seed와 step 중복 여부를 확인했다.
+
+- [이전 버전과 프레임별 짝비교 요약](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/comparison.json)
+- [최신 검출기 세 조건별 집계](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/paired.json)
+- [모든 21D 프레임과 GT (로컬 백업)](../../graph/research_backups/graph2/hole_front_object21_latest_detector/BACKUP.md)
+- [실행 설정과 네 원격 run ID](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/summary.json)
+- [평가 스크립트](../../graph/research_backups/graph2/hole_front_object21_latest_detector/evaluate.py) · [병합 및 비교 스크립트](../../graph/research_backups/graph2/hole_front_object21_latest_detector/compare.py)

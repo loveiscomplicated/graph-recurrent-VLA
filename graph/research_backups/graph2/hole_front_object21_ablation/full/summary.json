@@ -1,0 +1,73 @@
+{
+  "expert_terminals": {
+    "200": "insert_entry",
+    "275": "insert_entry",
+    "350": "insert_entry",
+    "425": "insert_entry",
+    "500": "insert_entry",
+    "575": "insert_entry",
+    "650": "insert_entry",
+    "725": "insert_entry",
+    "800": "insert_entry",
+    "875": "truncated",
+    "950": "insert_entry",
+    "1025": "insert_entry",
+    "1100": "insert_entry",
+    "1175": "insert_entry",
+    "1250": "insert_entry",
+    "1325": "insert_entry"
+  },
+  "source_runs": [
+    {
+      "run_id": "6195d7f009554cfd871e937e9636267d",
+      "source": "full",
+      "accepted_seeds": [
+        200,
+        650
+      ],
+      "status": "failed",
+      "script_sha256": "3dcaf24fc058d319d25bfbb6ae031f0c737f669bb781ee5f84677ebc60af7bd7"
+    },
+    {
+      "run_id": "0ff0ebab68da45d399a4029891d4a484",
+      "source": "shard_650_900",
+      "accepted_seeds": [
+        650,
+        900
+      ],
+      "status": "finished",
+      "script_sha256": "55ce485f5f03d42596cb3ba8f4d8d0c7ed24e9bb67cea675b101d2396cecb184"
+    },
+    {
+      "run_id": "f545bbc60a9a40f8870213c037d8df37",
+      "source": "shard_900_1150",
+      "accepted_seeds": [
+        900,
+        1150
+      ],
+      "status": "finished",
+      "script_sha256": "55ce485f5f03d42596cb3ba8f4d8d0c7ed24e9bb67cea675b101d2396cecb184"
+    },
+    {
+      "run_id": "9cbe87a78c064ea1af983189a2893a3b",
+      "source": "shard_1150_1400",
+      "accepted_seeds": [
+        1150,
+        1400
+      ],
+      "status": "finished",
+      "script_sha256": "55ce485f5f03d42596cb3ba8f4d8d0c7ed24e9bb67cea675b101d2396cecb184"
+    }
+  ],
+  "metrics": {
+    "initial": {
+      "frames": 1200
+    },
+    "first_grasp": {
+      "frames": 15
+    },
+    "held_align": {
+      "frames": 624
+    }
+  }
+}

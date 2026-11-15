@@ -1,0 +1,61 @@
+{
+  "expert_terminals": {
+    "200": "insert_entry",
+    "275": "insert_entry",
+    "350": "insert_entry",
+    "425": "insert_entry",
+    "500": "insert_entry",
+    "575": "insert_entry",
+    "650": "insert_entry",
+    "725": "insert_entry",
+    "800": "insert_entry",
+    "875": "truncated",
+    "950": "insert_entry",
+    "1025": "insert_entry",
+    "1100": "insert_entry",
+    "1175": "insert_entry",
+    "1250": "insert_entry",
+    "1325": "insert_entry"
+  },
+  "source_runs": [
+    {
+      "run_id": "5f3e9f2f736d4655b1b2380bff418ad1",
+      "range": [
+        200,
+        500
+      ]
+    },
+    {
+      "run_id": "7d658a5f930b415bb2725e8d9a0472bf",
+      "range": [
+        500,
+        800
+      ]
+    },
+    {
+      "run_id": "de420f8757ef45ed90385707e597e77c",
+      "range": [
+        800,
+        1100
+      ]
+    },
+    {
+      "run_id": "7b13b814be7649ebab66b950da7ae3cb",
+      "range": [
+        1100,
+        1400
+      ]
+    }
+  ],
+  "metrics": {
+    "initial": {
+      "frames": 1200
+    },
+    "first_grasp": {
+      "frames": 15
+    },
+    "held_align": {
+      "frames": 624
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "trainer": "fixed_hole_trace:evaluate",
+  "source": "/workspace/rollout_diagnostics/source",
+  "experiment_root": "/workspace/rollout_diagnostics/original_camera_experiments",
+  "seeds": [
+    700449,
+    700451,
+    700458,
+    700518
+  ],
+  "source_commits": {
+    "graph_base": "2302bd2269863863c18ff85d5b504bdf6c368746",
+    "recurrent_exp2": "f47789bb79dda64c0ea9a6f1ac1f4d04a8ffadcf"
+  }
+}

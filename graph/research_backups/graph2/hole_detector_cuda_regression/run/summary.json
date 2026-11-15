@@ -1,0 +1,471 @@
+{
+  "run_id": "e6ab442ec6804d049707a58b9af4ef96",
+  "summary": {
+    "systematic": {
+      "previous": {
+        "frames": 120,
+        "peg": {
+          "matched": 729,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        }
+      },
+      "latest_legacy": {
+        "frames": 120,
+        "peg": {
+          "matched": 729,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        }
+      },
+      "ransac_eager": {
+        "frames": 120,
+        "peg": {
+          "matched": 729,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        }
+      },
+      "ransac_compiled": {
+        "frames": 120,
+        "peg": {
+          "matched": 729,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 393,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 7
+        }
+      },
+      "grid_eager": {
+        "frames": 120,
+        "peg": {
+          "matched": 713,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        }
+      },
+      "grid_compiled_numpy": {
+        "frames": 120,
+        "peg": {
+          "matched": 713,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        }
+      },
+      "grid_compiled_cuda": {
+        "frames": 120,
+        "peg": {
+          "matched": 713,
+          "supported": 732,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 514,
+          "supported": 545,
+          "supported_frames": 120,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 359,
+          "supported": 461,
+          "supported_frames": 119,
+          "zero_matched": 19
+        }
+      }
+    },
+    "targeted": {
+      "previous": {
+        "frames": 12,
+        "peg": {
+          "matched": 79,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        }
+      },
+      "latest_legacy": {
+        "frames": 12,
+        "peg": {
+          "matched": 79,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        }
+      },
+      "ransac_eager": {
+        "frames": 12,
+        "peg": {
+          "matched": 79,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        }
+      },
+      "ransac_compiled": {
+        "frames": 12,
+        "peg": {
+          "matched": 79,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 30,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 0
+        }
+      },
+      "grid_eager": {
+        "frames": 12,
+        "peg": {
+          "matched": 71,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        }
+      },
+      "grid_compiled_numpy": {
+        "frames": 12,
+        "peg": {
+          "matched": 71,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        }
+      },
+      "grid_compiled_cuda": {
+        "frames": 12,
+        "peg": {
+          "matched": 71,
+          "supported": 79,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "box_outer": {
+          "matched": 60,
+          "supported": 63,
+          "supported_frames": 12,
+          "zero_matched": 0
+        },
+        "hole_front": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        },
+        "hole_rear": {
+          "matched": 0,
+          "supported": 0,
+          "supported_frames": 0,
+          "zero_matched": 0
+        },
+        "hole_all": {
+          "matched": 0,
+          "supported": 45,
+          "supported_frames": 12,
+          "zero_matched": 12
+        }
+      }
+    }
+  }
+}
