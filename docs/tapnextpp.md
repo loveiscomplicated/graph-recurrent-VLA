@@ -408,3 +408,62 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 [MPS 1](../outputs/tapnextpp_surface_tracking/b36d384a12df4308a70d179d759f57ec/summary.json) ·
 [MPS 2](../outputs/tapnextpp_surface_tracking/c305e49668454aa4bc3c325c1297ba76/summary.json) ·
 [MLX 2](../outputs/tapnextpp_surface_tracking/033d2b9d8b2c440d86c579b1d8a6e74b/summary.json)
+
+#### MLX 연산 및 상태 배치 최적화
+
+현재 MLX 기본 경로에는 다음 최적화를 함께 적용한다. 입력 해상도, 576패치,
+32개 표면 query, 모델 가중치 및 FP16/FP32 구성을 유지한다.
+
+- 마지막 공간 Transformer는 query 행의 attention 출력과 MLP만 계산한다.
+  이미지 토큰도 K/V를 제공하고 모든 블록에서 recurrent 상태를 갱신한다.
+- Recurrent `linear_x`와 `linear_y`의 FP32 가중치를 로드할 때 묶어
+  프레임마다 하나의 행렬곱으로 계산한다.
+- 4-tap temporal convolution은 두 쌍의 합으로 계산해 곱셈 후 reduction용
+  중간 버퍼를 없앤다. 이력은 시간축별로 연속 저장하되 외부에 전달하는
+  `[tokens, time, width]` 형태는 유지한다.
+- BGR 입력은 한 번 전송하고 GPU에서 crop, RGB 변환, 리사이즈, 패치 임베딩을
+  컴파일한다. 필요한 crop만 리사이즈하며 기존 전체 화면 리사이즈 후 crop과
+  같은 임베딩을 생성한다. 프레임마다 수행하던 NumPy RGB 복사를 제거했다.
+
+2026-11-15 M4 Pro, MLX 0.32.4에서 커밋 `3b4d536`의 MLX 구현과 비교했다.
+동시에 실행 중인 앞선 실험이 종료된 뒤 기존 → 최적화 → 최적화 → 기존
+순서로 같은 149프레임을 재생했다. 검출기는 `bb01149` 소스로 고정하고
+`ExperimentLogger`에 실행별 config, 소스 SHA-256, 체크포인트·에피소드·평가
+참조 해시를 기록했다. 아래 시간은 조건별 두 실행에서 워밍업과 프레임 0을
+제외한 296개 측정값을 합산한 값이다. 삽입 구간은 프레임 128–148이다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 기존 MLX | 47.17 / 48.24 | 47.10 / 48.18 | 83.10 / 89.85 | 211/240 | 37/66 |
+| 최적화 MLX 기본 경로 | 44.19 / 44.84 | 44.07 / 44.34 | 80.43 / 86.41 | 211/240 | 37/66 |
+
+추적 평균은 6.32%, P95는 7.03% 감소했다. 초기 query, GT, 평가 mask,
+검출 결과, 표면점 가시성 및 복원 가능 여부가 같고, 가림 240건과 삽입 66건의
+개별 4px 판정이 모두 같다. 각 경로의 두 반복에서 시간 이외 출력 배열도
+일치했다. 다만 행렬곱과 합산 순서가 바뀌어 기존 경로와 좌표가 완전히 같지는
+않다. 표면점 최대 차이는 0.06195px, 복원 좌표 최대 차이는 0.36419px,
+삽입 복원 좌표 최대 차이는 0.22730px다. 삽입 오차 중앙값은
+3.55536 → 3.57386px였다.
+
+256/512px 입력 × 전체/576패치 crop × query 1/7/32개, 총 12조합의 초기 및
+연속 3프레임도 확인했다. 이미지 임베딩과 가시성은 기존과 일치했고, reset은
+해당 구현의 최초 결과를 정확히 재현했다. 기존 구현에서 만든 이력의 이어받기,
+FP32 상태 형태, 잘못된 입력의 거부도 확인했다. CUDA와 PyTorch MPS는 이번
+변경에서 재실행하지 않았다. 정확도 보존 결과는 이 149프레임 에피소드에
+대한 검증이며 다른 영상에서의 정확도를 보장하지 않는다.
+
+기존 MLX의 함수별 동기화 계측에서는 12블록 합계가 공간 Transformer 22.49ms,
+recurrent 채널 MLP 19.20ms, recurrent 상태·프로젝션 11.90ms였다.
+구간마다 동기화한 값이므로 이를 전체 지연 시간에 단순 합산하지 않는다.
+중간 추론 텐서는 MLX GPU에 있고 NumPy는 입출력 경계에서 사용한다.
+추가 FP16 프로젝션, 행렬곱 padding, 전체 모델 단일 compile도 시험했으나
+채택한 조합보다 느렸다. 8-bit 가중치 행렬곱의 별도 계측에서도 유효한
+전체 MLP 가속 근거를 얻지 못해 기본 경로에 포함하지 않았다.
+
+[기존 1](../outputs/tapnextpp_surface_tracking/6df323e609d247b0912ee75ab54868ab/summary.json) ·
+[최적화 1](../outputs/tapnextpp_surface_tracking/3448a78de1174ed1ad10fe7a5017de79/summary.json) ·
+[최적화 2](../outputs/tapnextpp_surface_tracking/8e2bb65870d34265a11e0a9a8398e4f4/summary.json) ·
+[기존 2](../outputs/tapnextpp_surface_tracking/f9940940f7f8452d912c4f2b1c66a8d2/summary.json) ·
+[재생 비교](../outputs/tapnextpp_mlx_verification/dab1851e89904e03bd0eae62138b4ffd/replay_comparison.json) ·
+[입력·상태 검증](../outputs/tapnextpp_mlx_verification/dab1851e89904e03bd0eae62138b4ffd/summary.json) ·
+[구간별 계측](../outputs/tapnextpp_mlx_profile/24cf3430186842d3b23b1ca4802b5f5e/summary.json)

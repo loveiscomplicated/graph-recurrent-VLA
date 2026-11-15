@@ -35,8 +35,9 @@ class RecurrentState:
 class OnlineBlock:
     """TRecViT for a single frame of [image patches + query tokens, width]."""
 
-    def __init__(self, block):
+    def __init__(self, block, *, output_start=0):
         self.weights = {key: _array(value) for key, value in block.state_dict().items()}
+        self.output_start = output_start
         recurrent = block.ssm_block.recurrent_block
         self.width = recurrent.width
         self.num_heads = recurrent.rg_lru.num_heads
@@ -58,23 +59,45 @@ class OnlineBlock:
         self.mlp_up = self.weights["ssm_block.mlp_block.ffw_up.w"].transpose(1, 0, 2)
         self.mlp_up = mx.contiguous(self.mlp_up.reshape(self.width, -1))
         self.mlp_bias = self.weights["ssm_block.mlp_block.ffw_up.b"].reshape(-1)
+        prefix = "ssm_block.recurrent_block."
+        self.paired_projection_weight = mx.concatenate(
+            (self.weights[prefix + "linear_x.weight"], self.weights[prefix + "linear_y.weight"])
+        )
+        self.paired_projection_bias = mx.concatenate(
+            (self.weights[prefix + "linear_x.bias"], self.weights[prefix + "linear_y.bias"])
+        )
         mx.eval(self.weights, self.gate_weights, self.gate_biases, self.decay,
-                self.temporal_gain, self.channel_gain, self.mlp_up, self.mlp_bias)
+                self.temporal_gain, self.channel_gain, self.mlp_up, self.mlp_bias,
+                self.paired_projection_weight, self.paired_projection_bias)
 
     def _project(self, x, name):
         return _linear(x, self.weights[name + ".weight"], self.weights[name + ".bias"])
 
+    def _temporal_convolution(self, projected, history):
+        """Keep each time slice contiguous and avoid the four-tap reduction buffer."""
+        prefix = "ssm_block.recurrent_block.conv_1d."
+        weights = self.weights[prefix + "w"]
+        window = mx.concatenate((history.transpose(1, 0, 2), projected[None]), axis=0)
+        if self.conv_width == 4:
+            older = history[:, 0] * weights[0] + history[:, 1] * weights[1]
+            newer = history[:, 2] * weights[2] + projected * weights[3]
+            convolved = older + newer
+        else:
+            convolved = mx.sum(window * weights[:, None], axis=0)
+        # Preserve the public [tokens, time, width] shape as a view of time-major storage.
+        next_history = window[1:].transpose(1, 0, 2)
+        return convolved + self.weights[prefix + "b"], next_history
+
     def _recurrent(self, x, state):
         prefix = "ssm_block.recurrent_block."
         x = mx.fast.rms_norm(x, self.temporal_gain, self.rms_eps)
-        projected = self._project(x, prefix + "linear_x")
-        gate_y = _gelu(self._project(x, prefix + "linear_y"), approximate=True)
+        paired = _linear(x, self.paired_projection_weight, self.paired_projection_bias)
+        projected, gate_y = mx.split(paired, 2, axis=-1)
+        gate_y = _gelu(gate_y, approximate=True)
         history = state.history if state is not None else mx.zeros(
             (x.shape[0], self.conv_width - 1, self.width), dtype=x.dtype
         )
-        window = mx.concatenate((history, projected[:, None]), axis=1)
-        convolved = mx.sum(window * self.weights[prefix + "conv_1d.w"], axis=1)
-        convolved = convolved + self.weights[prefix + "conv_1d.b"]
+        convolved, next_history = self._temporal_convolution(projected, history)
         grouped = convolved.reshape(x.shape[0], self.num_heads, -1).transpose(1, 0, 2)
         gates = grouped @ self.gate_weights + self.gate_biases[:, None, :]
         input_gate, decay_gate = mx.split(mx.sigmoid(gates), 2, axis=-1)
@@ -84,7 +107,7 @@ class OnlineBlock:
             log_decay = (-8.0 * decay_gate) * self.decay
             gated = mx.exp(log_decay) * state.hidden + gated * mx.sqrt(1 - mx.exp(2 * log_decay))
         output = self._project(gated * gate_y, prefix + "linear_out")
-        return output, RecurrentState(window[:, 1:], gated)
+        return output, RecurrentState(next_history, gated)
 
     def _recurrent_mlp(self, x):
         normalized = mx.fast.rms_norm(x, self.channel_gain, self.channel_eps).astype(mx.float16)
@@ -103,9 +126,13 @@ class OnlineBlock:
                          self.weights[prefix + "in_proj_bias"])
         q, k, v = (part.reshape(1, x.shape[0], self.num_heads, -1).transpose(0, 2, 1, 3)
                    for part in mx.split(packed, 3, axis=-1))
+        # The last block only feeds query heads. All tokens still supply K/V and
+        # update recurrent state, but its image attention/MLP outputs are unused.
+        q = q[:, :, self.output_start:]
         attention = mx.fast.scaled_dot_product_attention(q, k, v, scale=self.head_scale)
-        attention = attention.transpose(0, 2, 1, 3).reshape(x.shape)
-        residual = x + self._project(attention, prefix + "out_proj")
+        output_tokens = x[self.output_start:]
+        attention = attention.transpose(0, 2, 1, 3).reshape(output_tokens.shape)
+        residual = output_tokens + self._project(attention, prefix + "out_proj")
         normalized = self._layer_norm(residual, "vit_block.ln_2", self.vit_eps[1])
         hidden = _gelu(self._project(normalized, "vit_block.mlp.0"), approximate=False)
         return (residual + self._project(hidden, "vit_block.mlp.3")).astype(mx.float32)
@@ -160,12 +187,14 @@ class OnlineTracker:
         self.coordinate_head = self._head_weights(model.coordinate_head)
         self.visible_head = self._head_weights(model.visible_head)
         blocks = []
-        for block in model.blocks:
+        for index, block in enumerate(model.blocks):
             block.vit_block.half()
             block.ssm_block.mlp_block.half()
-            blocks.append(OnlineBlock(block))
+            output_start = self.image_pos.shape[0] if index == len(model.blocks) - 1 else 0
+            blocks.append(OnlineBlock(block, output_start=output_start))
         self.blocks = blocks
         self.continuations = [compile_continuation(block) for block in blocks]
+        self._compiled_image_embedding = mx.compile(self._embed_image)
         self.bins = mx.arange(self.input_resolution)
         mx.eval(self.image_pos, self.patch_weight, self.patch_bias, self.query_pos,
                 self.query_token, self.mask_token, self.norm, self.coordinate_head,
@@ -199,16 +228,26 @@ class OnlineTracker:
         return x
 
     def _image_tokens(self, frame_bgr):
-        image = mx.array(frame_bgr[..., ::-1].copy()).astype(mx.float32)
+        """Transfer the BGR input once; compile its crop, resize and embedding on GPU."""
         size = self.input_resolution
-        height, width, channels = image.shape
-        if (height, width) == (2 * size, 2 * size):
-            # Half-pixel bilinear sampling at exactly 2x gives four equal weights.
-            image = image.reshape(size, 2, size, 2, channels).mean(axis=(1, 3))
-        elif (height, width) != (size, size):
+        if frame_bgr.ndim != 3 or frame_bgr.shape[2] != 3:
+            raise ValueError("TAPNext++ MLX expects a BGR frame with shape [height, width, 3]")
+        if frame_bgr.shape[:2] not in ((size, size), (2 * size, 2 * size)):
             raise ValueError("TAPNext++ MLX expects a 256x256 or 512x512 BGR frame")
+        return self._compiled_image_embedding(mx.array(frame_bgr))
+
+    def _embed_image(self, image_bgr):
+        """Embed only the native patch crop, preserving the original RGB sampling."""
+        scale = image_bgr.shape[0] // self.input_resolution
         vertical, horizontal = self.crop
-        image = image[vertical, horizontal] / 127.5 - 1
+        image = image_bgr[vertical.start * scale:vertical.stop * scale,
+                          horizontal.start * scale:horizontal.stop * scale, ::-1].astype(mx.float32)
+        if scale == 2:
+            # Half-pixel bilinear sampling at exactly 2x gives four equal weights.
+            height = vertical.stop - vertical.start
+            width = horizontal.stop - horizontal.start
+            image = image.reshape(height, 2, width, 2, 3).mean(axis=(1, 3))
+        image = image / 127.5 - 1
         patches = mx.conv2d(image[None], self.patch_weight, stride=self.patch_size)
         return patches.reshape(-1, self.width) + self.patch_bias + self.image_pos
 
