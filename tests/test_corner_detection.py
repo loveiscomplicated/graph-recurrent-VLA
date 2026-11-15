@@ -13,6 +13,21 @@ from visual.corner_detection.evaluation import score
 
 
 class DetectorTests(unittest.TestCase):
+    def test_plane_roi_preserves_contour_hierarchy_and_global_pixels(self):
+        from visual.corner_detection.candidates import plane_contours
+
+        mask = np.zeros((512, 512), dtype=bool)
+        mask[120:180, 0:40] = True
+        mask[132:145, 8:20] = False
+        mask[236:255, 80:98] = True
+        full, full_hierarchy = plane_contours(mask, crop=False)
+        cropped, cropped_hierarchy = plane_contours(mask, crop=True)
+
+        np.testing.assert_array_equal(cropped_hierarchy, full_hierarchy)
+        self.assertEqual(len(cropped), len(full))
+        for result, expected in zip(cropped, full, strict=True):
+            np.testing.assert_array_equal(result, expected)
+
     def test_centered_peg_bounds_are_translation_invariant(self):
         from itertools import product
 

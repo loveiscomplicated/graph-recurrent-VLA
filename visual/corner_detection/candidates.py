@@ -59,12 +59,13 @@ def filter_material_components(peg_colors, box_colors, *, optimized=False):
     return np.stack((peg, boxes[0])), np.stack((peg, boxes[1]))
 
 
-def _corner_features(rgb, mask, *, optimized=False):
+def _corner_features(rgb_or_gray, mask, *, optimized=False):
     region = cv2.dilate(mask.astype(np.uint8), np.ones((5, 5), np.uint8))
-    images = [
-        mask.astype(np.float32),
-        cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0,
-    ]
+    gray = (
+        rgb_or_gray if rgb_or_gray.ndim == 2
+        else cv2.cvtColor(rgb_or_gray, cv2.COLOR_RGB2GRAY)
+    )
+    images = [mask.astype(np.float32), gray.astype(np.float32) / 255.0]
     # The response and nonmaximum suppression only need pixels near the
     # search mask. Keep a halo and align to the min-distance grid (4 px).
     x0 = y0 = 0
@@ -94,6 +95,22 @@ def _corner_features(rgb, mask, *, optimized=False):
             if 4 <= uv[0] < 508 and 4 <= uv[1] < 508:
                 result.append((uv.astype(float), "mask" if kind == 0 else "rgb"))
     return result
+
+
+def plane_contours(mask, *, crop):
+    """Trace a fitted plane in its support bounds and return image coordinates."""
+    image = mask.view(np.uint8)
+    if not crop:
+        return cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    x, y, width, height = cv2.boundingRect(image)
+    if not width or not height:
+        return (), None
+    return cv2.findContours(
+        image[y:y + height, x:x + width],
+        cv2.RETR_TREE,
+        cv2.CHAIN_APPROX_NONE,
+        offset=(x, y),
+    )
 
 
 class ContourProposals:
@@ -164,20 +181,30 @@ class ContourProposals:
                     )
                 )
 
-    def local(self, points, data, plane, hole, *, lookup=None):
+    def local(self, points, data, plane, hole, *, lookup=None, batch_segments=False):
         if len(points) < 18:
             return
         rough = cv2.approxPolyDP(points.astype(np.float32), 0.8, True)[:, 0]
         center = points.mean(0)
         indices = self._vertex_indices(points, rough, lookup)
-        for q, index in zip(rough, indices, strict=True):
+        spans = [span for span in (7, 11) if len(points) >= 2 * span + 2]
+        segments = {}
+        if batch_segments:
+            centers = np.asarray(indices)[:, None]
+            for span in spans:
+                offsets = np.arange(2, span + 1)
+                previous = points[(centers - offsets) % len(points)]
+                following = points[(centers + offsets) % len(points)]
+                segments[span] = previous, following
+        for row, (q, index) in enumerate(zip(rough, indices, strict=True)):
             key = self.local_id
             self.local_id += 1
-            for span in (7, 11):
-                if len(points) < 2 * span + 2:
-                    continue
-                previous = points[(index - np.arange(2, span + 1)) % len(points)]
-                following = points[(index + np.arange(2, span + 1)) % len(points)]
+            for span in spans:
+                if batch_segments:
+                    previous, following = (part[row] for part in segments[span])
+                else:
+                    previous = points[(index - np.arange(2, span + 1)) % len(points)]
+                    following = points[(index + np.arange(2, span + 1)) % len(points)]
                 self.specs.append(
                     dict(
                         data=data,
@@ -197,9 +224,7 @@ class ContourProposals:
 
     def add(self, data, params, *, reuse_contours=False):
         for pi, mask in enumerate(data.masks_cpu):
-            contours, hierarchy = cv2.findContours(
-                mask.astype(np.uint8), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
-            )
+            contours, hierarchy = plane_contours(mask, crop=reuse_contours)
             if reuse_contours:
                 data.contours[pi] = (contours, hierarchy)
             for ci, contour in enumerate(contours):
@@ -213,7 +238,9 @@ class ContourProposals:
                     lookup = np.unique(pixels[:, 0] + 512 * pixels[:, 1], return_index=True)
                 self.polygon(points, data, pi, hole, params, "boundary", lookup=lookup)
                 if data.recovery:
-                    self.local(points, data, pi, hole, lookup=lookup)
+                    self.local(
+                        points, data, pi, hole, lookup=lookup, batch_segments=reuse_contours
+                    )
                     if data.oid == 1:
                         self.polygon(
                             points,

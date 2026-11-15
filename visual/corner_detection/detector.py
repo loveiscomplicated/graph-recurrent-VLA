@@ -1,9 +1,8 @@
 """Torch/CUDA/MPS geometry backend for the independent visible-corner probe.
 
-OpenCV remains responsible for connected components, contour topology and
-subpixel RGB features. Dense XYZ never returns to NumPy. Small contour/plane
-descriptors and final candidates cross the CPU boundary explicitly. This is a
-hybrid detector, not an assertion of an entirely GPU-resident pipeline.
+OpenCV handles contour topology, subpixel features, and material components
+for host inputs. Contour and plane descriptors and candidate data cross the CPU
+boundary explicitly. Dense XYZ stays on the selected device.
 """
 
 import time
@@ -17,7 +16,7 @@ import numpy as np
 import torch
 from scipy.spatial import cKDTree
 
-from .backends import material_torch, rear_end_torch
+from .backends import material_torch, rear_end_torch, validation_torch
 from .backends import torch_ops as K
 from .candidates import (
     ContourProposals,
@@ -125,7 +124,10 @@ class TorchCornerDetector:
         reject_peg_box_cut=False,
         optimized=False,
         compile_cuda_edges=False,
+        compile_cuda_validation=False,
+        plane_fit_method="ransac",
         timer=None,
+        sample_cuda_box_planes=False,
     ):
         self.device = K.resolve_device(device)
         if compile_cuda_edges and self.device.type != "cuda":
@@ -133,6 +135,24 @@ class TorchCornerDetector:
         self._physical_edges = (
             K.compiled_physical_edges() if compile_cuda_edges else K.physical_edges
         )
+        if compile_cuda_validation and self.device.type != "cuda":
+            raise ValueError("compile_cuda_validation requires a CUDA detector")
+        self._validation_edges = K.physical_edges if compile_cuda_validation else self._physical_edges
+        self._validate_boundary = validation_torch.validation_function("boundary", compile_cuda_validation)
+        self._validate_junctions = validation_torch.validation_function("junctions", compile_cuda_validation)
+        self._validate_envelopes = validation_torch.validation_function("envelopes", compile_cuda_validation)
+        self._validate_box_rgb = validation_torch.validation_function("box_rgb", compile_cuda_validation)
+        if sample_cuda_box_planes and not compile_cuda_validation:
+            raise ValueError("sample_cuda_box_planes requires compile_cuda_validation=True")
+        box_cube_stage = "box_cube_sampled" if sample_cuda_box_planes else "box_cube"
+        self._validate_box_cube = validation_torch.validation_function(
+            box_cube_stage, compile_cuda_validation
+        )
+        if plane_fit_method not in ("ransac", "grid", "pca_normals"):
+            raise ValueError("plane_fit_method must be 'ransac', 'grid', or 'pca_normals'")
+        if plane_fit_method == "pca_normals" and self.device.type != "cuda":
+            raise ValueError("plane_fit_method='pca_normals' requires CUDA")
+        self.plane_fit_method = plane_fit_method
         self.parameters = parameters or Parameters()
         if hole_rgb_merge_radius_m is not None and (
             self.device.type != "cpu"
@@ -191,9 +211,12 @@ class TorchCornerDetector:
         reject_peg_box_cut=True,
         optimized=True,
         compile_cuda_edges=False,
+        compile_cuda_validation=None,
+        plane_fit_method=None,
         timer=None,
+        sample_cuda_box_planes=False,
     ):
-        """Build the main frame detector, optionally retaining geometry on GPU."""
+        """Build the main frame detector with device-specific performance defaults."""
         if str(device) == "auto":
             if torch.cuda.is_available():
                 device = "cuda"
@@ -204,6 +227,11 @@ class TorchCornerDetector:
             else:
                 device = "cpu"
         device = K.resolve_device(device)
+        use_cuda_preset = optimized and device.type == "cuda" and not compile_cuda_edges
+        if plane_fit_method is None:
+            plane_fit_method = "grid" if use_cuda_preset else "ransac"
+        if compile_cuda_validation is None:
+            compile_cuda_validation = use_cuda_preset
         return cls(
             device,
             parameters,
@@ -219,7 +247,10 @@ class TorchCornerDetector:
             reject_peg_box_cut=reject_peg_box_cut,
             optimized=optimized and device.type != "cpu",
             compile_cuda_edges=compile_cuda_edges,
+            compile_cuda_validation=compile_cuda_validation,
+            plane_fit_method=plane_fit_method,
             timer=timer,
+            sample_cuda_box_planes=sample_cuda_box_planes,
         )
 
     def _measure(self, name):
@@ -235,14 +266,28 @@ class TorchCornerDetector:
         p = self.parameters
         with self._measure("point_cloud_and_plane_fit"):
             support = mask & self.valid
-            if support_cpu is None:
+            if self.plane_fit_method == "pca_normals":
+                pixels = support.flatten().nonzero().flatten()
+                points = self.xyz.reshape(-1, 3).index_select(0, pixels)
+            elif support_cpu is None:
                 points = self.xyz[support]
             else:
                 pixels = self.tensor(np.flatnonzero(support_cpu), torch.int64)
                 points = self.xyz.reshape(-1, 3).index_select(0, pixels)
-            planes = K.fit_planes(
-                points, p, 42 + oid, 4 if oid == 0 else 8, optimized=self.optimized
-            )
+            maximum = 4 if oid == 0 else 8
+            with self._measure("plane_fit"):
+                if self.plane_fit_method == "grid":
+                    from .backends import grid_planes
+
+                    planes = grid_planes.fit_planes(self.xyz, support, points, p, maximum)
+                elif self.plane_fit_method == "pca_normals":
+                    from .backends import grid_planes
+
+                    planes = grid_planes.fit_pca_planes(points, pixels, support.shape, p, maximum)
+                else:
+                    planes = K.fit_planes(
+                        points, p, 42 + oid, maximum, optimized=self.optimized
+                    )
         with self._measure("plane_masks"):
             masks, cores = K.plane_masks(self.xyz, support, planes, p.plane_tolerance_m)
             eligible = cores.flatten(1).sum(1) >= 20
@@ -344,86 +389,18 @@ class TorchCornerDetector:
             if data.recovery:
                 self.add(data, points, image, recovered, ps, counts, stage=1)
             return
-        normal, offset = data.planes[pi, :3], data.planes[pi, 3]
-        ray = K.rays(uv, self.k)
-        denom = (ray * normal).sum(-1)
-        points = ray * (-offset / denom)[:, None]
-        aray = K.rays(adjacent, self.k)
-        arms = (
-            aray * (-offset[:, None] / (aray * normal[:, None]).sum(-1))[..., None]
-            - points[:, None]
-        )
-        cosine = (arms[:, 0] * arms[:, 1]).sum(-1).abs() / (
-            torch.linalg.vector_norm(arms[:, 0], dim=-1)
-            * torch.linalg.vector_norm(arms[:, 1], dim=-1)
-            + 1e-12
-        )
-        plane_patch, inside, pix = K.sample_patch(data.masks[0], uv, 3)
-        plane_patch = data.masks[pi[:, None, None], pix[..., 1], pix[..., 0]] & inside
-        distance = (pix.to(uv.dtype) - uv[:, None, None]).square().sum(-1)
-        gap = (
-            torch.where(plane_patch, distance, torch.inf)
-            .flatten(1)
-            .min(1)
-            .values.sqrt()
-        )
-        patch_valid = self.valid[pix[..., 1], pix[..., 0]] & inside
-        occluded = (
-            patch_valid
-            & (self.depth[pix[..., 1], pix[..., 0]] < points[:, 2, None, None] - 0.020)
-        ).sum((1, 2)) >= 3
-        cloud = self.xyz[pix[..., 1], pix[..., 0]]
-        contact = (
-            patch_valid
-            & self.neutral[pix[..., 1], pix[..., 0]]
-            & ~self.current_masks[data.oid][pix[..., 1], pix[..., 0]]
-        )
-        contact &= (cloud - points[:, None, None]).square().sum(-1) < 0.006**2
-        pixel = torch.round(uv)
-        base = (
-            (denom.abs() >= 0.08)
-            & (points[:, 2] > 0)
-            & ((pixel >= 3) & (pixel < 510)).all(1)
-        )
-        base &= (
-            (plane_patch.sum((1, 2)) >= 5)
-            & (gap <= self.parameters.maximum_support_gap_px)
-            & (contact.sum((1, 2)) < 3)
-        )
-        snapped, supporting = K.snap(points, pi, data.planes, data.eligible)
-        image = K.project(snapped, self.k)
         boundary = self.tensor([p["method"] == "boundary" for p in ps], torch.bool)
+        short = self.tensor([p["method"] == "short_boundary" for p in ps], torch.bool)
+        points, image, counts, core, recovered = self._validate_boundary(
+            uv, adjacent, pi, boundary, short, data, self.current_masks[data.oid],
+            self.depth, self.valid, self.xyz, self.k, self.neutral,
+            self.parameters.maximum_support_gap_px, self.parameters.maximum_angle_cosine,
+            self._validation_edges,
+        )
         if data.core:
-            core = base & boundary & (cosine <= 0.28) & ~occluded
-            self.add(data, snapped, image, core, ps, supporting, stage=0)
+            self.add(data, points, image, core, ps, counts, stage=0)
         if data.recovery:
-            physical, evidence = self._physical_edges(
-                uv,
-                adjacent,
-                data.planes,
-                pi,
-                data.masks,
-                self.current_masks[data.oid],
-                self.depth,
-                self.valid,
-                self.xyz,
-                self.k,
-                self.neutral,
-            )
-            observed = K.visible(points, uv, data.support, self.xyz)
-            selected = base & (cosine <= self.parameters.maximum_angle_cosine)
-            selected &= (boundary & (cosine <= 0.28)) | physical
-            selected &= ~occluded | (physical & observed)
-            selected &= boundary | (
-                ((image - uv).square().sum(-1) <= 4)
-                & K.visible(snapped, image, data.support, self.xyz)
-            )
-            short = self.tensor(
-                [p["method"] == "short_boundary" for p in ps], torch.bool
-            )
-            selected &= ~short | ((uv >= 8) & (uv < 504)).all(1)
-            selected &= K.unoccluded(snapped, image, self.depth, self.valid)
-            self.add(data, snapped, image, selected, ps, supporting, stage=1)
+            self.add(data, points, image, recovered, ps, counts, stage=1)
 
     def junctions(self, data):
         ps = []
@@ -463,45 +440,14 @@ class TorchCornerDetector:
             if data.recovery:
                 self.add(data, points, uv, recovered, ps, stage=1)
             return
-        uv = K.project(points, self.k)
-        selected = (points[:, 2] > 0) & (
-            (torch.round(uv) >= 6) & (torch.round(uv) < 506)
-        ).all(1)
-        support, inside, pix = K.sample_patch(data.support, uv, 4)
-        nearby = (
-            self.xyz[pix[..., 1], pix[..., 0]] - points[:, None, None]
-        ).square().sum(-1) < 0.006**2
-        for i in range(3):
-            ids = self.tensor([p["indices"][i] for p in ps], torch.int64)
-            selected &= (
-                data.masks[ids[:, None, None], pix[..., 1], pix[..., 0]]
-                & support
-                & inside
-                & nearby
-            ).sum((1, 2)) >= 3
-            _, _, corepix = K.sample_patch(data.support, uv, 6)
-            selected &= (
-                data.cores[ids[:, None, None], corepix[..., 1], corepix[..., 0]].sum(
-                    (1, 2)
-                )
-                >= 2
-            )
-        depth, _, pix = K.sample_patch(self.depth, uv, 1)
-        selected &= (
-            self.valid[pix[..., 1], pix[..., 0]]
-            & (depth < points[:, 2, None, None] - 0.004)
-        ).sum((1, 2)) < 2
+        indices = self.tensor([p["indices"] for p in ps], torch.int64)
+        uv, selected, recovered = self._validate_junctions(
+            points, indices, data, self.depth, self.valid, self.xyz, self.k
+        )
         if data.core:
             self.add(data, points, uv, selected, ps, stage=0)
         if data.recovery:
-            self.add(
-                data,
-                points,
-                uv,
-                selected & K.unoccluded(points, uv, self.depth, self.valid),
-                ps,
-                stage=1,
-            )
+            self.add(data, points, uv, recovered, ps, stage=1)
 
     def envelopes(self, data):
         if data.oid != 0 or not data.recovery:
@@ -552,37 +498,11 @@ class TorchCornerDetector:
             )
             self.add(data, points, image, selected, ps, counts)
             return
-        physical, _ = self._physical_edges(
-            uv,
-            adjacent,
-            data.planes,
-            pi,
-            data.masks,
-            self.current_masks[0],
-            self.depth,
-            self.valid,
-            self.xyz,
-            self.k,
-            self.neutral,
+        points, image, counts, selected = self._validate_envelopes(
+            points, uv, adjacent, pi, data, self.current_masks[0], self.depth,
+            self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
         )
-        selected = physical & K.visible(points, uv, data.support, self.xyz)
-        _, _, pix = K.sample_patch(self.depth, uv, 2)
-        contact = (
-            self.valid[pix[..., 1], pix[..., 0]]
-            & self.neutral[pix[..., 1], pix[..., 0]]
-            & ~self.current_masks[0][pix[..., 1], pix[..., 0]]
-        )
-        contact &= (
-            self.xyz[pix[..., 1], pix[..., 0]] - points[:, None, None]
-        ).square().sum(-1) < 0.006**2
-        points, count = K.snap(points, pi, data.planes, data.eligible)
-        image = K.project(points, self.k)
-        selected &= (contact.sum((1, 2)) < 3) & ((image >= 8) & (image < 504)).all(1)
-        selected &= ((image - uv).square().sum(-1) <= 4) & K.visible(
-            points, image, data.support, self.xyz
-        )
-        selected &= K.unoccluded(points, image, self.depth, self.valid)
-        self.add(data, points, image, selected, ps, count)
+        self.add(data, points, image, selected, ps, counts)
 
     def box_rgb(self, data, features):
         ps = []
@@ -638,65 +558,11 @@ class TorchCornerDetector:
             )
             self._add_box_rgb(data, points, uv, selected, holes, ps)
             return
-        n, d = data.planes[pi, :3], data.planes[pi, 3]
-        ray = K.rays(uv, self.k)
-        denom = (ray * n).sum(-1)
-        points = ray * (-d / denom)[:, None]
-        selected = (
-            (denom.abs() > 0.1)
-            & (points[:, 2] > 0)
-            & K.visible(points, uv, data.support, self.xyz)
+        points, selected, holes = self._validate_box_rgb(
+            uv, pi, axes, self.tensor(signs), self.tensor(distances), data, self.depth,
+            self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
         )
-        selected &= K.unoccluded(points, uv, self.depth, self.valid)
-        s = self.tensor(signs)
-        distances = self.tensor(distances)
-        delta = s[:, None] * distances[None]
-        probe = points[:, None, None] + torch.einsum("sdt,ntc->nsdc", delta, axes)
-        pix0 = K.project(probe, self.k).round().to(torch.int64)
-        in_image = ((pix0 >= 1) & (pix0 <= 510)).all((2, 3))
-        pix = pix0.clamp(0, 511)
-        cloud = self.xyz[pix[..., 1], pix[..., 0]]
-        evidence = data.support[pix[..., 1], pix[..., 0]] & (
-            (cloud * n[:, None, None]).sum(-1) + d[:, None, None]
-        ).abs().lt(0.0012)
-        fractions = torch.where(in_image, evidence.float().mean(-1), 0.5)
-        occupied = fractions >= 0.75
-        empty = fractions <= 0.25
-        exterior = (occupied.sum(1) == 1) & (empty.sum(1) == 3)
-        interior = (occupied.sum(1) == 3) & (empty.sum(1) == 1)
-        selected &= exterior | interior
-        sign_id = torch.where(
-            exterior,
-            occupied.to(torch.int64).argmax(1),
-            empty.to(torch.int64).argmax(1),
-        )
-        chosen = s[sign_id]
-        adjacent = K.project(points[:, None] + chosen[..., None] * 0.015 * axes, self.k)
-        physical, _ = self._physical_edges(
-            uv,
-            adjacent,
-            data.planes,
-            pi,
-            data.masks,
-            data.support,
-            self.depth,
-            self.valid,
-            self.xyz,
-            self.k,
-            self.neutral,
-        )
-        selected &= physical
-        _, _, patch = K.sample_patch(self.depth, uv, 2)
-        contact = (
-            self.valid[patch[..., 1], patch[..., 0]]
-            & self.neutral[patch[..., 1], patch[..., 0]]
-            & ~data.support[patch[..., 1], patch[..., 0]]
-        )
-        contact &= (
-            self.xyz[patch[..., 1], patch[..., 0]] - points[:, None, None]
-        ).square().sum(-1) < 0.006**2
-        selected &= contact.sum((1, 2)) < 3
-        self._add_box_rgb(data, points, uv, selected, interior, ps)
+        self._add_box_rgb(data, points, uv, selected, holes, ps)
 
     def _add_box_rgb(self, data, points, uv, selected, holes, proposals):
         feature_ids = [p.pop("fi") for p in proposals]
@@ -779,86 +645,18 @@ class TorchCornerDetector:
             ]
             self.add(data, points, uv, selected, metadata, stage=2)
             return
-        eligible = sorted(data.eligible_cpu)
-        distances = (
-            points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
-        ).abs()
-        nearest = self.tensor(eligible, torch.int64)[distances.argmin(1)]
-        snapped, _ = K.snap(points, nearest, data.planes, data.eligible)
-        points = torch.where(
-            (distances.min(1).values < 0.003)[:, None], snapped, points
+        features = self.tensor(np.array([item[0] for item in features])).reshape(-1, 2)
+        eligible = self.tensor(sorted(data.eligible_cpu), torch.int64)
+        points, uv, image_corner = validation_torch.box_cube_coordinates(
+            points, features, eligible, data, self.k
         )
-        uv = K.project(points, self.k)
-        if features:
-            f = self.tensor(np.array([q[0] for q in features]))
-            diff = (uv[:, None] - f[None]).square().sum(-1)
-            closest = f[diff.argmin(1)]
-            close = diff.min(1).values < 2.5**2
-            distances = (
-                points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
-            ).abs()
-            pi = self.tensor(eligible, torch.int64)[distances.argmin(1)]
-            normal = data.planes[pi, :3]
-            ray = K.rays(closest, self.k)
-            denom = (ray * normal).sum(-1)
-            refined = ray * (-data.planes[pi, 3] / denom)[:, None]
-            refine = (
-                close
-                & (denom.abs() > 0.1)
-                & ((refined - points).square().sum(-1) < 0.005**2)
+        rotation_tensor = self.tensor(rotation)
+        signs_tensor = self.tensor(signs)
+        with self._measure("box_cube_validation"):
+            selected = self._validate_box_cube(
+                points, uv, image_corner, rotation_tensor, signs_tensor, data,
+                self.depth, self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
             )
-            points = torch.where(refine[:, None], refined, points)
-            uv = torch.where(refine[:, None], closest, uv)
-            image_corner = (uv[:, None] - f[None]).square().sum(-1).min(
-                1
-            ).values < 2.5**2
-        else:
-            image_corner = torch.zeros(8, dtype=torch.bool, device=self.device)
-        visible = K.visible(points, uv, data.support, self.xyz)
-        observed, inside, pix = K.sample_patch(data.support, uv, 3)
-        nearby = (
-            self.xyz[pix[..., 1], pix[..., 0]] - points[:, None, None]
-        ).square().sum(-1) < 0.006**2
-        selected = (
-            visible | (image_corner & (observed & inside & nearby).any((1, 2)))
-        ) & K.unoccluded(points, uv, self.depth, self.valid)
-        physical_any = torch.zeros(8, dtype=torch.bool, device=self.device)
-        # Build all plane-distance masks once, rather than per cube vertex.
-        actual_masks = (
-            (self.xyz.reshape(-1, 3) @ data.planes[:, :3].T + data.planes[:, 3]).abs()
-            < 0.0012
-        ).T.reshape(-1, 512, 512) & data.support
-        for ai in range(3):
-            normals = data.planes[:, :3]
-            target = self.tensor(rotation[:, ai])
-            match = (
-                ((normals @ target).abs() > 0.97)[None]
-                & ((points @ normals.T + data.planes[:, 3]).abs() < 0.0025)
-                & data.eligible[None]
-            )
-            pi = match.to(torch.int64).argmax(1)
-            tangent = [j for j in range(3) if j != ai]
-            adjacent = (
-                points[:, None]
-                - self.tensor(signs[:, tangent])[..., None]
-                * 0.015
-                * self.tensor(rotation[:, tangent].T)[None]
-            )
-            physical, _ = self._physical_edges(
-                uv,
-                K.project(adjacent, self.k),
-                data.planes,
-                pi,
-                actual_masks,
-                data.support,
-                self.depth,
-                self.valid,
-                self.xyz,
-                self.k,
-                self.neutral,
-            )
-            physical_any |= match.any(1) & physical
-        selected &= physical_any | image_corner
         metadata = [
             dict(
                 plane=0,
@@ -1258,12 +1056,21 @@ class TorchCornerDetector:
                 self.depth = raw * 0.001
                 self.valid = (raw > 0) & (self.depth < 4) & torch.isfinite(self.depth)
                 self.xyz = K.unproject(self.depth, self.k)
-            with self._measure("rgb_host_view"):
-                # OpenCV RGB corner features still need a host image.
-                rgb_cpu = rgb.detach().cpu().numpy() if isinstance(rgb, torch.Tensor) else rgb
-                rgb_cpu = np.asarray(rgb_cpu, np.uint8)
-            # OpenCV already needs host RGB. For host inputs the same color
-            # masks can be formed before crossing the device boundary.
+            gpu_gray = (
+                self.optimized
+                and self._accelerate_rgb
+                and torch.is_tensor(rgb)
+                and rgb.device == self.device
+            )
+            filter_components = (
+                material_torch.component_filter(self.device.type)
+                if gpu_gray and masks is None else None
+            )
+            if not gpu_gray:
+                with self._measure("rgb_host_view"):
+                    rgb_cpu = rgb.detach().cpu().numpy() if torch.is_tensor(rgb) else rgb
+                    rgb_cpu = np.asarray(rgb_cpu, np.uint8)
+            # NumPy inputs can form color masks before crossing the device boundary.
             classify_on_device = self._accelerate_rgb and (
                 not self.optimized or torch.is_tensor(rgb)
             )
@@ -1272,7 +1079,18 @@ class TorchCornerDetector:
                     rgb_device = self.tensor(rgb, torch.uint8)
                 with self._measure("rgb_color_classification"):
                     color_masks, neutral = material_torch.material_colors(rgb_device)
-                if masks is None:
+                if filter_components is not None:
+                    with self._measure("rgb_material_masks"):
+                        core, recovery = filter_components(color_masks)
+                    with self._measure("rgb_color_readback"):
+                        if torch.is_tensor(depth_raw_mm):
+                            # Peg uses the same threshold in both masks.
+                            shared_masks = (True, torch.equal(core[1], recovery[1]))
+                        else:
+                            # Host depth can reuse host masks to pack point indices.
+                            core_cpu = core.cpu().numpy()
+                            recovery_cpu = recovery.cpu().numpy()
+                elif masks is None:
                     with self._measure("rgb_color_readback"):
                         peg_colors, box_colors = color_masks.cpu().numpy()
                     with self._measure("rgb_material_masks"):
@@ -1297,11 +1115,12 @@ class TorchCornerDetector:
                 recovery_cpu = core_cpu
             with self._measure("mask_upload"):
                 self.neutral = self.tensor(neutral, torch.bool)
-                core = self.tensor(core_cpu, torch.bool)
-                recovery = (
-                    core if self.optimized and core_cpu is recovery_cpu
-                    else self.tensor(recovery_cpu, torch.bool)
-                )
+                if filter_components is None:
+                    core = self.tensor(core_cpu, torch.bool)
+                    recovery = (
+                        core if self.optimized and core_cpu is recovery_cpu
+                        else self.tensor(recovery_cpu, torch.bool)
+                    )
             self.current_masks = core
             self.blocks = []
             self.rows = []
@@ -1322,6 +1141,8 @@ class TorchCornerDetector:
                 valid_cpu = (
                     (raw_cpu > 0) & (self.depth_cpu < 4) & np.isfinite(self.depth_cpu)
                 )
+            if filter_components is None or valid_cpu is not None:
+                shared_masks = tuple(np.array_equal(a, b) for a, b in zip(core_cpu, recovery_cpu))
             for oid in (0, 1):
                 support_cpu = (
                     core_cpu[oid].astype(bool, copy=False) & valid_cpu
@@ -1330,7 +1151,7 @@ class TorchCornerDetector:
                 data = self.prepare(oid, core[oid], support_cpu)
                 data.core = True
                 data_list.append(data)
-                if np.array_equal(core_cpu[oid], recovery_cpu[oid]):
+                if shared_masks[oid]:
                     data.recovery = True
                     recovery_data.append(data)
                 else:
@@ -1357,11 +1178,18 @@ class TorchCornerDetector:
             box = recovery_data[1]
             features = []
             if len(box.planes) and box.support_cpu.sum() >= 80:
+                feature_image = rgb_cpu if not gpu_gray else None
+                if gpu_gray:
+                    # OpenCV needs only gray values for Box feature detection.
+                    with self._measure("box_grayscale"):
+                        feature_image = material_torch.rgb_to_gray(rgb_device).cpu().numpy()
                 features = _corner_features(
-                    rgb_cpu, box.support_cpu, optimized=self.optimized
+                    feature_image, box.support_cpu, optimized=self.optimized
                 )
-                self.box_cube(box, features)
-                self.box_rgb(box, features)
+                with self._measure("box_cube"):
+                    self.box_cube(box, features)
+                with self._measure("box_rgb"):
+                    self.box_rgb(box, features)
         if self.recover_hole_rim:
             with self._measure("hole_rim"):
                 self.box_openings(box)

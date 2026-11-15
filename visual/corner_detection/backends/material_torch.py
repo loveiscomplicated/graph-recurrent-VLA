@@ -1,6 +1,7 @@
 """Device-side RGB classification with OpenCV's uint8 HSV quantization."""
 
 from functools import lru_cache
+from importlib.util import find_spec
 
 import numpy as np
 import torch
@@ -31,3 +32,24 @@ def material_colors(rgb):
     white = (hue >= 90) & (hue <= 105) & (saturation >= 8) & (saturation <= 22) & (value >= 65)
     box = (hue >= 14) & (hue <= 30) & (saturation >= 65) & (saturation <= 195) & (value >= 50)
     return torch.stack((orange | white, box)), saturation < 8
+
+
+def rgb_to_gray(rgb):
+    """Convert uint8 RGB with the integer rounding used by OpenCV."""
+    red, green, blue = rgb.to(torch.int32).unbind(dim=-1)
+    luminance = 9798 * red + 19235 * green + 3735 * blue
+    return ((luminance + 16384) >> 15).to(torch.uint8)
+
+
+@lru_cache(maxsize=2)
+def component_filter(device_type):
+    """Resolve an available GPU connected-component implementation."""
+    if device_type == "mps":
+        from .material_components_mps import filter_components
+
+        return filter_components
+    if device_type == "cuda" and find_spec("triton") is not None:
+        from .material_components_cuda import filter_components
+
+        return filter_components
+    return None

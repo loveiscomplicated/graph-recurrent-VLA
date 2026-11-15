@@ -5,7 +5,8 @@ from unittest.mock import patch
 import numpy as np
 import torch
 from visual.corner_detection import detect_tensors
-from visual.corner_detection.backends import torch_ops as K
+from visual.corner_detection.backends import material_torch, torch_ops as K
+from visual.corner_detection.candidates import filter_material_components
 from visual.corner_detection.backends.rear_end_torch import box_cut_vertices
 from visual.corner_detection.detector import TorchCornerDetector, default_detector
 from visual.corner_detection.geometry import _line, Parameters
@@ -26,6 +27,48 @@ class TorchDetectorTests(unittest.TestCase):
         masks = np.zeros((2, 512, 512), bool)
         masks[0, 100:200, 120:240] = True
         return rgb, depth, masks
+
+    def test_gpu_material_components_preserve_areas_and_connectivity(self):
+        filter_components = material_torch.component_filter(self.device.type)
+        if filter_components is None:
+            self.skipTest("GPU connected-components backend unavailable")
+
+        colors = np.zeros((2, 512, 512), dtype=bool)
+        for mask in colors:
+            # Diagonal neighbors belong to one component under 8-connectivity.
+            np.fill_diagonal(mask[:35, :35], True)
+            np.fill_diagonal(mask[:34, 80:114], True)
+            mask[100, 20:28] = True
+            mask[120, 20:27] = True
+            mask[200, 511] = mask[201, 0] = True
+        colors[0, 511, :] = True
+        colors[1, 0, :] = True
+
+        expected = filter_material_components(*colors, optimized=True)
+        actual = filter_components(torch.as_tensor(colors, device=self.device))
+        for before, after in zip(expected, actual, strict=True):
+            self.assertEqual(after.device, self.device)
+            np.testing.assert_array_equal(after.cpu().numpy(), before)
+
+    def test_grid_plane_fit_keeps_parallel_depth_layers_separate(self):
+        from visual.corner_detection.backends import grid_planes
+
+        y, x = torch.meshgrid(
+            torch.arange(64, dtype=torch.float32),
+            torch.arange(64, dtype=torch.float32),
+            indexing="ij",
+        )
+        depth = torch.where(x < 32, 0.9, 0.92)
+        xyz = torch.stack((x * 0.002, y * 0.002, depth), dim=-1)
+        support = (x > 2) & (x < 61) & (y > 2) & (y < 61)
+
+        planes = grid_planes.fit_planes(xyz, support, xyz[support], Parameters(), 4)
+
+        self.assertEqual(planes.shape, (2, 4))
+        torch.testing.assert_close(planes[:, 2].abs(), torch.ones(2))
+        torch.testing.assert_close(
+            planes[:, 3].abs().sort().values, torch.tensor([0.9, 0.92])
+        )
 
     def test_resident_tensor_output_and_world_transform(self):
         rgb, depth, masks = self.rectangle()

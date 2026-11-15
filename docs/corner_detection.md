@@ -158,10 +158,26 @@ uses this same preset with MPS.
 The main preset enables the optimized GPU execution path. To run the original
 execution path with the same recovery and filtering settings, use
 `TorchCornerDetector.main(device="mps", optimized=False)`.
-On CUDA, `TorchCornerDetector.main(device="cuda", compile_cuda_edges=True)`
-enables TorchInductor for candidate edge validation. The first frame that
-reaches this stage may compile several input shapes. Warm up with representative
-frames before timing or starting a rollout. This option defaults to off.
+The default CUDA preset uses the 2-pixel grid plane fit and TorchInductor
+validation. It compiles the tensor validation for contour boundaries, three-plane
+junctions, observed face envelopes, RGB Box candidates, and fitted Box vertices.
+It includes physical edge validation inside those graphs. OpenCV proposal
+extraction and Python candidate assembly use the usual paths. Representative
+frames are needed for warmup because tensor shapes and layouts can specialize
+the graphs. See [CUDA validation scope comparison](#cuda-검증-컴파일-범위-비교).
+
+Use `TorchCornerDetector.main(device="cuda", compile_cuda_validation=False)`
+for the grid fit with eager validation, or add `plane_fit_method="ransac"` to
+replay the previous CUDA default. Passing `compile_cuda_edges=True` selects
+the edge-only compilation preset and defaults to the RANSAC plane fit.
+CPU and MPS default to RANSAC. CUDA with `optimized=False` defaults to
+RANSAC and eager validation.
+
+Use `TorchCornerDetector.main(device="cuda", sample_cuda_box_planes=True)` to
+compare the experimental Box edge kernel. It tests plane membership at six
+pixels on each side of each candidate leg. One Triton launch handles the
+legs of all eight Box vertices across the three candidate plane orientations.
+Box plane selection and vertex coordinate refinement use the existing path.
 
 Pass `device="cpu"` to pin a CPU evaluation or use `device="cuda"` or
 `device="mps"` to require a specific accelerator. An unavailable explicit device
@@ -227,10 +243,10 @@ reference detector. A runtime backend error is propagated.
 - MPS uses fused Metal kernels and requires a PyTorch build exposing
   `torch.mps.compile_shader`. This capability is checked when compiling the
   Metal library. A CPU-only or CUDA call does not compile Metal shaders.
-- OpenCV HSV, connected components, contour topology and RGB subpixel features
-  remain on CPU. Small descriptors and merge decisions also cross the host
-  boundary. Dense XYZ is not downloaded to run a NumPy detector. This is a
-  hybrid implementation, not a completely GPU-resident pipeline.
+- Optimized resident RGB input uses the GPU for HSV, material components,
+  and grayscale conversion. CUDA material components use Triton when installed.
+  Host input uses OpenCV for HSV and components. OpenCV contour topology and
+  subpixel features and the greedy candidate merge run on CPU.
 
 The original NumPy float64 and Torch float32 implementations are not generally
 bit-identical across backends. The extraction verification below compares old
@@ -1075,10 +1091,11 @@ with GPU RGB material color classification, depth validation and
 unprojection, point selection, plane fitting, and Peg prism and rear-end
 checks. The rear-end stage consumes the existing device tensors and passes
 its candidates to the usual merge without the separate rear-end upload
-or download. The CPU still filters connected components, extracts OpenCV
-contours and RGB features, fits Hole openings, and runs greedy candidate
-selection. Those stages use host images or readbacks of color masks,
-plane descriptors, depth, and candidate data as needed.
+or download. The CPU extracts OpenCV contours and RGB features, fits Hole
+openings, and runs greedy candidate selection. Those stages use host images or
+readbacks of plane descriptors, depth, and candidate data as needed. In the
+416-frame measurement below, material connected components also ran on the CPU.
+The resident-input migration is measured separately below.
 
 The paired replay used the same 416 saved insertion frames on Apple M4 Pro
 and the RTX 3090 host. The total includes sensor uploads, required intermediate
@@ -1297,12 +1314,13 @@ WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 ### 기본 실행과 비교 옵션
 
 `detect()`와 `detect_tensors()`는 최신 최적화 메인을 사용한다. 장치는
-CUDA, MPS, Torch CPU 순으로 자동 선택한다. CUDA의 TorchInductor 경계 검증은
-별도로 켠다.
+CUDA, MPS, Torch CPU 순으로 자동 선택한다. CUDA 기본 경로는 2픽셀 격자
+평면 피팅과 확대 검증 컴파일을 사용한다.
 
 | 실행 경로 | 사용 방법 |
 | --- | --- |
 | 최신 GPU 기본 경로 | `TorchCornerDetector.main()` |
+| 이전 CUDA 기본 경로 | `TorchCornerDetector.main(device="cuda", plane_fit_method="ransac", compile_cuda_validation=False)` |
 | 기존 실행 경로로 비교 | `TorchCornerDetector.main(device="mps", optimized=False)` |
 | CUDA 경계 검증 컴파일 | `TorchCornerDetector.main(device="cuda", compile_cuda_edges=True)` |
 
@@ -1358,3 +1376,363 @@ CUDA, MPS, Torch CPU 순으로 자동 선택한다. CUDA의 TorchInductor 경계
 - 기본 GPU 경로 최적화 [MPS 삽입](../outputs/corner_detector_optimization/mps_holdout_final.json) · [MPS 일반 궤적](../outputs/corner_detector_optimization/mps_trajectory.json) · [CUDA 삽입](../outputs/corner_detector_optimization/cuda_holdout_final.json) · [비교 기준 소스](../outputs/corner_detector_optimization/original/corner_detection/detector.py)
 - 후보 처리 추가 최적화 [MPS 삽입](../outputs/corner_detector_refinement/mps_final.json) · [MPS 일반 궤적](../outputs/corner_detector_refinement/mps_trajectory.json) · [CUDA 삽입](../outputs/corner_detector_refinement/cuda_final.json) · [비교 기준 소스](../outputs/corner_detector_refinement/original/corner_detection/detector.py)
 - CUDA 컴파일 [420프레임 비교](../outputs/corner_detector_cuda_compile/full.json) · [첫 실행](../outputs/corner_detector_cuda_compile/probe.json)
+
+### Vast.ai CUDA 구간별 기준 시간
+
+2026-11-15에 커밋 `6d1a06d4aa243ab6e1cd38456dbfc5c66c65f7af`의
+`TorchCornerDetector.main(device="cuda:0")`을 Vast.ai 인스턴스
+`60669483`에서 측정했다. RTX 3090, Core i7-9700K, NVIDIA 드라이버
+580.126.09, PyTorch 2.14.1+cu130, OpenCV 5.0.0을 사용했다. Torch와
+OpenCV는 각각 CPU 스레드 1개로 고정했다. 경계 검증 컴파일 옵션은 기본값인
+꺼짐으로 두었다.
+
+독립 삽입 16개 에피소드의 기존 512×512 RGB-D 420프레임을 체크섬 검증 후
+재생했다. 대표 프레임 16개로 워밍업한 뒤 입력 경로와 계측 방식의 실행 순서를
+프레임마다 회전했다. NumPy 입력은 검출 호출 안의 전송을 포함한다. CUDA 상주
+입력은 RGB, 깊이, 카메라 보정값을 호출 전에 올렸다. 파일 읽기, 시뮬레이션,
+렌더링, 채점은 측정 범위에서 제외했다.
+
+전체 지연은 구간 타이머를 끈 호출에서 측정했다. 단위는 ms/프레임이고 각
+셀은 평균 / p50 / p95다.
+
+| 출력 범위 | NumPy 입력 | CUDA 상주 입력 |
+| --- | ---: | ---: |
+| 검출 호출 → CUDA 텐서 | 64.88 / 61.78 / 88.43 | 64.19 / 61.31 / 87.70 |
+| CPU 딕셔너리 변환만 | 0.27 / 0.26 / 0.33 | 0.27 / 0.25 / 0.32 |
+| 검출 호출 → CPU 딕셔너리 | 65.15 / 62.06 / 88.75 | 64.46 / 61.57 / 88.07 |
+
+구간은 별도 호출에서 `utils.timer.Timer`로 시작과 종료에 CUDA를
+동기화해 측정했다. CPU 작업과 전송 대기를 포함한다. 들여쓴 행은 상위
+구간에 포함된다. 계측을 켠 CPU 딕셔너리 출력까지의 평균은 NumPy
+66.13 ms, CUDA 상주 65.21 ms였다.
+
+| 구간 | NumPy 평균 / p95 | CUDA 상주 평균 / p95 |
+| --- | ---: | ---: |
+| **RGB-D 전처리 및 평면 준비** | **20.01 / 25.86** | **18.93 / 25.25** |
+| ↳ 입력 깊이·보정값 준비 | 0.41 / 0.65 | 0.04 / 0.10 |
+| ↳ 깊이 역투영 | 0.23 / 0.32 | 0.23 / 0.34 |
+| ↳ OpenCV용 RGB 호스트 뷰 | 0.01 / 0.01 | 0.23 / 0.24 |
+| ↳ RGB 색상 분류 | 0.68 / 0.71 | 0.59 / 0.68 |
+| ↳ 색상 마스크 CPU 회수 | — | 0.16 / 0.17 |
+| ↳ 재질 마스크 연결 성분 처리 | 3.72 / 3.95 | 3.27 / 3.55 |
+| ↳ 마스크 업로드 | 0.35 / 0.39 | 0.28 / 0.30 |
+| ↳ 점군 추출 및 평면 피팅 | 12.22 / 17.12 | 12.04 / 17.39 |
+| ↳ 영상 평면 마스크 생성 | 0.94 / 1.33 | 0.92 / 1.30 |
+| ↳ 평면 정보·마스크 CPU 회수 | 0.65 / 0.92 | 0.69 / 0.85 |
+| **윤곽 후보 처리** | **20.61 / 24.83** | **20.66 / 24.95** |
+| **Box 외곽** | **15.14 / 18.43** | **15.04 / 18.29** |
+| Hole 림 | 3.56 / 4.35 | 3.86 / 4.70 |
+| Peg 기본 프리즘 | 1.16 / 1.33 | 1.15 / 1.32 |
+| Peg 뒤쪽 끝면 복구 | 2.28 / 2.50 | 2.27 / 2.54 |
+| 후보 병합 | 0.80 / 1.31 | 0.76 / 1.31 |
+| 좌표 보정·월드 변환 | 0.68 / 1.09 | 0.70 / 1.09 |
+| Peg Box 가림 필터 | 1.01 / 1.41 | 1.01 / 1.45 |
+
+CUDA 상주 입력의 윤곽 후보와 Box 외곽을 합하면 35.70 ms로, 구간
+계측을 켠 전체 평균의 약 55%다. 전처리 안에서는 점군 추출 및 평면 피팅이
+12.04 ms로 가장 길었다.
+
+[프레임별 구간 시간 및 호출 수](../outputs/corner_cuda_timing/timing.json) ·
+[재생 스크립트](../outputs/corner_cuda_timing/benchmark.py) ·
+[입력 프레임 매니페스트](../outputs/peg_box_cut_holdout/938390740331455b8187d1e0cedfeab8/frames.json)
+
+검출기 의존성을 설치한 CUDA 호스트에서 저장소 루트를 기준으로 실행한다.
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python outputs/corner_cuda_timing/benchmark.py \
+  outputs/peg_box_cut_holdout/938390740331455b8187d1e0cedfeab8/frames.json \
+  outputs/corner_cuda_timing/timing.json --commit "$(git rev-parse HEAD)"
+```
+
+### GPU 상주 RGB의 재질 마스크와 회색조 변환
+
+같은 장치에 상주하는 RGB 텐서를 기본 최적화 경로에 넘기면 8방향 연결
+성분 계산과 Box 특징용 RGB→회색조 변환을 GPU에서 실행한다. 연결 성분은
+CUDA의 Triton 커널과 MPS의 Metal 커널에서 같은 영역 기준을 적용한다.
+Peg와 Box의 기본 마스크는 35픽셀, Box 복구 마스크는 8픽셀 이상인 성분을
+유지한다. 깊이도 텐서로 들어오면 기본·복구 Box 마스크가 같은지 나타내는
+플래그만 CPU에서 읽는다. OpenCV의 Box 특징 추출에는 1채널 회색조 영상을
+전달한다. CUDA 환경에 Triton이 없으면 연결 성분에 기존 OpenCV 경로를 사용한다.
+
+CPU는 OpenCV 윤곽 및 서브픽셀 특징 추출, Hole 림 피팅, 후보 병합을
+계속 처리한다. 윤곽 선분 교차점과 게이트의 Torch 이관도 시험했다. CUDA에서
+교차점만 이관하자 상주 입력 평균이 59.86 ms에서 60.12 ms로 늘었다.
+MPS에서는 교차점과 회색조를 함께 이관한 실험에서 420프레임 중 2프레임의
+후보 개수가 달라졌다. 교차점 계산은 기존 경로를 사용한다.
+
+기준 코드는 `bb01149`의 검출기다. 위와 같은 삽입 420프레임의 입력
+체크섬을 검증한 뒤 장치와 입력 유형별로 같은 프레임에서 기존·변경 호출
+순서를 교대했다. 16개 프레임 워밍업 뒤 결과를 집계했다. 측정은 검출 호출부터
+CPU 딕셔너리 변환까지이며, GPU 상주 입력 준비, 파일 I/O, 커널 첫 컴파일,
+시뮬레이션, 채점은 측정 구간 밖이다. MPS 비교는 기존 TAPNext++ MPS 작업이
+종료된 뒤 실행했다. Torch와 OpenCV 각각 스레드 1개, CUDA 경계 검증
+컴파일은 꺼짐으로 고정했다.
+
+| 장치와 입력 | 평균 전 → 후 (ms) | p50 전 → 후 (ms) | p95 전 → 후 (ms) |
+| --- | ---: | ---: | ---: |
+| Vast.ai RTX 3090 · CUDA 상주 | 63.33 → 59.57 | 62.40 → 58.57 | 70.75 → 66.89 |
+| Apple M4 Pro · MPS 상주 | 27.27 → 26.37 | 25.07 → 23.84 | 37.53 → 36.48 |
+| RTX 3090 · NumPy 입력 | 64.12 → 64.26 | 63.34 → 63.16 | 72.26 → 71.87 |
+| M4 Pro · NumPy 입력 | 30.65 → 30.76 | 30.13 → 30.60 | 41.04 → 41.52 |
+
+두 입력 유형에서 물체 ID, 후보 수와 순서, 픽셀·3D 좌표, 메타데이터,
+마스크, 진단 정보가 장치별 420프레임 전체에서 일치했다. MPS에서는 별도
+일반 궤적 288프레임에서도 두 입력 유형의 출력이 일치했다. 별도 합성
+마스크로 빈 마스크, 포화 마스크, 무작위 밀도, 대각선 연결 성분을 OpenCV와
+비교했고, 두 기기에서 경계와 영역 기준 회귀 테스트도 통과했다.
+
+[CUDA 프레임별 결과](../outputs/corner_gpu_migration/cuda_final.json) ·
+[MPS 삽입 결과](../outputs/corner_gpu_migration/mps_final.json) ·
+[MPS 일반 궤적](../outputs/corner_gpu_migration/mps_general.json) ·
+[A/B 스크립트](../outputs/corner_gpu_migration/compare.py)
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python outputs/corner_gpu_migration/compare.py \
+  outputs/peg_box_cut_holdout/938390740331455b8187d1e0cedfeab8/frames.json \
+  cuda outputs/corner_gpu_migration/cuda_final.json
+```
+
+MPS에서는 장치 인수를 `mps`로 바꾼다. 비교 스크립트가 읽는 기준 모듈은
+로컬 `outputs/corner_gpu_migration/original/corner_detection/`에 있다.
+
+### CUDA와 MPS의 지연 차이
+
+2026-11-15에 위 삽입 420프레임에서 균등하게 뽑은 96프레임을 동일한
+GPU 상주 입력 형식으로 프로파일링했다. GPU 상주 입력 준비와 파일 읽기는
+측정 밖이다. CUDA는 Vast.ai RTX 3090 및 Core i7-9700K, MPS는 Apple
+M4 Pro에서 실행했다. 두 장치에서 같은 소스의 기본 설정을 사용했다.
+MPS에서 동시 TAPNext++ 작업과 겹친 계측은 제외하고 작업 종료 후 다시
+측정했다.
+
+상위 구간만 동기화한 계측의 평균은 다음과 같다. 일반 호출에서는 구간
+타이머를 끄고 CPU 딕셔너리 출력까지 측정했다. 단위는 ms/프레임이다.
+
+| 구간 | CUDA | MPS |
+| --- | ---: | ---: |
+| 일반 호출 전체 | 57.45 | 33.22 |
+| RGB-D 전처리 및 평면 준비 | 13.72 | 12.46 |
+| 윤곽 후보 | 19.72 | 8.27 |
+| Box 외곽 | 14.40 | 5.17 |
+| Hole 림 | 3.83 | 2.60 |
+
+세부 계측의 윤곽 구간에서는 OpenCV 윤곽 추출보다 경계·교차점·외곽
+후보 검증의 차이가 컸다. Box 구간에서도 OpenCV 특징 추출보다
+`box_cube`와 `box_rgb`의 차이가 컸다. MPS는 이런 검증과 평면 피팅의
+여러 연산을 커스텀 Metal 커널로 묶는다. CUDA eager는 후보의 투영, 패치
+샘플링, 기하 검증을 여러 Torch 연산으로 실행한다. 세부 동기화는 CUDA
+계측 전체 시간도 늘렸으므로, 세부 항목은 병목 위치 확인에 사용했다.
+
+기본 CUDA 일반 호출 3프레임의 PyTorch 추적에서 프레임당 GPU 커널이
+약 3,631개, GPU 복사가 약 193개, CUDA 스트림 동기화 호출이 154개였다.
+장치 커널 시간의 합은 8.86 ms, 장치 복사 시간의 합은 0.77 ms였다.
+호스트 `cudaLaunchKernel` API 호출 시간의 합은 17.96 ms였다. 추적의
+이벤트 시간은 CPU/GPU 동시 실행과 프로파일러 개입 때문에 전체 지연에서
+단순 차감할 수 없다. 해당 96프레임의 별도 워밍업 실행에서 경계 검증
+컴파일을 켜자 CUDA 일반 호출 평균이 58.09 ms에서 51.36 ms로 줄었다.
+이 비교의 컴파일 시간은 포함하지 않았다.
+
+[CUDA 상위 구간](../outputs/corner_backend_profile/cuda_coarse.json) ·
+[MPS 상위 구간](../outputs/corner_backend_profile/mps_coarse_idle.json) ·
+[CUDA 세부 구간과 추적 집계](../outputs/corner_backend_profile/cuda.json) ·
+[MPS 세부 구간](../outputs/corner_backend_profile/mps.json) ·
+[CUDA 컴파일 비교](../outputs/corner_backend_profile/cuda_compiled.json) ·
+[계측 스크립트](../outputs/corner_backend_profile/measure.py)
+
+### CUDA 검증 컴파일 범위 비교
+
+2026-11-15 Vast.ai RTX 3090에서 PyTorch 2.14.1+cu130과 RANSAC 평면 피팅으로
+`compile_cuda_edges=True`와 `compile_cuda_validation=True`를 비교했다.
+GPU에 미리 올린 동일한 삽입 420프레임을 체크섬으로 검증하고, 32개 대표
+프레임으로 워밍업한 뒤 프레임마다 두 경로의 실행 순서를 교대했다.
+전체 지연은 검출 호출부터 CPU 딕셔너리 출력까지다. 입력 업로드와
+파일 읽기는 계측 밖이다.
+
+확대 경로는 윤곽 경계와 교차점, 관측 면 외곽, Box RGB 후보와 Box 큐브
+검증의 그래프 안에 경계 검증을 포함한다. 최초 시도에서 Box 큐브의
+좌표 계산까지 컴파일하자 두 프레임에서 카메라 좌표의 최대 축 차이가
+1.92 mm와 2.96 mm였다. 최종 경로는 Box 큐브에서 평면 선택과 RGB
+특징에 맞춘 후보 좌표 계산을 기존 Torch 연산으로 수행하고, 그 이후의
+깊이·가시성·물리 경계 검증을 묶는다.
+
+| 구간 | 경계만 컴파일 | 검증 범위 확대 |
+| --- | ---: | ---: |
+| 전체 평균 | 49.01 ms | 35.98 ms |
+| 전체 p50 | 48.31 ms | 35.41 ms |
+| 전체 p95 | 54.14 ms | 40.72 ms |
+| 윤곽 후보 평균 | 16.21 ms | 7.16 ms |
+| Box 외곽 평균 | 10.18 ms | 6.25 ms |
+
+윤곽과 Box 구간은 같은 입력 중 48개를 골라 구간 경계에서 장치를
+동기화해 별도로 측정했다. 전체 측정 중 새 컴파일 그래프는 생기지
+않았다. 앞선 실험의 디스크 캐시가 있는 상태에서 프로세스별 첫 호출은
+5.40초와 31.82초였다. 첫 호출과 추가 워밍업 비용은 표에서 제외했다.
+
+420프레임 모두 후보 개수와 순서, 물체 ID, 마스크, 후보 메타데이터 및
+진단 정보가 일치했다. 좌표는 비트 단위로는 차이가 있었고, 최대 절대
+축 오차는 0.000031픽셀, 카메라·월드 좌표 모두 0.18 µm 이하였다.
+최종 변경은 CUDA 선택 옵션으로 제공한다.
+
+[초기 420프레임 결과](../outputs/corner_cuda_validation/full.json) ·
+[최종 420프레임 결과](../outputs/corner_cuda_validation/final.json) ·
+[A/B 스크립트](../outputs/corner_cuda_validation/compare.py)
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python outputs/corner_cuda_validation/compare.py \
+  outputs/peg_box_cut_holdout/938390740331455b8187d1e0cedfeab8/frames.json \
+  cuda outputs/corner_cuda_validation/final.json
+```
+
+비교 스크립트는 이 변경 직전 검출기 소스의 로컬 스냅샷
+`outputs/corner_cuda_validation/original/corner_detection/`을 기준으로 읽는다.
+
+### 픽셀 격자 기반 평면 피팅
+
+`TorchCornerDetector.main(device="cuda", plane_fit_method="grid")`는
+RGB 재질 마스크의 유효 깊이에서 격자 기반 평면 후보를 만든다. 2픽셀
+간격으로 중앙차분 법선을 구하고, 마스크 경계나 깊이 불연속을 가로지르는
+표본을 제외한다. 방향과 물체 중심 기준 오프셋을 양자화해 표본을 묶고
+유사 후보를 합친다. 점군을 가장 가까운 후보에 배정한 뒤 그룹별 공분산의
+고유분해를 한 번씩 배치로 실행한다. `plane_fit_method="ransac"`을
+지정하면 기존 평면 피팅 경로를 사용할 수 있다.
+
+2026-11-15 Vast.ai RTX 3090에서 두 방식에 동일하게
+`compile_cuda_validation=True`를 적용했다. GPU 상주 512×512 RGB-D 프레임마다
+실행 순서를 교대했다. 전체는 별도 구간 계측 없이 CPU 딕셔너리 출력까지
+측정했다. 평면 피팅은 별도 호출에서 CUDA를 동기화해 프레임 내 모든 피팅을
+합산했다. 파일 읽기, 업로드와 채점은 두 시간에서 제외했다.
+
+독립 삽입 420프레임에서 평균 평면 피팅은 10.31 → 4.19 ms,
+전체 검출은 37.22 → 31.71 ms였다. 동일 물체의 가시 3D 기준점에
+3 mm 이내 일대일 매칭을 적용했다. Box 외곽과 Hole 림은 Box 출력에서 함께
+매칭했다. Peg는 1,578 → 1,549 / 1,604, Box 외곽은 1,618 → 1,639 /
+1,716, Hole 림은 124 → 95 / 1,146이었다. 미매칭 출력은 Peg 410 → 404,
+Box 502 → 549였다. [삽입 프레임별 원본](../outputs/grid_plane_benchmark/561db8bc546c443baa9c0f2da795a21f/results.json)
+
+직전 통합 파이프라인의 133프레임(Expert 장면 12615147, 프레임 16–148)에서는
+평균 평면 피팅이 12.52 → 4.39 ms, 전체 검출이 39.25 → 31.01 ms였다.
+3 mm 매칭은 Peg 694 → 688 / 701, Box 외곽 461 → 459 / 595,
+Hole 림 449 → 449 / 485였다. 이 에피소드의 Peg/Box 분할 ID 18/19는
+저장된 첫 프레임의 물체 중심을 투영해 확인했다. 두 세트에서 워밍업 이후
+추가 컴파일은 없었다. 격자 모드의 전체 검출은 CUDA에서 검증했다.
+[파이프라인 프레임별 원본](../outputs/grid_plane_benchmark/3120a4e8fd9244859372aac0a2b1f52b/results.json) ·
+[비교 스크립트](../outputs/grid_plane_benchmark/benchmark.py)
+
+```bash
+PYTHONPATH=.:outputs/grid_plane_benchmark OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  WANDB_MODE=disabled python main.py --config outputs/grid_plane_benchmark/cuda.yaml
+```
+
+다른 호스트에서는 YAML의 `manifest`를 저장 프레임 옆에 있는 매니페스트의
+경로로 바꾼다.
+
+#### 격자 간격 비교
+
+2026-11-15 같은 RTX 3090에서 2, 3, 4, 6, 8 px를 비교했다.
+법선을 계산하는 이웃 거리는 2 px로 고정했다. 평면 피팅과 전체 검출의
+평균은 250 ms를 넘긴 호출이 있던 프레임을 모든 간격에서 공통 제외해
+계산했다. 시간 집계는 삽입 418/420, 연속 장면 132/133프레임이며
+3 mm 매칭은 모든 프레임을 포함한다.
+
+| 간격 | 삽입 피팅 / 검출 (ms) | 삽입 Peg 매칭 / 1,604 | 연속 장면 피팅 / 검출 (ms) | 연속 장면 Peg 매칭 / 701 |
+| ---: | ---: | ---: | ---: | ---: |
+| 2 px | 4.48 / 32.73 | 1,549 | 4.66 / 32.95 | 688 |
+| 3 px | 4.40 / 29.37 | 1,258 | 4.62 / 32.91 | 675 |
+| 4 px | 4.17 / 25.94 | 717 | 4.61 / 31.70 | 638 |
+| 6 px | 3.90 / 23.00 | 205 | 4.52 / 28.43 | 501 |
+| 8 px | 3.76 / 22.13 | 44 | 4.35 / 27.61 | 394 |
+
+Hole 림은 각 세트 내에서 간격에 따른 매칭 수 변화가 없었고, Box 외곽
+재현율 변화는 2 px 대비 0.35%p 이내였다. 삽입 420프레임에서 균등 추출한
+60프레임의 CPU 진단에서 Peg 법선 표본 중앙값은 2/3/4 px에서
+49/21/12점이었다. Peg 평면 후보가 하나도 없는 프레임은 각각
+0/4/27개였다. 기본 격자 간격은 2 px다.
+
+[삽입 420프레임](../outputs/grid_stride_benchmark/ea728f6e981b426692cfd29e90476bca/results.json) ·
+[연속 133프레임](../outputs/grid_stride_benchmark/a432ef60acb3488387369f0f7b944ed8/results.json) ·
+[실행 설정](../outputs/grid_stride_benchmark/cuda.yaml)
+
+#### 레가시 CUDA PCA5 법선으로 평면 확정
+
+`TorchCornerDetector.main(device="cuda", plane_fit_method="pca_normals")`는
+`d222fe2`의 모서리 검출에서 쓰는 CUDA PCA5 커널로 RGB 마스크 안의
+국소 법선을 구한다. 유효한 점·법선을 2픽셀 격자 경로와 같은 방향·오프셋
+그룹화와 평면별 배치 피팅에 넘긴다. 평면 마스크부터 Peg·Box·Hole의 검증과
+병합까지는 기존 검출 흐름을 사용한다. 법선 이외의 레가시 모서리 특징 계산과
+그래프 생성은 이 실험에 포함하지 않는다. 평면 피팅 시간에는 PCA5 법선
+계산과 그룹화, 정밀 피팅을 포함한다.
+
+2026-11-15 Vast.ai RTX 3090에서 메인 카메라의 동일 GPU 상주 프레임으로
+2 px 격자 방식과 비교했다. 양쪽 모두 확대 CUDA 검증 컴파일을 적용했다.
+파일 읽기와 입력 업로드, 3 mm 채점을 계측 밖에 두었고, 전체 검출은
+CPU 딕셔너리까지 포함했다. 워밍업 이후 새 컴파일 그래프는 없었다.
+
+| 측정 | 연속 133프레임 격자 → PCA5 | 독립 삽입 420프레임 격자 → PCA5 |
+| --- | ---: | ---: |
+| 평면 피팅 평균 | 4.39 → 4.51 ms | 4.21 → 4.18 ms |
+| 전체 평균 | 31.37 → 32.30 ms | 31.83 → 31.06 ms |
+| 전체 p95 | 35.60 → 34.12 ms | 36.88 → 33.74 ms |
+| Peg 3 mm | 688 → 684 / 701 | 1,549 → 1,569 / 1,604 |
+| Box 외곽 3 mm | 459 → 461 / 595 | 1,639 → 1,620 / 1,716 |
+| Hole 림 3 mm | 449 → 449 / 485 | 95 → 123 / 1,146 |
+
+삽입 시간 집계에는 격자 경로 357.97 ms가 관측된 프레임 한 개가 포함돼
+있다. 그 프레임을 두 경로에서 함께 제외하면 전체 평균은 둘 다 31.05 ms다.
+3 mm 매칭은 모든 프레임을 포함한다. PCA5 경로는 CUDA 실험 옵션으로 두었다.
+
+[연속 133프레임](../outputs/pca_plane_benchmark/536a5d3fa9d247e8a421a74ca66b998a/results.json) ·
+[삽입 420프레임](../outputs/pca_plane_benchmark/d38f0a18c886408ba8e2049e81805802/results.json) ·
+[실행 설정](../outputs/pca_plane_benchmark/cuda.yaml)
+
+#### 피팅된 평면 마스크의 윤곽 관심 영역
+
+평면 피팅과 마스크 생성 뒤, 최적화 경로의 윤곽 추출은 각 평면 마스크의
+지원 픽셀을 감싸는 사각형에서 실행한다. OpenCV의 좌표 오프셋으로 윤곽점을
+원본 영상 좌표로 복원한다. Vast.ai RTX 3090에서 2 px 격자와 확대 CUDA
+검증 컴파일을 사용한 동일 133프레임의 전체 평균은 31.01 → 30.89 ms,
+윤곽 후보 구간은 7.38 → 7.38 ms였다. 꼭짓점 좌표, 순서, 후보 메타데이터와
+출력 마스크는 133프레임 모두 일치했다. 이 비교의 ROI 적용 범위는 CPU 윤곽
+추출이다. GPU 평면 마스크 생성과 Box 검증은 기존 전체 영상 구조를 사용했다.
+[프레임별 결과](../outputs/plane_roi_benchmark/98bc6d91d50d48ec9c237ee100290e17/results.json)
+
+#### 국소 윤곽 선분 일괄 추출
+
+최적화 경로는 윤곽에서 국소 후보 검증에 쓰는 양쪽 선분을 간격별로 한꺼번에
+추출하고 기존 후보 순서로 조립한다. 2026-11-15 RTX 3090의 동일 메인
+카메라 133프레임에서 윤곽 후보 평균 7.52 → 6.84 ms, 전체 평균
+31.66 → 30.99 ms, 전체 p95 35.90 → 34.76 ms였다. 두 경로 모두 2 px
+격자와 확대 CUDA 검증 컴파일을 사용했다. 프레임별 꼭짓점과 마스크는
+모두 일치했다. 이 일괄 추출 경로와 2 px 격자, 확대 검증 컴파일을 메인
+CUDA 기본값으로 사용한다.
+[프레임별 계측](../outputs/contour_segment_benchmark/a83f8d27a92e4df4af6c6eec381c8775/results.json)
+
+#### Box 경계 픽셀 샘플링
+
+2026-11-15 Vast.ai RTX 3090에서 Expert 궤적 133프레임과 별도 삽입
+420프레임을 검증했다. 두 경로 모두 메인 카메라의 동일한 CUDA RGB-D
+입력을 사용했고, 프레임별 실행 순서를 교대했다. 전체 시간은 CPU 결과
+내보내기까지 포함한다. 구간 시간은 CUDA를 동기화한 별도 실행에서 쟀다.
+워밍업 이후 추가 컴파일 그래프는 없었다.
+
+| 구간 | 메인 CUDA 평균 / p95 (ms) | 샘플링 커널 평균 / p95 (ms) |
+| --- | ---: | ---: |
+| Box 큐브 경계 검증 | 0.507 / 0.585 | 0.322 / 0.359 |
+| Box 외곽 전체 | 6.090 / 6.545 | 5.908 / 6.368 |
+| 전체 검출 | 31.275 / 35.720 | 30.649 / 35.674 |
+
+전체 검출 중앙값은 30.632 → 30.454 ms였다. 메인 CUDA의 전체 시간에는
+290.05 ms 단일 지연이 포함됐다. 동일한 피팅 기하를 넣은 Box 꼭짓점
+승인 판정은 553프레임에서 일치했다. 독립적으로 검출기를 실행했을 때
+꼭짓점과 마스크는 549프레임에서 정확히 일치했다. 나머지 네 프레임의
+카메라 좌표 최대 축 차이는 0.0027 mm 미만이었고, 3 mm 매칭은 모두
+유지됐다. 두 경로의 합계는 Peg 2,237/2,305, Box 2,098/2,311,
+Hole 544/1,631이었다. `sample_cuda_box_planes=True`로 실험 경로를
+선택할 수 있다.
+[프레임별 계측](../outputs/box_plane_sampling_benchmark/0e7b1ed08a424749a7f8781a2a47c779/results.json)
+
+마스크 안의 표본만 모으는 별도 실험에서는 평면 피팅이 0.17–0.18 ms
+줄었다. 삽입 420프레임에서 3 mm 집계는 프레임별로 같았으나 3프레임의
+원시 출력이 달라 기본 구현에 반영하지 않았다.
+[삽입 계측](../outputs/compact_grid_benchmark/e2abc3343958491b902be618aa72d5b1/results.json)
