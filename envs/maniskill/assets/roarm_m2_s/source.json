@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/waveshareteam/roarm_ws_em0",
+  "revision": "f06b2ed6c1ddc5b7690975fdbba84aab626a2229",
+  "description_path": "src/roarm_main/roarm_description",
+  "srdf_path": "src/roarm_main/roarm_moveit/config/roarm_description.srdf",
+  "license_declaration": "MIT in upstream_package.xml; no standalone license found for this package",
+  "sha256": {
+    "upstream.urdf": "e78037cb904db813d7ff7253d06ef0d5390b5834475504665aef3771da758f41",
+    "upstream_package.xml": "3df0ffc1a2b1d79aca071629e0b084d1c73effb9f46105bc62b7d8c52ed98032",
+    "roarm_m2_s.srdf": "83f4a66bc1270b85fc7dc2e69e1cfcfb836c25613b5017566cf80313136e01f9",
+    "roarm_m2_s.urdf": "7e0f12eed205e199edfc58c208c885eeb5e43a03da83cffbe0a94405ab32ebcb",
+    "upstream.srdf": "928ca2fdefd041c9aef3e6e2ec69adfb105820d238dc088acbd9abfdc75b127d",
+    "meshes/link3.STL": "2d43a8d82b1403e5c015886f131ac4b71966a9d2fe627977a4c7cf290b5a4dc4",
+    "meshes/base_link.STL": "76cefc1f081f99657ecded3df3df213a822702ec83ce947473e590b10b62dce3",
+    "meshes/link2.STL": "c03138ec0baf08bd8cfb758acaba224c36f7b6ca6198c6bff0149eb94dd376be",
+    "meshes/gripper_link.STL": "09ed814c2b79b43f73a7a886474c0b0c520aabf6b6e474f979663a5fd6d9947a",
+    "meshes/link1.STL": "1068685550867a7d7b896b520397cbce9dfd387bcdabe40d83d4173870be5118"
+  }
+}

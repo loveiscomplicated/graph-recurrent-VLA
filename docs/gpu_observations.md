@@ -73,3 +73,11 @@ The initial visibility check and disk storage explicitly materialize arrays on
 CPU. This command does not imply an entirely GPU-resident collection pipeline.
 See [data collection](data_collection.md) for visibility rules and storage format,
 and the [simulator reference](../envs/maniskill/README.md) for raw observations.
+
+## Apple Silicon RoArm output
+
+`make_roarm_env(obs_mode="rgb+depth", observation_device="mps")` uses the
+same observation wrapper for CPU-to-MPS transfer. RGB-D, camera calibration,
+and state tensors retain their original shape, dtype and values. Physics
+remains on CPU and rendering uses SAPIEN's CPU readback path.
+See the [RoArm guide](roarm.md) for the CPU and MPS checks.

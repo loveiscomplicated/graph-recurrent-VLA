@@ -1,0 +1,2 @@
+# Keep the original CRLF bytes for the upstream asset's recorded SHA-256.
+upstream.urdf -text whitespace=cr-at-eol

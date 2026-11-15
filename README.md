@@ -1,5 +1,11 @@
 # Graph Recurrent VLA: shared ManiSkill prototype environment
 
+## RoArm M2-S bench
+
+Run `python -m examples.check_roarm --frames` from the repository root using
+Python 3.11 with `requirements.txt` installed. See the
+[RoArm guide](docs/roarm.md) for CPU physics, MPS observation output and tests.
+
 ## Corner detection
 
 `visual/corner_detection/` provides standalone current-frame RGB-D corner

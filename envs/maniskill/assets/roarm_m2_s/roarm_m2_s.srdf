@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="roarm_description">
+  <group name="hand">
+    <joint name="base_link_to_link1" />
+    <joint name="link1_to_link2" />
+    <joint name="link2_to_link3" />
+    <chain base_link="base_link" tip_link="hand_tcp" />
+  </group>
+  <group name="gripper">
+    <link name="gripper_link" />
+  </group>
+  <group_state name="home" group="hand">
+    <joint name="base_link_to_link1" value="0" />
+    <joint name="link1_to_link2" value="0" />
+    <joint name="link2_to_link3" value="1.5708" />
+  </group_state>
+  <group_state name="open" group="gripper">
+    <joint name="link3_to_gripper_link" value="1.5" />
+  </group_state>
+  <group_state name="close" group="gripper">
+    <joint name="link3_to_gripper_link" value="0" />
+  </group_state>
+  <disable_collisions link1="base_link" link2="link1" reason="Default" />
+  <disable_collisions link1="base_link" link2="link2" reason="Default" />
+  <disable_collisions link1="gripper_link" link2="link3" reason="Default" />
+  <disable_collisions link1="link1" link2="link2" reason="Default" />
+  <disable_collisions link1="link2" link2="link3" reason="Default" />
+</robot>

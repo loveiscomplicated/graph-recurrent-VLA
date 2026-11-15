@@ -217,3 +217,10 @@ team work.
 Reference: [ManiSkill observation modes](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/observation.html),
 [controllers](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/controllers.html),
 and [camera sensors](https://maniskill.readthedocs.io/en/latest/user_guide/concepts/sensors.html).
+
+## RoArm M2-S bench
+
+Import `make_roarm_env` from `envs.maniskill.roarm` for the tabletop
+`RoArmM2Bench-v1` environment. On Apple Silicon,
+`observation_device="mps"` moves raw observations after CPU readback.
+See the [RoArm guide](../../docs/roarm.md) for control and smoke checks.
