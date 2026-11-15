@@ -1,0 +1,8 @@
+trainer: evaluation.tapnextpp_support:evaluate
+device: mps
+source: outputs/mixed_trajectory_pilot/pilot_12615147_expert
+frozen_queries: outputs/tracker_only/bd36033d353e4c7c9a19fbca6a93c644/replay.npz
+output_root: outputs/tapnextpp_support
+tap_checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+tap_resolution: 256
+local_extent_model_px: 50

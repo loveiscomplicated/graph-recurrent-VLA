@@ -7,6 +7,16 @@ ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출)
 공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.
 가중치 다운로드와 두 프레임 추론 예제는 [TAPNext++ 가이드](../docs/tapnextpp.md)를 참고한다.
 
+동결 Peg 에피소드와 기존 GT query NPZ, 256 체크포인트 및 CoTracker 서브모듈을
+준비한 뒤 보조점 네 조건을 비교할 수 있다. 입력 위치와 장치는 YAML에서 지정한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config visual/configs/tapnextpp_support.yaml
+```
+
+좌표·시각·채점 검증과 산출물은 [보조점 감사](../docs/tapnextpp.md#보조점-구현-감사-및-네-조건-비교)를 참고한다.
+
 ## CoTracker3 Online 포인트 추적
 
 공식 구현은 `visual/third_party/co_tracker` Git 서브모듈에 있다.
