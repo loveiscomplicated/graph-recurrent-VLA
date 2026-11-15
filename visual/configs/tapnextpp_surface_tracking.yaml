@@ -1,5 +1,5 @@
 trainer: evaluation.tapnextpp_surface_tracking:evaluate
-device: mps
+device: mlx
 detector_device: auto
 source: outputs/mixed_trajectory_pilot/pilot_12615147_expert
 frozen_queries: outputs/tracker_only/bd36033d353e4c7c9a19fbca6a93c644/replay.npz
@@ -12,6 +12,4 @@ ransac_seed: 42
 inlier_threshold_m: 0.005
 detection_gate_m: 0.012
 
-tap_mps_fp16_vit: true
-tap_mps_fp16_recurrent_mlp: true
 tap_native_patch_crop_xyxy: [0, 7, 24, 31]

@@ -189,12 +189,14 @@ Run ID `3b96116880834fedb6b494c4a7f40bae`. 네 조건 각각 9개 독립 stream,
 ### 프레임 0부터 표면점 추적과 3D 꼭짓점 복원
 
 ```bash
+uv pip install --python .venv/bin/python 'mlx==0.32.4' 'mlx-metal==0.32.4'
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
   .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
 ```
 
-이 명령은 [MPS 네이티브 패치 축소](#mps-네이티브-패치-축소)를 기본으로 사용한다.
-아래 전체 화면 재생 결과를 재현하려면 config 복사본에서
+이 명령은 Apple Silicon의 [MLX 온라인 추적](#mlx-온라인-추적)을 사용한다.
+아래 PyTorch MPS 전체 화면 재생 결과를 재현하려면
+`visual/configs/tapnextpp_surface_tracking_mps.yaml` 복사본에서
 `tap_native_patch_crop_xyxy`, `tap_mps_fp16_vit`,
 `tap_mps_fp16_recurrent_mlp`를 제거한다.
 
@@ -349,7 +351,7 @@ recurrent 입력과 상태 업데이트는 FP32로 유지한다.
 
 ```bash
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
-  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking_mps.yaml
 ```
 
 | 조건 | 이미지 토큰 | 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px | 삽입 중앙 오차 (px) |
@@ -361,7 +363,7 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 | 넓은 패치 영역, Transformer·recurrent MLP FP16 | 576 | 65.06 / 65.83 | 102.49 / 109.48 | 211/240 | 37/66 | 3.55 |
 | 좁은 패치 영역, Transformer·recurrent MLP FP16 | 440 | 55.23 / 56.37 | 91.72 / 97.41 | 200/240 | 26/66 | 5.42 |
 
-기본 설정 파일은 넓은 패치 영역 `[0, 7, 24, 31]`과 두 FP16 옵션을 사용한다.
+PyTorch MPS 설정 파일은 넓은 패치 영역 `[0, 7, 24, 31]`과 두 FP16 옵션을 사용한다.
 이 에피소드에서 삽입 성공 수가 가장 높았던 조건을 재현하려면
 `tap_mps_fp16_recurrent_mlp: false`로 바꾼다. 좁은 영역은 `[0, 8, 20, 30]`이다.
 패치 범위는 이 카메라와 에피소드에서 선택했다. 넓은 영역의 두 FP16 조건은
@@ -372,3 +374,37 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 [프레임 검증 및 전체 비교](../outputs/tapnextpp_surface_tracking/mps_native_patch_optimization.json) ·
 [넓은 영역 실행](../outputs/tapnextpp_surface_tracking/fc8d8ce76e8a409ba248a25e3f817eb5/summary.json) ·
 [좁은 영역 실행](../outputs/tapnextpp_surface_tracking/7534999d95f34437a15b03e42652b487/summary.json)
+
+### MLX 온라인 추적
+
+Apple Silicon의 MLX 0.32.4에서 공식 PyTorch 체크포인트를 시작할 때 한 번
+변환한다. 256px 네이티브 모델에 256×256 또는 512×512 BGR 영상을 받으며,
+512×512에서는 2:1 bilinear 리사이즈를 사용한다. 첫 프레임에 query를 주입하고
+이후에는 mask token을 사용한다. Temporal convolution 이력과 RG-LRU 상태는
+FP32로 MLX GPU에 유지한다. 공간 Transformer와 recurrent 채널 MLP는 FP16이다.
+
+```bash
+uv pip install --python .venv/bin/python 'mlx==0.32.4' 'mlx-metal==0.32.4'
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
+```
+
+전체 재생은 2026-11-15에 M4 Pro에서 MLX → MPS → MPS → MLX 순으로 진행했다.
+두 경로에 동일한 체크포인트와 576패치, 초기 표면점 32개를 사용했고 검출기는
+`bb01149` 소스로 고정했다. 두 실행의 프레임별 시간에서 워밍업과 초기 프레임을
+제외하고 합산했다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| MPS recurrent 컴파일 | 51.72 / 52.87 | 51.70 / 52.88 | 89.25 / 96.55 | 211/240 | 37/66 |
+| MLX 12블록 | 46.91 / 47.36 | 46.91 / 47.30 | 83.28 / 89.90 | 211/240 | 37/66 |
+
+가림 샘플 240건의 복원 가능 여부와 4px 판정이 모두 일치했다. 표면점 가시성
+판정도 일치했다. 삽입 복원 오차의 중앙값은 MPS 3.5494px, MLX 3.5554px였고
+두 경로의 삽입 복원 좌표 최대 차이는 0.1470px였다. 검증 범위는 이 호스트와
+동일한 149프레임 에피소드다.
+
+[MLX 1](../outputs/tapnextpp_surface_tracking/d6120996f0704231a62fbbff56300663/summary.json) ·
+[MPS 1](../outputs/tapnextpp_surface_tracking/b36d384a12df4308a70d179d759f57ec/summary.json) ·
+[MPS 2](../outputs/tapnextpp_surface_tracking/c305e49668454aa4bc3c325c1297ba76/summary.json) ·
+[MLX 2](../outputs/tapnextpp_surface_tracking/033d2b9d8b2c440d86c579b1d8a6e74b/summary.json)

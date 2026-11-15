@@ -254,6 +254,42 @@ def report(config, frames, rows, template):
     return result, xy
 
 
+def load_tracker(config):
+    """Load the configured online implementation and its inference optimizations."""
+    native_crop = config.get("tap_native_patch_crop_xyxy")
+    if native_crop is not None and config.get("tap_crop_xyxy") is not None:
+        raise ValueError("Choose either tap_native_patch_crop_xyxy or tap_crop_xyxy")
+    if config["device"] == "mlx":
+        from visual.tapnextpp_mlx import OnlineTracker
+
+        if config.get("tap_crop_xyxy") is not None:
+            raise ValueError("TAPNext++ MLX requires a full frame and optional native patch crop")
+        torch_options = (
+            "tap_cuda_autocast", "tap_cache_cuda_autocast", "tap_mps_fp16_vit",
+            "tap_mps_fp16_recurrent_mlp",
+        )
+        if any(config[key] for key in torch_options):
+            raise ValueError("TAPNext++ MLX requires the PyTorch-specific flags to be disabled")
+        return OnlineTracker.from_checkpoint(
+            config["checkpoint"], config["tap_input_resolution"], native_crop,
+        )
+    tracker = TAPNextPP.from_checkpoint(
+        config["checkpoint"],
+        device=config["device"],
+        input_resolution=config["tap_input_resolution"],
+    )
+    if config["tap_mps_fp16_vit"]:
+        enable_mps_fp16_vit(tracker)
+    if config["tap_mps_fp16_recurrent_mlp"]:
+        if tracker.device.type != "mps":
+            raise ValueError("tap_mps_fp16_recurrent_mlp requires an MPS tracker")
+        for block in tracker._model.blocks:
+            run_block_in_fp16(block.ssm_block.mlp_block)
+    if native_crop is not None:
+        crop_native_patches(tracker, native_crop)
+    return tracker
+
+
 def evaluate(config):
     """Measure the RGB-D detector plus one continuous surface-only TAPNext++ stream."""
     config = {
@@ -269,22 +305,7 @@ def evaluate(config):
     receipt = Path(config["source"]) / "episode.json"
     episode = json.loads(receipt.read_text())
     frames = read_frames(config, episode)
-    tracker = TAPNextPP.from_checkpoint(
-        config["checkpoint"],
-        device=config["device"],
-        input_resolution=config["tap_input_resolution"],
-    )
-    if config["tap_mps_fp16_vit"]:
-        enable_mps_fp16_vit(tracker)
-    if config["tap_mps_fp16_recurrent_mlp"]:
-        if tracker.device.type != "mps":
-            raise ValueError("tap_mps_fp16_recurrent_mlp requires an MPS tracker")
-        for block in tracker._model.blocks:
-            run_block_in_fp16(block.ssm_block.mlp_block)
-    if config.get("tap_native_patch_crop_xyxy") is not None:
-        if config.get("tap_crop_xyxy") is not None:
-            raise ValueError("Choose either tap_native_patch_crop_xyxy or tap_crop_xyxy")
-        crop_native_patches(tracker, config["tap_native_patch_crop_xyxy"])
+    tracker = load_tracker(config)
     detector = TorchCornerDetector.main(device=config["detector_device"])
     with ExperimentLogger(team="visual", model="tapnextpp_surface_tracking", config=config,
                           seed=episode["seed"], job_type="evaluate") as logger:
@@ -294,6 +315,8 @@ def evaluate(config):
                       frozen_queries_sha256=file_sha256(Path(config["frozen_queries"])),
                       torch_version=str(torch.__version__), tracker_device=str(tracker.device),
                       resolved_detector_device=str(detector.device))
+        if config["device"] == "mlx":
+            logger.record(mlx_version=tracker.runtime_version)
         print(f"Output directory: {output}", flush=True)
         # Warm up on frame zero with disposable state before the measured replay.
         rgb, depth, intrinsic, extrinsic = frames[0]
@@ -307,8 +330,16 @@ def evaluate(config):
             # leaving the detector and preprocessing outside mixed precision.
             scope = torch.autocast("cuda", enabled=False)
         with scope:
-            track_surface_frame(tracker, config, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR), query)
+            warm_frame = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            warm_start = perf_counter()
+            _, _, warm_state = track_surface_frame(tracker, config, warm_frame, query)
+            if config["device"] == "mlx":
+                # The initial and continuation calls have different cache signatures.
+                track_surface_frame(tracker, config, warm_frame, state=warm_state)
+            del warm_state
             synchronize(tracker.device)
+            if config["device"] == "mlx":
+                logger.record(tracker_compile_warmup_ms=(perf_counter() - warm_start) * 1000)
             query, template, rows = replay(config, frames, tracker, detector)
         result, xy = report(config, frames, rows, template)
         path = output / "summary.json"

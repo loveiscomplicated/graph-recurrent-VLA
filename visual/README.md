@@ -17,26 +17,17 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 
 좌표·시각·채점 검증과 산출물은 [보조점 감사](../docs/tapnextpp.md#보조점-구현-감사-및-네-조건-비교)를 참고한다.
 
-같은 에피소드에서 프레임 0부터 Peg 표면점만 추적하고 RGB-D 강체 정합으로
-가려진 꼭짓점을 투영하려면 다음 설정을 사용한다.
+Apple Silicon 기본 설정은 MLX로 Peg 표면점을 추적하고 RGB-D 강체 정합으로
+가려진 꼭짓점을 복원한다.
 
 ```bash
+uv pip install --python .venv/bin/python 'mlx==0.32.4' 'mlx-metal==0.32.4'
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
-  python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
 ```
 
-입력 해상도와 CUDA FP16 autocast는 각각 `tap_input_resolution`과
-`tap_cuda_autocast`로 지정한다. 기본값은 256과 `false`다.
-[해상도 및 정밀도 비교](../docs/tapnextpp.md#입력-해상도와-cuda-fp16-벤치마크)를 참고한다.
-CUDA autocast를 켠 상태에서 `tap_cache_cuda_autocast: true`를 추가하면
-FP16 가중치 변환을 프레임 간 재사용한다. 다른 장치에서 이 설정을 복사해
-실행할 때는 MPS용 `tap_mps_fp16_vit`, `tap_mps_fp16_recurrent_mlp`,
-`tap_native_patch_crop_xyxy`를 제거한다.
-[후속 최적화 비교](../docs/tapnextpp.md#고정-roi와-cuda-autocast-캐시)를 참고한다.
-
-위 MPS 기본 설정은 고정 카메라 에피소드에서 576개 네이티브 패치와
-Transformer·recurrent MLP FP16을 사용한다.
-패치 범위와 정확도 비교는 [MPS 네이티브 패치 축소](../docs/tapnextpp.md#mps-네이티브-패치-축소)에 있다.
+지원 입력과 검증 결과는 [MLX 온라인 추적](../docs/tapnextpp.md#mlx-온라인-추적)에 있다.
+PyTorch MPS 비교에는 `visual/configs/tapnextpp_surface_tracking_mps.yaml`을 사용한다.
 
 CUDA 기본 설정은 전체 화면 256×256과 FP16 autocast 가중치 캐시를 사용한다.
 
