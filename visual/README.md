@@ -29,9 +29,21 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 `tap_cuda_autocast`로 지정한다. 기본값은 256과 `false`다.
 [해상도 및 정밀도 비교](../docs/tapnextpp.md#입력-해상도와-cuda-fp16-벤치마크)를 참고한다.
 CUDA autocast를 켠 상태에서 `tap_cache_cuda_autocast: true`를 추가하면
-FP16 가중치 변환을 프레임 간 재사용한다. MPS에서는 `tap_mps_fp16_vit: true`로
-공간 Transformer 블록만 FP16으로 실행할 수 있다.
+FP16 가중치 변환을 프레임 간 재사용한다. 다른 장치에서 이 설정을 복사해
+실행할 때는 MPS용 `tap_mps_fp16_vit`, `tap_mps_fp16_recurrent_mlp`,
+`tap_native_patch_crop_xyxy`를 제거한다.
 [후속 최적화 비교](../docs/tapnextpp.md#고정-roi와-cuda-autocast-캐시)를 참고한다.
+
+위 MPS 기본 설정은 고정 카메라 에피소드에서 576개 네이티브 패치와
+Transformer·recurrent MLP FP16을 사용한다.
+패치 범위와 정확도 비교는 [MPS 네이티브 패치 축소](../docs/tapnextpp.md#mps-네이티브-패치-축소)에 있다.
+
+CUDA 기본 설정은 전체 화면 256×256과 FP16 autocast 가중치 캐시를 사용한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config visual/configs/tapnextpp_surface_tracking_cuda.yaml
+```
 
 ## CoTracker3 Online 포인트 추적
 

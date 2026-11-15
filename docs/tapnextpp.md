@@ -193,6 +193,18 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
   .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
 ```
 
+이 명령은 [MPS 네이티브 패치 축소](#mps-네이티브-패치-축소)를 기본으로 사용한다.
+아래 전체 화면 재생 결과를 재현하려면 config 복사본에서
+`tap_native_patch_crop_xyxy`, `tap_mps_fp16_vit`,
+`tap_mps_fp16_recurrent_mlp`를 제거한다.
+
+CUDA 기본 설정은 전체 화면 256×256과 FP16 autocast 가중치 캐시를 사용한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config visual/configs/tapnextpp_surface_tracking_cuda.yaml
+```
+
 동일한 149프레임 에피소드에서 CPU 꼭짓점 검출기를 매 프레임 실행한다.
 프레임 0의 검출 Peg mask를 침식한 뒤 유효한 깊이가 있는 내부 픽셀에서
 서로 떨어진 표면점 32개를 고른다. TAPNext++ 256 MPS 모델의 state는
@@ -251,7 +263,7 @@ query와 채점 mask가 일치했다. 4px 성공 건수는 동일했다.
 CUDA는 같은 RTX 3090에서 256×256을 유지하고 공식 래퍼의 FP16 autocast를
 활성화했다. 검출기는 각 장치의 기준 실행과 동일한 설정으로 실행했다.
 
-위 표면점 재생 명령에서 config 복사본을 사용한다. MPS는
+위 표면점 재생 명령에서 MPS 최적화 필드 세 개를 제거한 config 복사본을 사용한다. MPS는
 `tap_input_resolution: 192`를 추가한다. CUDA는 `device: cuda:0`과
 `detector_device: cuda:0`으로 설정하고 `tap_cuda_autocast: true`를 추가한다.
 기준 실행은 각각 해상도 256과 autocast 비활성화를 사용한다.
@@ -319,3 +331,44 @@ FP16으로 바꾼 실험은 100.55ms였으나 삽입 성공이 0/66으로 떨어
 [구간별 비교 JSON](../outputs/tapnextpp_surface_tracking/additional_tracker_optimization.json) ·
 [CUDA 캐시 실행](../outputs/tapnextpp_surface_tracking/dd1165b85b8843e0910268a399980db0/summary.json) ·
 [MPS Transformer FP16 실행](../outputs/tapnextpp_surface_tracking/fab68806f62e4194942b1b27508ae4df/summary.json)
+
+### MPS 네이티브 패치 축소
+
+2026-11-15에 M4 Pro에서 기존 149프레임과 초기 표면점 32개를 고정했다.
+검출 좌표, 입력 체크섬과 채점 기준은 실행 간 일치했다. 공간 Transformer FP16의
+블록별 동기화 계측에서 12개 블록의 프레임당 소계는 공간 Transformer 40.14ms,
+recurrent MLP 38.62ms, recurrent 상태 처리와 프로젝션 28.19ms였다.
+블록별 동기화는 병목을 확인할 때만 사용했다.
+
+입력은 전체 화면을 기존과 같이 256×256으로 변환한다. 그 안에서 지정한
+패치만 projection에 전달하고 해당 영역의 원래 이미지 위치 임베딩을 그대로 쓴다.
+Query 임베딩과 출력 좌표계는 전체 영상 기준이다. `tap_native_patch_crop_xyxy`의
+순서는 32×32 패치 격자의 왼쪽, 위, 오른쪽, 아래이며 오른쪽과 아래는 제외한다.
+`tap_mps_fp16_recurrent_mlp`는 recurrent MLP 내부만 FP16으로 바꾸고
+recurrent 입력과 상태 업데이트는 FP32로 유지한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
+```
+
+| 조건 | 이미지 토큰 | 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px | 삽입 중앙 오차 (px) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 전체 화면 FP32 | 1024 | 117.73 / 119.32 | 155.27 / 163.56 | 199/240 | 25/66 | 4.60 |
+| 전체 화면 Transformer FP16 | 1024 | 112.22 / 114.19 | 150.00 / 156.29 | 199/240 | 25/66 | 4.61 |
+| 전체 화면 Transformer·recurrent MLP FP16 | 1024 | 104.74 / 106.14 | 140.89 / 148.30 | 199/240 | 25/66 | 4.60 |
+| 넓은 패치 영역, Transformer FP16 | 576 | 68.87 / 70.03 | 105.50 / 111.80 | 215/240 | 41/66 | 3.49 |
+| 넓은 패치 영역, Transformer·recurrent MLP FP16 | 576 | 65.06 / 65.83 | 102.49 / 109.48 | 211/240 | 37/66 | 3.55 |
+| 좁은 패치 영역, Transformer·recurrent MLP FP16 | 440 | 55.23 / 56.37 | 91.72 / 97.41 | 200/240 | 26/66 | 5.42 |
+
+기본 설정 파일은 넓은 패치 영역 `[0, 7, 24, 31]`과 두 FP16 옵션을 사용한다.
+이 에피소드에서 삽입 성공 수가 가장 높았던 조건을 재현하려면
+`tap_mps_fp16_recurrent_mlp: false`로 바꾼다. 좁은 영역은 `[0, 8, 20, 30]`이다.
+패치 범위는 이 카메라와 에피소드에서 선택했다. 넓은 영역의 두 FP16 조건은
+전체 화면 대비 가림 성공 19건을 얻고 7건을 잃었다. 전체 화면 FP16 두 블록은
+240건 각각의 성공·실패 판정을 유지했다. 다른 에피소드와 CUDA의 새 패치 경로는
+이번에 실행하지 않았다.
+
+[프레임 검증 및 전체 비교](../outputs/tapnextpp_surface_tracking/mps_native_patch_optimization.json) ·
+[넓은 영역 실행](../outputs/tapnextpp_surface_tracking/fc8d8ce76e8a409ba248a25e3f817eb5/summary.json) ·
+[좁은 영역 실행](../outputs/tapnextpp_surface_tracking/7534999d95f34437a15b03e42652b487/summary.json)
