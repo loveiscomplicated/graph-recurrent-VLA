@@ -1,0 +1,9 @@
+trainer: evaluation.corner_detection_holdout:evaluate
+source: outputs/corner_detection_holdout/frames/manifest.json
+output_root: outputs/corner_detection_holdout/cuda_warm
+device: cuda:0
+threads: 1
+warmup_frames_per_episode: 3
+warmup_extra_frames:
+  - {seed: 1993775002, mode: random, step: 160}
+  - {seed: 1919401402, mode: random, step: 175}

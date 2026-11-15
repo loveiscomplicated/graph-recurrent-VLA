@@ -1,0 +1,2164 @@
+{
+  "detector_commit": "af4dca2e787ae368068d864b59d5f99e356fb428",
+  "manifest_path": "outputs/corner_detection_holdout/frames/manifest.json",
+  "manifest_sha256": "a0f2b48eda3b6991168eb0b132e1849cd0ac230a2c135418c819fdc3b21d697c",
+  "dataset": {
+    "reset_seeds": [
+      1919401402,
+      1901235441,
+      1993775002,
+      1981104403,
+      1988774954,
+      1970863175,
+      1970343313,
+      1903074547,
+      1997795164,
+      1945070972,
+      1944438454,
+      1970267016,
+      1938726701,
+      1968532852,
+      1974241916,
+      1958395475
+    ],
+    "episodes": 48,
+    "frames": 2073,
+    "simulator_packages": {
+      "mani_skill": "3.0.1",
+      "sapien": "3.0.3",
+      "torch": "2.14.1",
+      "numpy": "2.4.6"
+    }
+  },
+  "runs": {
+    "cuda": {
+      "run_id": "72135dfee99f47c7a52307bf5ce9c546",
+      "results_path": "outputs/corner_detection_holdout/cuda/72135dfee99f47c7a52307bf5ce9c546/results.json",
+      "results_sha256": "ae410782a318a679d2f7602d0e0d5afe66f9c01ca8c924aa164d401e5747ff32",
+      "settings": {
+        "device": "cuda:0",
+        "threads": 1,
+        "warmup_frames_per_episode": 3
+      },
+      "environment": {
+        "platform": "Linux-5.4.0-208-generic-x86_64-with-glibc2.39",
+        "python": "3.12.15",
+        "torch": "2.14.1+cu130",
+        "opencv": "5.0.0",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "hardware": {
+          "gpu": "NVIDIA GeForce RTX 3090",
+          "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+          "cuda": "13.0"
+        },
+        "plane_fit_method": "grid"
+      },
+      "warmup_cuda_graphs": 15,
+      "summaries": {
+        "all": {
+          "frames": 2073,
+          "episodes": 48,
+          "detector_ms": {
+            "mean": 32.50020287941748,
+            "p50": 28.056085109710693,
+            "p95": 30.452959798276424,
+            "max": 5303.376948460937
+          },
+          "host_ready_ms": {
+            "mean": 32.979046305469915,
+            "p50": 28.53243798017502,
+            "p95": 31.03792890906334,
+            "max": 5303.942626342177
+          },
+          "new_cuda_graphs": 2,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12268,
+                "matched": 10457,
+                "unmatched": 1811,
+                "frames_without_predictions": 30,
+                "precision": 0.8523801760678187,
+                "unmatched_per_frame": 0.8736131210805596
+              },
+              "box": {
+                "predictions": 19710,
+                "matched": 13923,
+                "unmatched": 5787,
+                "frames_without_predictions": 0,
+                "precision": 0.7063926940639269,
+                "unmatched_per_frame": 2.7916063675832126
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 10457,
+                "recall": 0.8852861496782932,
+                "matched_error_p50_mm": 1.131105275498318
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8287,
+                "recall": 0.9063764628677677,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 5636,
+                "recall": 0.7434375412214748,
+                "matched_error_p50_mm": 2.0440886939273204
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12268,
+                "matched": 11219,
+                "unmatched": 1049,
+                "frames_without_predictions": 30,
+                "precision": 0.914492989892403,
+                "unmatched_per_frame": 0.5060299083453932
+              },
+              "box": {
+                "predictions": 19710,
+                "matched": 15218,
+                "unmatched": 4492,
+                "frames_without_predictions": 0,
+                "precision": 0.7720953830542872,
+                "unmatched_per_frame": 2.1669078630004823
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 11219,
+                "recall": 0.9497968167964782,
+                "matched_error_p50_mm": 1.1549767588839102
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8705,
+                "recall": 0.9520944985234606,
+                "matched_error_p50_mm": 0.5162282112199303
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 6513,
+                "recall": 0.8591214879303521,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "grasp": {
+          "frames": 360,
+          "episodes": 26,
+          "detector_ms": {
+            "mean": 27.433245476438767,
+            "p50": 27.87373447790742,
+            "p95": 30.429548770189285,
+            "max": 33.475976437330246
+          },
+          "host_ready_ms": {
+            "mean": 27.904441060187917,
+            "p50": 28.35780568420887,
+            "p95": 31.075600627809763,
+            "max": 34.125455655157566
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2043,
+                "matched": 1691,
+                "unmatched": 352,
+                "frames_without_predictions": 14,
+                "precision": 0.8277043563387175,
+                "unmatched_per_frame": 0.9777777777777777
+              },
+              "box": {
+                "predictions": 3328,
+                "matched": 2257,
+                "unmatched": 1071,
+                "frames_without_predictions": 0,
+                "precision": 0.6781850961538461,
+                "unmatched_per_frame": 2.975
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1691,
+                "recall": 0.8890641430073607,
+                "matched_error_p50_mm": 1.1964564213841358
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1408,
+                "recall": 0.9148797920727745,
+                "matched_error_p50_mm": 0.5070947508050655
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 849,
+                "recall": 0.66328125,
+                "matched_error_p50_mm": 2.070463345460356
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2043,
+                "matched": 1723,
+                "unmatched": 320,
+                "frames_without_predictions": 14,
+                "precision": 0.8433675966715615,
+                "unmatched_per_frame": 0.8888888888888888
+              },
+              "box": {
+                "predictions": 3328,
+                "matched": 2490,
+                "unmatched": 838,
+                "frames_without_predictions": 0,
+                "precision": 0.7481971153846154,
+                "unmatched_per_frame": 2.327777777777778
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1723,
+                "recall": 0.905888538380652,
+                "matched_error_p50_mm": 1.2019811438188914
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1462,
+                "recall": 0.9499675113710201,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 1028,
+                "recall": 0.803125,
+                "matched_error_p50_mm": 2.2272251360518185
+              }
+            }
+          }
+        },
+        "expert": {
+          "frames": 402,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.612283978778034,
+            "p50": 28.008982073515654,
+            "p95": 30.361420894041657,
+            "max": 33.475976437330246
+          },
+          "host_ready_ms": {
+            "mean": 28.08453353928096,
+            "p50": 28.501299675554037,
+            "p95": 30.96748241223395,
+            "max": 34.125455655157566
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2280,
+                "matched": 1901,
+                "unmatched": 379,
+                "frames_without_predictions": 12,
+                "precision": 0.8337719298245614,
+                "unmatched_per_frame": 0.9427860696517413
+              },
+              "box": {
+                "predictions": 3762,
+                "matched": 2605,
+                "unmatched": 1157,
+                "frames_without_predictions": 0,
+                "precision": 0.6924508240297714,
+                "unmatched_per_frame": 2.8781094527363185
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 1901,
+                "recall": 0.8788719371243643,
+                "matched_error_p50_mm": 1.1594832262567372
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1612,
+                "recall": 0.9148694665153235,
+                "matched_error_p50_mm": 0.503398922458391
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 993,
+                "recall": 0.677815699658703,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2280,
+                "matched": 1985,
+                "unmatched": 295,
+                "frames_without_predictions": 12,
+                "precision": 0.8706140350877193,
+                "unmatched_per_frame": 0.7338308457711443
+              },
+              "box": {
+                "predictions": 3762,
+                "matched": 2863,
+                "unmatched": 899,
+                "frames_without_predictions": 0,
+                "precision": 0.7610313662945242,
+                "unmatched_per_frame": 2.236318407960199
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 1985,
+                "recall": 0.917706888580675,
+                "matched_error_p50_mm": 1.1679480845959498
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1680,
+                "recall": 0.9534619750283768,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 1183,
+                "recall": 0.8075085324232082,
+                "matched_error_p50_mm": 2.1781885185498115
+              }
+            }
+          }
+        },
+        "expert_random": {
+          "frames": 855,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.66966649401955,
+            "p50": 27.794349938631058,
+            "p95": 30.338172614574432,
+            "max": 34.48485769331455
+          },
+          "host_ready_ms": {
+            "mean": 28.148933711369136,
+            "p50": 28.231525793671608,
+            "p95": 30.925493128597736,
+            "max": 35.17812490463257
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4896,
+                "matched": 4218,
+                "unmatched": 678,
+                "frames_without_predictions": 10,
+                "precision": 0.8615196078431373,
+                "unmatched_per_frame": 0.7929824561403509
+              },
+              "box": {
+                "predictions": 8511,
+                "matched": 6063,
+                "unmatched": 2448,
+                "frames_without_predictions": 0,
+                "precision": 0.7123722241804723,
+                "unmatched_per_frame": 2.863157894736842
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4218,
+                "recall": 0.8997440273037542,
+                "matched_error_p50_mm": 1.1448851870370222
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3563,
+                "recall": 0.9138240574506283,
+                "matched_error_p50_mm": 0.5050686701879881
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 2500,
+                "recall": 0.7624275693809088,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4896,
+                "matched": 4432,
+                "unmatched": 464,
+                "frames_without_predictions": 10,
+                "precision": 0.9052287581699346,
+                "unmatched_per_frame": 0.5426900584795321
+              },
+              "box": {
+                "predictions": 8511,
+                "matched": 6614,
+                "unmatched": 1897,
+                "frames_without_predictions": 0,
+                "precision": 0.7771119727411585,
+                "unmatched_per_frame": 2.2187134502923977
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4432,
+                "recall": 0.9453924914675768,
+                "matched_error_p50_mm": 1.160643283695022
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3733,
+                "recall": 0.9574249807642985,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 2881,
+                "recall": 0.8786215309545593,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "random": {
+          "frames": 816,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 39.96962935928548,
+            "p50": 28.242238331586123,
+            "p95": 30.752695631235838,
+            "max": 5303.376948460937
+          },
+          "host_ready_ms": {
+            "mean": 40.451277187778885,
+            "p50": 28.737518470734358,
+            "p95": 31.364269321784377,
+            "max": 5303.942626342177
+          },
+          "new_cuda_graphs": 2,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5092,
+                "matched": 4338,
+                "unmatched": 754,
+                "frames_without_predictions": 8,
+                "precision": 0.851924587588374,
+                "unmatched_per_frame": 0.9240196078431373
+              },
+              "box": {
+                "predictions": 7437,
+                "matched": 5255,
+                "unmatched": 2182,
+                "frames_without_predictions": 0,
+                "precision": 0.7066021245125723,
+                "unmatched_per_frame": 2.674019607843137
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4338,
+                "recall": 0.8744204797419876,
+                "matched_error_p50_mm": 1.1173302466336887
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3112,
+                "recall": 0.893739230327398,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2143,
+                "recall": 0.7553753965456468,
+                "matched_error_p50_mm": 2.0693613246613602
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5092,
+                "matched": 4802,
+                "unmatched": 290,
+                "frames_without_predictions": 8,
+                "precision": 0.9430479183032208,
+                "unmatched_per_frame": 0.3553921568627451
+              },
+              "box": {
+                "predictions": 7437,
+                "matched": 5741,
+                "unmatched": 1696,
+                "frames_without_predictions": 0,
+                "precision": 0.7719510555331451,
+                "unmatched_per_frame": 2.0784313725490198
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4802,
+                "recall": 0.9679500100786131,
+                "matched_error_p50_mm": 1.1398027550816825
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3292,
+                "recall": 0.945433658816772,
+                "matched_error_p50_mm": 0.5350015407720464
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2449,
+                "recall": 0.8632358124779697,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "before_switch": {
+          "frames": 209,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.69737946466681,
+            "p50": 28.164156712591648,
+            "p95": 29.85028475522995,
+            "max": 30.47025203704834
+          },
+          "host_ready_ms": {
+            "mean": 28.173792946851997,
+            "p50": 28.6603644490242,
+            "p95": 30.400284938514233,
+            "max": 31.009867787361145
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1018,
+                "unmatched": 195,
+                "frames_without_predictions": 2,
+                "precision": 0.8392415498763397,
+                "unmatched_per_frame": 0.9330143540669856
+              },
+              "box": {
+                "predictions": 2126,
+                "matched": 1423,
+                "unmatched": 703,
+                "frames_without_predictions": 0,
+                "precision": 0.6693320790216368,
+                "unmatched_per_frame": 3.3636363636363638
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1018,
+                "recall": 0.8663829787234043,
+                "matched_error_p50_mm": 1.123313542053489
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 844,
+                "recall": 0.9224043715846995,
+                "matched_error_p50_mm": 0.5030887472552765
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 579,
+                "recall": 0.7086903304773562,
+                "matched_error_p50_mm": 2.075673215018083
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1082,
+                "unmatched": 131,
+                "frames_without_predictions": 2,
+                "precision": 0.8920032976092334,
+                "unmatched_per_frame": 0.6267942583732058
+              },
+              "box": {
+                "predictions": 2126,
+                "matched": 1595,
+                "unmatched": 531,
+                "frames_without_predictions": 0,
+                "precision": 0.7502351834430856,
+                "unmatched_per_frame": 2.54066985645933
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1082,
+                "recall": 0.9208510638297872,
+                "matched_error_p50_mm": 1.1381488996941151
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 882,
+                "recall": 0.9639344262295082,
+                "matched_error_p50_mm": 0.5050686701879881
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 713,
+                "recall": 0.8727050183598531,
+                "matched_error_p50_mm": 2.281905515485546
+              }
+            }
+          }
+        },
+        "after_switch": {
+          "frames": 646,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.660700532927788,
+            "p50": 27.641206048429012,
+            "p95": 30.445925891399384,
+            "max": 34.48485769331455
+          },
+          "host_ready_ms": {
+            "mean": 28.140891017536447,
+            "p50": 28.100715950131416,
+            "p95": 31.07265685684979,
+            "max": 35.17812490463257
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3683,
+                "matched": 3200,
+                "unmatched": 483,
+                "frames_without_predictions": 8,
+                "precision": 0.8688569101276133,
+                "unmatched_per_frame": 0.7476780185758514
+              },
+              "box": {
+                "predictions": 6385,
+                "matched": 4640,
+                "unmatched": 1745,
+                "frames_without_predictions": 0,
+                "precision": 0.7267032106499608,
+                "unmatched_per_frame": 2.7012383900928794
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3200,
+                "recall": 0.9109023626530032,
+                "matched_error_p50_mm": 1.15184591130101
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2719,
+                "recall": 0.9111930294906166,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 1921,
+                "recall": 0.7802599512591389,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3683,
+                "matched": 3350,
+                "unmatched": 333,
+                "frames_without_predictions": 8,
+                "precision": 0.9095845777898452,
+                "unmatched_per_frame": 0.5154798761609907
+              },
+              "box": {
+                "predictions": 6385,
+                "matched": 5019,
+                "unmatched": 1366,
+                "frames_without_predictions": 0,
+                "precision": 0.7860610806577917,
+                "unmatched_per_frame": 2.1145510835913313
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3350,
+                "recall": 0.9536009109023627,
+                "matched_error_p50_mm": 1.1780474849255298
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2851,
+                "recall": 0.9554289544235925,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 2168,
+                "recall": 0.8805848903330625,
+                "matched_error_p50_mm": 2.106359521531409
+              }
+            }
+          }
+        }
+      }
+    },
+    "cuda_warm": {
+      "run_id": "f5d9170dacae42ae8d123e3dce123ddd",
+      "results_path": "outputs/corner_detection_holdout/cuda_warm/f5d9170dacae42ae8d123e3dce123ddd/results.json",
+      "results_sha256": "86b1ff69672e9c10fae361cd2d6a6e12cc5dc5c082b41f8ecf59a1cb3ef0a7c1",
+      "settings": {
+        "device": "cuda:0",
+        "threads": 1,
+        "warmup_frames_per_episode": 3,
+        "warmup_extra_frames": [
+          {
+            "seed": 1993775002,
+            "mode": "random",
+            "step": 160
+          },
+          {
+            "seed": 1919401402,
+            "mode": "random",
+            "step": 175
+          }
+        ]
+      },
+      "environment": {
+        "platform": "Linux-5.4.0-208-generic-x86_64-with-glibc2.39",
+        "python": "3.12.15",
+        "torch": "2.14.1+cu130",
+        "opencv": "5.0.0",
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "hardware": {
+          "gpu": "NVIDIA GeForce RTX 3090",
+          "cpu": "Intel(R) Core(TM) i7-9700K CPU @ 3.60GHz",
+          "cuda": "13.0"
+        },
+        "plane_fit_method": "grid"
+      },
+      "warmup_cuda_graphs": 17,
+      "summaries": {
+        "all": {
+          "frames": 2073,
+          "episodes": 48,
+          "detector_ms": {
+            "mean": 27.76344014341582,
+            "p50": 27.858423069119453,
+            "p95": 30.327270925045013,
+            "max": 373.46718925982714
+          },
+          "host_ready_ms": {
+            "mean": 28.224542230238274,
+            "p50": 28.315896168351173,
+            "p95": 30.891597270965576,
+            "max": 374.05024003237486
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12268,
+                "matched": 10457,
+                "unmatched": 1811,
+                "frames_without_predictions": 30,
+                "precision": 0.8523801760678187,
+                "unmatched_per_frame": 0.8736131210805596
+              },
+              "box": {
+                "predictions": 19710,
+                "matched": 13923,
+                "unmatched": 5787,
+                "frames_without_predictions": 0,
+                "precision": 0.7063926940639269,
+                "unmatched_per_frame": 2.7916063675832126
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 10457,
+                "recall": 0.8852861496782932,
+                "matched_error_p50_mm": 1.131105275498318
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8287,
+                "recall": 0.9063764628677677,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 5636,
+                "recall": 0.7434375412214748,
+                "matched_error_p50_mm": 2.0440886939273204
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12268,
+                "matched": 11219,
+                "unmatched": 1049,
+                "frames_without_predictions": 30,
+                "precision": 0.914492989892403,
+                "unmatched_per_frame": 0.5060299083453932
+              },
+              "box": {
+                "predictions": 19710,
+                "matched": 15218,
+                "unmatched": 4492,
+                "frames_without_predictions": 0,
+                "precision": 0.7720953830542872,
+                "unmatched_per_frame": 2.1669078630004823
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 11219,
+                "recall": 0.9497968167964782,
+                "matched_error_p50_mm": 1.1549767588839102
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8705,
+                "recall": 0.9520944985234606,
+                "matched_error_p50_mm": 0.5162282112199303
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 6513,
+                "recall": 0.8591214879303521,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "grasp": {
+          "frames": 360,
+          "episodes": 26,
+          "detector_ms": {
+            "mean": 27.207515947520733,
+            "p50": 27.61680306866765,
+            "p95": 30.005742935463786,
+            "max": 32.189187593758106
+          },
+          "host_ready_ms": {
+            "mean": 27.659598228314685,
+            "p50": 28.065180871635675,
+            "p95": 30.56073863990605,
+            "max": 32.703857868909836
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2043,
+                "matched": 1691,
+                "unmatched": 352,
+                "frames_without_predictions": 14,
+                "precision": 0.8277043563387175,
+                "unmatched_per_frame": 0.9777777777777777
+              },
+              "box": {
+                "predictions": 3328,
+                "matched": 2257,
+                "unmatched": 1071,
+                "frames_without_predictions": 0,
+                "precision": 0.6781850961538461,
+                "unmatched_per_frame": 2.975
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1691,
+                "recall": 0.8890641430073607,
+                "matched_error_p50_mm": 1.1964564213841358
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1408,
+                "recall": 0.9148797920727745,
+                "matched_error_p50_mm": 0.5070947508050655
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 849,
+                "recall": 0.66328125,
+                "matched_error_p50_mm": 2.070463345460356
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2043,
+                "matched": 1723,
+                "unmatched": 320,
+                "frames_without_predictions": 14,
+                "precision": 0.8433675966715615,
+                "unmatched_per_frame": 0.8888888888888888
+              },
+              "box": {
+                "predictions": 3328,
+                "matched": 2490,
+                "unmatched": 838,
+                "frames_without_predictions": 0,
+                "precision": 0.7481971153846154,
+                "unmatched_per_frame": 2.327777777777778
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1723,
+                "recall": 0.905888538380652,
+                "matched_error_p50_mm": 1.2019811438188914
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1462,
+                "recall": 0.9499675113710201,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 1028,
+                "recall": 0.803125,
+                "matched_error_p50_mm": 2.2272251360518185
+              }
+            }
+          }
+        },
+        "expert": {
+          "frames": 402,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.390846299165073,
+            "p50": 27.79016923159361,
+            "p95": 29.95458240620792,
+            "max": 32.189187593758106
+          },
+          "host_ready_ms": {
+            "mean": 27.844820169277895,
+            "p50": 28.23268622159958,
+            "p95": 30.44692133553326,
+            "max": 32.703857868909836
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2280,
+                "matched": 1901,
+                "unmatched": 379,
+                "frames_without_predictions": 12,
+                "precision": 0.8337719298245614,
+                "unmatched_per_frame": 0.9427860696517413
+              },
+              "box": {
+                "predictions": 3762,
+                "matched": 2605,
+                "unmatched": 1157,
+                "frames_without_predictions": 0,
+                "precision": 0.6924508240297714,
+                "unmatched_per_frame": 2.8781094527363185
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 1901,
+                "recall": 0.8788719371243643,
+                "matched_error_p50_mm": 1.1594832262567372
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1612,
+                "recall": 0.9148694665153235,
+                "matched_error_p50_mm": 0.503398922458391
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 993,
+                "recall": 0.677815699658703,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2280,
+                "matched": 1985,
+                "unmatched": 295,
+                "frames_without_predictions": 12,
+                "precision": 0.8706140350877193,
+                "unmatched_per_frame": 0.7338308457711443
+              },
+              "box": {
+                "predictions": 3762,
+                "matched": 2863,
+                "unmatched": 899,
+                "frames_without_predictions": 0,
+                "precision": 0.7610313662945242,
+                "unmatched_per_frame": 2.236318407960199
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 1985,
+                "recall": 0.917706888580675,
+                "matched_error_p50_mm": 1.1679480845959498
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1680,
+                "recall": 0.9534619750283768,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 1183,
+                "recall": 0.8075085324232082,
+                "matched_error_p50_mm": 2.1781885185498115
+              }
+            }
+          }
+        },
+        "expert_random": {
+          "frames": 855,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.546313146880845,
+            "p50": 27.50401198863983,
+            "p95": 30.406942684203386,
+            "max": 38.150438107550144
+          },
+          "host_ready_ms": {
+            "mean": 28.011864803905723,
+            "p50": 27.948889881372452,
+            "p95": 31.010219547897577,
+            "max": 38.78652770072222
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4896,
+                "matched": 4218,
+                "unmatched": 678,
+                "frames_without_predictions": 10,
+                "precision": 0.8615196078431373,
+                "unmatched_per_frame": 0.7929824561403509
+              },
+              "box": {
+                "predictions": 8511,
+                "matched": 6063,
+                "unmatched": 2448,
+                "frames_without_predictions": 0,
+                "precision": 0.7123722241804723,
+                "unmatched_per_frame": 2.863157894736842
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4218,
+                "recall": 0.8997440273037542,
+                "matched_error_p50_mm": 1.1448851870370222
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3563,
+                "recall": 0.9138240574506283,
+                "matched_error_p50_mm": 0.5050686701879881
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 2500,
+                "recall": 0.7624275693809088,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4896,
+                "matched": 4432,
+                "unmatched": 464,
+                "frames_without_predictions": 10,
+                "precision": 0.9052287581699346,
+                "unmatched_per_frame": 0.5426900584795321
+              },
+              "box": {
+                "predictions": 8511,
+                "matched": 6614,
+                "unmatched": 1897,
+                "frames_without_predictions": 0,
+                "precision": 0.7771119727411585,
+                "unmatched_per_frame": 2.2187134502923977
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4432,
+                "recall": 0.9453924914675768,
+                "matched_error_p50_mm": 1.160643283695022
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3733,
+                "recall": 0.9574249807642985,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 2881,
+                "recall": 0.8786215309545593,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "random": {
+          "frames": 816,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 28.17450179467343,
+            "p50": 28.126811143010855,
+            "p95": 30.24595114402473,
+            "max": 373.46718925982714
+          },
+          "host_ready_ms": {
+            "mean": 28.63445334300837,
+            "p50": 28.57183339074254,
+            "p95": 30.788380187004805,
+            "max": 374.05024003237486
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5092,
+                "matched": 4338,
+                "unmatched": 754,
+                "frames_without_predictions": 8,
+                "precision": 0.851924587588374,
+                "unmatched_per_frame": 0.9240196078431373
+              },
+              "box": {
+                "predictions": 7437,
+                "matched": 5255,
+                "unmatched": 2182,
+                "frames_without_predictions": 0,
+                "precision": 0.7066021245125723,
+                "unmatched_per_frame": 2.674019607843137
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4338,
+                "recall": 0.8744204797419876,
+                "matched_error_p50_mm": 1.1173302466336887
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3112,
+                "recall": 0.893739230327398,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2143,
+                "recall": 0.7553753965456468,
+                "matched_error_p50_mm": 2.0693613246613602
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5092,
+                "matched": 4802,
+                "unmatched": 290,
+                "frames_without_predictions": 8,
+                "precision": 0.9430479183032208,
+                "unmatched_per_frame": 0.3553921568627451
+              },
+              "box": {
+                "predictions": 7437,
+                "matched": 5741,
+                "unmatched": 1696,
+                "frames_without_predictions": 0,
+                "precision": 0.7719510555331451,
+                "unmatched_per_frame": 2.0784313725490198
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4802,
+                "recall": 0.9679500100786131,
+                "matched_error_p50_mm": 1.1398027550816825
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3292,
+                "recall": 0.945433658816772,
+                "matched_error_p50_mm": 0.5350015407720464
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2449,
+                "recall": 0.8632358124779697,
+                "matched_error_p50_mm": 2.167743297718299
+              }
+            }
+          }
+        },
+        "before_switch": {
+          "frames": 209,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.579512313436094,
+            "p50": 28.07612530887127,
+            "p95": 29.859762266278267,
+            "max": 34.94376316666603
+          },
+          "host_ready_ms": {
+            "mean": 28.04257144090947,
+            "p50": 28.522413223981857,
+            "p95": 30.42396381497383,
+            "max": 35.48354655504227
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1018,
+                "unmatched": 195,
+                "frames_without_predictions": 2,
+                "precision": 0.8392415498763397,
+                "unmatched_per_frame": 0.9330143540669856
+              },
+              "box": {
+                "predictions": 2126,
+                "matched": 1423,
+                "unmatched": 703,
+                "frames_without_predictions": 0,
+                "precision": 0.6693320790216368,
+                "unmatched_per_frame": 3.3636363636363638
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1018,
+                "recall": 0.8663829787234043,
+                "matched_error_p50_mm": 1.123313542053489
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 844,
+                "recall": 0.9224043715846995,
+                "matched_error_p50_mm": 0.5030887472552765
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 579,
+                "recall": 0.7086903304773562,
+                "matched_error_p50_mm": 2.075673215018083
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1082,
+                "unmatched": 131,
+                "frames_without_predictions": 2,
+                "precision": 0.8920032976092334,
+                "unmatched_per_frame": 0.6267942583732058
+              },
+              "box": {
+                "predictions": 2126,
+                "matched": 1595,
+                "unmatched": 531,
+                "frames_without_predictions": 0,
+                "precision": 0.7502351834430856,
+                "unmatched_per_frame": 2.54066985645933
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1082,
+                "recall": 0.9208510638297872,
+                "matched_error_p50_mm": 1.1381488996941151
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 882,
+                "recall": 0.9639344262295082,
+                "matched_error_p50_mm": 0.5050686701879881
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 713,
+                "recall": 0.8727050183598531,
+                "matched_error_p50_mm": 2.281905515485546
+              }
+            }
+          }
+        },
+        "after_switch": {
+          "frames": 646,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.535572240054147,
+            "p50": 27.418889105319977,
+            "p95": 30.487696640193462,
+            "max": 38.150438107550144
+          },
+          "host_ready_ms": {
+            "mean": 28.001930303698632,
+            "p50": 27.869404293596745,
+            "p95": 31.096642836928368,
+            "max": 38.78652770072222
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3683,
+                "matched": 3200,
+                "unmatched": 483,
+                "frames_without_predictions": 8,
+                "precision": 0.8688569101276133,
+                "unmatched_per_frame": 0.7476780185758514
+              },
+              "box": {
+                "predictions": 6385,
+                "matched": 4640,
+                "unmatched": 1745,
+                "frames_without_predictions": 0,
+                "precision": 0.7267032106499608,
+                "unmatched_per_frame": 2.7012383900928794
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3200,
+                "recall": 0.9109023626530032,
+                "matched_error_p50_mm": 1.15184591130101
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2719,
+                "recall": 0.9111930294906166,
+                "matched_error_p50_mm": 0.5087493057464271
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 1921,
+                "recall": 0.7802599512591389,
+                "matched_error_p50_mm": 2.041309264680477
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3683,
+                "matched": 3350,
+                "unmatched": 333,
+                "frames_without_predictions": 8,
+                "precision": 0.9095845777898452,
+                "unmatched_per_frame": 0.5154798761609907
+              },
+              "box": {
+                "predictions": 6385,
+                "matched": 5019,
+                "unmatched": 1366,
+                "frames_without_predictions": 0,
+                "precision": 0.7860610806577917,
+                "unmatched_per_frame": 2.1145510835913313
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3350,
+                "recall": 0.9536009109023627,
+                "matched_error_p50_mm": 1.1780474849255298
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2851,
+                "recall": 0.9554289544235925,
+                "matched_error_p50_mm": 0.5137726579405452
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 2168,
+                "recall": 0.8805848903330625,
+                "matched_error_p50_mm": 2.106359521531409
+              }
+            }
+          }
+        }
+      }
+    },
+    "mps": {
+      "run_id": "fd66d4509c764c8dad04d13a5bbebee4",
+      "results_path": "outputs/corner_detection_holdout/mps/fd66d4509c764c8dad04d13a5bbebee4/results.json",
+      "results_sha256": "9bbd111f24909442604c7a65bacd08fd0b616040a7a2d68730b7b4044621a2bc",
+      "settings": {
+        "device": "mps",
+        "threads": 1,
+        "warmup_frames_per_episode": 3
+      },
+      "environment": {
+        "platform": "macOS-27.0.1-arm64-arm-64bit",
+        "python": "3.11.18",
+        "torch": "2.14.1",
+        "opencv": "5.0.0",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "hardware": {
+          "gpu": "Apple M4 Pro",
+          "cpu": "Apple M4 Pro"
+        },
+        "plane_fit_method": "ransac"
+      },
+      "warmup_cuda_graphs": null,
+      "summaries": {
+        "all": {
+          "frames": 2073,
+          "episodes": 48,
+          "detector_ms": {
+            "mean": 29.79037152410984,
+            "p50": 28.884417028166354,
+            "p95": 42.97059183008968,
+            "max": 85.01304197125137
+          },
+          "host_ready_ms": {
+            "mean": 30.21492734737874,
+            "p50": 29.303124989382923,
+            "p95": 43.42274982482194,
+            "max": 85.70750011131167
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12272,
+                "matched": 11345,
+                "unmatched": 927,
+                "frames_without_predictions": 11,
+                "precision": 0.9244621903520208,
+                "unmatched_per_frame": 0.447178002894356
+              },
+              "box": {
+                "predictions": 19872,
+                "matched": 14471,
+                "unmatched": 5401,
+                "frames_without_predictions": 0,
+                "precision": 0.7282105475040258,
+                "unmatched_per_frame": 2.6054027978774723
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 11345,
+                "recall": 0.9604639349813748,
+                "matched_error_p50_mm": 1.1318064938158712
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8291,
+                "recall": 0.906813956031937,
+                "matched_error_p50_mm": 0.4888598025398797
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 6180,
+                "recall": 0.815195884447962,
+                "matched_error_p50_mm": 1.9437722000630937
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 12272,
+                "matched": 11350,
+                "unmatched": 922,
+                "frames_without_predictions": 11,
+                "precision": 0.9248696219035202,
+                "unmatched_per_frame": 0.44476603955619876
+              },
+              "box": {
+                "predictions": 19872,
+                "matched": 15865,
+                "unmatched": 4007,
+                "frames_without_predictions": 0,
+                "precision": 0.7983595008051529,
+                "unmatched_per_frame": 1.9329474191992282
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 11812,
+                "matched": 11350,
+                "recall": 0.9608872333220454,
+                "matched_error_p50_mm": 1.1318064938158712
+              },
+              "box_outer": {
+                "supported": 9143,
+                "matched": 8706,
+                "recall": 0.952203871814503,
+                "matched_error_p50_mm": 0.49167017087398895
+              },
+              "hole_rim": {
+                "supported": 7581,
+                "matched": 7159,
+                "recall": 0.9443345205118058,
+                "matched_error_p50_mm": 2.108465821476894
+              }
+            }
+          }
+        },
+        "grasp": {
+          "frames": 360,
+          "episodes": 26,
+          "detector_ms": {
+            "mean": 33.11779511439252,
+            "p50": 32.25739544723183,
+            "p95": 45.394552405923605,
+            "max": 60.5287499492988
+          },
+          "host_ready_ms": {
+            "mean": 33.54941791621968,
+            "p50": 32.71877102088183,
+            "p95": 45.883441355545074,
+            "max": 61.36358401272446
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2111,
+                "matched": 1799,
+                "unmatched": 312,
+                "frames_without_predictions": 2,
+                "precision": 0.852202747513027,
+                "unmatched_per_frame": 0.8666666666666667
+              },
+              "box": {
+                "predictions": 3367,
+                "matched": 2353,
+                "unmatched": 1014,
+                "frames_without_predictions": 0,
+                "precision": 0.6988416988416989,
+                "unmatched_per_frame": 2.816666666666667
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1799,
+                "recall": 0.9458464773922187,
+                "matched_error_p50_mm": 1.1836250046378478
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1408,
+                "recall": 0.9148797920727745,
+                "matched_error_p50_mm": 0.48938530087217
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 945,
+                "recall": 0.73828125,
+                "matched_error_p50_mm": 1.9437722000630937
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2111,
+                "matched": 1799,
+                "unmatched": 312,
+                "frames_without_predictions": 2,
+                "precision": 0.852202747513027,
+                "unmatched_per_frame": 0.8666666666666667
+              },
+              "box": {
+                "predictions": 3367,
+                "matched": 2596,
+                "unmatched": 771,
+                "frames_without_predictions": 0,
+                "precision": 0.771012771012771,
+                "unmatched_per_frame": 2.1416666666666666
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1902,
+                "matched": 1799,
+                "recall": 0.9458464773922187,
+                "matched_error_p50_mm": 1.1836250046378478
+              },
+              "box_outer": {
+                "supported": 1539,
+                "matched": 1462,
+                "recall": 0.9499675113710201,
+                "matched_error_p50_mm": 0.49167017087398895
+              },
+              "hole_rim": {
+                "supported": 1280,
+                "matched": 1134,
+                "recall": 0.8859375,
+                "matched_error_p50_mm": 2.1513643923743264
+              }
+            }
+          }
+        },
+        "expert": {
+          "frames": 402,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 32.09415326052489,
+            "p50": 31.301020528189838,
+            "p95": 43.61397710745223,
+            "max": 65.28600002638996
+          },
+          "host_ready_ms": {
+            "mean": 32.5177257350039,
+            "p50": 31.745395448524505,
+            "p95": 44.0463479841128,
+            "max": 65.77200000174344
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2327,
+                "matched": 2048,
+                "unmatched": 279,
+                "frames_without_predictions": 2,
+                "precision": 0.8801031370863773,
+                "unmatched_per_frame": 0.6940298507462687
+              },
+              "box": {
+                "predictions": 3797,
+                "matched": 2731,
+                "unmatched": 1066,
+                "frames_without_predictions": 0,
+                "precision": 0.7192520410850671,
+                "unmatched_per_frame": 2.6517412935323383
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 2048,
+                "recall": 0.946833102172908,
+                "matched_error_p50_mm": 1.1443095315091294
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1612,
+                "recall": 0.9148694665153235,
+                "matched_error_p50_mm": 0.4835047324017484
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 1119,
+                "recall": 0.7638225255972696,
+                "matched_error_p50_mm": 1.9437722000630937
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 2327,
+                "matched": 2048,
+                "unmatched": 279,
+                "frames_without_predictions": 2,
+                "precision": 0.8801031370863773,
+                "unmatched_per_frame": 0.6940298507462687
+              },
+              "box": {
+                "predictions": 3797,
+                "matched": 2995,
+                "unmatched": 802,
+                "frames_without_predictions": 0,
+                "precision": 0.7887806162760074,
+                "unmatched_per_frame": 1.9950248756218905
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 2163,
+                "matched": 2048,
+                "recall": 0.946833102172908,
+                "matched_error_p50_mm": 1.1443095315091294
+              },
+              "box_outer": {
+                "supported": 1762,
+                "matched": 1680,
+                "recall": 0.9534619750283768,
+                "matched_error_p50_mm": 0.4888598025398797
+              },
+              "hole_rim": {
+                "supported": 1465,
+                "matched": 1315,
+                "recall": 0.8976109215017065,
+                "matched_error_p50_mm": 2.108465821476894
+              }
+            }
+          }
+        },
+        "expert_random": {
+          "frames": 855,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 29.5687310554207,
+            "p50": 28.466292074881494,
+            "p95": 43.35463735042139,
+            "max": 85.01304197125137
+          },
+          "host_ready_ms": {
+            "mean": 29.99798489165389,
+            "p50": 28.88379106298089,
+            "p95": 43.842582975048565,
+            "max": 85.70750011131167
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4888,
+                "matched": 4482,
+                "unmatched": 406,
+                "frames_without_predictions": 5,
+                "precision": 0.9169394435351882,
+                "unmatched_per_frame": 0.47485380116959064
+              },
+              "box": {
+                "predictions": 8602,
+                "matched": 6329,
+                "unmatched": 2273,
+                "frames_without_predictions": 0,
+                "precision": 0.7357591257847013,
+                "unmatched_per_frame": 2.6584795321637427
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4482,
+                "recall": 0.9560580204778157,
+                "matched_error_p50_mm": 1.130371935516511
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3562,
+                "recall": 0.9135675814311361,
+                "matched_error_p50_mm": 0.48863240210745024
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 2767,
+                "recall": 0.8438548337907898,
+                "matched_error_p50_mm": 1.9437722000630937
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 4888,
+                "matched": 4484,
+                "unmatched": 404,
+                "frames_without_predictions": 5,
+                "precision": 0.9173486088379705,
+                "unmatched_per_frame": 0.47251461988304094
+              },
+              "box": {
+                "predictions": 8602,
+                "matched": 6928,
+                "unmatched": 1674,
+                "frames_without_predictions": 0,
+                "precision": 0.805394094396652,
+                "unmatched_per_frame": 1.9578947368421054
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4688,
+                "matched": 4484,
+                "recall": 0.9564846416382252,
+                "matched_error_p50_mm": 1.130371935516511
+              },
+              "box_outer": {
+                "supported": 3899,
+                "matched": 3733,
+                "recall": 0.9574249807642985,
+                "matched_error_p50_mm": 0.49089887662289217
+              },
+              "hole_rim": {
+                "supported": 3279,
+                "matched": 3195,
+                "recall": 0.9743824336688015,
+                "matched_error_p50_mm": 2.108465821476894
+              }
+            }
+          }
+        },
+        "random": {
+          "frames": 816,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 28.887653806818623,
+            "p50": 27.701979037374258,
+            "p95": 41.62860396900214,
+            "max": 80.3591669537127
+          },
+          "host_ready_ms": {
+            "mean": 29.307771523628045,
+            "p50": 28.182687470689416,
+            "p95": 42.21201021573506,
+            "max": 80.83983301185071
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5057,
+                "matched": 4815,
+                "unmatched": 242,
+                "frames_without_predictions": 4,
+                "precision": 0.9521455408344869,
+                "unmatched_per_frame": 0.2965686274509804
+              },
+              "box": {
+                "predictions": 7473,
+                "matched": 5411,
+                "unmatched": 2062,
+                "frames_without_predictions": 0,
+                "precision": 0.7240733306570319,
+                "unmatched_per_frame": 2.5269607843137254
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4815,
+                "recall": 0.9705704495061479,
+                "matched_error_p50_mm": 1.130146586310611
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3117,
+                "recall": 0.895175186674325,
+                "matched_error_p50_mm": 0.49167017087398895
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2294,
+                "recall": 0.8086006344730349,
+                "matched_error_p50_mm": 2.039909674932268
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 5057,
+                "matched": 4818,
+                "unmatched": 239,
+                "frames_without_predictions": 4,
+                "precision": 0.95273877793158,
+                "unmatched_per_frame": 0.2928921568627451
+              },
+              "box": {
+                "predictions": 7473,
+                "matched": 5942,
+                "unmatched": 1531,
+                "frames_without_predictions": 0,
+                "precision": 0.7951291315402115,
+                "unmatched_per_frame": 1.8762254901960784
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 4961,
+                "matched": 4818,
+                "recall": 0.9711751662971175,
+                "matched_error_p50_mm": 1.130146586310611
+              },
+              "box_outer": {
+                "supported": 3482,
+                "matched": 3293,
+                "recall": 0.9457208500861574,
+                "matched_error_p50_mm": 0.4930725490714923
+              },
+              "hole_rim": {
+                "supported": 2837,
+                "matched": 2649,
+                "recall": 0.9337328163553049,
+                "matched_error_p50_mm": 2.108465821476894
+              }
+            }
+          }
+        },
+        "before_switch": {
+          "frames": 209,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 27.513894559949208,
+            "p50": 26.187374955043197,
+            "p95": 40.67467460408807,
+            "max": 56.25162506476045
+          },
+          "host_ready_ms": {
+            "mean": 27.946312611579504,
+            "p50": 26.59575000870973,
+            "p95": 41.12023345660418,
+            "max": 56.75975000485778
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1096,
+                "unmatched": 117,
+                "frames_without_predictions": 0,
+                "precision": 0.9035449299258038,
+                "unmatched_per_frame": 0.5598086124401914
+              },
+              "box": {
+                "predictions": 2178,
+                "matched": 1511,
+                "unmatched": 667,
+                "frames_without_predictions": 0,
+                "precision": 0.6937557392102847,
+                "unmatched_per_frame": 3.1913875598086126
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1096,
+                "recall": 0.9327659574468085,
+                "matched_error_p50_mm": 1.1105721050385173
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 844,
+                "recall": 0.9224043715846995,
+                "matched_error_p50_mm": 0.4856233195188333
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 667,
+                "recall": 0.8164014687882497,
+                "matched_error_p50_mm": 2.0720386775560713
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 1213,
+                "matched": 1096,
+                "unmatched": 117,
+                "frames_without_predictions": 0,
+                "precision": 0.9035449299258038,
+                "unmatched_per_frame": 0.5598086124401914
+              },
+              "box": {
+                "predictions": 2178,
+                "matched": 1691,
+                "unmatched": 487,
+                "frames_without_predictions": 0,
+                "precision": 0.7764003673094583,
+                "unmatched_per_frame": 2.3301435406698565
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 1175,
+                "matched": 1096,
+                "recall": 0.9327659574468085,
+                "matched_error_p50_mm": 1.1105721050385173
+              },
+              "box_outer": {
+                "supported": 915,
+                "matched": 882,
+                "recall": 0.9639344262295082,
+                "matched_error_p50_mm": 0.4888598025398797
+              },
+              "hole_rim": {
+                "supported": 817,
+                "matched": 809,
+                "recall": 0.9902080783353733,
+                "matched_error_p50_mm": 2.188011187509345
+              }
+            }
+          }
+        },
+        "after_switch": {
+          "frames": 646,
+          "episodes": 16,
+          "detector_ms": {
+            "mean": 30.23353109807324,
+            "p50": 29.619396082125604,
+            "p95": 43.83324983064085,
+            "max": 85.01304197125137
+          },
+          "host_ready_ms": {
+            "mean": 30.661761217560308,
+            "p50": 30.04677052376792,
+            "p95": 44.38136477256194,
+            "max": 85.70750011131167
+          },
+          "new_cuda_graphs": 0,
+          "3mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3675,
+                "matched": 3386,
+                "unmatched": 289,
+                "frames_without_predictions": 5,
+                "precision": 0.9213605442176871,
+                "unmatched_per_frame": 0.4473684210526316
+              },
+              "box": {
+                "predictions": 6424,
+                "matched": 4818,
+                "unmatched": 1606,
+                "frames_without_predictions": 0,
+                "precision": 0.75,
+                "unmatched_per_frame": 2.486068111455108
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3386,
+                "recall": 0.963848562482209,
+                "matched_error_p50_mm": 1.141674149773693
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2718,
+                "recall": 0.910857908847185,
+                "matched_error_p50_mm": 0.48863240210745024
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 2100,
+                "recall": 0.8529650690495532,
+                "matched_error_p50_mm": 1.9341361447444048
+              }
+            }
+          },
+          "5mm": {
+            "objects": {
+              "peg": {
+                "predictions": 3675,
+                "matched": 3388,
+                "unmatched": 287,
+                "frames_without_predictions": 5,
+                "precision": 0.9219047619047619,
+                "unmatched_per_frame": 0.44427244582043346
+              },
+              "box": {
+                "predictions": 6424,
+                "matched": 5237,
+                "unmatched": 1187,
+                "frames_without_predictions": 0,
+                "precision": 0.8152241594022416,
+                "unmatched_per_frame": 1.8374613003095974
+              }
+            },
+            "families": {
+              "peg": {
+                "supported": 3513,
+                "matched": 3388,
+                "recall": 0.9644178764588671,
+                "matched_error_p50_mm": 1.141674149773693
+              },
+              "box_outer": {
+                "supported": 2984,
+                "matched": 2851,
+                "recall": 0.9554289544235925,
+                "matched_error_p50_mm": 0.4910156635774942
+              },
+              "hole_rim": {
+                "supported": 2462,
+                "matched": 2386,
+                "recall": 0.9691307879772543,
+                "matched_error_p50_mm": 2.0805762477572376
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

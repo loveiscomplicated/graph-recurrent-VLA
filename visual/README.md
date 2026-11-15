@@ -98,6 +98,10 @@ CUDA 텐서다. `reset()` 후에는 모델을 다시 로드하지 않고 새 영
 계산과 선택적 MPS Metal 커널, 명시적으로 호출하는 NumPy 기준 구현을 포함한다.
 [사용법·구조·검증 결과](../docs/corner_detection.md)를 따른다.
 
+새 시드에서 Expert, Random, Expert→Random 궤적을 수집하고 같은 프레임으로
+CUDA와 MPS 기본 검출기를 비교하는 방법은
+[새 궤적 평가](../docs/corner_detection.md#새-궤적에서-cuda와-mps-평가)에 있다.
+
 삽입 말미 Peg 뒤쪽 끝면 복구를 비교하려면 PyTorch CPU 환경과 설정에 지정된
 저장 프레임 및 매니페스트가 필요하다.
 

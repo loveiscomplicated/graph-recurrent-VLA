@@ -1736,3 +1736,99 @@ Hole 544/1,631이었다. `sample_cuda_box_planes=True`로 실험 경로를
 줄었다. 삽입 420프레임에서 3 mm 집계는 프레임별로 같았으나 3프레임의
 원시 출력이 달라 기본 구현에 반영하지 않았다.
 [삽입 계측](../outputs/compact_grid_benchmark/e2abc3343958491b902be618aa72d5b1/results.json)
+
+## 새 궤적에서 CUDA와 MPS 평가
+
+같은 초기 상태에서 세 정책을 각각 실행한다. Expert는 GT 기반
+`ScriptedPegPolicy`를 사용한다. Random은 첫 스텝부터 EE 이동·회전의 정규화
+성분을 각각 `[-0.5, 0.5]`에서 균등 추출하고 15스텝마다 그리퍼 열기 또는
+닫기를 균등 추출한다. Expert→Random은 해당 시드의 Expert 길이가
+`T`일 때 `[1, T-1]`의 정수 스텝을 균등 추출해 같은 Random 정책으로 전환한다.
+수집기는 세 정책의 초기 GT, RGB-D와 분할 해시, 혼합 정책의 Expert prefix
+action을 확인한다. 초기 관측, 5스텝 간격 관측, 마지막 관측과 전환 직전·전환
+스텝·직후 관측을 저장한다. 에피소드 상한은 250스텝이다.
+
+수집에는 Python 3.11, 루트 `requirements.txt`, 혼합 궤적 모듈이 불러오는
+`matplotlib`, CPU PhysX와 SAPIEN 렌더러가 필요하다. 평가에는
+`visual/corner_detection/requirements.txt`, PyYAML과 해당 가속기를
+지원하는 PyTorch가 필요하다. 수집한 `outputs/corner_detection_holdout/frames/`를
+그대로 다른 호스트에 복사한 뒤 두 평가 설정을 각각 실행한다.
+
+```bash
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python main.py --config visual/configs/corner_detection_holdout_collection.yaml
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python main.py --config visual/configs/corner_detection_holdout_mps.yaml
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  python main.py --config visual/configs/corner_detection_holdout_cuda.yaml
+```
+
+양쪽 평가에서 같은 SHA-256의 512×512 Main RGB-D와 캘리브레이션을 가속기
+메모리에 올리고 `TorchCornerDetector.main()`을 사용한다. 분할과 GT는
+채점에만 사용한다. 물체 분할의 7×7 픽셀 근방에 기준 꼭짓점과 6 mm 이하로
+떨어진 깊이 점이 있을 때 가시 기준점으로 집계한다. Peg와 Box 출력을
+물체별로 3 mm 및 5 mm 이내에서 일대일 매칭하며, Box 매칭에는 외곽과 Hole
+림 기준점이 함께 들어간다.
+
+각 에피소드에서 골고루 고른 3프레임으로 먼저 워밍업한 뒤 모든 저장
+프레임을 채점한다. 검출 시간은 GPU 동기화까지 포함한다. CPU 출력까지의
+시간은 검출과 `as_dict()`의 꼭짓점 및 마스크 내보내기를 합친 값이다.
+렌더링, 파일 읽기, GPU 입력 전송, 채점은 계측 범위 밖이다.
+
+2026-11-15, `graph` 작업 트리에서 실행했다. 측정에 사용한 검출기 소스는
+커밋 `af4dca2`와 해시가 일치한다. 새 리셋 시드 16개는 저장소 Git 이력과 접근 가능한 과거
+실험·데이터 매니페스트의 기록에서 일치 항목이 없었다. CPU PhysX와
+SAPIEN/MoltenVK에서 총 48개 궤적을 생성해 2,073프레임을 두 장치에서
+동일하게 재생했다. 혼합 정책의 전환 시점은 12–115스텝이었고,
+첫 Random action이 적용되기 전까지의 관측을 전환 전으로 집계했다.
+Expert는 16/16회 성공했다. 순수 Random은 Peg가 초기 위치에서 10 mm
+이상 이동한 궤적이 0/16개였고, 혼합 정책은 13/16개였다.
+
+| 정책 구간 | 프레임 | CUDA / MPS Peg | CUDA / MPS Box 외곽 | CUDA / MPS Hole 림 |
+| --- | ---: | ---: | ---: | ---: |
+| Expert | 402 | 87.9% / 94.7% | 91.5% / 91.5% | 67.8% / 76.4% |
+| Random | 816 | 87.4% / 97.1% | 89.4% / 89.5% | 75.5% / 80.9% |
+| Expert→Random 전체 | 855 | 90.0% / 95.6% | 91.4% / 91.4% | 76.2% / 84.4% |
+| 전환 전 | 209 | 86.6% / 93.3% | 92.2% / 92.2% | 70.9% / 81.6% |
+| 전환 후 | 646 | 91.1% / 96.4% | 91.1% / 91.1% | 78.0% / 85.3% |
+| 전체 | 2,073 | 88.5% / 96.0% | 90.6% / 90.7% | 74.3% / 81.5% |
+
+위 표는 3 mm 재현율이다. 전체 5 mm 재현율은 CUDA / MPS 순으로
+Peg 95.0% / 96.1%, Box 외곽 95.2% / 95.2%, Hole 림 85.9% / 94.4%였다.
+3 mm 정밀도는 Peg 85.2% / 92.4%, Box 출력(외곽·림 합산)
+70.6% / 72.8%였다. 프레임당 미매칭 출력은 Peg 0.87 / 0.45개,
+Box 2.79 / 2.61개였다.
+
+| 정책 | RTX 3090 CUDA 평균 / p50 / p95 (ms) | Apple M4 Pro MPS 평균 / p50 / p95 (ms) |
+| --- | ---: | ---: |
+| Expert | 28.08 / 28.50 / 30.97 | 32.52 / 31.75 / 44.05 |
+| Random | 40.45 / 28.74 / 31.36 | 29.31 / 28.18 / 42.21 |
+| Expert→Random | 28.15 / 28.23 / 30.93 | 30.00 / 28.88 / 43.84 |
+| 전체 | 32.98 / 28.53 / 31.04 | 30.21 / 29.30 / 43.42 |
+
+시간은 GPU 상주 입력부터 CPU 출력까지다. CUDA는 Linux, Core i7-9700K,
+PyTorch 2.14.1+cu130에서 2픽셀 격자 피팅과 TorchInductor 검증을 썼다.
+MPS는 macOS, M4 Pro, PyTorch 2.14.1에서 RANSAC과 Metal을 썼다.
+첫 CUDA 실행에서 144프레임으로 워밍업하는 동안 15개 그래프가 컴파일됐다.
+측정 중 Random 프레임 두 개에 새 그래프가 각 한 개씩 생겼고, 두 호출의
+총 검출 시간은 각각 5.30초와 4.05초였다. 별도로 468.71 ms 호출 한 건에선
+새 그래프가 관측되지 않았다. 위 집계에는 2,073프레임을 모두 포함했다.
+
+두 프레임을 워밍업에 추가한 CUDA 재실행은 17개 그래프를 준비했고
+측정 중 추가 그래프는 0개였다. 전체 평균 / p50 / p95는
+28.23 / 28.32 / 30.89 ms였다. 정책별 평균 / p95는 Expert
+27.85 / 30.45 ms, Random 28.63 / 30.79 ms, Expert→Random
+28.01 / 31.01 ms였다. Random의 374.05 ms 호출 한 건도 시간에 포함했다.
+두 CUDA 실행의 프레임별 출력 점 수와 3 mm·5 mm 매칭 수는 모두 같았다.
+두 프레임의 출력 좌표는 최대 축 차이 0.00068 mm만큼 달랐다.
+
+[입력 매니페스트](../outputs/corner_detection_holdout/frames/manifest.json) ·
+[CUDA 원본](../outputs/corner_detection_holdout/cuda/72135dfee99f47c7a52307bf5ce9c546/results.json) ·
+[추가 워밍업 CUDA 원본](../outputs/corner_detection_holdout/cuda_warm/f5d9170dacae42ae8d123e3dce123ddd/results.json) ·
+[추가 워밍업 설정](../visual/configs/corner_detection_holdout_cuda_warm.yaml) ·
+[MPS 원본](../outputs/corner_detection_holdout/mps/fd66d4509c764c8dad04d13a5bbebee4/results.json) ·
+[검출 소스 스냅샷](../outputs/corner_detection_holdout/detector_source.tar.gz)
+
+전체 집계와 원본 체크섬은 저장소에 기록했다. RGB-D와 프레임별 결과는
+`outputs/corner_detection_holdout/`의 로컬 아티팩트다.
+[전체 정밀도 집계 JSON](../visual/benchmarks/corner_detection_holdout.json)

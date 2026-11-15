@@ -1,0 +1,33 @@
+trainer: data_collection.corner_detection_holdout:collect
+output_root: outputs/corner_detection_holdout/frames
+protocol_seed: 2026111501
+seeds:
+  - 1919401402
+  - 1901235441
+  - 1993775002
+  - 1981104403
+  - 1988774954
+  - 1970863175
+  - 1970343313
+  - 1903074547
+  - 1997795164
+  - 1945070972
+  - 1944438454
+  - 1970267016
+  - 1938726701
+  - 1968532852
+  - 1974241916
+  - 1958395475
+control_mode: pd_ee_delta_pose
+max_steps: 250
+frame_stride: 5
+random_limit: 0.5
+gripper_interval: 15
+threads: 1
+workers: 3
+camera:
+  eye: [0.65, -0.30, 0.65]
+  target: [0.065, 0.297, 0.11]
+  width: 512
+  height: 512
+  fov_degrees: 90
