@@ -1,6 +1,7 @@
 """Single-frame MLX inference blocks for the pinned TAPNext++ checkpoint."""
 
 from dataclasses import dataclass
+from functools import cache
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -22,6 +23,54 @@ def _gelu(x, *, approximate):
     values = x.astype(mx.float32)
     activation = nn.gelu_approx(values) if approximate else nn.gelu(values)
     return activation.astype(x.dtype)
+
+
+@cache
+def _fp16_gelu_table(*, approximate):
+    """Tabulate the existing GELU for every FP16 bit pattern."""
+    values = mx.arange(1 << 16, dtype=mx.uint16).view(mx.float16)
+    activate = mx.compile(lambda x: _gelu(x, approximate=approximate))
+    table = activate(values)
+    mx.eval(table)
+    return table
+
+
+@cache
+def _metal_gelu_gate():
+    """Read projected gate/value halves and write only the gated features."""
+    return mx.fast.metal_kernel(
+        name="tapnextpp_gelu_gate",
+        input_names=["projected", "bias", "table"],
+        output_names=["gated"],
+        source="""
+        uint index = thread_position_in_grid.x;
+        if (index >= projected_shape[0] * WIDTH) return;
+        uint row = index / WIDTH;
+        uint channel = index % WIDTH;
+        uint gate_index = row * (2 * WIDTH) + channel;
+        half gate = projected[gate_index] + bias[channel];
+        half value = projected[gate_index + WIDTH] + bias[channel + WIDTH];
+        gated[index] = table[as_type<ushort>(gate)] * value;
+        """,
+    )
+
+
+def _gated_mlp_features(projected, bias, table):
+    """Apply bias, FP16 GELU, and the gate product together on the GPU."""
+    rows, projected_width = projected.shape
+    width = projected_width // 2
+    group_size = 256
+    size = rows * width
+    threads = (size + group_size - 1) // group_size * group_size
+    gated, = _metal_gelu_gate()(
+        inputs=[projected, bias, table],
+        template=[("WIDTH", width)],
+        grid=(threads, 1, 1),
+        threadgroup=(group_size, 1, 1),
+        output_shapes=[(rows, width)],
+        output_dtypes=[mx.float16],
+    )
+    return gated
 
 
 @dataclass(frozen=True)
@@ -59,6 +108,8 @@ class OnlineBlock:
         self.mlp_up = self.weights["ssm_block.mlp_block.ffw_up.w"].transpose(1, 0, 2)
         self.mlp_up = mx.contiguous(self.mlp_up.reshape(self.width, -1))
         self.mlp_bias = self.weights["ssm_block.mlp_block.ffw_up.b"].reshape(-1)
+        self.channel_gelu = _fp16_gelu_table(approximate=True)
+        self.spatial_gelu = _fp16_gelu_table(approximate=False)
         prefix = "ssm_block.recurrent_block."
         self.paired_projection_weight = mx.concatenate(
             (self.weights[prefix + "linear_x.weight"], self.weights[prefix + "linear_y.weight"])
@@ -111,8 +162,8 @@ class OnlineBlock:
 
     def _recurrent_mlp(self, x):
         normalized = mx.fast.rms_norm(x, self.channel_gain, self.channel_eps).astype(mx.float16)
-        gate, value = mx.split(normalized @ self.mlp_up + self.mlp_bias, 2, axis=-1)
-        hidden = _gelu(gate, approximate=True) * value
+        projected = normalized @ self.mlp_up
+        hidden = _gated_mlp_features(projected, self.mlp_bias, self.channel_gelu)
         return self._project(hidden, "ssm_block.mlp_block.ffw_down").astype(mx.float32)
 
     def _layer_norm(self, x, name, eps):
@@ -134,7 +185,8 @@ class OnlineBlock:
         attention = attention.transpose(0, 2, 1, 3).reshape(output_tokens.shape)
         residual = output_tokens + self._project(attention, prefix + "out_proj")
         normalized = self._layer_norm(residual, "vit_block.ln_2", self.vit_eps[1])
-        hidden = _gelu(self._project(normalized, "vit_block.mlp.0"), approximate=False)
+        expanded = self._project(normalized, "vit_block.mlp.0")
+        hidden = self.spatial_gelu[expanded.view(mx.uint16)]
         return (residual + self._project(hidden, "vit_block.mlp.3")).astype(mx.float32)
 
     def __call__(self, tokens, state=None):

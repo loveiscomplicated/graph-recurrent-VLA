@@ -467,3 +467,41 @@ recurrent 채널 MLP 19.20ms, recurrent 상태·프로젝션 11.90ms였다.
 [재생 비교](../outputs/tapnextpp_mlx_verification/dab1851e89904e03bd0eae62138b4ffd/replay_comparison.json) ·
 [입력·상태 검증](../outputs/tapnextpp_mlx_verification/dab1851e89904e03bd0eae62138b4ffd/summary.json) ·
 [구간별 계측](../outputs/tapnextpp_mlx_profile/24cf3430186842d3b23b1ca4802b5f5e/summary.json)
+
+#### MLX Transformer·recurrent MLP의 FP16 GELU
+
+기존 GELU를 FP16 입력의 65,536개 비트 패턴에 대해 시작할 때 한 번 계산한다.
+Transformer MLP는 기존 erf GELU 테이블을 조회한다. Recurrent MLP는 Metal
+커널 하나에서 gate/value bias를 더하고 기존 tanh GELU 테이블을 조회한 뒤
+두 값을 곱한다. 두 경로 모두 기존 FP16 반올림 위치와 행렬곱을 유지한다.
+
+2026-11-15 M4 Pro, MLX 0.32.4에서 `deb5233` 기준과 변경 구현을
+기준 → 변경 → 변경 → 기준 순서로 재생했다. 동일한 149프레임, 576패치,
+표면점 32개와 `bb01149` 검출기를 사용했다. 조건별 두 실행에서 워밍업과
+프레임 0을 제외하고 추적 시간을 합산했다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 기존 MLX | 44.22 / 45.14 | 44.09 / 44.50 | 81.67 / 90.51 | 211/240 | 37/66 |
+| GELU 테이블 + 게이트 융합 | 43.55 / 43.95 | 43.42 / 43.81 | 82.82 / 89.98 | 211/240 | 37/66 |
+
+네 실행에서 시간 외 배열이 바이트 단위로 일치했다. 삽입 복원 오차
+중앙값은 3.57386px로 같았다. 256/512px 입력 × 전체/576패치 crop ×
+query 1/7/32개에서도 좌표·가시성, reset 및 기존 이력 이어받기를 확인했다.
+검출 및 RGB-D 융합을 포함한 전체 평균은 이번 두 쌍에서 개선되지 않았다.
+
+동일 입력에 대해 각 블록을 따로 동기화해 측정한 12블록 합계는 recurrent
+MLP 21.79 → 20.64ms, 공간 Transformer 25.24 → 24.97ms였다. 각 구간의
+동기화 비용이 포함되므로 이 합계는 전체 추적 시간과 별도로 비교한다.
+
+Attention을 별도 행렬곱과 softmax로 분리한 후보는 평균 44.65ms였다.
+두 MLP의 중간 폭을 3,072에서 2,560으로 줄인 후보는 39.89ms였으나
+삽입 4px 판정이 37/66에서 0/66으로 떨어져 제외했다.
+
+[기준 1](../outputs/tapnextpp_surface_tracking/7d3de9fcd7be448e9ba5f578fc0bfa7c/summary.json) ·
+[변경 1](../outputs/tapnextpp_surface_tracking/41472e7ee0834f468bd286e2fb4e9d46/summary.json) ·
+[변경 2](../outputs/tapnextpp_surface_tracking/2c784708cbd44e7c8e6201c3683d127f/summary.json) ·
+[기준 2](../outputs/tapnextpp_surface_tracking/cf344330a22b4dc38df6f5a8ae205271/summary.json) ·
+[재생 비교](../outputs/tapnextpp_mlx_verification/ad38ee23447f437f9c55d7f478f5eaed/replay_comparison.json) ·
+[블록별 계측](../outputs/tapnextpp_mlx_layer_profile/c168e1a102364351af0e1987c25deef3/summary.json) ·
+[입력·상태 검증](../outputs/tapnextpp_mlx_verification/ad38ee23447f437f9c55d7f478f5eaed/summary.json)
