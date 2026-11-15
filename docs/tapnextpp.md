@@ -185,3 +185,137 @@ Run ID `3b96116880834fedb6b494c4a7f40bae`. 네 조건 각각 9개 독립 stream,
 - [비교 JSON](../outputs/tapnextpp_support/3b96116880834fedb6b494c4a7f40bae/comparison.json)
 - [관심점 attention 개입 점검](../outputs/tapnextpp_support/3b96116880834fedb6b494c4a7f40bae/attention_perturbation.json)
 - [D의 경계 밖 점 배치와 전체 trajectory 예시](../outputs/tapnextpp_support/3b96116880834fedb6b494c4a7f40bae/d_frame_041_corner_1.png)
+
+### 프레임 0부터 표면점 추적과 3D 꼭짓점 복원
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
+```
+
+동일한 149프레임 에피소드에서 CPU 꼭짓점 검출기를 매 프레임 실행한다.
+프레임 0의 검출 Peg mask를 침식한 뒤 유효한 깊이가 있는 내부 픽셀에서
+서로 떨어진 표면점 32개를 고른다. TAPNext++ 256 MPS 모델의 state는
+프레임 0에서 한 번 초기화하며 꼭짓점 query와 가림 시점 재초기화를 사용하지 않는다.
+
+현재 프레임의 TAPNext++ 가시성, RGB 기반 Peg mask, 깊이를 통과한 점들을
+카메라 3D로 역투영한다. 초기 표면점과의 대응에서 5mm 이내 합의점
+4개 이상을 요구하는 강체 정합으로 이동을 얻는다. 초기 검출 꼭짓점을 그 변환으로
+옮기고, 현재 검출에 3D 거리 12mm 이내 대응이 있으면 해당 관측을 채택한다.
+검출된 보이는 꼭짓점은 별도로 같은 프레임 GT와 4px 일대일 매칭으로 채점한다.
+가림 결과의 물리 ID는 채점할 때만 동결 GT로 연결한다. 미해결 요청은 실패로 세고
+중앙 오차는 유한한 예측에서 계산한다. detector, TAPNext++ 및 융합 시간은
+프레임 1–148에서 계산하며 TAPNext++ 측정에는 MPS 동기화를 포함한다.
+
+2026-11-15 실행 `5afa7855b9d443d89489991467c153b7`에서 초기 query 32개
+모두 Peg actor 위였음을 추론 후 segmentation으로 확인했다. 149프레임에
+걸쳐 강체 자세를 얻었고 합의점은 최소 4개, 중앙값 24개였다. 보이는 검출은
+803/806, 가림 복원은 199/240, 꼭짓점 6의 프레임 83 이후 가림 요청은
+50/61이 4px 이내였다. 가림 실패 41건은 모두 삽입 구간에 있었다.
+MPS 추적 평균 / P95는 119.76 / 128.44ms였고, CPU 검출과 강체
+정합을 포함한 직렬 처리 시간은 195.03 / 224.02ms였다.
+단일 에피소드의 저장 RGB-D replay이며, 실시간 센서 입력과 CUDA에서의
+실행은 검증하지 않았다.
+[요약](../outputs/tapnextpp_surface_tracking/5afa7855b9d443d89489991467c153b7/summary.json) ·
+[프레임별 궤적과 시간](../outputs/tapnextpp_surface_tracking/5afa7855b9d443d89489991467c153b7/tracks.npz)
+
+기본 장치 선택으로 다시 실행한 `1157daba67354279bdcece6947f5c7fd`에서는
+`TorchCornerDetector.main(device="auto")`가 이 Mac에서 `mps:0`을
+선택했다. 위 CPU 검출 비교와 초기 32개 query, 채점 프레임 및 성공 건수가
+일치했다. 프레임당 평균 / P95는 검출 44.67 / 56.14ms, TAPNext++
+118.76 / 122.27ms, 전체 직렬 처리 164.76 / 176.67ms였다.
+[기본 GPU 경로 실행 요약](../outputs/tapnextpp_surface_tracking/1157daba67354279bdcece6947f5c7fd/summary.json)
+
+RTX 3090에서 검출기와 TAPNext++를 모두 `cuda:0`으로 지정한 실행
+`3f9cdebe50b14c8da1aab4b919317e06`은 PyTorch 2.14.1+cu130을 사용했다.
+MPS 실행과 영상·동결 입력·체크포인트 해시를 대조했고, 저장된 초기 32개
+query와 채점 mask가 일치했다. 4px 성공 건수는 동일했다.
+
+| 단계 | MPS 평균 / P95 (ms) | RTX 3090 CUDA 평균 / P95 (ms) |
+| --- | ---: | ---: |
+| 꼭짓점 검출 | 44.67 / 56.14 | 74.53 / 80.96 |
+| TAPNext++ | 118.76 / 122.27 | 39.86 / 41.46 |
+| CPU 3D 정합 및 융합 | 1.34 / 2.02 | 1.72 / 2.35 |
+| 전체 직렬 처리 | 164.76 / 176.67 | 116.11 / 121.58 |
+
+검출기 벽시계 시간에는 OpenCV CPU 단계와 장치 간 데이터 이동이 포함된다.
+위 숫자는 호스트가 다른 두 실제 실행에서 얻었다.
+[CUDA 실행 요약](../outputs/tapnextpp_surface_tracking/3f9cdebe50b14c8da1aab4b919317e06/summary.json) ·
+[CUDA 프레임별 궤적과 시간](../outputs/tapnextpp_surface_tracking/3f9cdebe50b14c8da1aab4b919317e06/tracks.npz)
+
+### 입력 해상도와 CUDA FP16 벤치마크
+
+2026-11-15에 위 149프레임을 네 조건으로 재실행했다. 체크포인트, 동결
+채점 입력과 에피소드 해시, 초기 표면점 32개의 좌표 및 채점 마스크가
+네 실행에서 일치했다. MPS는 전체 화면을 192×192로 리사이즈했다.
+CUDA는 같은 RTX 3090에서 256×256을 유지하고 공식 래퍼의 FP16 autocast를
+활성화했다. 검출기는 각 장치의 기준 실행과 동일한 설정으로 실행했다.
+
+위 표면점 재생 명령에서 config 복사본을 사용한다. MPS는
+`tap_input_resolution: 192`를 추가한다. CUDA는 `device: cuda:0`과
+`detector_device: cuda:0`으로 설정하고 `tap_cuda_autocast: true`를 추가한다.
+기준 실행은 각각 해상도 256과 autocast 비활성화를 사용한다.
+
+| 조건 | TAPNext++ 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: |
+| MPS 256 FP32 | 117.73 / 119.32 | 155.27 / 163.56 | 199/240 | 25/66 |
+| MPS 192 FP32 | 73.01 / 74.89 | 110.99 / 119.37 | 92/240 | 0/66 |
+| CUDA 256 FP32 | 39.67 / 41.31 | 111.71 / 115.35 | 199/240 | 25/66 |
+| CUDA 256 FP16 autocast | 24.55 / 25.18 | 95.87 / 98.33 | 199/240 | 25/66 |
+
+시간은 프레임 1–148에서 측정했다. 삽입 구간(128–148)의 추적 평균 / P95는
+MPS 118.39 / 119.76 → 73.05 / 74.33ms,
+CUDA 39.86 / 41.48 → 24.55 / 24.98ms였다.
+MPS 192에서는 삽입 가림 66건 모두 좌표를 복원하지 못했고, 전체 자세를
+얻은 프레임도 149개에서 87개로 줄었다. CUDA FP16은 149프레임 모두 자세를
+얻었으며 삽입 가림의 중앙 오차는 4.5966px에서 4.5980px로 변했다.
+
+- [비교 JSON](../outputs/tapnextpp_surface_tracking/input_resolution_and_precision.json)
+- [MPS 256](../outputs/tapnextpp_surface_tracking/22a9d57f25ea41cda3f57b6e9feba5bc/summary.json) · [MPS 192](../outputs/tapnextpp_surface_tracking/4ccdf21ced9048ab95aaeb7a3efdd618/summary.json)
+- [CUDA FP32](../outputs/tapnextpp_surface_tracking/c8b2683a37f344a09ab8f7a110d22b56/summary.json) · [CUDA FP16](../outputs/tapnextpp_surface_tracking/1c300c35c5a349888c626b5860db16ec/summary.json)
+
+위 표의 CUDA 두 실행은 [검출 지연 최적화](corner_detection.md#검출-전체-지연-최적화)
+직전의 검출기 사본을 사용했다. 최신 기본 검출기로 같은 CUDA FP16 재생을
+반복한 결과 검출 평균 / P95는 69.62 / 72.42 → 68.02 / 71.20ms,
+전체는 95.87 / 98.33 → 95.26 / 98.34ms였다. 저장된 추적 좌표와
+가림 복원 좌표가 일치했다. 위 MPS 두 실행은 최적화 적용 이후 실행했다.
+[최신 CUDA FP16 재실행](../outputs/tapnextpp_surface_tracking/bfd4c9896c5344179f2704a23d3c1ccf/summary.json)
+
+### 고정 ROI와 CUDA autocast 캐시
+
+2026-11-15에 최신 꼭짓점 검출기를 사용해 같은 149프레임을 다시 비교했다.
+실행 config에 `tap_crop_xyxy: [0, 145, 320, 465]`를 추가하면 해당 원본 RGB
+영역만 TAPNext++에 전달한다. 오른쪽과 아래는 범위에서 제외한다. 이 ROI는
+이 에피소드의 영상을 기준으로 정했고 좌표는 기존 원본 RGB-D 픽셀로 되돌린다.
+전체 화면을 쓰려면 필드를 생략한다. CUDA에서 `tap_cuda_autocast: true`와
+`tap_cache_cuda_autocast: true`를 함께 쓰면 프레임 간 FP16 가중치 캐시를
+재사용한다. 두 옵션의 기본값은 `false`다.
+MPS에서 `tap_mps_fp16_vit: true`를 사용하면 각 공간 Transformer 블록을
+FP16으로 실행하고 그 출력을 다음 recurrent 블록에 FP32로 전달한다.
+이 설정도 기본값은 `false`다.
+
+| 조건 | TAPNext++ 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: |
+| MPS 256 전체 화면 | 117.73 / 119.32 | 199/240 | 25/66 |
+| MPS 256 Transformer FP16 | 112.22 / 114.19 | 199/240 | 25/66 |
+| MPS 224 전체 화면 | 96.80 / 98.55 | 107/240 | 0/66 |
+| MPS 192 고정 ROI | 72.18 / 73.65 | 145/240 | 9/66 |
+| MPS 224 고정 ROI | 95.68 / 97.74 | 154/240 | 2/66 |
+| CUDA 256 FP16 기존 | 25.54 / 25.82 | 199/240 | 25/66 |
+| CUDA 256 FP16 캐시 | 22.68 / 23.71 | 199/240 | 25/66 |
+
+CUDA 저장 출력은 추적 좌표, 가시성, 복원 좌표까지 일치했다. 같은 프로세스에서
+검출기 없이 원본 149프레임을 캐시 끔 → 켬 → 켬 → 끔 순서로 재생한 결과,
+평균은 캐시 끔 24.30 / 24.19ms, 켬 21.66 / 21.56ms였다. 전체 파이프라인
+한 쌍에서 평균은 95.26 → 94.08ms였고 P95는 98.34 → 106.83ms였다.
+검출 시간 변동이 포함된 값이며, 전체 P95 개선은 관측되지 않았다.
+
+MPS Transformer FP16은 240건의 개별 성공·실패 판정과 표면점 가시성이
+기준과 일치했다. 삽입 중앙 오차는 4.5966 → 4.6058px였고, 전체 지연
+평균 / P95는 155.27 / 163.56 → 150.00 / 156.29ms였다.
+MPS 선형층 가중치만 FP16으로 바꾼 실험은 118.81ms였고, 전체 backbone을
+FP16으로 바꾼 실험은 100.55ms였으나 삽입 성공이 0/66으로 떨어졌다.
+
+[구간별 비교 JSON](../outputs/tapnextpp_surface_tracking/additional_tracker_optimization.json) ·
+[CUDA 캐시 실행](../outputs/tapnextpp_surface_tracking/dd1165b85b8843e0910268a399980db0/summary.json) ·
+[MPS Transformer FP16 실행](../outputs/tapnextpp_surface_tracking/fab68806f62e4194942b1b27508ae4df/summary.json)
