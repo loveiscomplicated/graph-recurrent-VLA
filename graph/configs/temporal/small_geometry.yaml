@@ -1,0 +1,5 @@
+trainer: evaluation.small_geometry:evaluate
+source: outputs/hole_rim_holdout/1e9075d317324c218a05f13f296d34fb
+protocol: outputs/mixed_trajectory_pilot/protocol.json
+output_root: outputs/small_geometry
+workers: 6

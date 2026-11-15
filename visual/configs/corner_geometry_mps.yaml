@@ -1,0 +1,7 @@
+trainer: evaluation.peg_rear_end_accelerator:evaluate
+source: outputs/peg_rear_end_holdout/5daec1f2b2334394a6f266b36c11f6b5/trajectory.json
+output_root: outputs/corner_geometry_mps
+threads: 1
+warmup_frames: 5
+accelerator: mps
+resident_geometry: true

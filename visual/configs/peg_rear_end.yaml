@@ -1,0 +1,12 @@
+trainer: evaluation.peg_rear_end:evaluate
+source: outputs/peg_insertion_holdout/9f1b5679c01d4584a5adbdd3677c1c22/trajectory.json
+output_root: outputs/peg_rear_end
+threads: 1
+detector:
+  recover_small_geometry: true
+  recover_hole_rim: true
+  recover_fragmented_rim: true
+  verify_rejected_rim_squares: true
+  correct_box_exterior_pixel_center: true
+  correct_peg_position: true
+  center_peg_plane_bounds: true

@@ -1,0 +1,7 @@
+trainer: evaluation.combined_corner_detection:evaluate
+workers: 6
+output_root: outputs/combined_corner_detection
+sources:
+  reset: outputs/box_exterior_holdout/383430b0c51643988544597a53abb2fd/selection.json
+  trajectory: outputs/hole_rim_replacement_fresh/a63dd475b8224b5b819388dbd8451174/frames.json
+  insertion_replay: outputs/peg_rear_end_holdout/5daec1f2b2334394a6f266b36c11f6b5/trajectory.json

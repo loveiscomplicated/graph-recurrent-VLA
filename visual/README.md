@@ -48,6 +48,40 @@ CUDA 텐서다. `reset()` 후에는 모델을 다시 로드하지 않고 새 영
 계산과 선택적 MPS Metal 커널, 명시적으로 호출하는 NumPy 기준 구현을 포함한다.
 [사용법·구조·검증 결과](../docs/corner_detection.md)를 따른다.
 
+삽입 말미 Peg 뒤쪽 끝면 복구를 비교하려면 PyTorch CPU 환경과 설정에 지정된
+저장 프레임 및 매니페스트가 필요하다.
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config visual/configs/peg_rear_end.yaml
+```
+
+[끝면 복구 조건 및 비교 결과](../docs/corner_detection.md#peg-rear-end-recovery-during-insertion)를 참고한다.
+
+같은 삽입 프레임에서 CPU 메인 검출기와 Peg 뒤쪽 끝면만 GPU로 계산하는 경로를
+비교할 수 있다. 두 설정은 저장된 삽입 매니페스트와 원본 RGB-D 파일이 필요하다.
+MPS는 Apple Silicon PyTorch, CUDA는 NVIDIA GPU와 CUDA 지원 PyTorch 환경에서 실행한다.
+
+```bash
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python main.py --config visual/configs/peg_rear_end_mps.yaml
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python main.py --config visual/configs/peg_rear_end_cuda.yaml
+```
+
+색상 분류, 깊이 역투영, 평면 피팅과 Peg 검사를 같은 GPU에서 실행하는
+옵션은 `TorchCornerDetector.main(device="mps")` 또는 `device="cuda"`다.
+같은 삽입 매니페스트에서 CPU 메인과 비교하려면 아래 설정을 사용한다.
+
+```bash
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python main.py --config visual/configs/corner_geometry_mps.yaml
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 python main.py --config visual/configs/corner_geometry_cuda.yaml
+```
+
+고정된 초기·궤적·삽입 프레임에서 Peg, Box 외곽, Hole 림을 함께 재측정하려면
+설정에 지정된 세 매니페스트와 원본 RGB-D 파일을 같은 저장소 위치에 준비한다.
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 .venv/bin/python main.py --config visual/configs/combined_corner_detection.yaml
+```
+
 ## 결론
 
 - 실시간 추적은 된다: causal streaming + GPU point cloud로 **p95 45.1 ms (22.5 FPS)**, GPU 0.61 GB.

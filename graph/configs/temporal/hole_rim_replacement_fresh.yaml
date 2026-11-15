@@ -1,0 +1,13 @@
+trainer: evaluation.peg_plane_center_fresh:evaluate
+protocol: outputs/mixed_trajectory_pilot/protocol.json
+exclude_manifests:
+  - outputs/peg_plane_center_fresh/944a5ca9b1954caf80f62fc66f53be9e/selection.json
+  - outputs/hole_depth_fallback_fresh/eaf1f267cd534e4fb84f1e7b229a3255/selection.json
+  - outputs/corner_detection_benchmark/69de5607c1b74eee968a991918275d19/trajectory.json
+  - outputs/hole_rim_holdout/1e9075d317324c218a05f13f296d34fb/trajectory.json
+comparison: hole_rim_replacement
+seed_start: 1711150200
+seed_count: 24
+action_seed_start: 1711160200
+output_root: outputs/hole_rim_replacement_fresh
+workers: 6

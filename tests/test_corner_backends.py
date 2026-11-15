@@ -4,8 +4,10 @@ import unittest
 from unittest.mock import patch
 import numpy as np
 import torch
+from visual.corner_detection import detect_tensors
 from visual.corner_detection.backends import torch_ops as K
-from visual.corner_detection.detector import TorchCornerDetector
+from visual.corner_detection.backends.rear_end_torch import box_cut_vertices
+from visual.corner_detection.detector import TorchCornerDetector, default_detector
 from visual.corner_detection.geometry import _line, Parameters
 
 
@@ -44,6 +46,21 @@ class TorchDetectorTests(unittest.TestCase):
             self.assertLess(min(abs(u - 119.5), abs(u - 239.5)), 0.001)
             self.assertLess(min(abs(v - 99.5), abs(v - 199.5)), 0.001)
 
+    def test_public_detector_uses_main_preset(self):
+        rgb, depth, masks = self.rectangle()
+        detector = default_detector(str(self.device))
+        self.assertTrue(detector.recover_hole_rim)
+        self.assertTrue(detector.recover_peg_rear_end)
+        self.assertTrue(detector.reject_peg_box_cut)
+        result = detect_tensors(
+            rgb, depth, self.k, self.ext, masks=masks, device=self.device
+        )
+        expected = TorchCornerDetector.main(device=self.device)(
+            rgb, depth, self.k, self.ext, masks=masks
+        )
+        torch.testing.assert_close(result.xyz, expected.xyz)
+        self.assertEqual(result.metadata, expected.metadata)
+
     def test_no_legacy_detector_fallback(self):
         rgb, depth, masks = self.rectangle()
         with patch(
@@ -79,6 +96,39 @@ class TorchDetectorTests(unittest.TestCase):
         depth[256, 256:258] = 0.8
         self.assertFalse(bool(K.unoccluded(points, uv, depth, support)[0]))
 
+    def test_peg_prism_box_cut_requires_occlusion_evidence(self):
+        device = self.device
+        points = torch.tensor(
+            [[-0.08, -0.02, 1], [-0.08, 0.02, 1],
+             [0.08, -0.02, 1], [0.08, 0.02, 1]], device=device
+        )
+        planes = torch.tensor([[0., 1., 0., 0.02], [0., 0., 1., -1.]], device=device)
+        basis = torch.eye(3, device=device)
+        box = torch.tensor([[0.2, 0., 0.98]], device=device)
+        depth = torch.full((512, 512), 0.98, device=device)
+        box_support = torch.zeros_like(depth, dtype=torch.bool)
+        peg_support = torch.zeros_like(box_support)
+        k = torch.tensor([[1000., 0., 256.], [0., 1000., 256.], [0., 0., 1.]], device=device)
+
+        def reject(observed_planes):
+            return box_cut_vertices(
+                points, observed_planes, basis, box, depth, peg_support, box_support, k
+            ).tolist()
+
+        box_support[236, 339] = box_support[276, 339] = True
+        self.assertEqual(reject(planes), [False, False, True, True])
+        end_plane = torch.tensor([[1., 0., 0., -0.08]], device=device)
+        self.assertEqual(reject(torch.cat((planes, end_plane))), [False] * 4)
+
+        # One vertex still sees the Peg just beyond the estimated shared bound.
+        peg_support[276, 337] = True
+        depth[276, 337] = 1.0
+        self.assertEqual(reject(planes), [False] * 4)
+
+        # The other vertex is covered on both sides and can be rejected alone.
+        box_support[236, 334:340] = True
+        self.assertEqual(reject(planes), [False, False, True, False])
+
     def test_batch_line_fit_preserves_robust_geometry(self):
         rng = np.random.default_rng(4)
         parts = []
@@ -105,6 +155,8 @@ class TorchDetectorTests(unittest.TestCase):
         points = torch.rand((700, 3), device=self.device) * 0.2
         points[:, 2] = 1.0 + 0.1 * points[:, 0] - 0.2 * points[:, 1]
         planes = K.fit_planes(points, Parameters(), 42, 4)
+        optimized = K.fit_planes(points, Parameters(), 42, 4, optimized=True)
+        self.assertTrue(torch.equal(planes, optimized))
         self.assertEqual(planes.device, self.device)
         self.assertEqual(len(planes), 1)
         residual = (points @ planes[0, :3] + planes[0, 3]).abs().max()
@@ -309,6 +361,18 @@ class CpuDetectorTests(TorchDetectorTests):
 
 
 class MetalCapabilityTests(unittest.TestCase):
+    def test_main_auto_falls_back_if_metal_compiler_is_missing(self):
+        with (
+            patch.object(torch.cuda, "is_available", return_value=False),
+            patch.object(torch.backends.mps, "is_available", return_value=True),
+            patch.object(torch.mps, "compile_shader", None, create=True),
+        ):
+            detector = TorchCornerDetector.main()
+
+        self.assertEqual(detector.device.type, "cpu")
+        self.assertTrue(detector.recover_peg_rear_end)
+        self.assertTrue(detector.reject_peg_box_cut)
+
     def test_missing_compiler_has_explicit_error(self):
         from visual.corner_detection.backends import metal_ops
 

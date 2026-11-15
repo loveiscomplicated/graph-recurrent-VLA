@@ -24,7 +24,7 @@ class PreviousOpeningDetector(TorchCornerDetector):
     _refine_opening = False
 
 
-def initialize(trace_points=False):
+def initialize(trace_points=False, *, compare_geometry=False, compare_fragmented=False):
     """Keep detector workspace and thread pools local to each process."""
     global detectors, record_points
     record_points = trace_points
@@ -34,6 +34,18 @@ def initialize(trace_points=False):
         "opening": PreviousOpeningDetector("cpu", recover_hole_rim=True),
         "refined": TorchCornerDetector("cpu", recover_hole_rim=True),
     }
+
+    if compare_geometry:
+        detectors["geometry"] = TorchCornerDetector(
+            "cpu", recover_hole_rim=True, recover_small_geometry=True
+        )
+    if compare_fragmented:
+        detectors["fragmented"] = TorchCornerDetector(
+            "cpu",
+            recover_hole_rim=True,
+            recover_small_geometry=True,
+            recover_fragmented_rim=True,
+        )
 
 
 def coverage(targets, points):
@@ -125,6 +137,8 @@ def evaluate_pair(sensor, gt, ids, *, front_only=False):
             "outer_matched": box["by_kind"].get("box_outer", {}).get("matched", 0),
             "outer_reference": box["by_kind"].get("box_outer", {}).get("visible", 0),
             "peg_matched": objects[0]["matched_3mm"],
+            "peg_reference": objects[0]["visible_reference"],
+            "peg_predictions": objects[0]["predictions"],
             "box_predictions": box["predictions"],
             "box_unmatched": box["predictions"] - box["matched_3mm"],
         }
@@ -231,7 +245,7 @@ def reset_results(config):
         env.close()
 
 
-def pilot_frame(job):
+def pilot_frame(job, *, front_only=False):
     """Replay one checksum-verified RGB-D frame from the pilot manifest."""
     path, checksum, ids, labels = job
     if file_sha256(path) != checksum:
@@ -257,7 +271,7 @@ def pilot_frame(job):
                 "hole_radius",
             )
         }
-    return dict(**labels, scores=evaluate_pair(sensor, gt, ids))
+    return dict(**labels, scores=evaluate_pair(sensor, gt, ids, front_only=front_only))
 
 
 def pilot_jobs(root, evidence):

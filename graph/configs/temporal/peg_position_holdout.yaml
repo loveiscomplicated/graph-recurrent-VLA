@@ -1,0 +1,6 @@
+trainer: evaluation.box_exterior_recovery:evaluate
+dataset: outputs/hole_rim_holdout/1e9075d317324c218a05f13f296d34fb
+selection_manifest: outputs/box_exterior_holdout/383430b0c51643988544597a53abb2fd/selection.json
+compare_peg_position: true
+output_root: outputs/peg_position_holdout
+workers: 6

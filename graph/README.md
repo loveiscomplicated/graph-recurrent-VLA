@@ -1,5 +1,101 @@
 # Graph team
 
+## Hole rim depth verification
+
+With the saved fresh trajectory frames and the shared PyTorch environment,
+compare the existing recovery with the fallback depth check:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_depth_fallback.yaml
+```
+
+With ManiSkill and the saved protocol and exclusion manifests, collect
+new trajectories for the fixed Hole rim comparison:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_depth_fallback_fresh.yaml
+```
+
+With the same collection prerequisites, evaluate the fixed longer-span
+replacement on a separate set of scene seeds:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_replacement_fresh.yaml
+```
+
+## Corner detector benchmark
+
+Use the frozen benchmark dataset for current Peg, Hole rim and Box exterior
+3 mm comparisons. With its saved frames and the shared PyTorch environment,
+run the checksum-verified CPU replay:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/replay_corner_detection_benchmark.yaml
+```
+
+The [corner detector benchmark](../docs/corner_detection.md#corner-detector-benchmark)
+records the dataset selection, baseline and collection command.
+
+## Peg position correction
+
+With ManiSkill and the saved mixed-trajectory camera protocol, collect a fresh
+cohort and evaluate the fixed Peg position correction with and without centered
+bounds:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/peg_plane_center_fresh.yaml
+```
+
+With the shared PyTorch environment and the saved Box exterior holdout
+selection and trajectory frames, replay the fixed Peg correction on CPU:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/peg_position_holdout.yaml
+```
+
+Use `graph/configs/temporal/peg_position_correction.yaml` with the frozen
+development benchmark to reproduce the development scores. Compare centered
+Peg prism bounds with the position-corrected baseline on the same holdout:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/peg_plane_center_holdout.yaml
+```
+
+See [Peg trajectory position correction](../docs/corner_detection.md#peg-trajectory-position-correction)
+for the settings and paired results.
+
+## Box exterior corner recovery
+
+With the frozen benchmark and the shared PyTorch environment, run the paired
+CPU replay of the exterior pixel-center correction:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/box_exterior_recovery.yaml
+```
+
+With ManiSkill and the saved Hole recovery holdout manifests and trajectory
+frames, replay the fixed correction on seeds disjoint from the tuning
+benchmark. The workflow renders the initial frames using the saved protocol.
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/box_exterior_holdout.yaml
+```
+
+See [Box exterior corner recovery](../docs/corner_detection.md#box-exterior-corner-recovery)
+for the selection rule and paired results.
+
+## Trajectory Hole rim recovery
+
+With the saved corner benchmark frames and the shared PyTorch environment,
+replay the CPU detector and causal rim recovery in trajectory order:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/trajectory_rim_recovery.yaml
+```
+
+See [trajectory Hole rim recovery](../docs/corner_detection.md#trajectory-hole-rim-recovery)
+for the stationary-Box assumption and comparison.
+
 ## Initial-state corner detector evaluation
 
 With the restored Peg and Hole audit JSONs listed in the config and the shared
@@ -34,8 +130,27 @@ WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs
 WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_pilot.yaml
 ```
 
+For the fixed-parameter holdout, also provide the frozen pilot protocol and
+the two tuning-result JSONs named in the holdout config. The evaluator renders
+fresh resets and rollouts and keeps the sampled trajectory observations.
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/hole_rim_holdout.yaml
+```
+
 See [Hole opening recovery](../docs/corner_detection.md#hole-opening-recovery)
 for the detector option, stage definitions, and results.
+
+## Small geometry recovery evaluation
+
+With the sampled frames and selection from the Hole holdout run, use the
+shared ManiSkill/PyTorch environment to replay the development comparison:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/temporal/small_geometry.yaml
+```
+
+See [small geometry recovery](../docs/corner_detection.md#small-geometry-recovery).
 
 ## Independent generalization evaluation
 

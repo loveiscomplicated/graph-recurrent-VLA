@@ -1,0 +1,7 @@
+trainer: evaluation.peg_plane_center_fresh:evaluate
+protocol: outputs/mixed_trajectory_pilot/protocol.json
+seed_start: 1711150000
+seed_count: 24
+action_seed_start: 1711160000
+output_root: outputs/peg_plane_center_fresh
+workers: 6

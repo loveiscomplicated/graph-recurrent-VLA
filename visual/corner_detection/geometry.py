@@ -298,7 +298,7 @@ def _local_boundary_corners(contour, params, is_hole=False):
     return result
 
 
-def _face_envelopes(plane_mask, primary, planes, eligible, intrinsic):
+def _face_envelopes(plane_mask, primary, planes, eligible, intrinsic, *, contours=None):
     """Rectangular corners of observed face/rim boundaries, with no known size.
 
     Other observed face normals provide directions only. Current contour extents
@@ -328,9 +328,11 @@ def _face_envelopes(plane_mask, primary, planes, eligible, intrinsic):
         ]
         return rays * (-offset / (rays @ normal))[:, None]
 
-    contours, hierarchy = cv2.findContours(
-        plane_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
-    )
+    if contours is None:
+        contours = cv2.findContours(
+            plane_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
+        )
+    contours, hierarchy = contours
     result = []
     for ci, contour in enumerate(contours):
         if abs(cv2.contourArea(contour)) < 30:

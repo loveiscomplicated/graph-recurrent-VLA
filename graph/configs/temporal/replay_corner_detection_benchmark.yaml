@@ -1,0 +1,5 @@
+trainer: evaluation.corner_detection_benchmark:evaluate
+dataset: outputs/corner_detection_benchmark/69de5607c1b74eee968a991918275d19
+output_root: outputs/corner_detection_benchmark_replay
+workers: 6
+compare_fragmented: true

@@ -95,11 +95,11 @@ def plane_fit(points, selected=None):
     return torch.cat((normal, -(normal @ center)[None]))
 
 
-def fit_planes(points, parameters, seed, maximum):
+def fit_planes(points, parameters, seed, maximum, *, optimized=False):
     if points.device.type == "mps":
         from . import metal_ops
 
-        return metal_ops.fit_planes(points, parameters, seed, maximum)
+        return metal_ops.fit_planes(points, parameters, seed, maximum, optimized=optimized)
     remaining = torch.arange(len(points), device=points.device)
     result = []
     rng = np.random.default_rng(seed)
@@ -351,3 +351,9 @@ def physical_edges(
         (((crease | background) & inside_ok).sum(-1), occluding.sum(-1)), -1
     )
     return bounds & ((counts[..., 0] >= 3) & (counts[..., 1] <= 1)).all(1), counts
+
+
+@lru_cache(maxsize=1)
+def compiled_physical_edges():
+    """Share one dynamic candidate-validation graph across CUDA detectors."""
+    return torch.compile(physical_edges, dynamic=True, fullgraph=True)

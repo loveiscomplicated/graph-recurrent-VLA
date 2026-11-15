@@ -1,0 +1,4 @@
+trainer: evaluation.trajectory_rim_recovery:evaluate
+dataset: outputs/corner_detection_benchmark/69de5607c1b74eee968a991918275d19
+output_root: outputs/trajectory_rim_recovery
+workers: 6

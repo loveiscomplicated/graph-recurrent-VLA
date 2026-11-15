@@ -1,0 +1,6 @@
+trainer: evaluation.box_exterior_recovery:evaluate
+dataset: outputs/peg_plane_center_fresh/944a5ca9b1954caf80f62fc66f53be9e
+trajectory_manifest: frames.json
+comparison: hole_depth_fallback
+output_root: outputs/hole_depth_fallback
+workers: 6

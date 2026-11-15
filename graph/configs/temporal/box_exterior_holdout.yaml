@@ -1,0 +1,6 @@
+trainer: evaluation.box_exterior_recovery:evaluate
+dataset: outputs/hole_rim_holdout/1e9075d317324c218a05f13f296d34fb
+tuning_dataset: outputs/corner_detection_benchmark/69de5607c1b74eee968a991918275d19
+protocol: outputs/mixed_trajectory_pilot/protocol.json
+output_root: outputs/box_exterior_holdout
+workers: 6

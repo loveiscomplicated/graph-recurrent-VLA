@@ -429,6 +429,25 @@ kernel void score_planes(device const float* points,device const int* sample,
     hypotheses[4*i]=normal.x;hypotheses[4*i+1]=normal.y;
     hypotheses[4*i+2]=normal.z;hypotheses[4*i+3]=offset;votes[i]=count;
 }
+// Give each hypothesis a SIMD group. Only integer votes are reduced.
+kernel void score_planes_parallel(device const float* points, device const int* sample,
+    device const int* triples, device float* hypotheses, device int* votes,
+    constant int& samples, constant float& tolerance, uint tid [[thread_position_in_grid]],
+    uint lane [[thread_index_in_simdgroup]]) {
+    uint i=tid/32;
+    float3 a=xyz_at(points,sample[triples[3*i]]);
+    float3 b=xyz_at(points,sample[triples[3*i+1]]);
+    float3 c=xyz_at(points,sample[triples[3*i+2]]);
+    float3 normal=cross(b-a,c-a);float norm=sqrt(dot(normal,normal));
+    normal/=max(norm,1.e-7f);float offset=-dot(normal,a);int count=0;
+    if(norm>1.e-7f)for(int j=lane;j<samples;j+=32)
+        count+=abs(dot(xyz_at(points,sample[j]),normal)+offset)<tolerance;
+    count=simd_sum(count);
+    if(lane==0) {
+        hypotheses[4*i]=normal.x;hypotheses[4*i+1]=normal.y;
+        hypotheses[4*i+2]=normal.z;hypotheses[4*i+3]=offset;votes[i]=count;
+    }
+}
 kernel void select_plane(device const float* points,device const float* hypotheses,
     device const long* winner,device bool* selected,constant float& tolerance,
     uint i [[thread_position_in_grid]]) {
@@ -440,64 +459,68 @@ kernel void select_plane(device const float* points,device const float* hypothes
 // needed between the three refits. All array reads precede mask updates.
 kernel void weighted_plane(device const float* points,device bool* selected,
     device float* out,device int* out_count,constant int& count,
-    constant float& tolerance,constant int& minimum,constant int& update,
+    constant float& tolerance,constant int& minimum,constant int& updates,
+    constant int& final_fit,
     uint t [[thread_index_in_threadgroup]]) {
     threadgroup float4 means[256];threadgroup float4 cov1[256];threadgroup float2 cov2[256];
     threadgroup float3 center;threadgroup float4 fitted;threadgroup int active;
-    float4 total=0.f;
-    for(int i=t;i<count;i+=256)if(selected[i])total+=float4(xyz_at(points,i),1.f);
-    means[t]=total;threadgroup_barrier(mem_flags::mem_threadgroup);
-    for(int stride=128;stride>0;stride/=2) {
-        if(t<uint(stride))means[t]+=means[t+stride];
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    if(t==0) {active=int(means[0].w);center=means[0].xyz/max(means[0].w,1.f);}
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    float4 first=0.f;float2 second=0.f;
-    for(int i=t;i<count;i+=256)if(selected[i]) {
-        float3 d=xyz_at(points,i)-center;
-        first+=float4(d.x*d.x,d.x*d.y,d.x*d.z,d.y*d.y);
-        second+=float2(d.y*d.z,d.z*d.z);
-    }
-    cov1[t]=first;cov2[t]=second;threadgroup_barrier(mem_flags::mem_threadgroup);
-    for(int stride=128;stride>0;stride/=2) {
-        if(t<uint(stride)) {cov1[t]+=cov1[t+stride];cov2[t]+=cov2[t+stride];}
-        threadgroup_barrier(mem_flags::mem_threadgroup);
-    }
-    if(t==0) {
-        float4 c=cov1[0];float2 d=cov2[0];
-        float a[3][3]={{c.x,c.y,c.z},{c.y,c.w,d.x},{c.z,d.x,d.y}};
-        float v[3][3]={{1,0,0},{0,1,0},{0,0,1}};
-        for(int iteration=0;iteration<24;iteration++) {
-            int p=0,q=1;float maximum=abs(a[0][1]);
-            if(abs(a[0][2])>maximum) {p=0;q=2;maximum=abs(a[0][2]);}
-            if(abs(a[1][2])>maximum) {p=1;q=2;maximum=abs(a[1][2]);}
-            if(maximum<1.e-12f)break;
-            float tau=(a[q][q]-a[p][p])/(2.f*a[p][q]);
-            float tangent=(tau>=0.f?1.f:-1.f)/(abs(tau)+sqrt(1.f+tau*tau));
-            float cosine=1.f/sqrt(1.f+tangent*tangent),sine=tangent*cosine;
-            float apq=a[p][q];a[p][p]-=tangent*apq;a[q][q]+=tangent*apq;
-            a[p][q]=0.f;a[q][p]=0.f;
-            for(int r=0;r<3;r++) {
-                if(r!=p && r!=q) {
-                    float rp=a[r][p],rq=a[r][q];
-                    a[r][p]=cosine*rp-sine*rq;a[p][r]=a[r][p];
-                    a[r][q]=sine*rp+cosine*rq;a[q][r]=a[r][q];
-                }
-                float vp=v[r][p],vq=v[r][q];
-                v[r][p]=cosine*vp-sine*vq;v[r][q]=sine*vp+cosine*vq;
-            }
+    for(int pass=0;pass<updates+final_fit;pass++) {
+        float4 total=0.f;
+        for(int i=t;i<count;i+=256)if(selected[i])total+=float4(xyz_at(points,i),1.f);
+        means[t]=total;threadgroup_barrier(mem_flags::mem_threadgroup);
+        for(int stride=128;stride>0;stride/=2) {
+            if(t<uint(stride))means[t]+=means[t+stride];
+            threadgroup_barrier(mem_flags::mem_threadgroup);
         }
-        int smallest=0;
-        if(a[1][1]<a[smallest][smallest])smallest=1;
-        if(a[2][2]<a[smallest][smallest])smallest=2;
-        float3 normal=normalize(float3(v[0][smallest],v[1][smallest],v[2][smallest]));
-        fitted=float4(normal,-dot(normal,center));
-        out[0]=fitted.x;out[1]=fitted.y;out[2]=fitted.z;out[3]=fitted.w;out_count[0]=active;
+        if(t==0) {active=int(means[0].w);center=means[0].xyz/max(means[0].w,1.f);}
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        float4 first=0.f;float2 second=0.f;
+        for(int i=t;i<count;i+=256)if(selected[i]) {
+            float3 d=xyz_at(points,i)-center;
+            first+=float4(d.x*d.x,d.x*d.y,d.x*d.z,d.y*d.y);
+            second+=float2(d.y*d.z,d.z*d.z);
+        }
+        cov1[t]=first;cov2[t]=second;threadgroup_barrier(mem_flags::mem_threadgroup);
+        for(int stride=128;stride>0;stride/=2) {
+            if(t<uint(stride)) {cov1[t]+=cov1[t+stride];cov2[t]+=cov2[t+stride];}
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+        if(t==0) {
+            float4 c=cov1[0];float2 d=cov2[0];
+            float a[3][3]={{c.x,c.y,c.z},{c.y,c.w,d.x},{c.z,d.x,d.y}};
+            float v[3][3]={{1,0,0},{0,1,0},{0,0,1}};
+            for(int iteration=0;iteration<24;iteration++) {
+                int p=0,q=1;float maximum=abs(a[0][1]);
+                if(abs(a[0][2])>maximum) {p=0;q=2;maximum=abs(a[0][2]);}
+                if(abs(a[1][2])>maximum) {p=1;q=2;maximum=abs(a[1][2]);}
+                if(maximum<1.e-12f)break;
+                float tau=(a[q][q]-a[p][p])/(2.f*a[p][q]);
+                float tangent=(tau>=0.f?1.f:-1.f)/(abs(tau)+sqrt(1.f+tau*tau));
+                float cosine=1.f/sqrt(1.f+tangent*tangent),sine=tangent*cosine;
+                float apq=a[p][q];a[p][p]-=tangent*apq;a[q][q]+=tangent*apq;
+                a[p][q]=0.f;a[q][p]=0.f;
+                for(int r=0;r<3;r++) {
+                    if(r!=p && r!=q) {
+                        float rp=a[r][p],rq=a[r][q];
+                        a[r][p]=cosine*rp-sine*rq;a[p][r]=a[r][p];
+                        a[r][q]=sine*rp+cosine*rq;a[q][r]=a[r][q];
+                    }
+                    float vp=v[r][p],vq=v[r][q];
+                    v[r][p]=cosine*vp-sine*vq;v[r][q]=sine*vp+cosine*vq;
+                }
+            }
+            int smallest=0;
+            if(a[1][1]<a[smallest][smallest])smallest=1;
+            if(a[2][2]<a[smallest][smallest])smallest=2;
+            float3 normal=normalize(float3(v[0][smallest],v[1][smallest],v[2][smallest]));
+            fitted=float4(normal,-dot(normal,center));
+            out[0]=fitted.x;out[1]=fitted.y;out[2]=fitted.z;out[3]=fitted.w;out_count[0]=active;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if(pass<updates)for(int i=t;i<count;i+=256)
+            selected[i]=active>=minimum && abs(dot(xyz_at(points,i),fitted.xyz)+fitted.w)<tolerance;
+        threadgroup_barrier(mem_flags::mem_device | mem_flags::mem_threadgroup);
     }
-    threadgroup_barrier(mem_flags::mem_threadgroup);
-    if(update)for(int i=t;i<count;i+=256)
-        selected[i]=active>=minimum && abs(dot(xyz_at(points,i),fitted.xyz)+fitted.w)<tolerance;
 }
 """
 
@@ -623,7 +646,7 @@ def physical_edges(
     return out, counts
 
 
-def fit_planes(points, parameters, seed, maximum):
+def fit_planes(points, parameters, seed, maximum, *, optimized=False):
     current = points.contiguous()
     result = []
     rng = np.random.default_rng(seed)
@@ -644,7 +667,8 @@ def fit_planes(points, parameters, seed, maximum):
         votes = torch.empty(
             parameters.ransac_trials, dtype=torch.int32, device=points.device
         )
-        lib.score_planes(
+        score = lib.score_planes_parallel if optimized else lib.score_planes
+        score(
             current,
             sample,
             triples,
@@ -652,7 +676,7 @@ def fit_planes(points, parameters, seed, maximum):
             votes,
             len(indices),
             tolerance,
-            threads=parameters.ransac_trials,
+            threads=parameters.ransac_trials * (32 if optimized else 1),
         )
         winner = votes.argmax()
         selected = torch.empty(len(current), dtype=torch.bool, device=points.device)
@@ -661,7 +685,8 @@ def fit_planes(points, parameters, seed, maximum):
         )
         plane = points.new_empty(4)
         count = torch.empty(1, dtype=torch.int32, device=points.device)
-        for _ in range(3):
+        refits = ((3, 1),) if optimized else ((1, 0), (1, 0), (1, 0), (0, 1))
+        for updates, final_fit in refits:
             lib.weighted_plane(
                 current,
                 selected,
@@ -670,22 +695,11 @@ def fit_planes(points, parameters, seed, maximum):
                 len(current),
                 tolerance,
                 parameters.minimum_plane_pixels,
-                1,
+                updates,
+                final_fit,
                 threads=256,
                 group_size=256,
             )
-        lib.weighted_plane(
-            current,
-            selected,
-            plane,
-            count,
-            len(current),
-            tolerance,
-            parameters.minimum_plane_pixels,
-            0,
-            threads=256,
-            group_size=256,
-        )
         if int(count.cpu()[0]) < parameters.minimum_plane_pixels:
             break
         result.append(plane)

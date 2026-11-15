@@ -1,0 +1,6 @@
+trainer: evaluation.box_exterior_recovery:evaluate
+dataset: outputs/hole_depth_fallback_fresh/eaf1f267cd534e4fb84f1e7b229a3255
+trajectory_manifest: frames.json
+comparison: hole_rim_replacement
+output_root: outputs/hole_rim_replacement
+workers: 6

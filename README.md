@@ -3,8 +3,10 @@
 ## Corner detection
 
 `visual/corner_detection/` provides standalone current-frame RGB-D corner
-detection for the peg and box. Use `detect_tensors` for device-resident results,
-`detect` for a CPU dictionary, or `detect_cpu` for the explicit NumPy reference.
+detection for the peg and box. The public `detect_tensors` and `detect` helpers
+select CUDA, MPS, or CPU in that order. Use
+`TorchCornerDetector.main()` for a dedicated rollout detector and `detect_cpu`
+for the explicit NumPy reference.
 See [corner detection](docs/corner_detection.md) for inputs, backend requirements,
 the saved-frame example, and the CPU/MPS extraction verification.
 

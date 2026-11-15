@@ -1,0 +1,10 @@
+trainer: evaluation.hole_rim_holdout:evaluate
+protocol: outputs/mixed_trajectory_pilot/protocol.json
+tuning_results:
+  - outputs/hole_rim_recovery/c4308705b47c486fb068572b68c70d53/results.json
+  - outputs/hole_rim_recovery/b568f8b5d2a34d4ead0dc46bbb26952a/results.json
+output_root: outputs/hole_rim_holdout
+workers: 6
+cohorts:
+  reset: {split: validation, count: 150}
+  trajectory: {split: test, count: 36}
