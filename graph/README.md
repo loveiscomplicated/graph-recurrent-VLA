@@ -128,6 +128,71 @@ from the 1 mm fine-tuning best weights and train for 10 epochs with a 5 mm
 per-axis standard deviation. The paired test compares clean inputs and per-axis
 standard deviations of 4, 5, and 6 mm.
 
+## Fixed-Hole Expert curriculum
+
+With CUDA PyTorch, SciPy, PyYAML, the paired corner and State36 caches, and the
+frozen reset-seed split and Robot9 archive listed in the config, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_hole_expert_curriculum.yaml
+```
+
+The split groups all four policy variants by reset seed. This first stage uses
+fixed-Hole Expert episodes, with 80 train and 10 validation seeds. The historical
+seed-0 Transformer/GNN pair supplies a validation baseline. The new Transformer
+and GNN each start with fresh weights. Detector-to-GT matching uses the same
+object kind and a 3 mm one-to-one gate for offline supervision. Detector-only
+rollouts use measured robot observations and the existing 30 mm association.
+The reserved test seed group stays outside training and model selection.
+
+After the 20-epoch run, continue its GNN with the same frozen Transformer,
+optimizer state, and reset-seed split:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_hole_expert_gnn_continuation.yaml
+```
+
+The continuation config pins the source checkpoints and rollout receipt. It
+verifies the regenerated rollouts and replays epoch 20 on the original
+validation frames before updating the GNN. The new run's `comparison.json`
+records validation loss, Peg and Hole rotation errors, and Peg endpoint–Hole
+position error for epochs 20 through 30.
+
+With the original tracker checkpoint and sequence cache, run the Transformer
+continuation independently through epoch 40:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_hole_expert_transformer_continuation.yaml
+```
+
+The fixed-ID trainer restores the optimizer and shuffle state and records
+validation loss and corner RMSE for all, visible, and missing targets in
+`history.json` alongside separate `best.pt` and `last.pt` checkpoints.
+
+With the epoch 40 checkpoints and the same CUDA environment and sequence cache,
+resume the Transformer with validation-loss early stopping:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_hole_expert_transformer_early_stopping.yaml
+```
+
+This run uses the original train split for updates and the validation split to
+select the best checkpoint and stop after 15 epochs without improvement. It
+saves `epoch_045.pt`, `epoch_050.pt`, and subsequent five-epoch checkpoints
+alongside `best.pt` and `last.pt`. The total epoch budget is 300.
+
+With the same caches and the selected epoch 208 Transformer, run a fresh GNN:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/temporal/fixed_hole_expert_gnn_early_stopping.yaml
+```
+
+This recipe freezes the Transformer, regenerates `rollout_inputs.pt`, and
+checks the original ordered validation frame IDs. GNN updates use the original
+train split. Validation loss selects `best.pt` and stops the run after 15
+epochs without improvement, with a maximum of 200 epochs. `history.json`
+records validation loss, Peg and Hole rotation, and Peg endpoint–Hole errors.
+
 ## Object21D state estimation
 
 From the repository root with PyTorch, NumPy, SciPy and PyYAML installed:

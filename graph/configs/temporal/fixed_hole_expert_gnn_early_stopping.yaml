@@ -1,0 +1,14 @@
+trainer: training.expert_gnn_early_stopping:train
+source:
+  recipe: outputs/fixed_hole_expert_curriculum/8a4df40b0aa948e087d4e1fd86c4147c/effective_config.yaml
+  recipe_sha256: eb592db13e0ee24a66fc84ab962146a9d3195e4d6f4ed719d4a6c030d2395eb0
+  tracker_checkpoint: outputs/fixed_hole_expert_transformer_early_stopping/58cb23209b44485588e6dce05c72552c/best.pt
+  tracker_sha256: c57a93c17a913fd9fd514625a8cb25572f9f287e7a79fbecf07a0c33bc6c4893
+  tracker_epoch: 208
+  tracker_dataset_sha256: 60b33c6a20b48d7b1352e7e0f119a87b40f27fff12557411656db73a4d42f4c4
+validation:
+  frames: 1273
+  frame_ids_sha256: 53fcef31e7f3af022f835520a9b5edd01dc8f738c457ee9269cd43f69c837867
+maximum_epochs: 200
+early_stopping_patience: 15
+output_root: outputs/fixed_hole_expert_gnn_early_stopping

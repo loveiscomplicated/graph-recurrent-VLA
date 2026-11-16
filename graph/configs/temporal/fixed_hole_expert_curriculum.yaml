@@ -1,0 +1,54 @@
+trainer: training.expert_corner_curriculum:train
+seed: 0
+device: cuda:0
+data:
+  cache_root: /workspace/curriculum_corner_cache
+  cache_manifest_sha256: dc5c0eade8e455b72b3276628b39ca96005dce923b4930bba0375eb876616a90
+  split_manifest: data/split.json
+  split_manifest_sha256: 35b002a64145de825a7f129d6e987db34fcf55593100b5ea965a2c94b6899c72
+  robot_archive: data/expert_robot_observations.npz
+  robot_archive_sha256: 76e60e2f70e2fd1d14113b072fd6ff7203f5bb805c6bc4c6f07fc792501be946
+baseline:
+  temporal_checkpoint: data/temporal_0.pt
+  temporal_sha256: fb555e95493a64b3e0a8d1e3138fc21adcc7d07d6cd9ec62ff1efcb79b88c076
+  gnn_checkpoint: data/gnn_0.pt
+  gnn_sha256: 3c642e0d4e977ec33d3431d1af9926d65c1945f0b0d989aff9c892cf35f3a8cf
+offline_match_tolerance_m: 0.003
+association_gate_m: 0.03
+tracker:
+  model:
+    architecture: transformer
+    width: 128
+    layers: 2
+    heads: 4
+    displacement_scale_m: 0.01
+  training:
+    device: cuda:0
+    epochs: 20
+    batch_size: 96
+    learning_rate: 0.0003
+    weight_decay: 0.01
+    gradient_clip: 1.0
+    precision: bfloat16
+    log_every_batches: 10
+    cpu_threads: 2
+    early_stopping: null
+gnn:
+  model:
+    hidden: 64
+    layers: 2
+    dropout: 0.0
+    extra_node_dim: 1
+    num_semantic_ids: 24
+  training:
+    epochs: 20
+    batch_size: 96
+    learning_rate: 0.0003
+    weight_decay: 0.01
+    gradient_clip: 1.0
+    log_every_batches: 20
+  loss:
+    consistency_weight: 0.05
+    pos_unit_m: 0.01
+    size_units_m: [0.04, 0.01, 0.01, 0.02]
+output_root: outputs/fixed_hole_expert_curriculum

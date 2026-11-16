@@ -1,0 +1,12 @@
+trainer: training.expert_gnn_continuation:train
+source:
+  gnn_checkpoint: outputs/fixed_hole_expert_curriculum/8a4df40b0aa948e087d4e1fd86c4147c/gnn/last.pt
+  gnn_sha256: c1ac4ef35364626acc45db37c3a6491aa46b1a5acf5290266052550b357f0984
+  gnn_epoch: 20
+  tracker_checkpoint: outputs/fixed_hole_expert_curriculum/8a4df40b0aa948e087d4e1fd86c4147c/tracker/dfd6554a0f244323867aad8a10a31240/best.pt
+  tracker_sha256: 789e31d0436841c9412f69688dd20d509059a6e95f3815c0d67e16d150c883db
+  tracker_epoch: 20
+  rollout_receipt: outputs/fixed_hole_expert_curriculum/8a4df40b0aa948e087d4e1fd86c4147c/gnn/rollout.json
+  rollout_sha256: 3e450eb52222848c701a12492a24972f088ec19ca6b25e677de381e853fcb019
+total_epochs: 30
+output_root: outputs/fixed_hole_expert_gnn_continuation
