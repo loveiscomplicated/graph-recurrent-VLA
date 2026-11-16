@@ -1,0 +1,13 @@
+trainer: evaluation.corner_action_generalization:evaluate
+protocol: outputs/independent_matched_visibility_test/protocol.json
+protocol_sha256: 01bc87ff10cc64c2066f4e22e24581ae0ac090206704d9ac78d321585037639d
+raw_root: outputs/independent_matched_visibility_test/raw
+prior_evaluation: outputs/independent_matched_visibility_test/evaluation/640bd18751a54fdd819f66301d8a7aa0
+checkpoint_root: outputs/corner_rigidity/checkpoints
+detector_module: corner_detection
+detector_source_revision: 04ff6c96ebd4a384763e342d1ca8bab8db146825
+device: cpu
+cpu_threads: 2
+gate_m: 0.03
+identity_gate_mm: 10.0
+output_root: outputs/corner_action_generalization/matched_visibility

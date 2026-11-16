@@ -922,3 +922,192 @@ original protocol and protected model code were not changed. Local ignored
 artifacts include [configs and comparison](../outputs/main_camera_held_out/),
 [trajectory verification](../outputs/main_camera_held_out/pair_verification.json),
 and [full results](../outputs/main_camera_held_out/evaluation/87299f25494b4be78d93f6c43798fb74/results.json).
+
+## Held-out corner rigidity
+
+The diagnostic uses the three frozen Transformer + GNN checkpoint pairs ranked
+first on the nine-metric leaderboard. The input is the original-camera unfiltered
+independent test above. The Transformer shares weights across corners and
+forecasts each track from its own observation history and the common robot state.
+Distance-gated one-to-one matching assigns detections without checking
+inter-corner distances. The downstream GNN receives the resulting point set.
+
+Use the [evaluation config](../graph/configs/temporal/corner_rigidity.yaml) and the
+[run command](../graph/README.md#independent-generalization-evaluation).
+The config lists the frozen protocol, the raw manifest directory, and the prior
+CPU evaluation's saved arrays. Restore the six checkpoints listed in the
+protocol into `checkpoint_root` as `temporal_0.pt`, `gnn_0.pt`, and the equivalent
+files for seeds 1 and 2. For a missing checkpoint, retrieve it via the pinned
+[checkpoint backup](#published-checkpoint-backup). The evaluator checks the six
+SHA-256 values and validates the temporal checkpoints' source lineage.
+
+Extract the historical detector as a separate package before running:
+
+```bash
+mkdir -p outputs/corner_rigidity/detector_source
+git archive 04ff6c96ebd4a384763e342d1ca8bab8db146825 visual/corner_detection |
+  tar -x -C outputs/corner_rigidity/detector_source
+```
+
+The audit verifies the raw frame hashes and requires exact equality with the
+prior CPU evaluation for baseline Object21 predictions, GT, and availability.
+For scoring, it assigns reference corner IDs at each track's first detection
+using a same-kind 10 mm gate. A later detection outside that gate or with a
+different nearest GT ID invalidates the track for geometry scoring from then on.
+Duplicate IDs use one representative, preferring an observed point and then
+the oldest track. The Box shape includes exterior and aperture corners.
+Pair error is the absolute difference from GT distance within the same object.
+Each frame averages its eligible pairs per model seed and then averages the
+available seed means. A last-detection hold is scored on the same pairs.
+
+The intervention fits a proper rigid transform to at least three non-collinear
+labelled corners from the object's current tracker output. The fit derives the
+pose from the tracked points and uses the GT template for shape. At GNN input,
+it replaces that object's labelled forecast coordinates. The same detections,
+node count, and observed flags are used, and the tracker runs on its original
+causal path. A second intervention gives the same forecast nodes their exact
+GT world coordinates, including the GT pose. Both interventions are
+GT-assisted diagnostics.
+
+### Measurement on 2026-11-16 KST
+
+The Mac CPU replay processed all 40 trajectories and 4,079 saved frames from
+the 20 held-out resets. All 12,237 baseline prediction vectors and their GT
+matched the original CPU arrays exactly. This replay used the archived RGB-D
+and did not run CUDA or step the simulator.
+
+Mean absolute inter-corner distance error (mm) follows. Parentheses show the
+number of physical frames with at least one eligible pair for that column.
+
+| Test window | Object | Observed–observed | Observed–forecast | Forecast–forecast |
+| --- | --- | ---: | ---: | ---: |
+| Expert, all 2,037 frames | Peg | 0.22 (1,496) | 8.45 (821) | 4.90 (1,179) |
+| Expert, all 2,037 frames | Box | 0.59 (1,121) | 1.23 (1,157) | 1.10 (1,627) |
+| Expert, 695 post-lift frames | Peg | 0.26 (586) | 11.25 (591) | 8.49 (641) |
+| Expert, 695 post-lift frames | Box | 0.67 (383) | 1.13 (469) | 0.99 (672) |
+| Random, 700 post-lift frames | Peg | 0.22 (436) | 13.84 (295) | 4.75 (464) |
+| Random, 700 post-lift frames | Box | 0.63 (315) | 2.21 (246) | 1.59 (548) |
+
+On the same random post-lift forecast–forecast pairs, holding each point at
+its last detection gives 3.99 mm for Peg and 0.97 mm for Box. The expert post-lift
+Peg hold gives 10.11 mm versus the Transformer's 8.49 mm. Shape distortion
+therefore persists even in the expert window where the Transformer improves
+on holding the last detections.
+
+Mean GNN position error (mm) on the same fit-eligible model frames:
+
+| Test window | GNN output | Frames | Original | Rigid forecasts | GT forecasts |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Expert, all | Peg center | 936 | 20.78 | 20.29 | 18.28 |
+| Expert, all | Hole center | 1,792 | 10.59 | 10.53 | 10.45 |
+| Expert, post-lift | Peg center | 640 | 12.90 | 12.20 | 9.35 |
+| Expert, post-lift | Hole center | 682 | 5.09 | 5.10 | 5.12 |
+| Random, post-lift | Peg center | 436 | 45.49 | 43.30 | 34.17 |
+| Random, post-lift | Hole center | 611 | 9.40 | 9.24 | 8.11 |
+
+On fit-eligible Peg frames with at least two forecast corners, the intervention
+reduced mean forecast–forecast distance error from 8.90 mm to under 0.00001 mm
+for expert post-lift and from 6.20 mm to under 0.00001 mm for random post-lift.
+Peg center error improved by 0.70 and 2.19 mm respectively. Random post-lift
+Peg center error fell by 11.32 mm when the same points received GT positions.
+This supports within-object deformation as a failure mode, with a modest
+effect on the mean position in this diagnostic. GT identity checks exclude
+ambiguous tracks and fitting needs sufficient corner coverage. Shape projection
+at GNN input leaves earlier association decisions intact, so the result does
+not establish the effect of enforcing rigidity during association.
+
+[Summary](../outputs/corner_rigidity/evaluation/83416381a0e44e0ba2381c6e946db5f1/summary.json) ·
+[Per-frame metrics](../outputs/corner_rigidity/evaluation/83416381a0e44e0ba2381c6e946db5f1/per_frame.json)
+
+## Held-out action generalization
+
+To predict a corner at frame `t`, the frozen Transformer receives the actual
+robot observation at `t` (TCP pose and two finger positions), the saved corner
+history through frame `t-1`, and an observation flag in each token. It predicts
+displacement from the most recent detection. The command that moved the robot
+is absent. The robot observation at `t` is available once that command has
+executed, so this is a current-frame tracking task.
+
+The [run command](../graph/README.md#independent-generalization-evaluation)
+uses the six [verified checkpoints and historical detector](#held-out-corner-rigidity).
+The two configs point to the original-camera raw test and the separate
+visibility-matched follow-up respectively. Each has 20 reset seeds and 40
+trajectories. The raw manifests, checkpoint hashes, shared RGB-D/robot/GT
+prefixes, and saved CPU baseline predictions are verified during replay.
+
+The evaluation captures the Transformer's forecasts immediately before
+association, including forecasts later replaced by a detection. GT corner IDs
+use the preceding frame's ledger from the rigidity evaluation. The primary
+sample requires the same reset, model seed, physical corner ID and post-lift
+step in both branches, detection of that track one frame earlier in both,
+and a maintained grasp in both for Peg. A separate slice scores actually
+unmatched tracks, including tracks last observed more than one frame earlier.
+All errors are 3D distances to GT and average over the reported corner
+forecasts, including the three model seeds.
+
+Three controls use the same samples. The last-detection hold keeps the anchor
+fixed. The previous-robot ablation substitutes only the final robot token with
+the robot observation from frame `t-1`. On the first action after the shared
+prefix, another ablation substitutes the actual robot state from the other
+branch at the same step. The ablations leave association and subsequent inputs
+on the original trajectory. For a grasped Peg with a preceding detection,
+the TCP transport baseline applies the measured TCP rigid transform from
+`t-1` to `t` to that detection. A held grasp is determined from saved simulator
+flags, and the GT serves only to define this reporting group and score forecast
+error.
+
+### Measurement on 2026-11-16 KST
+
+The Mac CPU replay checked 7,699 saved frames across 80 trajectories and 40
+distinct reset seeds. Baseline predictions, target vectors, and availability
+matched the existing CPU arrays in both cohorts. The shared prefixes matched
+for 1,342 frames per branch in the unfiltered cohort and 1,110 in the
+visibility-matched cohort. CUDA and live simulator execution were outside the
+scope of this replay.
+
+The primary comparison scores paired one-step forecasts for grasped Peg
+corners. Each row reports mean 3D error in mm, except for the paired forecast
+count and the true GT step movement column.
+
+| Test | Branch | Forecasts | GT movement (mm) | Last detection | Previous robot | Actual robot | TCP transport |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Unfiltered | Expert | 3,677 | 6.96 | 7.27 | 4.14 | 3.54 | 0.92 |
+| Unfiltered | Random | 3,677 | 7.14 | 7.19 | 9.75 | 9.31 | 0.88 |
+| Matched visibility | Expert | 7,616 | 6.41 | 6.71 | 3.13 | 2.41 | 0.92 |
+| Matched visibility | Random | 7,616 | 7.52 | 7.59 | 9.23 | 8.64 | 0.86 |
+
+The paired sample spans 16 unfiltered and 20 visibility-matched resets.
+Among paired corners moving 5–10 mm in both branches, expert/random forecast
+errors were 3.21/9.58 mm across 1,602 pairs in the unfiltered test and
+2.19/7.94 mm across 3,293 pairs in the visibility-matched test. This controls
+for coarse movement magnitude. The measured TCP displacement predicts both
+policies well on these grasped, recently detected corners. Giving the
+Transformer the actual robot state helps in both branches, and the random
+one-step forecast still exceeds its last-detection baseline.
+
+On the first post-prefix action, the unfiltered Peg mean forecast error was
+4.84 mm for expert and 7.58 mm for random over 156 paired corners. Feeding
+the other branch's robot state raised these errors to 5.89 and 8.72 mm. In the
+visibility-matched cohort the corresponding errors were 3.54/6.07 mm before
+the token swap and 5.64/6.67 mm after it, over 270 pairs. The test gives both
+branches the same corner and robot history before the final input token.
+
+On naturally missed Peg tracks of all detection ages, the Transformer helps
+over holding the last point in the random branch too. The unfiltered random
+sample averaged 53.87 mm for hold and 35.43 mm for the model across 4,257
+forecasts. The visibility-matched random sample averaged 66.67 and 33.21 mm
+across 4,411 forecasts. These natural miss distributions vary with occlusion
+and track age. The common one-step sample contains too few simultaneously
+missed tracks to estimate a separate paired effect for that slice.
+
+For the static Box, the paired one-step Transformer means were 1.82/3.28 mm
+for expert/random in the unfiltered test, and 1.99/2.78 mm in the
+visibility-matched test. The four last-detection means were 1.44–1.69 mm.
+The generalization gap is a property of the tested checkpoint and action
+distributions. The TCP control demonstrates that the same observed inputs
+can support accurate one-step tracking in both distributions for a grasped
+Peg. The replay does not separate training distribution from other learned
+model behavior, nor test running with unknown future robot state.
+
+[Unfiltered summary](../outputs/corner_action_generalization/original/eb9f6cee2c314657b78f76004cd9a68d/summary.json) ·
+[Visibility-matched summary](../outputs/corner_action_generalization/matched_visibility/f89ab1f321164400bc5015c01bc1c917/summary.json)

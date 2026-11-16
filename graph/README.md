@@ -430,6 +430,29 @@ The dataset, checkpoint, and detector prerequisites, visibility-matched
 follow-up, and limits of the original leaderboard replay are documented in
 [independent generalization test](../docs/detected_corner_gnn.md#independent-generalization-test-and-leaderboard-replay).
 
+With the original held-out RGB-D, archived CPU predictions, and verified
+checkpoint pairs available, run the corner rigidity audit with:
+
+```bash
+PYTHONPATH=outputs/corner_rigidity/detector_source/visual WANDB_MODE=disabled \
+  python main.py --config graph/configs/temporal/corner_rigidity.yaml
+```
+
+See [held-out corner rigidity](../docs/detected_corner_gnn.md#held-out-corner-rigidity)
+for checkpoint and detector setup, metrics, and the paired intervention.
+
+With the same detector and checkpoint setup, compare the Transformer's
+pre-association forecasts on expert and random actions:
+
+```bash
+PYTHONPATH=outputs/corner_rigidity/detector_source/visual WANDB_MODE=disabled \
+  python main.py --config graph/configs/temporal/corner_action_generalization.yaml
+```
+
+Use `graph/configs/temporal/corner_action_generalization_matched_visibility.yaml`
+for the separate visibility-matched recordings. See
+[held-out action generalization](../docs/detected_corner_gnn.md#held-out-action-generalization).
+
 ## Corner prediction and tracking
 
 The separate 6D TCP rotation corner-predictor recipe uses existing fixed-ID
