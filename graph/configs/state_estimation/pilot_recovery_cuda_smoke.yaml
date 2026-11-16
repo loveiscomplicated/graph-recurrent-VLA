@@ -1,0 +1,42 @@
+trainer: training.state21:run
+base_config: graph/configs/state_estimation/compare.yaml
+phase: train
+seeds: [0]
+device: cuda:0
+
+models:
+  - spatial
+  - temporal_first
+  - spatial_first
+  - object_transformer
+  - object_mamba
+
+data:
+  kind: tapnext_state36
+  sources:
+    pilot:
+      cache: outputs/shared_tracking_cache/tapnext_state36.npz
+      source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+    recovery:
+      cache: outputs/shared_tracking_cache/tapnext_recovery_state36.npz
+      source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+      smoke_center: recovery_step
+  split_reference: outputs/state_estimation/shared_tapnext_smoke/verification.json
+  camera: base_camera
+  history: 4
+  split_seed: 0
+  validation_seed_count: 10
+  test_seed_count: 10
+  smoke:
+    train_seed_count: 3
+    validation_seed_count: 2
+    frames_per_episode: 24
+
+training:
+  epochs: 1
+
+evaluation:
+  split: validation
+
+output:
+  root: outputs/state_estimation/pilot_recovery_cuda_smoke

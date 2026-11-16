@@ -1,0 +1,13 @@
+trainer: training.state21_curriculum:resume_final
+source_config: graph/configs/state_estimation/fixed_hole_curriculum.yaml
+model: spatial_first
+epochs: 100
+resume:
+  checkpoint: outputs/state_estimation/fixed_hole_spatial_first_resume/f38d49351f1f4bb9be37b4d92fa557c9/last.pt
+  sha256: 8a498840f85ed159e9639cb7a3f4b1c734dbc19b243058f6fc6a691186bc954e
+early_stopping:
+  patience: 10
+  min_epochs: 11
+  min_delta: 0.001
+output:
+  root: outputs/state_estimation/fixed_hole_spatial_first_early_stopping

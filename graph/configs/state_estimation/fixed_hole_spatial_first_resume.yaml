@@ -1,0 +1,6 @@
+trainer: training.state21_curriculum:resume_final
+source_config: graph/configs/state_estimation/fixed_hole_curriculum.yaml
+model: spatial_first
+epochs: 10
+output:
+  root: outputs/state_estimation/fixed_hole_spatial_first_resume

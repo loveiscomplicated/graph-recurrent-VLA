@@ -1,0 +1,43 @@
+trainer: training.state21:run
+phase: train
+seed: 0
+seeds: [0, 1, 2]
+device: cpu
+
+data:
+  kind: synthetic
+  steps: 12
+  history: 8
+  max_edge_m: 0.08
+
+model:
+  name: spatial
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  heads: 4
+  tbptt_steps: 4
+
+task:
+  pos_unit_m: 0.01
+  shape_weight: 0.25
+
+training:
+  epochs: 20
+  batch_size: 16
+  gradient_clip_norm: 1.0
+  cpu_threads: 1
+  amp: false
+
+optimizer:
+  lr: 0.0003
+  weight_decay: 0.01
+
+evaluation:
+  checkpoint: null
+  split: test
+  warmup: 3
+  stress_steps: 16
+
+output:
+  root: outputs/state_estimation

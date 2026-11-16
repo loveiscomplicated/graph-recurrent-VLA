@@ -1,0 +1,35 @@
+trainer: training.state21_curriculum:run
+base_config: graph/configs/state_estimation/compare.yaml
+phase: train
+seed: 0
+seeds: [0]
+device: cuda:0
+
+data:
+  kind: tapnext_state36
+  sources:
+    pilot:
+      cache: outputs/shared_tracking_cache/tapnext_state36.npz
+      source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+    recovery:
+      cache: outputs/shared_tracking_cache/tapnext_recovery_state36.npz
+      source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+  split_reference: outputs/state_estimation/shared_tapnext_smoke/verification.json
+  curriculum_cache: outputs/state_estimation/fixed_hole_curriculum_graphs
+  history: 4
+  split_seed: 0
+  validation_seed_count: 10
+  test_seed_count: 10
+
+curriculum:
+  prepare_workers: 4
+  short_random_frames: 12
+  auxiliary_random_frames: 24
+
+training:
+  epochs: 1
+  batch_size: 32
+  progress_every_batches: 200
+
+output:
+  root: outputs/state_estimation/fixed_hole_curriculum

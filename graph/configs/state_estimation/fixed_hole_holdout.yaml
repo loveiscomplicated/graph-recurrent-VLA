@@ -1,0 +1,9 @@
+trainer: evaluation.state21_holdout:evaluate
+training_config: graph/configs/state_estimation/fixed_hole_curriculum.yaml
+device: cuda:0
+models: [spatial, temporal_first, spatial_first, object_transformer, object_mamba]
+batch_size: 32
+recovery:
+  thresholds_mm: [10, 20]
+  consecutive_frames: 5
+output: outputs/state_estimation/fixed_hole_holdout

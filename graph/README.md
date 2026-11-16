@@ -1,5 +1,52 @@
 # Graph team
 
+## Object21D state estimation
+
+From the repository root with PyTorch, NumPy, SciPy and PyYAML installed:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/compare.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/tapnext_smoke.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/shared_tapnext_smoke.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/pilot_recovery_cuda_smoke.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_curriculum.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_holdout.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_resume.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_holdout.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_early_stopping.yaml
+```
+
+The comparison config defaults to model A on synthetic episodes with seeds
+0, 1 and 2. Change `model.name` or use the individual YAML files in
+`graph/configs/state_estimation/` to select B1, B2, C1 or C2. The TAPNext++
+smoke config requires the saved surface replay manifest and its raw RGB-D
+source. The shared-cache config runs all five models for one epoch on the same
+reset-seed-disjoint subset. It requires `tapnext_state36.npz` and the matching
+raw mixed-trajectory pilot manifest and frame files. The CUDA comparison adds
+`tapnext_recovery_state36.npz` and its raw recovery dataset, checks the
+existing split receipt, and samples the return-to-Expert interval. Set
+`phase: evaluate` and `evaluation.checkpoint` to the output
+`last.pt` to evaluate the validation-selected weights. See the
+[Object21D guide and verification](../docs/state21_implementation_audit.md).
+
+The fixed-Hole Object21D curriculum uses both caches and the frozen split. Set
+`phase: prepare` in a copy of its YAML and run it once to prepare the shared
+graphs. With CUDA PyTorch and the prepared graphs and split receipt available,
+run one `phase: train` config per `model.name`. Each run starts with fresh
+weights and automatically trains the four fixed-Hole stages in order. See the
+[curriculum setup and schedule](../docs/state21_implementation_audit.md#fixed-hole-curriculum).
+The holdout command needs the source caches and raw test frames, the curriculum
+graph manifest, and the completed status files and final checkpoints for all
+five models. It evaluates the same 40 test episodes and reports endpoint error
+and settling time after the first renewed Expert action.
+The B2 resume config needs its completed curriculum status, final checkpoint,
+the saved graphs, and the split receipt. It extends the final stage to the
+configured total epoch count using the saved optimizer and shuffle state.
+The B2 holdout config scores the original and resumed checkpoints on the same
+test frames and records the 3 mm endpoint hit rate and Object21D loss.
+The B2 early-stopping config continues from the 10-epoch checkpoint on the
+same graphs and stops according to validation Object21D loss.
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,

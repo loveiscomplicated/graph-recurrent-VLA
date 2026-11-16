@@ -1,0 +1,7 @@
+trainer: training.state21:run
+base_config: graph/configs/state_estimation/compare.yaml
+phase: audit
+data:
+  kind: tapnext_surface_cache
+  manifest: outputs/surface_graph_gnn/035f42383d714a369f7ab55ec275cd7d/manifest.json
+  camera: base_camera
