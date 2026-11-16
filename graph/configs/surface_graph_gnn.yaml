@@ -1,0 +1,40 @@
+trainer: training.surface_graph_gnn:run
+phase: benchmark
+seed: 0
+cpu_threads: 2
+device: cpu
+detector_device: mps
+output_root: outputs/surface_graph_gnn
+graph_manifest: null
+data:
+  manifest: outputs/mixed_trajectory_pilot/manifest.json
+  camera: base_camera
+  stride: 5
+  episodes:
+    train: [pilot_12615147_expert, pilot_93964566_expert, pilot_19129060_expert]
+    validation: [pilot_75684046_expert]
+tracker:
+  device: mlx
+  checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+  tap_adaptive_crop: true
+  surface_queries_per_object: 16
+gnn:
+  num_semantic_ids: 24
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  extra_node_dim: 1
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m: [0.04, 0.01, 0.01, 0.02]
+benchmark:
+  devices: [cpu, mps]
+  repeats: 3
+training:
+  epochs: 10
+  batch_size: 16
+  validation_every_updates: 5
+  learning_rate: 0.0003
+  weight_decay: 0.01
+  gradient_clip: 1.0

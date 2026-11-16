@@ -182,6 +182,24 @@ It trains four variants with matched initial seeds and epoch budgets.
 reports final-epoch corner RMSE and endpoint hit rate within 3 mm, with
 changes relative to the baseline.
 
+## Surface graph GNN smoke test
+
+With the saved mixed-trajectory pilot, the TAPNext++ 256 checkpoint, both
+Visual tracking submodules, and an Apple Silicon Python environment with
+PyTorch, torchvision, MLX, OpenCV, SciPy and einops, run from the repository root:
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker \
+  WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python main.py --config graph/configs/surface_graph_gnn.yaml
+```
+
+To train from scratch on those graphs, copy the YAML, set `phase: train` and
+point `graph_manifest` to the generated `manifest.json`. Run the same root
+entrypoint with the copied config. `training.validation_every_updates` controls
+how often the full validation set is scored and its Object21 errors are logged.
+See the [graph, timing and validation protocol](../docs/gnn_training.md#surface-graph-gnn-smoke-test).
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,

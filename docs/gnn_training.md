@@ -8,6 +8,76 @@ supervision from the Visual corner detector's output and raw saved GT.
 For the matched Baseline/A/B/AB experiment, see
 [vertex geometry and readout ablation](#vertex-geometry-and-readout-ablation).
 
+## Surface graph GNN smoke test
+
+The [local configuration](../graph/configs/surface_graph_gnn.yaml) replays
+native main-camera RGB-D through the current corner detector. TAPNext++ seeds
+up to 16 queries per object at the first usable detector mask and advances
+separate Peg and Box streams on every recorded frame. The graph samples every
+fifth frame. It uses direct detector corners and tracker-visible surface pixels
+with positive depth inside the current predicted object mask. Surface points
+are back-projected using the saved camera calibration. Observed TCP position
+sets the coordinate origin and the saved GT supplies the Object21 target.
+
+Delaunay runs on the joint Peg and Box point set in 2D at integer pixel centers.
+Each graph is constructed from the current observations. Points at the same
+pixel retain their world coordinates and share the pixel's Delaunay neighbors.
+Collinear points connect consecutive pixel centers. The GNN receives both
+directions of each edge, labeled Peg, Box, or cross-object. The graph archives
+retain pixel and world coordinates, corner/track provenance, track IDs scoped
+to each object in an episode, and frame-local edge indices.
+
+The GNN is the `VertexEdgeGatedMPNN` used by the
+[first-ranked leaderboard pipeline](experiment_leaderboard.md#전체-4102프레임-종합-순위),
+with its Object21 loss and direct-observation node feature. The smoke train
+phase initializes the GNN from scratch and optimizes only its parameters.
+The [Graph README](../graph/README.md#surface-graph-gnn-smoke-test) gives the
+commands for benchmarking before training.
+
+On 2026-11-16, an Apple M4 Pro replayed four local Expert episodes with the
+MPS detector and MLX TAPNext++. The 100 sampled graphs averaged 41.97 nodes
+and contained 1,628 corners and 2,569 tracked surface points in total.
+The benchmark used randomized GNN weights held fixed across topologies,
+one frame per forward, one warmup per frame and topology, and three measured
+passes per frame and topology. Synchronization is included on MPS. Detection,
+tracking, edge construction, collation and tensor transfers are outside the
+timed forward. The CPU used two PyTorch threads.
+
+| Topology | Total undirected edges | Mean edges per frame | CPU mean / p95 (ms) | MPS mean / p95 (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| Delaunay | 11,489 | 114.89 | 1.17 / 1.24 | 6.28 / 9.35 |
+| Complete, same nodes | 88,467 | 884.67 | 2.01 / 2.38 | 6.57 / 9.49 |
+
+Delaunay edge construction took 0.33 ms on average and 0.37 ms at p95 on
+the CPU. The edge count fell by 87.0% and CPU forward time fell by 41.9%.
+The MPS forward showed a 0.29 ms change in mean latency for those same graphs.
+
+The CPU smoke run used 73 training and 27 validation graphs from disjoint
+reset seeds. Training logs the loss at each epoch end. Validation scores the
+full holdout at initialization, every `training.validation_every_updates`
+optimizer steps, and after the final step. The example validates every five
+updates. Older configs without this setting use the number of training
+batches per epoch. Local `experiments/<run_id>/metrics.json` records each
+validation event with `optimizer_updates` and the frame count, alongside the
+train events. The epoch history includes validation metrics when the last
+update of that epoch was scored.
+
+Validation reuses the Graph trainer's frame-weighted Object21 geometry
+errors. Peg and Hole center errors are Euclidean distances in millimetres.
+Endpoint error is the Euclidean error of the Peg tip relative to the Hole,
+also in millimetres. The log also records rotation errors in degrees,
+three Peg half-size errors and Hole radius error in millimetres.
+
+Over ten epochs the train loss went from 15.05 to 7.48 and validation loss
+went from 14.52 to 8.85, with its minimum of 7.68 at update 35. Validation
+Hole center error went from 55.58 mm to 31.73 mm, with its minimum of
+28.19 mm at update 45. The smoke run checked optimization and logging on the
+local CPU sample. CUDA and the full dataset were outside this measurement.
+
+[Timing and edge counts](../outputs/surface_graph_gnn/035f42383d714a369f7ab55ec275cd7d/benchmark.json) ·
+[Saved graph manifest](../outputs/surface_graph_gnn/035f42383d714a369f7ab55ec275cd7d/manifest.json) ·
+[Loss and validation history](../outputs/surface_graph_gnn/43c8663f3dc94776849e25c20884cfd7/history.json)
+
 ## Run on the training host
 
 ### Train from a downloaded cache
