@@ -95,6 +95,8 @@ class TorchDetectorTests(unittest.TestCase):
         self.assertTrue(detector.recover_hole_rim)
         self.assertTrue(detector.recover_peg_rear_end)
         self.assertTrue(detector.reject_peg_box_cut)
+        expected_fit = "grid" if self.device.type == "cuda" else "ransac"
+        self.assertEqual(detector.plane_fit_method, expected_fit)
         result = detect_tensors(
             rgb, depth, self.k, self.ext, masks=masks, device=self.device
         )

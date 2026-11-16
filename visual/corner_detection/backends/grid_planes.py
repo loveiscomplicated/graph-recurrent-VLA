@@ -57,21 +57,6 @@ def fit_planes(xyz, support, points, parameters, maximum):
     return fit_from_normals(points, samples, normals, parameters, maximum)
 
 
-def fit_pca_planes(points, pixels, shape, parameters, maximum):
-    """Use the edge detector's CUDA PCA5 normals to seed the shared plane fit."""
-    if len(points) < parameters.minimum_plane_pixels:
-        return points.new_empty((0, 4))
-    from visual.edge_first.cuda_evidence import DepthJump, compact_rows, fused_normals_compact
-
-    rows = compact_rows(pixels, shape)
-    # All compact points belong to the current object mask.
-    objects = torch.zeros_like(pixels)
-    normals, valid = fused_normals_compact(points, pixels, objects, rows, DepthJump())
-    samples_and_normals = torch.cat((points, normals), dim=1)[valid]
-    samples, normals = samples_and_normals.split(3, dim=1)
-    return fit_from_normals(points, samples, normals, parameters, maximum)
-
-
 def fit_from_normals(points, samples, normals, parameters, maximum):
     """Group oriented samples and update each plane with one batched fit."""
     if not len(samples):

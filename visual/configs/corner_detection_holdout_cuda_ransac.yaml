@@ -1,0 +1,8 @@
+trainer: evaluation.corner_detection_holdout:evaluate
+source: outputs/corner_detection_holdout/frames/manifest.json
+output_root: outputs/corner_detection_holdout/cuda_ransac
+device: cuda:0
+threads: 1
+warmup_frames_per_episode: 3
+plane_fit_method: ransac
+compile_cuda_validation: true

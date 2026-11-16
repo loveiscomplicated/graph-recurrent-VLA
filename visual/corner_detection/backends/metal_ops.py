@@ -700,10 +700,17 @@ def fit_planes(points, parameters, seed, maximum, *, optimized=False):
                 threads=256,
                 group_size=256,
             )
-        if int(count.cpu()[0]) < parameters.minimum_plane_pixels:
-            break
+        if optimized:
+            # The final fit counts the same inliers excluded from the remainder.
+            remainder = current[~selected]
+            if len(current) - len(remainder) < parameters.minimum_plane_pixels:
+                break
+        else:
+            if int(count.cpu()[0]) < parameters.minimum_plane_pixels:
+                break
+            remainder = current[~selected]
         result.append(plane)
-        current = current[~selected]
+        current = remainder
     return torch.stack(result) if result else points.new_empty((0, 4))
 
 

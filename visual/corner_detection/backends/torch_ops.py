@@ -100,6 +100,8 @@ def fit_planes(points, parameters, seed, maximum, *, optimized=False):
         from . import metal_ops
 
         return metal_ops.fit_planes(points, parameters, seed, maximum, optimized=optimized)
+    if optimized and points.device.type == "cuda":
+        return _fit_planes_cuda(points, parameters, seed, maximum)
     remaining = torch.arange(len(points), device=points.device)
     result = []
     rng = np.random.default_rng(seed)
@@ -147,6 +149,46 @@ def fit_planes(points, parameters, seed, maximum, *, optimized=False):
         plane = plane_fit(current, selected)
         result.append(plane)
         remaining = remaining[~selected]
+    return torch.stack(result) if result else points.new_empty((0, 4))
+
+
+def _fit_planes_cuda(points, parameters, seed, maximum):
+    """Keep the original sample order and compact the remaining points once."""
+    current = points
+    result = []
+    rng = np.random.default_rng(seed)
+    minimum = parameters.minimum_plane_pixels
+    tolerance = parameters.plane_tolerance_m
+    for _ in range(maximum):
+        if len(current) < minimum:
+            break
+        sample_rows = rng.choice(len(current), min(len(current), 1300), replace=False)
+        sample = current.index_select(0, torch.as_tensor(sample_rows, device=points.device))
+        triple_rows = rng.choice(len(sample), (parameters.ransac_trials, 3), replace=True)
+        triples = torch.as_tensor(triple_rows, device=points.device)
+        a, b, c = sample[triples].unbind(1)
+        normal = torch.linalg.cross(b - a, c - a)
+        lengths = torch.linalg.vector_norm(normal, dim=1)
+        normal = normal / lengths.clamp_min(1e-7)[:, None]
+        offsets = -(normal * a).sum(1)
+        residual = (sample @ normal.T + offsets).abs()
+        counts = ((residual < tolerance) & (lengths > 1e-7)[None]).sum(0)
+        winner = counts.argmax().reshape(1)
+        # Gather the winning hypothesis without reading its index on the host.
+        winner_normal = normal.index_select(0, winner).squeeze(0)
+        winner_offset = offsets.index_select(0, winner).squeeze(0)
+        selected = (current @ winner_normal + winner_offset).abs() < tolerance
+        sufficient = selected.sum() >= minimum
+        for _ in range(3):
+            plane = plane_fit(current, selected)
+            selected = ((current @ plane[:3] + plane[3]).abs() < tolerance) & sufficient
+            sufficient = sufficient & (selected.sum() >= minimum)
+
+        remainder = current[~selected]
+        if len(current) - len(remainder) < minimum:
+            break
+        result.append(plane_fit(current, selected))
+        current = remainder
     return torch.stack(result) if result else points.new_empty((0, 4))
 
 

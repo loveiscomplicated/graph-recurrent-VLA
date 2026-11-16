@@ -128,8 +128,12 @@ class TorchCornerDetector:
         plane_fit_method="ransac",
         timer=None,
         sample_cuda_box_planes=False,
+        batch_cuda_readbacks=False,
     ):
         self.device = K.resolve_device(device)
+        if batch_cuda_readbacks and self.device.type != "cuda":
+            raise ValueError("batch_cuda_readbacks requires a CUDA detector")
+        self.batch_cuda_readbacks = batch_cuda_readbacks
         if compile_cuda_edges and self.device.type != "cuda":
             raise ValueError("compile_cuda_edges requires a CUDA detector")
         self._physical_edges = (
@@ -148,10 +152,8 @@ class TorchCornerDetector:
         self._validate_box_cube = validation_torch.validation_function(
             box_cube_stage, compile_cuda_validation
         )
-        if plane_fit_method not in ("ransac", "grid", "pca_normals"):
-            raise ValueError("plane_fit_method must be 'ransac', 'grid', or 'pca_normals'")
-        if plane_fit_method == "pca_normals" and self.device.type != "cuda":
-            raise ValueError("plane_fit_method='pca_normals' requires CUDA")
+        if plane_fit_method not in ("ransac", "grid"):
+            raise ValueError("plane_fit_method must be 'ransac' or 'grid'")
         self.plane_fit_method = plane_fit_method
         self.parameters = parameters or Parameters()
         if hole_rgb_merge_radius_m is not None and (
@@ -215,6 +217,7 @@ class TorchCornerDetector:
         plane_fit_method=None,
         timer=None,
         sample_cuda_box_planes=False,
+        batch_cuda_readbacks=False,
     ):
         """Build the main frame detector with device-specific performance defaults."""
         if str(device) == "auto":
@@ -251,6 +254,7 @@ class TorchCornerDetector:
             plane_fit_method=plane_fit_method,
             timer=timer,
             sample_cuda_box_planes=sample_cuda_box_planes,
+            batch_cuda_readbacks=batch_cuda_readbacks,
         )
 
     def _measure(self, name):
@@ -263,13 +267,14 @@ class TorchCornerDetector:
         return torch.as_tensor(value, dtype=dtype, device=self.device)
 
     def prepare(self, oid, mask, support_cpu=None):
+        return self._prepare_readback(oid, mask, support_cpu, non_blocking=False)()
+
+    def _prepare_readback(self, oid, mask, support_cpu, *, non_blocking):
+        """Queue plane descriptors and return a function that assembles ready data."""
         p = self.parameters
         with self._measure("point_cloud_and_plane_fit"):
             support = mask & self.valid
-            if self.plane_fit_method == "pca_normals":
-                pixels = support.flatten().nonzero().flatten()
-                points = self.xyz.reshape(-1, 3).index_select(0, pixels)
-            elif support_cpu is None:
+            if support_cpu is None:
                 points = self.xyz[support]
             else:
                 pixels = self.tensor(np.flatnonzero(support_cpu), torch.int64)
@@ -280,10 +285,6 @@ class TorchCornerDetector:
                     from .backends import grid_planes
 
                     planes = grid_planes.fit_planes(self.xyz, support, points, p, maximum)
-                elif self.plane_fit_method == "pca_normals":
-                    from .backends import grid_planes
-
-                    planes = grid_planes.fit_pca_planes(points, pixels, support.shape, p, maximum)
                 else:
                     planes = K.fit_planes(
                         points, p, 42 + oid, maximum, optimized=self.optimized
@@ -292,27 +293,31 @@ class TorchCornerDetector:
             masks, cores = K.plane_masks(self.xyz, support, planes, p.plane_tolerance_m)
             eligible = cores.flatten(1).sum(1) >= 20
         with self._measure("plane_descriptor_readback"):
-            small = planes.cpu().numpy().astype(float)
-            eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
-            masks_cpu = masks.cpu().numpy()
-            cores_cpu = None if self.optimized else cores.cpu().numpy()
-            if support_cpu is None:
-                support_cpu = support.cpu().numpy()
-        return PlaneData(
-            oid,
-            support,
-            planes,
-            masks,
-            cores,
-            eligible,
-            [(row[:3], float(row[3])) for row in small],
-            masks_cpu,
-            cores_cpu,
-            support_cpu,
-            eligible_cpu,
-            [],
-            points=points,
-        )
+            plane_rows = planes.to("cpu", non_blocking=non_blocking)
+            eligible_rows = eligible.to("cpu", non_blocking=non_blocking)
+            mask_rows = masks.to("cpu", non_blocking=non_blocking)
+            core_rows = None if self.optimized else cores.to("cpu", non_blocking=non_blocking)
+            support_rows = support.to("cpu", non_blocking=non_blocking) if support_cpu is None else None
+
+        def assemble():
+            coefficients = plane_rows.numpy().astype(float)
+            return PlaneData(
+                oid,
+                support,
+                planes,
+                masks,
+                cores,
+                eligible,
+                [(row[:3], float(row[3])) for row in coefficients],
+                mask_rows.numpy(),
+                None if core_rows is None else core_rows.numpy(),
+                support_rows.numpy() if support_rows is not None else support_cpu,
+                set(np.flatnonzero(eligible_rows.numpy())),
+                [],
+                points=points,
+            )
+
+        return assemble
 
     def add(
         self,
@@ -902,19 +907,28 @@ class TorchCornerDetector:
         points = torch.cat([b[0] for b in self.blocks])
         image = torch.cat([b[1] for b in self.blocks])
         offsets = np.cumsum([0] + [len(b[0]) for b in self.blocks])
-        # Three aggregate readbacks replace up to three barriers per block.
+        # Merge consumes all three arrays together on the host.
         with self._measure("merge_readback"):
             flag_blocks = [b[3] for b in self.blocks]
             rgb_holes = getattr(self, "box_rgb_holes", None)
             if rgb_holes is not None:
                 rgb_block, holes = rgb_holes
                 flag_blocks.append(holes)
-            flags = torch.cat(flag_blocks).cpu().numpy()
+            non_blocking = self.batch_cuda_readbacks
+            flag_rows = torch.cat(flag_blocks).to("cpu", non_blocking=non_blocking)
+            count_blocks = [b[4] for b in self.blocks if b[4] is not None]
+            count_rows = (
+                torch.cat(count_blocks).to("cpu", non_blocking=non_blocking)
+                if count_blocks else None
+            )
+            camera_rows = points.to("cpu", non_blocking=non_blocking)
+            if non_blocking:
+                torch.cuda.current_stream(self.device).synchronize()
+            flags = flag_rows.numpy()
             if rgb_holes is not None:
                 hole_flags = flags[offsets[-1]:]
-            count_blocks = [b[4] for b in self.blocks if b[4] is not None]
-            count_cpu = torch.cat(count_blocks).cpu().numpy() if count_blocks else None
-            camera_cpu = points.cpu().numpy()
+            count_cpu = None if count_rows is None else count_rows.numpy()
+            camera_cpu = camera_rows.numpy()
         count_offsets = {}
         start = 0
         for i, block in enumerate(self.blocks):
@@ -1143,26 +1157,41 @@ class TorchCornerDetector:
                 )
             if filter_components is None or valid_cpu is not None:
                 shared_masks = tuple(np.array_equal(a, b) for a, b in zip(core_cpu, recovery_cpu))
+            preparations = []
             for oid in (0, 1):
                 support_cpu = (
                     core_cpu[oid].astype(bool, copy=False) & valid_cpu
                     if valid_cpu is not None else None
                 )
-                data = self.prepare(oid, core[oid], support_cpu)
-                data.core = True
-                data_list.append(data)
-                if shared_masks[oid]:
-                    data.recovery = True
-                    recovery_data.append(data)
-                else:
+                preparations.append((oid, core[oid], support_cpu, True, shared_masks[oid]))
+                if not shared_masks[oid]:
                     support_cpu = (
                         recovery_cpu[oid].astype(bool, copy=False) & valid_cpu
                         if valid_cpu is not None else None
                     )
-                    extra = self.prepare(oid, recovery[oid], support_cpu)
-                    extra.recovery = True
-                    data_list.append(extra)
-                    recovery_data.append(extra)
+                    preparations.append((oid, recovery[oid], support_cpu, False, True))
+            gray_cpu = None
+            if self.batch_cuda_readbacks:
+                readbacks = [
+                    self._prepare_readback(oid, mask, support, non_blocking=True)
+                    for oid, mask, support, _, _ in preparations
+                ]
+                with self._measure("finish_plane_readbacks"):
+                    depth = None
+                    if self.recover_hole_rim and self.depth_cpu is None:
+                        depth = self.depth.to("cpu", non_blocking=True)
+                    if gpu_gray:
+                        gray_cpu = material_torch.rgb_to_gray(rgb_device).to("cpu", non_blocking=True)
+                    torch.cuda.current_stream(self.device).synchronize()
+                    if depth is not None:
+                        self.depth_cpu = depth.numpy()
+                data_list = [readback() for readback in readbacks]
+            else:
+                data_list = [self.prepare(oid, mask, support) for oid, mask, support, _, _ in preparations]
+            for data, (_, _, _, is_core, is_recovery) in zip(data_list, preparations, strict=True):
+                data.core, data.recovery = is_core, is_recovery
+                if is_recovery:
+                    recovery_data.append(data)
         with self._measure("contour_candidates"):
             contours = ContourProposals()
             for data in data_list:
@@ -1182,7 +1211,9 @@ class TorchCornerDetector:
                 if gpu_gray:
                     # OpenCV needs only gray values for Box feature detection.
                     with self._measure("box_grayscale"):
-                        feature_image = material_torch.rgb_to_gray(rgb_device).cpu().numpy()
+                        if gray_cpu is None:
+                            gray_cpu = material_torch.rgb_to_gray(rgb_device).cpu()
+                        feature_image = gray_cpu.numpy()
                 features = _corner_features(
                     feature_image, box.support_cpu, optimized=self.optimized
                 )

@@ -164,7 +164,7 @@ def summarize(rows):
 
 
 def evaluate(config):
-    """Replay the unchanged main preset on the same archived observations."""
+    """Replay the main preset or an explicit ablation on archived observations."""
     torch.set_num_threads(config["threads"])
     cv2.setNumThreads(config["threads"])
     device = torch_ops.resolve_device(config["device"])
@@ -172,7 +172,13 @@ def evaluate(config):
         raise ValueError("Holdout evaluation requires an explicit CUDA or MPS device")
     if config["warmup_frames_per_episode"] < 1:
         raise ValueError("warmup_frames_per_episode must be positive")
-    detector = corner_detection.TorchCornerDetector.main(device=device)
+    options = {
+        key: config[key] for key in (
+            "plane_fit_method", "compile_cuda_validation", "batch_cuda_readbacks",
+        )
+        if key in config
+    }
+    detector = corner_detection.TorchCornerDetector.main(device=device, **options)
     source = Path(config["source"])
     manifest = json.loads(source.read_text())
     episodes = manifest["episodes"]

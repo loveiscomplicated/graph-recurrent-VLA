@@ -1,0 +1,6 @@
+trainer: data_collection.corner_detection_cache:build
+device: cuda:0
+threads: 1
+source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+source_manifest_sha256: e279d3750a074fccd1719d4d235d621961fa4f87038fdcdc33f3c078516f27fc
+output_root: outputs/corner_detection_cache
