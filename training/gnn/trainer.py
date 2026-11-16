@@ -262,6 +262,12 @@ def resolve_training_settings(config):
         config["task"]["settings"].setdefault("consistency_weight", 0.05)
         config["task"]["settings"].setdefault("size_units_m", [0.04, 0.01, 0.01, 0.02])
     config.setdefault("resume", None)
+    if "initial_weights" in config:
+        weights = config["initial_weights"]
+        if not isinstance(weights, str) or not weights.strip():
+            raise ValueError("initial_weights must be a nonempty best.pt path")
+        if config["resume"] or config["mode"] != "train":
+            raise ValueError("initial_weights requires train mode without resume")
     return config
 
 
@@ -415,6 +421,14 @@ def train(config: dict):
         # Dataset indexing must not change initialization or training RNG.
         seed_everything(effective["seed"], device)
         model = build_model(effective["model"], device)
+        if "initial_weights" in effective:
+            source = Path(effective["initial_weights"]).expanduser().resolve()
+            weights = torch.load(source, map_location="cpu", weights_only=True)
+            if weights.get("kind") != "best_weights" or weights["config"]["model"] != effective["model"]:
+                raise ValueError("initial_weights must be a best.pt with the same resolved model settings")
+            model.load_state_dict(weights["model"], strict=True)
+            experiment.link_output(source, checkpoint=True)
+            experiment.record(initial_weights=str(source), initialization="weights_only")
         optimizer_classes = {"adam": torch.optim.Adam, "adamw": torch.optim.AdamW, "sgd": torch.optim.SGD}
         optimizer_settings = dict(effective["optimizer"])
         optimizer_class = optimizer_classes[optimizer_settings.pop("name")]

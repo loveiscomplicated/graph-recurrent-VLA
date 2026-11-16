@@ -1,0 +1,38 @@
+trainer: training.gnn.trainer:train
+seed: 0
+device: cpu
+data:
+  factory: training.gnn.visibility_data:build_data
+  visibility_index: outputs/corner_visibility_index/frame_locations.json
+  condition: condition_1
+  camera: base_camera
+  sources:
+  - cache: outputs/shared_tracking_cache/tapnext_state36.npz
+    source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+  - cache: outputs/shared_tracking_cache/tapnext_recovery_state36.npz
+    source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+  use_tcp: false
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+training:
+  epochs: 40
+  batch_size: 128
+  gradient_clip_norm: 1.0
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+output:
+  root: outputs/corner_gnn_without_tcp

@@ -1,0 +1,45 @@
+trainer: training.gnn.trainer:train
+seed: 0
+device: cpu
+data:
+  factory: training.gnn.visibility_data:build_data
+  visibility_index: outputs/corner_visibility_index/frame_locations.json
+  condition: condition_1
+  camera: base_camera
+  sources:
+  - source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+    detection_manifest: outputs/vast_backups/60801417/curriculum_corner_cache/detections/pilot/manifest.json
+  - source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+    detection_manifest: outputs/vast_backups/60801417/curriculum_corner_cache/detections/recovery/manifest.json
+  imported_direct_train:
+    visibility_index: outputs/five_mode_import/visibility/condition_1_archive_frames.json
+    cache_manifest: outputs/five_mode_import/visibility/direct_train/manifest.json
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+training:
+  epochs: 80
+  batch_size: 128
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 8
+    min_epochs: 41
+    min_delta: 0.001
+optimizer:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+output:
+  root: outputs/expanded_direct_corner_gnn
+resume: outputs/expanded_direct_corner_gnn/f614639653654abd858661cb7af4d482/last.pt

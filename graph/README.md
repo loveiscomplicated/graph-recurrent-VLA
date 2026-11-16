@@ -22,6 +22,112 @@ For the full-episode history comparison, use the same prepared manifest:
 .venv/bin/python main.py --config graph/configs/state_estimation/spatial_corner_tracking_full_history.yaml
 ```
 
+## Corner visibility GNN
+
+With the Pilot and Recovery raw datasets, their shared TAPNext++ caches, and the
+[corner visibility index](../docs/data_collection.md#꼭짓점-가시성-프레임-인덱스)
+in `outputs/`, run from the repository root:
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/train_corner_visibility_gnn.yaml
+```
+
+The config trains `VertexEdgeGatedMPNN` from scratch for 20 epochs on
+`condition_1/train` and scores `condition_1/validation` each epoch. Each graph
+uses the visible TAPNext++ corner queries with valid depth and complete directed
+edges. The visibility index uses GT to select frames. Graph nodes use observed
+coordinates and detector object types, and the Object21 targets use saved GT.
+The common GNN trainer records progress and epoch metrics through ExperimentLogger
+and writes the effective config, dataset identity, history, and checkpoints
+under `outputs/corner_visibility_gnn/<run_id>/`.
+
+To continue the 20-epoch run, set `resume` in the
+[continuation config](configs/resume_corner_visibility_gnn.yaml) to its
+`last.pt` and run:
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/resume_corner_visibility_gnn.yaml
+```
+
+This config caps the run at epoch 40, with validation-loss patience of eight
+epochs and a minimum improvement of 0.001. The stopping counter starts with the
+resumed validation scores, and checkpoint selection carries forward the best
+validation loss from the original run.
+
+The 40-epoch vertex input comparison uses these configs with the same root
+entrypoint and the same `condition_1` inputs and prerequisites:
+
+| Config | Graph inputs |
+| --- | --- |
+| [train_matched_vertex_gnn.yaml](configs/train_matched_vertex_gnn.yaml) | Observed coordinates retained by one-to-one GT vertex matching, with TCP |
+| [train_corner_gnn_without_tcp.yaml](configs/train_corner_gnn_without_tcp.yaml) | All depth-valid observed corners, with the world origin as the coordinate reference for the graph and target |
+| [train_oracle_vertex_gnn.yaml](configs/train_oracle_vertex_gnn.yaml) | Same vertices as the matched run, with exact GT coordinates and TCP |
+
+Each run starts from seed 0 and evaluates validation loss every epoch. The
+matched and oracle inputs depend on GT and are intended for offline comparison.
+
+To train for 40 epochs on per-frame detector coordinates, use the raw datasets,
+the same visibility index, and the Pilot/Recovery detector NPZ archives and
+manifests listed in [train_direct_corner_gnn.yaml](configs/train_direct_corner_gnn.yaml).
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/train_direct_corner_gnn.yaml
+```
+
+This run keeps the same frame selection and TCP reference. Each graph uses the
+detector's reported 3D corners and object types for that frame. Frames with no
+detected corners still contribute their Object21 target. The original
+visibility index determines membership, so its TAPNext++ and GT criteria
+still apply when selecting frames.
+
+The [expanded direct detector recipe](configs/train_expanded_direct_corner_gnn.yaml)
+adds the Five-mode `condition_1/train` frames to the original training set. It
+requires the compact, checksum-verified detector cache at the path configured
+under `data.imported_direct_train`. With that cache in place, run:
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/train_expanded_direct_corner_gnn.yaml
+```
+
+The 40-epoch run starts from fresh weights and uses the original validation
+frame list. The original test split is reserved for evaluation.
+
+The [expanded corner and surface recipe](configs/train_expanded_surface_corner_gnn.yaml)
+uses the same split and fresh 40-epoch schedule. It requires the original and
+imported compact caches configured under `data`. Each frame graph combines the
+direct detector's 3D corners with up to 32 depth-valid TAPNext++ Peg surface
+points, excluding points within two pixels of detector corners. It uses the
+same complete directed graph topology and TCP reference as the direct-corner run.
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/train_expanded_surface_corner_gnn.yaml
+```
+
+For detector-coordinate augmentation, copy either expanded recipe and set
+`data.corner_jitter_std_mm: 1.0`. The value is the Gaussian standard deviation
+per world-coordinate axis in millimetres. The surface recipe also needs
+`data.corner_reference_config: graph/configs/train_expanded_direct_corner_gnn.yaml`
+to verify the detector-node prefix of each training graph. Run the copied
+config with the same `main.py --config` command. The train collator samples
+fresh corner noise on each batch and rebuilds edge geometry. Validation reads
+clean coordinates. A missing or zero standard deviation uses the clean recipe.
+
+The following recipes use the clean models' `best.pt` files as initial weights
+and train for 10 epochs with 1 mm jitter and a fresh AdamW optimizer. The input
+cache prerequisites are the same as for the matching expanded recipes.
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/finetune_expanded_direct_corner_gnn_jitter.yaml
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/finetune_expanded_surface_corner_gnn_jitter.yaml
+```
+
+For the stronger perturbation experiment, use the same commands with
+`finetune_expanded_direct_corner_gnn_strong_jitter.yaml` and
+`finetune_expanded_surface_corner_gnn_strong_jitter.yaml`. These recipes start
+from the 1 mm fine-tuning best weights and train for 10 epochs with a 5 mm
+per-axis standard deviation. The paired test compares clean inputs and per-axis
+standard deviations of 4, 5, and 6 mm.
+
 ## Object21D state estimation
 
 From the repository root with PyTorch, NumPy, SciPy and PyYAML installed:
