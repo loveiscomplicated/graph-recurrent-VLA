@@ -1,4 +1,7 @@
-"""Index recorded frames by geometrically verified TAPNext++ corner observations."""
+"""Historical TAPNext++/GT frame selection for reproducing recorded experiments.
+
+For a new detector-only visibility index, use detected_corner_visibility.
+"""
 
 import json
 from pathlib import Path

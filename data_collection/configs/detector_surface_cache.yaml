@@ -10,9 +10,7 @@ split:
   seed: 0
   validation_count: 10
   test_count: 10
-matching:
-  gate_m: 0.005
-  margin_m: 0.002
+coplanarity_tolerance_m: 0.001
 tracking:
   device: mlx
   detector_device: mps

@@ -24,8 +24,15 @@ For the full-episode history comparison, use the same prepared manifest:
 
 ## Corner visibility GNN
 
+For a new Five-mode visibility index, use the
+[per-frame detector corner workflow](../docs/data_collection.md#꼭짓점-가시성-프레임-인덱스).
+The training recipes below reproduce earlier experiments with their recorded
+TAPNext++/GT frame selections. Detector corners and tracked non-corner Peg
+surface points can both enter a graph, and only detector corners enter the new
+visibility classifier.
+
 With the Pilot and Recovery raw datasets, their shared TAPNext++ caches, and the
-[corner visibility index](../docs/data_collection.md#꼭짓점-가시성-프레임-인덱스)
+[historical corner visibility index](../docs/data_collection.md#기존-추적-기반-프레임-선택)
 in `outputs/`, run from the repository root:
 
 ```bash

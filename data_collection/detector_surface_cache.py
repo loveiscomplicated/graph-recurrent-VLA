@@ -7,10 +7,9 @@ from time import perf_counter
 import cv2
 import numpy as np
 
-from data_collection.corner_visibility_index import classify
+from data_collection.detected_corner_visibility import classify_episode, coplanarity_tolerance
 from data_collection.episode_dataset import file_sha256
 from data_collection.state21_shared_tapnext import _lift_tracks, split_reset_seeds
-from data_collection.state21_vertex_targets import corners_from_pose, match_vertices, read_reference_pose
 
 
 def open_sources(config):
@@ -31,16 +30,19 @@ def open_sources(config):
         yield raw_path, detector_path, raw["episodes"], detector["episodes"]
 
 
-def read_detections(detector_path, receipt, episode):
+def read_detections(detector_path, receipt, episode, *, include_rim_flags=False):
     """Read checksum-linked per-frame detector points in source order."""
     path = detector_path.parent / receipt["file"]
     if path.name != receipt["file"] or file_sha256(path) != receipt["sha256"]:
         raise ValueError(f"Invalid detector archive: {path}")
+    fields = (
+        "frame_indices", "corner_offsets", "corner_uv",
+        "corner_world_xyz", "corner_object_id",
+    )
+    if include_rim_flags:
+        fields += ("corner_contour_hole",)
     with np.load(path, allow_pickle=False) as archive:
-        arrays = {name: archive[name] for name in (
-            "frame_indices", "corner_offsets", "corner_uv",
-            "corner_world_xyz", "corner_object_id",
-        )}
+        arrays = {name: archive[name] for name in fields}
     count = episode["observations"]
     offsets = arrays["corner_offsets"]
     size = len(arrays["corner_uv"])
@@ -61,10 +63,11 @@ def read_detections(detector_path, receipt, episode):
 
 
 def index(config):
-    """Index raw paths by detector GT match condition and the existing seed split."""
+    """Index raw paths from per-frame detector corners and the existing seed split."""
     output = Path(config["index_output"])
     if output.exists():
         raise FileExistsError(output)
+    tolerance = coplanarity_tolerance(config["coplanarity_tolerance_m"])
     sources = list(open_sources(config))
     split_settings = config["split"]
     splits = split_reset_seeds(
@@ -78,26 +81,15 @@ def index(config):
     }
     for raw, detector, episodes, receipts in sources:
         for episode_number, (episode, receipt) in enumerate(zip(episodes, receipts, strict=True), 1):
-            detections = read_detections(detector, receipt, episode)
-            offsets = detections["corner_offsets"]
+            detections = read_detections(detector, receipt, episode, include_rim_flags=True)
+            selected = classify_episode(detections, episode["observations"], tolerance_m=tolerance)
             split = split_by_seed[episode["seed"]]
-            for frame, digest in enumerate(episode["frame_sha256"]):
-                path = raw.parent / episode["path"] / f"frame_{frame:06d}.npz"
-                rows = slice(*offsets[frame:frame + 2])
-                observed = {
-                    (int(kind), row): xyz
-                    for row, (kind, xyz) in enumerate(zip(
-                        detections["corner_object_id"][rows],
-                        detections["corner_world_xyz"][rows], strict=True,
-                    ))
-                }
-                matches = ()
-                if observed:
-                    references = corners_from_pose(read_reference_pose(path, digest))
-                    matches = match_vertices(observed, references, **config["matching"]).values()
-                condition = classify(matches)
-                if condition:
-                    groups[condition][split].append(path.as_posix())
+            directory = raw.parent / episode["path"]
+            for condition in groups:
+                groups[condition][split].extend(
+                    (directory / f"frame_{frame:06d}.npz").as_posix()
+                    for frame in selected[condition]
+                )
             if episode_number % 50 == 0:
                 print(f"{raw.parent.name}: indexed {episode_number}/{len(episodes)}", flush=True)
     output.parent.mkdir(parents=True, exist_ok=True)

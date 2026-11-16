@@ -784,9 +784,9 @@ SHA-256과 State36 필드 순서를 기록한다.
 
 이 공유 캐시는 Pilot/Recovery의 State36 GT와 추적 결과를 프레임별로 정렬하는 데
 쓰인다. `corner_xy`는 에피소드 초기에 검출한 꼭짓점 쿼리를 TAPNext++로 추적한
-좌표다. 아래의 `condition_1` 프레임 인덱스는 이 좌표로 가시성을 판정한다.
-[Five-mode 그래프 입력](#five-mode-graph-input)에서 사용하는 매 프레임의
-꼭짓점 좌표는 별도의 `corners` 캐시에서 가져온다.
+좌표다. 이 좌표는 [기존 GNN 실험의 프레임 선택](#기존-추적-기반-프레임-선택)에
+사용됐다. 새 조건 집계와 [Five-mode 그래프 입력](#five-mode-graph-input)의
+프레임별 꼭짓점 좌표는 별도의 `corners` 캐시에서 가져온다.
 
 ```python
 import numpy as np
@@ -812,30 +812,55 @@ with np.load("tapnext_state36.npz", allow_pickle=False) as cache:
 
 ### 꼭짓점 가시성 프레임 인덱스
 
-공유 TAPNext++ 캐시 두 개와 대응하는 Pilot/Recovery 원본이 있는 환경에서
-저장소 루트 기준으로 실행한다.
+Five-mode 선택 매니페스트와 그 매니페스트가 참조하는 `corners` TAR가 있는
+환경에서 저장소 루트 기준으로 실행한다.
 
 ```bash
 .venv/bin/python main.py --config data_collection/configs/corner_visibility_index.yaml
 ```
 
-가시 플래그가 있는 꼭짓점 쿼리만 현재 깊이로 3D 복원하고, 공통 GT 매칭
-함수로 물체별 1:1 대응을 구한다. 기본 거리는 5 mm 이내이고 두 번째로 가까운
-후보와의 거리 차이는 2 mm 이상이다. 매칭은 프레임마다 독립적으로 계산하며
-추적 쿼리의 시간적 ID 정확도는 평가하지 않는다. Hole은 로컬 −X 삽입구의
-네 모서리만 세며, Peg는 대응된 물리 꼭짓점의 affine rank가 3일 때 비공면이다.
+조건 분류에는 현재 프레임에서 검출기가 병합한 꼭짓점만 사용한다.
+`corner_object_id == 0`인 점을 Peg로 센다. `corner_object_id == 1`이면서
+`corner_contour_hole == true`인 점을 Hole 림으로 센다. Box 외곽, TAPNext++ 추적점,
+GT 매칭은 분류에서 제외한다.
 
-`outputs/corner_visibility_index/frame_locations.json`은 `condition_1`
-(Peg 4개 이상이면서 비공면, Hole 3개 이상), `condition_2` (Peg 3개,
-Hole 2개), `condition_3` (Peg 0–1개, Hole 0개) 아래에 각각
-`train`, `validation`, `test` 키를 둔다. 예를 들어
-`index["condition_1"]["validation"]`은 해당 조건의 검증용 원본 NPZ 경로 목록이다.
-Pilot과 Recovery의 reset seed를 합쳐 State21과 같은 방식으로 분할한다.
-기본값은 분할 난수 seed 0, validation과 test에 각각 reset seed 10개,
-나머지는 train이다. 같은 reset seed의 에피소드는 모두 같은 split에 속한다.
-기본 설정의 경로는 저장소 루트 기준 상대 경로다. 세 조건 밖의 프레임은
-목록에서 제외한다. 기존 원본과 추적 캐시는 읽기 전용으로 사용한다.
-인덱스를 다시 생성할 때는 설정의 `output`에 새 파일 경로를 지정한다.
+| 키 | 판정 |
+| --- | --- |
+| `condition_1` | Peg 4개 이상이며 비공면, Hole 림 3개 이상 |
+| `condition_2` | Peg 정확히 3개, Hole 림 정확히 2개 |
+| `condition_3` | Peg 0–1개, Hole 림 0개 |
+| `unclassified` | 위 조건에 해당하지 않는 모든 프레임 |
+
+비공면은 Peg의 검출 3D 좌표를 최적 적합 평면에 투영했을 때 수직 거리의
+RMS가 `coplanarity_tolerance_m`을 초과하는 경우다. 기본값은 1 mm다.
+검출기 좌표의 작은 오차로 공면 점이 비공면으로 판정되는 것을 줄이기 위해
+허용 오차를 사용한다. 캐시의 림 표시는 삽입구의 로컬 −X 방향이나 물리
+꼭짓점 ID를 지정하지 않는다. 분류는 검출기 병합 후 림 표시를 그대로 센다.
+
+결과 JSON은 매니페스트의 원래 split을 보존한다. `counts[condition][split]`에
+프레임 수를 기록하고, `episodes`에는 seed, 정책, split, 조건별 프레임 번호를
+저장한다. 다시 집계할 때는 설정의 `output`에 새 경로를 지정한다.
+
+2026-11-17 KST에 선택 매니페스트의 800개 seed, 4,000개 에피소드, 756,004개 프레임을
+집계했다. 각 detector NPZ의 SHA-256을 확인하고 프레임별 분류를 독립 계산으로 검증했다.
+전체 중 112,174프레임에서 검출기가 Hole 림 점을 4개 넘게 표시했다.
+[선택 매니페스트](../outputs/five_mode_caches/selected_800_seeds/manifest.json) ·
+[분류 결과](../outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility.json)
+
+### 기존 추적 기반 프레임 선택
+
+Git 커밋 `0cfca96`에 기록된 기존 Pilot/Recovery 프레임 인덱스는
+TAPNext++가 추적한 꼭짓점 쿼리를 현재 깊이로 3D 복원하고, 원본 GT와
+물체별 1:1 대응을 구했다. 기본 대응 거리는 5 mm 이내이고, 차순위
+후보와의 거리 차이는 2 mm 이상이다. Hole은 로컬 −X 삽입구의 네 모서리만
+세고, Peg는 매칭된 물리 꼭짓점의 affine rank를 계산했다. 이 방식은
+초기 Five-mode 확장 실험의 가져온 프레임 선택에도 사용됐다.
+
+기존 `outputs/corner_visibility_index/frame_locations.json`은 그 실험들의
+재현용 프레임 목록이다. 조건마다 `train`, `validation`, `test` 원본 NPZ
+경로가 들어 있다. Pilot과 Recovery의 reset seed를 합쳐 분할 난수 seed 0,
+validation과 test 각 10개 seed로 나눴다. 동일 reset seed의 에피소드는
+같은 split에 속한다.
 
 ### 프레임별 검출 꼭짓점과 TAPNext++ 표면점 연결
 
@@ -1061,9 +1086,10 @@ In the detector-corner + surface-point GNN experiment, each selected
 
 TAPNext++ initializes its queries on the Peg surface outside the exclusion
 radius around detected corners. To build each graph, pair the caches by episode
-and frame index and include both sets of nodes. The `condition_1`
-index controls frame membership. Graph node coordinates come from the two
-sources above. See the
+and frame index and include both sets of nodes. For new condition selection,
+use the [per-frame detector index](#꼭짓점-가시성-프레임-인덱스).
+Surface points contribute graph nodes only. The early expanded runs used the
+[historical selection](#기존-추적-기반-프레임-선택). See the
 [surface-cache implementation](../data_collection/detector_surface_cache.py).
 
 ### Mixed trajectory collection with a moving Box

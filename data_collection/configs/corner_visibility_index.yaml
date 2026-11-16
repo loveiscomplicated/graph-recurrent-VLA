@@ -1,13 +1,6 @@
-trainer: data_collection.corner_visibility_index:run
-camera: base_camera
-gate_m: 0.005
-margin_m: 0.002
-split_seed: 0
-validation_seed_count: 10
-test_seed_count: 10
-sources:
-  - cache: outputs/shared_tracking_cache/tapnext_state36.npz
-    source_manifest: outputs/mixed_trajectory_pilot/manifest.json
-  - cache: outputs/shared_tracking_cache/tapnext_recovery_state36.npz
-    source_manifest: outputs/mixed_trajectory_recovery/manifest.json
-output: outputs/corner_visibility_index/frame_locations.json
+trainer: data_collection.detected_corner_visibility:run
+selection_manifest: outputs/five_mode_caches/selected_800_seeds/manifest.json
+expected_seeds: 800
+expected_episodes: 4000
+coplanarity_tolerance_m: 0.001
+output: outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility.json
