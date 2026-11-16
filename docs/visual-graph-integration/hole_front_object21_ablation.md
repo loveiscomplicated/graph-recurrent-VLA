@@ -59,7 +59,7 @@
 
 ## 산출물
 
-- [평가 설정, 원본 run ID, 종료 상태](../../graph/research_backups/graph2/hole_front_object21_ablation/full/summary.json)
-- [시점별 지표와 짝비교](../../graph/research_backups/graph2/hole_front_object21_ablation/full/paired.json)
-- [프레임별 21D 예측, GT, 꼭짓점 수와 오차 (로컬 백업)](../../graph/research_backups/graph2/hole_front_object21_ablation/BACKUP.md)
-- [평가 스크립트](../../graph/research_backups/graph2/hole_front_object21_ablation/evaluate.py), [병합](../../graph/research_backups/graph2/hole_front_object21_ablation/merge.py), [분석](../../graph/research_backups/graph2/hole_front_object21_ablation/analyze.py)
+- [평가 설정, 원본 run ID, 종료 상태](../../outputs/hole_front_object21_ablation/full/summary.json)
+- [시점별 지표와 짝비교](../../outputs/hole_front_object21_ablation/full/paired.json)
+- [프레임별 21D 예측, GT, 꼭짓점 수와 오차](../../outputs/hole_front_object21_ablation/full/frames.jsonl)
+- [평가 스크립트](../../outputs/hole_front_object21_ablation/evaluate.py), [병합](../../outputs/hole_front_object21_ablation/merge.py), [분석](../../outputs/hole_front_object21_ablation/analyze.py)

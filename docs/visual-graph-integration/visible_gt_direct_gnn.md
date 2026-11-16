@@ -48,6 +48,6 @@ GNN은 프레임별 3D 점과 Peg/Box 유형, 현재 관측 플래그, TCP 위�
 
 RTX 3090에서 네 구간의 완료 상태, 소스 커밋 `2b6c40e`, 이전과 동일한 GNN SHA-256 및 실제 Main 카메라 투영 설정을 확인했다. 모든 출력이 유한한 21D이고, 상대 벡터 출력이 기하 계산값과 보정값의 합과 일치하는지 검사했다. 기존 모델·공유 환경 코드는 편집하지 않았다.
 
-- [통합 결과와 원격 실험 설정](../../graph/research_backups/graph2/visible_gt_direct_gnn/full/summary.json)
-- [프레임별 GT, 예측 Object21, 가시 점 수, 끝점 보정 벡터 (로컬 백업)](../../graph/research_backups/graph2/visible_gt_direct_gnn/BACKUP.md)
-- [평가 코드](../../graph/research_backups/graph2/visible_gt_direct_gnn/evaluate_gt.py) · [프레임 비교 및 집계](../../graph/research_backups/graph2/visible_gt_direct_gnn/compare.py)
+- [통합 결과와 원격 실험 설정](../../outputs/visible_gt_direct_gnn/full/summary.json)
+- [프레임별 GT, 예측 Object21, 가시 점 수, 끝점 보정 벡터](../../outputs/visible_gt_direct_gnn/full/frames.jsonl)
+- [평가 코드](../../outputs/visible_gt_direct_gnn/evaluate_gt.py) · [프레임 비교 및 집계](../../outputs/visible_gt_direct_gnn/compare.py)

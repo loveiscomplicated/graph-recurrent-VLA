@@ -29,7 +29,7 @@
 | 950 | 4.46 | 3.09 | 4.46 |
 | 1175 | 17.17 | 97.94 | 17.17 |
 
-세 급증 사례에서 평면 피팅만 RANSAC으로 바꾸면 기존 수준이 재현된다. 대조 사례 950에서는 grid의 횡방향 오차가 작았다. 네 시드의 삽입 직전 Hole 중심·축 각도 오차 중앙값도 최신 RANSAC에서 이전 값과 수치 허용오차 내에서 일치한다. [짝비교 JSON](../../graph/research_backups/graph2/hole_detector_cuda_regression/graph_comparison.json)
+세 급증 사례에서 평면 피팅만 RANSAC으로 바꾸면 기존 수준이 재현된다. 대조 사례 950에서는 grid의 횡방향 오차가 작았다. 네 시드의 삽입 직전 Hole 중심·축 각도 오차 중앙값도 최신 RANSAC에서 이전 값과 수치 허용오차 내에서 일치한다. [짝비교 JSON](../../outputs/hole_detector_cuda_regression/graph_comparison.json)
 
 ## 검출기 비교 결과
 
@@ -55,6 +55,6 @@
 
 Vast.ai RTX 3090에서 CPU PhysX 및 CUDA 렌더링·추론을 사용했다. 검출 감사 132프레임의 고유 시드와 두 작업의 종료 상태를 검증했다. Graph 재실행에서 네 시드 183프레임과 세 체크포인트/옵션 조건 간 평가 프레임 및 GT를 대조했다.
 
-- [검출 집계](../../graph/research_backups/graph2/hole_detector_cuda_regression/run/summary.json) · [프레임별 검출 매칭 (로컬 백업)](../../graph/research_backups/graph2/hole_detector_cuda_regression/BACKUP.md)
-- [RANSAC Graph 실행 설정](../../graph/research_backups/graph2/hole_detector_cuda_regression/ransac_graph/summary.json) · [프레임별 21D (로컬 백업)](../../graph/research_backups/graph2/hole_detector_cuda_regression/BACKUP.md)
-- [검출 비교 코드](../../graph/research_backups/graph2/hole_detector_cuda_regression/review.py) · [RANSAC 재실행 코드](../../graph/research_backups/graph2/hole_detector_cuda_regression/replay_ransac.py) · [21D 비교 코드](../../graph/research_backups/graph2/hole_detector_cuda_regression/compare_graph.py)
+- [검출 집계](../../outputs/hole_detector_cuda_regression/run/summary.json) · [프레임별 검출 매칭](../../outputs/hole_detector_cuda_regression/run/frames.jsonl)
+- [RANSAC Graph 실행 설정](../../outputs/hole_detector_cuda_regression/ransac_graph/summary.json) · [프레임별 21D](../../outputs/hole_detector_cuda_regression/ransac_graph/frames.jsonl)
+- [검출 비교 코드](../../outputs/hole_detector_cuda_regression/review.py) · [RANSAC 재실행 코드](../../outputs/hole_detector_cuda_regression/replay_ransac.py) · [21D 비교 코드](../../outputs/hole_detector_cuda_regression/compare_graph.py)

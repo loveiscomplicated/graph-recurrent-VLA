@@ -1,0 +1,178 @@
+{
+  "collection": {
+    "train_fixed": {
+      "episodes": 59,
+      "frames": 7116,
+      "cached": 3779,
+      "insert_frames": 1047
+    },
+    "train_moving": {
+      "episodes": 57,
+      "frames": 7026,
+      "cached": 5934,
+      "insert_frames": 1092
+    },
+    "validation_fixed": {
+      "episodes": 11,
+      "frames": 1379,
+      "cached": 735,
+      "insert_frames": 200
+    },
+    "validation_moving": {
+      "episodes": 10,
+      "frames": 1172,
+      "cached": 1012,
+      "insert_frames": 160
+    }
+  },
+  "attempts": 144,
+  "training": [
+    {
+      "seed": 0,
+      "selected": 800,
+      "end": 1000,
+      "stop": "budget",
+      "initial": {
+        "fixed": 0.09061417989081624,
+        "moving": 0.0764954284647219,
+        "balanced": 0.08355480417776907
+      },
+      "best": {
+        "fixed": 0.02849315547744289,
+        "moving": 0.028673018918471228,
+        "balanced": 0.02858308719795706
+      },
+      "seconds": 314.57293243700406
+    },
+    {
+      "seed": 1,
+      "selected": 950,
+      "end": 1000,
+      "stop": "budget",
+      "initial": {
+        "fixed": 0.07601991520034307,
+        "moving": 0.06011286135063643,
+        "balanced": 0.06806638827548975
+      },
+      "best": {
+        "fixed": 0.021979071574043847,
+        "moving": 0.02588613242476721,
+        "balanced": 0.02393260199940553
+      },
+      "seconds": 318.30780379101634
+    },
+    {
+      "seed": 2,
+      "selected": 800,
+      "end": 1000,
+      "stop": "budget",
+      "initial": {
+        "fixed": 0.09005351085823632,
+        "moving": 0.06618858093186043,
+        "balanced": 0.07812104589504837
+      },
+      "best": {
+        "fixed": 0.024389479959017562,
+        "moving": 0.023802326156188807,
+        "balanced": 0.024095903057603184
+      },
+      "seconds": 309.46158011700027
+    },
+    {
+      "seed": 3,
+      "selected": 1000,
+      "end": 1000,
+      "stop": "budget",
+      "initial": {
+        "fixed": 0.09020938175346127,
+        "moving": 0.07242696786954135,
+        "balanced": 0.0813181748115013
+      },
+      "best": {
+        "fixed": 0.02493319549666011,
+        "moving": 0.0321754189843865,
+        "balanced": 0.028554307240523304
+      },
+      "seconds": 328.43694216100266
+    },
+    {
+      "seed": 4,
+      "selected": 950,
+      "end": 1000,
+      "stop": "budget",
+      "initial": {
+        "fixed": 0.1069031947976528,
+        "moving": 0.0775688260463114,
+        "balanced": 0.0922360104219821
+      },
+      "best": {
+        "fixed": 0.02709813821490819,
+        "moving": 0.02761249749129797,
+        "balanced": 0.02735531785310308
+      },
+      "seconds": 317.98465848801425
+    }
+  ],
+  "closed_loop": {
+    "fixed": {
+      "old": {
+        "success": 25,
+        "total": 32,
+        "any_grasp": 32,
+        "median_success_steps": 116.0,
+        "lat_p90_while_grasped_mm": 12.06340379714966
+      },
+      "new": {
+        "success": 24,
+        "total": 32,
+        "any_grasp": 32,
+        "median_success_steps": 102.0,
+        "lat_p90_while_grasped_mm": 14.543464660644531
+      },
+      "pairs": {
+        "both": 22,
+        "old_only": 3,
+        "new_only": 2,
+        "neither": 5,
+        "exact_p": 1.0
+      }
+    },
+    "moving": {
+      "old": {
+        "success": 14,
+        "total": 32,
+        "any_grasp": 32,
+        "median_success_steps": 135.0,
+        "lat_p90_while_grasped_mm": 22.110784530639652,
+        "actually_moved": 32,
+        "success_after_motion_setup": 14
+      },
+      "new": {
+        "success": 11,
+        "total": 32,
+        "any_grasp": 32,
+        "median_success_steps": 115.0,
+        "lat_p90_while_grasped_mm": 14.677247619628904,
+        "actually_moved": 32,
+        "success_after_motion_setup": 11
+      },
+      "pairs": {
+        "both": 8,
+        "old_only": 6,
+        "new_only": 3,
+        "neither": 15,
+        "exact_p": 0.5078125
+      }
+    }
+  },
+  "eval_runs": [
+    "265b2a8e587940e78707e0b1b7271a8f",
+    "40119c3dc57f43cf81ee5289ef652e8a",
+    "27b218c9fac44468909e433f5823d371",
+    "982740210142439d8f425ab60ca89fd8",
+    "cabbd491643f4e5a8bdeb5b24aeeb6c0",
+    "67dceb5cd7ba4f719972efd32c7ec23a",
+    "405e17c0e8c14bed9e8747a3cad52a83",
+    "dbed1c7c7bd549438544eea1d255d978"
+  ]
+}
