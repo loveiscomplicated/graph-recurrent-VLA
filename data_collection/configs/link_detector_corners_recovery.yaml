@@ -1,0 +1,10 @@
+trainer: data_collection.link_detector_corners:run
+detector:
+  device: mps
+  threads: 1
+  source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+  source_manifest_sha256: 47745e7ea81688744dbac72a084f8acb33395dd8a8b714e33612877035e701be
+  output_root: outputs/refreshed_corner_cache/recovery/detections
+tracking_cache: outputs/shared_tracking_cache/tapnext_recovery_state36.npz
+linked_tracking_cache: outputs/refreshed_corner_cache/recovery/tapnext_with_detector_corners.npz
+linked_visible_cache: outputs/refreshed_corner_cache/recovery/visible_surface_with_detector_corners.npz

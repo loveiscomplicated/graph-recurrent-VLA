@@ -1,0 +1,10 @@
+trainer: data_collection.link_detector_corners:run
+detector:
+  device: mps
+  threads: 1
+  source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+  source_manifest_sha256: e279d3750a074fccd1719d4d235d621961fa4f87038fdcdc33f3c078516f27fc
+  output_root: outputs/refreshed_corner_cache/pilot/detections
+tracking_cache: outputs/shared_tracking_cache/tapnext_state36.npz
+linked_tracking_cache: outputs/refreshed_corner_cache/pilot/tapnext_with_detector_corners.npz
+linked_visible_cache: outputs/refreshed_corner_cache/pilot/visible_surface_with_detector_corners.npz

@@ -760,6 +760,117 @@ workflow on this host.
 행동 학습에서는 `action_valid`가 참인 행을 고른다. 두 State36 배열과 `action`은
 같은 마스크로 인덱싱한다. 결과에는 세 정책의 궤적이 모두 포함된다.
 
+### 공유 TAPNext++·State36 캐시
+
+**FORBIDDEN** · 이 섹션은 기존 캐시의 용도를 기록한다. 에이전트가 캐시 파일이나
+복제본에 직접 또는 로더를 통해 접근하려면 현재 작업에 대한 사용자의 명시적
+허락이 필요하다. 접근 범위는 [저장소 에이전트 지침](../AGENTS.md#forbidden-cache-access)을
+따른다.
+
+공유 NPZ는 파일럿의 원본 episode와 frame 순서를 유지한다. Recurrent 형식
+`float32[N,36]` GT는 `state36_gt`에 프레임당 한 행씩 넣는다.
+`episode_offsets[e:e+2]`가 에피소드의 반열린 행 범위이고,
+`frame_indices`는 에피소드 시작에서 0으로 돌아간다. 종료 관측도 포함한다.
+`metadata_json`에 원본 manifest, detector cache, TAPNext++ 체크포인트의
+SHA-256과 State36 필드 순서를 기록한다.
+
+`surface_xy`와 `surface_visible`은 현재 프레임의 Peg 표면점 추적 결과다.
+`corner_frame_offsets[t:t+2]`는 같은 프레임의 `corner_xy`와
+`corner_visible` 행 범위다. `corner_query_offsets[e:e+2]`는 그 에피소드
+초기 꼭짓점의 `corner_query_xy` 및 `corner_query_object_id` 범위다.
+좌표는 원본 카메라의 픽셀이며, 꼭짓점 ID는 에피소드 내부 초기 쿼리 번호다.
+검출된 꼭짓점과 깊이로 검증된 Peg 표면점은 같은 causal TAPNext++ stream에서
+추적한다. 초기화 전은 NaN 좌표와 false 가시성으로 표시한다.
+
+이 공유 캐시는 Pilot/Recovery의 State36 GT와 추적 결과를 프레임별로 정렬하는 데
+쓰인다. `corner_xy`는 에피소드 초기에 검출한 꼭짓점 쿼리를 TAPNext++로 추적한
+좌표다. 아래의 `condition_1` 프레임 인덱스는 이 좌표로 가시성을 판정한다.
+[Five-mode 그래프 입력](#five-mode-graph-input)에서 사용하는 매 프레임의
+꼭짓점 좌표는 별도의 `corners` 캐시에서 가져온다.
+
+```python
+import numpy as np
+
+with np.load("tapnext_state36.npz", allow_pickle=False) as cache:
+    start, stop = cache["episode_offsets"][:2]
+    state36 = cache["state36_gt"][start:stop]
+    surface = cache["surface_xy"][start:stop]
+    corner_start, corner_stop = cache["corner_frame_offsets"][start : start + 2]
+    first_frame_corners = cache["corner_xy"][corner_start:corner_stop]
+```
+
+`data_collection.shared_tapnext_cache`는 원본·검출·GT의 에피소드 순서와
+프레임 수를 검사하고, CUDA 추적 결과를 같은 순서의 NPZ로 합친다.
+원본이나 캐시를 공유할 때는 `(episode_ids, frame_indices)`로 정렬한다.
+
+2026-11-16 KST에 같은 파일럿 원본의 300개 episode와 종료 관측을 포함한
+62,395개 frame을 CUDA에서 추적·병합했다. 압축 파일은 24,319,089 bytes다.
+전체 raw frame의 해시와 GT 행, 관측 배열의 episode/frame 범위를 검증했다.
+초기 표면점과 Peg·Hole 조립체 쪽 꼭짓점 쿼리는 300개 episode에서 확보했다.
+원본 policy mode와 reset seed를 보존했다.
+[공유 NPZ](../outputs/shared_tracking_cache/tapnext_state36.npz)
+
+### 꼭짓점 가시성 프레임 인덱스
+
+공유 TAPNext++ 캐시 두 개와 대응하는 Pilot/Recovery 원본이 있는 환경에서
+저장소 루트 기준으로 실행한다.
+
+```bash
+.venv/bin/python main.py --config data_collection/configs/corner_visibility_index.yaml
+```
+
+가시 플래그가 있는 꼭짓점 쿼리만 현재 깊이로 3D 복원하고, 공통 GT 매칭
+함수로 물체별 1:1 대응을 구한다. 기본 거리는 5 mm 이내이고 두 번째로 가까운
+후보와의 거리 차이는 2 mm 이상이다. 매칭은 프레임마다 독립적으로 계산하며
+추적 쿼리의 시간적 ID 정확도는 평가하지 않는다. Hole은 로컬 −X 삽입구의
+네 모서리만 세며, Peg는 대응된 물리 꼭짓점의 affine rank가 3일 때 비공면이다.
+
+`outputs/corner_visibility_index/frame_locations.json`은 `condition_1`
+(Peg 4개 이상이면서 비공면, Hole 3개 이상), `condition_2` (Peg 3개,
+Hole 2개), `condition_3` (Peg 0–1개, Hole 0개) 아래에 각각
+`train`, `validation`, `test` 키를 둔다. 예를 들어
+`index["condition_1"]["validation"]`은 해당 조건의 검증용 원본 NPZ 경로 목록이다.
+Pilot과 Recovery의 reset seed를 합쳐 State21과 같은 방식으로 분할한다.
+기본값은 분할 난수 seed 0, validation과 test에 각각 reset seed 10개,
+나머지는 train이다. 같은 reset seed의 에피소드는 모두 같은 split에 속한다.
+기본 설정의 경로는 저장소 루트 기준 상대 경로다. 세 조건 밖의 프레임은
+목록에서 제외한다. 기존 원본과 추적 캐시는 읽기 전용으로 사용한다.
+인덱스를 다시 생성할 때는 설정의 `output`에 새 파일 경로를 지정한다.
+
+### 프레임별 검출 꼭짓점과 TAPNext++ 표면점 연결
+
+원본 Pilot/Recovery와 대응하는 기존 공유 TAPNext++ NPZ가 있는 상태에서
+저장소 루트 기준으로 실행한다. 설정은 로컬 MPS의 현재 메인 RGB-D 검출기를 사용한다.
+
+```bash
+.venv/bin/python main.py --config data_collection/configs/link_detector_corners_pilot.yaml
+.venv/bin/python main.py --config data_collection/configs/link_detector_corners_recovery.yaml
+```
+
+검출 캐시의 원본 매니페스트 해시, 에피소드 순서, 프레임 번호와 각 NPZ의
+해시를 확인한 뒤 두 연결본을 저장한다. 두 연결본에서 프레임 `i`의
+검출점은 `corner_frame_offsets[i:i+2]`가 가리키는 `corner_uv`,
+`corner_world_xyz`, `corner_object_id` 범위다. 점 순서는 매 프레임
+검출기 출력 순서이며 프레임 간 꼭짓점 ID는 없다.
+
+- `tapnext_with_detector_corners.npz`에는 기존 State36과 밀집 표면 추적 배열,
+  새 검출점이 들어 있다.
+- `visible_surface_with_detector_corners.npz`에는 새 검출점과 기존 추적에서
+  보인 표면점이 들어 있다. 같은 프레임의 새 검출점과 반올림한 픽셀이
+  겹치는 표면점은 제외하며, `surface_frame_offsets`와 `surface_track_id`로
+  표면점을 조회한다.
+
+두 연결본에는 각각 새 포맷 이름이 기록된다. 기존
+`shared_tapnext_state36` 로더는 그대로 이전 포맷을 읽는다. 이미 완료한
+검출 캐시를 다시 연결하려면 설정에 `detection_manifest`를 지정한다.
+
+`shared_tapnext_state36`의 `corner_xy`는 초기 검출 꼭짓점을 TAPNext++로
+추적한 좌표다. 프레임별 검출 꼭짓점과 비꼭짓점 Peg 표면점을 함께 쓰려면
+`data_collection.detector_surface_cache.track_episode`로 표면점 전용 추적을
+실행하고 같은 프레임의 검출기 `corner_world_xyz`와 추적 결과의
+`surface_world_xyz`를 합친다. 이 표면점 전용 경로는 쿼리 초기화와 각
+프레임 출력에서 검출 꼭짓점 반경 안의 점을 제외한다.
+
 ### Mixed trajectory pilot results
 
 On 2026-11-14, the pilot collected 100 reset seeds and all 300 planned

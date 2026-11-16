@@ -1,0 +1,29 @@
+trainer: data_collection.detector_surface_cache:build
+cache_root: outputs/detector_surface_cache
+index_output: outputs/detector_corner_visibility_index/frame_locations.json
+sources:
+  - source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+    detection_manifest: outputs/vast_backups/60801417/curriculum_corner_cache/detections/pilot/manifest.json
+  - source_manifest: outputs/mixed_trajectory_recovery/manifest.json
+    detection_manifest: outputs/vast_backups/60801417/curriculum_corner_cache/detections/recovery/manifest.json
+split:
+  seed: 0
+  validation_count: 10
+  test_count: 10
+matching:
+  gate_m: 0.005
+  margin_m: 0.002
+tracking:
+  device: mlx
+  detector_device: mps
+  checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+  surface_queries: 32
+  corner_exclusion_px: 2
+  tap_input_resolution: 256
+  tap_adaptive_crop: true
+  tap_cuda_autocast: false
+  tap_cache_cuda_autocast: false
+  tap_mps_fp16_vit: false
+  tap_mps_fp16_recurrent_mlp: false
+  tap_mps_skip_past_query_embeddings: false
+  tap_mps_compile_recurrent: false

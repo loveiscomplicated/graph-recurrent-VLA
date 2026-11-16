@@ -14,6 +14,18 @@ prototype evidence.
 Verify simulator API claims against the installed package and runnable examples.
 State clearly when a backend or device was not executed on the current host.
 
+## Forbidden cache access
+
+The legacy shared TAPNext++/State36 cache is **FORBIDDEN** for agent access
+unless the user explicitly authorizes it for the current task. This covers
+`outputs/shared_tracking_cache/tapnext_state36.npz`,
+`outputs/shared_tracking_cache/tapnext_recovery_state36.npz`, and copies of
+those artifacts. Without that authorization, do not open, inspect, parse, or
+copy the cache, including its embedded metadata. Check indirect inputs before
+launching a loader, script, or config that could access it. For the Five-mode
+graph, use the per-frame `corners` cache and the non-corner Peg `surface` cache
+described in [the data collection guide](docs/data_collection.md#five-mode-graph-input).
+
 ## Code readability
 
 - Prioritize readability for the next maintainer. Write code whose purpose and
