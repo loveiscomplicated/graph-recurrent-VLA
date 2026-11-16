@@ -23,9 +23,14 @@ from .visibility import CameraObservation, evaluate
 
 def initial_visibility(env, observation):
     gt = get_gt_state(env)
+    return initial_visibility_from_state(observation, vars(gt)), vars(gt)
+
+
+def initial_visibility_from_state(observation, state):
+    """Measure initial PEG visibility for a single retained observation."""
     image = observation["sensor_data"]["base_camera"]
     calibration = observation["sensor_param"]["base_camera"]
-    tcp = to_numpy(gt.ee_pose)[0]
+    tcp = to_numpy(state["ee_pose"])[0]
     camera = CameraObservation(
         "initial",
         0,
@@ -39,9 +44,9 @@ def initial_visibility(env, observation):
         tcp,
     )
     result, _ = evaluate(
-        camera, to_numpy(gt.peg_pose)[0], to_numpy(gt.peg_half_sizes)[0], tcp
+        camera, to_numpy(state["peg_pose"])[0], to_numpy(state["peg_half_sizes"])[0], tcp
     )
-    return result, vars(gt)
+    return result
 
 
 def collect_episodes(

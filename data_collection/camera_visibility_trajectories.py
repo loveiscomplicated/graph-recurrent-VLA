@@ -1,11 +1,13 @@
 """Collect reproducible expert-prefix and random-action camera study trajectories."""
 
+from functools import partial
 import json
 from pathlib import Path
 
 import numpy as np
 import torch
 
+from data_collection.collection_batches import collection_defaults, iter_episode_jobs
 from data_collection.scripted_policy import ScriptedPegPolicy
 from envs.maniskill import get_gt_state, make_peg_insertion_env
 from utils.experiment_logger import ExperimentLogger
@@ -13,6 +15,7 @@ from utils.experiment_logger import ExperimentLogger
 
 def collect_episode(config, seed):
     """Record all actions and preserve failures instead of filtering by success."""
+    torch.set_num_threads(1)
     env = make_peg_insertion_env(seed=seed, obs_mode='state', control_mode=config['control_mode'],
                                  max_episode_steps=config['max_frames'])
     policy = ScriptedPegPolicy()
@@ -72,6 +75,7 @@ def collect_episode(config, seed):
 
 def collect(config):
     """Save a camera-independent episode manifest with effective settings."""
+    config = collection_defaults(config)
     if not config['seeds'] or len(set(config['seeds'])) != len(config['seeds']):
         raise ValueError('seeds must contain unique environment seed values')
     torch.set_num_threads(2)
@@ -80,8 +84,9 @@ def collect(config):
         output = Path(config['output_root']) / logger.run_id
         output.mkdir(parents=True, exist_ok=False)
         episodes = []
-        for seed in config['seeds']:
-            episode = collect_episode(config, seed)
+        job = partial(collect_episode, config)
+        for episode in iter_episode_jobs(job, config['seeds'], config):
+            seed = episode['environment_seed']
             episodes.append(episode)
             (output / 'progress.json').write_text(json.dumps(episodes, indent=2))
             print(f'seed {seed}: switch={episode["switched"]}, samples={len(episode["sample_frames"])}', flush=True)

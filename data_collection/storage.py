@@ -38,12 +38,13 @@ def write_json(path, value):
     temporary.replace(path)
 
 
-def save_frame(path, observation, **extra):
+def save_frame(path, observation, *, compress=True, **extra):
     path = Path(path)
     arrays = flatten_arrays({"observation": observation, **extra})
     temporary = path.with_suffix(".tmp")
     with temporary.open("wb") as stream:
-        np.savez_compressed(stream, **arrays)
+        save = np.savez_compressed if compress else np.savez
+        save(stream, **arrays)
         stream.flush()
         os.fsync(stream.fileno())
     # Verify dtype, values and key identity before exposing the file.

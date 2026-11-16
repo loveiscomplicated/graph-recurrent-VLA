@@ -1,5 +1,18 @@
 # Episode collection
 
+## Collection batch defaults
+
+The dataset workflows target eight episodes per batch and use two collection
+workers by default on the local machine and on servers. Override with
+`batch_episodes` and `workers` in workflow YAML. The sharded RGB-D workflow
+also accepts its existing `episodes_per_shard` setting. Each sharded worker
+collects one shard at a time. Workflows that share one simulator across all
+policies for a seed keep the whole seed together. A three-policy pilot therefore
+runs two seed jobs (six episodes) per group, while four-policy Moving-Hole RAM
+staging archives two seeds (eight episodes) per group. The caller-owned
+`collect_episodes` function and CLI run one simulator and serve as the workers
+for the sharded workflow.
+
 ## Fixed-ID per-corner sequences
 
 This dataset-only workflow isolates per-corner temporal prediction before adding
@@ -161,7 +174,7 @@ WANDB_MODE=disabled python -m data_collection.collect_dataset \
 
 That config requests native Main/Wrist 512×512 RGB-D, CPU physics, CUDA rendering,
 900 successful scripted-expert trajectories, 250-step horizons, raw GT at every
-frame, four independent workers and 30-episode archives. Initial Main visibility
+frame, two independent workers and eight-episode archives. Initial Main visibility
 is recomputed from every saved initial frame. Every saved frame's raw image schema
 and action/observation alignment are checked before publication. Success filtering
 changes the reset distribution; no train/validation/test partition is imposed.
@@ -745,6 +758,171 @@ random steps, verified Peg/Hole pose and robot joint state at the replay point,
 then restarted the GT-guided expert for up to 100 steps. Two of six succeeded.
 The six selected cases and reset-based expert restart are not a recovery success
 rate estimate.
+
+### Expert → Random → Expert recovery collection
+
+Use the completed 100-seed mixed-trajectory pilot on the same ManiSkill and
+rendering environment. Run from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_recovery.yaml
+```
+
+The recovery collection preserves the pilot reset seeds and initial state
+fingerprints. It replays the original applied controls through 35 Random
+steps, verifies the live branch state, then restarts the scripted expert
+in place for up to 100 steps. If the pilot missed its scheduled transition,
+Random begins at the last action in the scheduled phase. If the pilot began
+with Random, the corresponding Expert trajectory supplies one starting
+action. Adjusted cases use the original per-seed random stream and gripper
+setting and record the reason in `switch_adjustment`.
+
+Each seed produces one episode regardless of success. The raw observation
+and action schema matches the pilot, including the terminal frame. Use
+`switch_step` and `recovery_step` in `episode.json` as the first Random and
+returning Expert action indices. `successful` records the simulator outcome,
+and `expert_recovery_actions` counts actions after the return. The collection
+preserves the pilot's seed grouping for future splits.
+
+On 2026-11-16 KST, CPU physics and SAPIEN/MoltenVK rendering on the Mac
+produced 100 episodes and 18,250 frames, including 40 successful insertions
+and 60 episodes that reached the recovery limit. A raw-frame audit confirmed
+all three action segments, exact seed coverage, the parent hashes of the
+replayed prefixes, and action alignment through the terminal observation.
+[Recovery manifest](../outputs/mixed_trajectory_recovery/manifest.json) ·
+[Raw-frame audit](../outputs/mixed_trajectory_recovery/audit.json)
+
+The [private Hugging Face recovery publication](https://huggingface.co/datasets/Graph-Recurrent-VLA/mixed-trajectory-pilot/tree/62282f2f298acb27b4c0f7504d636b5c306653f3/graph/ccae6db8266a4347bb7341bb6ed620ab)
+uses 301 MB of archives and references 8,454 byte-identical frames in the
+original pilot. Download the four `recovery_arrays_*.tar.zst` archives and
+extract `recovery_metadata.tar` beside them. With the original pilot already
+restored and `zstd` installed, run from that directory:
+
+```bash
+python restore_recovery.py --shard-root . --pilot-root /path/to/mixed_trajectory_pilot \
+  --output /path/to/mixed_trajectory_recovery
+```
+
+The restore checks every output NPZ against the original recovery manifest.
+Full restoration was verified with Python 3.11.18 and zlib 1.2.12.
+
+The pinned publication was downloaded to Vast.ai instance `60669483` and
+restored at `/workspace/data/mixed_trajectory_recovery`. All 18,250 raw frame
+checksums were verified. CUDA produced the TAPNext++ tracks and Recurrent
+State36 labels for all 100 episodes. The
+[shared recovery cache](../outputs/shared_tracking_cache/tapnext_recovery_state36.npz)
+is stored on Vast.ai at
+`/workspace/data/shared_tracking_cache/tapnext_recovery_state36.npz`.
+Its SHA-256 is
+`80d3166c12bf8cd2a90e2534915d64c59948519882b9af5dc74051a32f92ff77`.
+
+The recovery cache inherits the pilot's reset-seed assignment. The
+train/validation/test splits contain 80/10/10 recovery episodes and
+14,574/1,923/1,753 frames. An exact-hash audit using both source manifests
+confirmed that shared source frames and initial scenes stay within their
+split. The Graph State21 loader read real train and validation samples
+from the recovery cache.
+
+### Mixed trajectory collection with a moving Box
+
+Collect the first 25 reset seeds in the frozen Fixed-Hole pilot protocol in
+all four modes (100 total episodes). The original pilot manifest and protocol
+must be present locally. The initial scenes, camera, controller, random action
+streams, transition schedule, recovery procedure and raw frame schema come
+from the Fixed-Hole workflow above. The recovery collector replays the newly
+collected moving-Box prefix, including the same motion schedule. If the Box
+movement prevents the expert from reaching the scheduled phase, recovery uses
+the paired Fixed-Hole switch step (bounded by the available moving prefix).
+Each adjustment is recorded in the recovery protocol.
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_moving_hole.yaml
+```
+
+The Box translates 60 mm along world +X from 0.5 to 2.0 s and holds its new
+position. The 80 mm proximity guard stays active throughout the move. The
+schedule is independent of the expert phase. Outputs go to the configured
+directory with separate `pilot/` (75 episodes) and `recovery/` (25 episodes)
+manifests. `motion_audit.json` lists the final Box offset of each trajectory.
+The run checks each reset against the Fixed-Hole reference. A fingerprint
+mismatch is checked against the raw reset arrays with an absolute tolerance of
+`1e-7` for platform rounding. Both Box and Hole must reach the target translation
+in all episodes. Set `render_backend: cuda` on a Linux host with Vulkan/CUDA
+interop to use GPU rendering with CPU physics.
+
+### Moving-Hole collection with RAM staging
+
+The example collects eight episodes (two seeds) with two collection workers and
+writes compressed archives to `output_root`. Extend `record_range` to collect
+additional batches. Set `render_backend: cuda` for GPU rendering on supported
+Linux hosts. Linux defaults to `/dev/shm` when present. On macOS the default is
+the system temporary directory, and `ram_root` can point to an existing RAM
+disk for memory-backed staging. Allow space for two batches of uncompressed
+frames when staging in RAM.
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_moving_hole_streaming.yaml
+```
+
+The collector writes and verifies uncompressed NPZ frames in RAM. A background
+worker compresses the completed batch into a `.tar.zst` file while the next
+batch collects. Each archive is synchronized and verified before its RAM copy is
+removed. The output manifest records the archive SHA-256 and seed range.
+Extract each archive to its own directory with `tar --zstd -xf FILE` to read the
+usual pilot, recovery, and motion-audit files with their original NPZ arrays and
+frame checksums. The server needs both `tar` and `zstd`.
+
+On 2026-11-16 KST, the RTX 3090 server collected the same eight episodes
+(2,000 frames) with CUDA rendering and one seed per batch. Compressed NPZs
+staged in RAM and copied to disk took 122.5 s and occupied 559.4 MB. Streaming
+uncompressed NPZs through background Zstandard compression took 92.8 s and
+occupied 194.1 MB on disk. The test included the final writes and archive
+verification. All archived frames matched their collection checksums. The
+server report is at
+`/workspace/moving_hole_collection/ram_stream_benchmark/comparison.json`.
+The same server later collected two eight-episode batches with two workers
+in 94.8 s (3,416 frames). The first batch's compression, save, and
+verification overlapped the second batch's collection by 5.7 s.
+
+### Batched CUDA physics collection
+
+On a CUDA host with Vulkan camera interop, run the same four-mode Moving-Hole
+protocol with:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/mixed_trajectory_moving_hole_cuda.yaml
+```
+
+Point `reference_pilot` at the verified Fixed-Hole pilot and choose an output
+directory with enough space for the raw NPZs. `batch_size` sets the number of
+parallel physics environments. `writers` sets the number of concurrent NPZ
+writers. The internal batch dimension is split into the existing single-scene
+raw frame format. Each scene keeps its own transition, proximity guard and
+terminal observation. Fixed-Hole mixed collection can use
+`physics_device: cuda` and `batch_size` without adding a motion schedule.
+
+For Moving-Hole, seed-specific geometry is checked and the paired CPU reset
+pose and robot joints are installed before collection. The cross-backend reset
+audit allows absolute error of `1e-6` for float32 pose rounding. Recovery uses
+the same GPU batch layout and recorded parent actions. It saves the live replay
+frames because GPU PhysX can introduce small replay differences. The episode
+receipt records the replay length and the differences at the branch. CPU and
+CUDA dynamics can produce different grasp or insertion outcomes.
+
+On 2026-11-16 KST, the RTX 3090 server ran the same 25 reset seeds and four
+policies on both backends. Three CPU physics workers completed 100 episodes
+and 20,853 frames in 444.4 s (46.9 frames/s). CUDA physics with a batch of
+eight and three NPZ writers completed 100 episodes and 20,789 frames in
+533.2 s (39.0 frames/s). Both used CUDA RGB-D rendering and the normal NPZ
+compression, fsync, and readback checks on `/dev/shm`. GPU time sums the
+completed pilot and the corrected recovery run (402.3 s and 130.9 s).
+All 100 GPU episodes reached 60 mm and preserved the RGB-D and terminal
+frame schema. The largest replay-boundary Peg deviations from the parent
+were 6.81 mm and 7.70 degrees. Both backends completed 30 successful insertions.
+The server receipts and logs are under
+`/workspace/moving_hole_collection/gpu_benchmark/`.
+
+### Pilot storage and additional diagnostics
 
 The pilot occupied 17,505,350,273 bytes. Linear scaling estimates approximately
 175 GB for 3,000 main episodes; the preflight requires approximately 215 GB

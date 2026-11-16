@@ -22,6 +22,7 @@ import yaml
 
 from utils.experiment_artifacts import connect, digests, remote_matches, plan_upload
 from utils.experiment_logger import ExperimentLogger
+from .collection_batches import collection_defaults
 from .storage import write_json
 
 
@@ -30,6 +31,8 @@ def load_config(path):
     config = yaml.safe_load(Path(path).read_text())
     if not isinstance(config, dict):
         raise ValueError("collection config must be a YAML mapping")
+    config = collection_defaults(config)
+    config.setdefault("episodes_per_shard", config.pop("batch_episodes"))
     for key in (
         "num_episodes", "episodes_per_shard", "workers", "attempts_per_shard",
         "resolution", "steps", "max_episode_steps",

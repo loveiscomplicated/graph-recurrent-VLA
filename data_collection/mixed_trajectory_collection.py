@@ -3,9 +3,11 @@
 import hashlib
 import importlib.metadata
 import json
+import multiprocessing
 import shutil
 import time
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -13,7 +15,9 @@ import torch
 from mani_skill.utils import sapien_utils
 
 from data_collection.collect_episodes import initial_visibility
+from data_collection.collection_batches import collection_defaults, iter_batches
 from data_collection.episode_dataset import file_sha256
+from data_collection.hole_motion import EpisodeHoleMotion
 from data_collection.scripted_policy import ScriptedPegPolicy
 from data_collection.storage import save_frame, write_json
 from envs.maniskill import get_gt_state, make_peg_insertion_env
@@ -164,7 +168,7 @@ def random_action(rng, limit, gripper, task):
     return torch.as_tensor(values, device=task.device).reshape(task.action_space.shape)
 
 
-def collect_episode(env, record, mode, protocol, root):
+def collect_episode(env, record, mode, protocol, root, *, compress=True):
     """Write pre-action observations and a terminal observation for one trajectory."""
     seed = record['seed']
     rng = np.random.default_rng(np.random.SeedSequence([record['action_seed'], MODES.index(mode)]))
@@ -177,6 +181,8 @@ def collect_episode(env, record, mode, protocol, root):
     policy = ScriptedPegPolicy()
     if mode != 'random':
         policy.reset(env, seed)
+    motion_settings = protocol.get('hole_motion')
+    motion = EpisodeHoleMotion(env, motion_settings, policy) if motion_settings else None
     state = get_gt_state(env)
     fingerprint = initial_fingerprint(observation, state)
     initial_peg_visibility, _ = initial_visibility(env, observation)
@@ -227,7 +233,7 @@ def collect_episode(env, record, mode, protocol, root):
                                   sensor_param={'base_camera': camera},
                                   agent=observation['agent'], extra={'tcp_pose': observation['extra']['tcp_pose']})
         path = pending / f'frame_{steps:06d}.npz'
-        save_frame(path, stored_observation, ground_truth=vars(state), action=action,
+        save_frame(path, stored_observation, compress=compress, ground_truth=vars(state), action=action,
                    action_valid=np.asarray(action_valid),
                    collection=dict(frame=steps, phase=phase, switched=switched,
                                    grasp=grasp, success=success,
@@ -238,6 +244,8 @@ def collect_episode(env, record, mode, protocol, root):
         observation, _, term, trunc, _ = env.step(action)
         steps += 1
         terminated, truncated = bool(term.any()), bool(trunc.any())
+        if motion and not (terminated or truncated) and motion.advance(steps, policy):
+            observation = task.get_obs(task.get_info())
     reason = 'terminated' if terminated else 'truncated' if truncated else 'step_limit'
     receipt = dict(seed=seed, split=record['split'], mode=mode, path=name,
                    observations=len(frame_hashes), steps=steps, stop_reason=reason,
@@ -277,10 +285,67 @@ def check_main_preconditions(config, protocol):
                            f'{required_bytes} bytes required including reserve')
 
 
+def iter_seed_episodes(record, config, protocol, root):
+    """Reuse the environment and check reset identity across all three policies."""
+    env = make_peg_insertion_env(
+        seed=record['seed'], obs_mode='rgb+depth+segmentation',
+        sensor_configs=camera_sensors(config['camera']), control_mode=config['control_mode'],
+        max_episode_steps=config['max_steps'], render_backend=config.get('render_backend'),
+    )
+    try:
+        fingerprints = set()
+        for mode in MODES:
+            if shutil.disk_usage(root).free < config['minimum_free_gib'] * 1024**3:
+                raise RuntimeError('Available storage fell below minimum_free_gib; collection stopped')
+            episode = collect_episode(env, record, mode, protocol, root,
+                                      compress=config.get('compress_frames', True))
+            fingerprints.add(episode['initial_fingerprint'])
+            if len(fingerprints) != 1:
+                raise ValueError(f'Initial states differ across modes for seed {record["seed"]}')
+            yield episode
+    finally:
+        env.close()
+
+
+def collect_seed(record, config, protocol, root):
+    """Collect the three modes in a spawned worker with its own render context."""
+    torch.set_num_threads(1)
+    return list(iter_seed_episodes(record, config, protocol, root))
+
+
+def iter_episodes(records, config, protocol, root):
+    """Yield serial results or completed batches from isolated render workers."""
+    if config.get('physics_device') == 'cuda':
+        from data_collection.batched_mixed_trajectory import collect_batches
+        yield from collect_batches(records, config, protocol, root)
+        return
+    config = collection_defaults(config)
+    workers = config['workers']
+    seeds_per_batch = max(1, config['batch_episodes'] // len(MODES))
+    if workers == 1:
+        for record in records:
+            yield from iter_seed_episodes(record, config, protocol, root)
+        return
+    with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context('spawn')) as pool:
+        for batch in iter_batches(records, seeds_per_batch):
+            jobs = [pool.submit(collect_seed, record, config, protocol, root) for record in batch]
+            for job in as_completed(jobs):
+                yield from job.result()
+
+
 def collect(config):
     """Freeze the collection protocol, then collect and verify the requested cohort."""
+    config = collection_defaults(config)
     validate_config(config)
-    protocol = build_protocol(config)
+    source_protocol = config.get('source_protocol')
+    if source_protocol:
+        if file_sha256(source_protocol) != config['source_protocol_sha256']:
+            raise ValueError(f'Frozen protocol SHA-256 mismatch: {source_protocol}')
+        protocol = json.loads(Path(source_protocol).read_text())
+    else:
+        protocol = build_protocol(config)
+    if 'hole_motion' in config:
+        protocol['hole_motion'] = config['hole_motion']
     check_main_preconditions(config, protocol)
     root = Path(config['output_root'])
     root.mkdir(parents=True, exist_ok=False)
@@ -305,26 +370,13 @@ def collect(config):
     with ExperimentLogger(team='graph', model='mixed_trajectory_collection',
                           config=config, seed=config['seed_generator'], job_type='collection') as logger:
         try:
-            for record in records:
-                env = make_peg_insertion_env(seed=record['seed'], obs_mode='rgb+depth+segmentation',
-                    sensor_configs=camera_sensors(config['camera']), control_mode=config['control_mode'],
-                    max_episode_steps=config['max_steps'])
-                try:
-                    fingerprints = set()
-                    for mode in MODES:
-                        free = shutil.disk_usage(root).free
-                        if free < config['minimum_free_gib'] * 1024**3:
-                            raise RuntimeError('Available storage fell below minimum_free_gib; collection stopped')
-                        episode = collect_episode(env, record, mode, protocol, root)
-                        fingerprints.add(episode['initial_fingerprint'])
-                        if len(fingerprints) != 1:
-                            raise ValueError(f'Initial states differ across modes for seed {record["seed"]}')
-                        episodes.append(episode)
-                        write_json(root / 'manifest.json', manifest)
-                        print(f'{len(episodes)}/{len(records)*3} {record["split"]} '
-                              f'seed={record["seed"]} mode={mode} steps={episode["steps"]}', flush=True)
-                finally:
-                    env.close()
+            order = {record['seed']: index for index, record in enumerate(records)}
+            for episode in iter_episodes(records, config, protocol, root):
+                episodes.append(episode)
+                episodes.sort(key=lambda row: (order[row['seed']], MODES.index(row['mode'])))
+                write_json(root / 'manifest.json', manifest)
+                print(f'{len(episodes)}/{len(records)*3} {episode["split"]} '
+                      f'seed={episode["seed"]} mode={episode["mode"]} steps={episode["steps"]}', flush=True)
             manifest['status'] = 'COMPLETE'
         except BaseException:
             manifest['status'] = 'ERROR'

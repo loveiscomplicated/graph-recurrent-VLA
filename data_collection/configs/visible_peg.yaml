@@ -1,7 +1,5 @@
 output: outputs/visible_peg_dataset
 num_episodes: 900
-episodes_per_shard: 30
-workers: 4
 start_seed: 100000
 attempts_per_shard: 1000
 resolution: 512

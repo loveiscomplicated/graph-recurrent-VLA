@@ -1,7 +1,5 @@
 output: outputs/moving_hole_collection
 num_episodes: 1
-episodes_per_shard: 1
-workers: 1
 start_seed: 0
 attempts_per_shard: 100
 resolution: 512

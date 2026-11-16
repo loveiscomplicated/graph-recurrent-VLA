@@ -24,7 +24,6 @@ frame_stride: 5
 random_limit: 0.5
 gripper_interval: 15
 threads: 1
-workers: 3
 camera:
   eye: [0.65, -0.30, 0.65]
   target: [0.065, 0.297, 0.11]

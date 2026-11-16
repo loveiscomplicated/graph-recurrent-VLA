@@ -56,7 +56,7 @@ def record_states(config, source_episodes, seed):
     return snapshots
 
 
-def score_frame(obs, task, sample_count, tolerance):
+def score_frame(obs, task, sample_count, tolerance, *, env_index=0):
     """Measure visible, robot-blocked and peg-blocked front-opening samples."""
     sensor = obs['sensor_data']['base_camera']
     param = obs['sensor_param']['base_camera']
@@ -65,14 +65,14 @@ def score_frame(obs, task, sample_count, tolerance):
     intrinsic = param['intrinsic_cv'][0].cpu().numpy()
     extrinsic = param['extrinsic_cv'][0].cpu().numpy()
     eye = -extrinsic[:, :3].T @ extrinsic[:, 3]
-    transform = task.box_hole_pose.to_transformation_matrix()[0].cpu().numpy()
-    half_length = float(task.peg_half_sizes[0, 0])
-    radius = float(task.box_hole_radii[0])
+    transform = task.box_hole_pose.to_transformation_matrix()[env_index].cpu().numpy()
+    half_length = float(task.peg_half_sizes[env_index, 0])
+    radius = float(task.box_hole_radii[env_index])
     normal = -transform[:3, 0]
     center = transform[:3, 3] - half_length * transform[:3, 0]
     front_facing = bool((eye - center) @ normal > 0)
-    robot_ids = {int(link.per_scene_id[0].item()) for link in task.agent.robot.links}
-    peg_id = int(task.peg.per_scene_id[0].item())
+    robot_ids = {int(link.per_scene_id[env_index].item()) for link in task.agent.robot.links}
+    peg_id = int(task.peg.per_scene_id[env_index].item())
     visible = robot_blocked = peg_blocked = 0
     for y in np.linspace(-.7, .7, sample_count):
         for z in np.linspace(-.7, .7, sample_count):

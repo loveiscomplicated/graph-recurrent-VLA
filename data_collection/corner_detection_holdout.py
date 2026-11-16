@@ -1,6 +1,5 @@
 """Collect matched policy rollouts and freeze their sampled base-camera RGB-D."""
 
-from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 import hashlib
 import importlib.metadata
@@ -9,6 +8,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from data_collection.collection_batches import collection_defaults, iter_episode_jobs
 from data_collection.episode_dataset import file_sha256
 from data_collection.mixed_trajectory_collection import (
     MODES, initial_fingerprint, random_action, validate_camera,
@@ -136,6 +136,7 @@ def collect_seed(seed, config, output):
 
 def collect(config):
     """Create a fresh, checksummed holdout cohort for both accelerators."""
+    config = collection_defaults(config)
     seeds = config["seeds"]
     if not seeds or len(set(seeds)) != len(seeds):
         raise ValueError("seeds must be a nonempty sequence of distinct reset seeds")
@@ -154,11 +155,7 @@ def collect(config):
         logger.record(environment={"env_id": "PegInsertionSide-v1", "physics": "physx_cpu",
                                    "renderer": "sapien_cpu", "versions": versions})
         worker = partial(collect_seed, config=config, output=output.resolve())
-        if config["workers"] == 1:
-            batches = list(map(worker, seeds))
-        else:
-            with ProcessPoolExecutor(max_workers=config["workers"]) as pool:
-                batches = list(pool.map(worker, seeds))
+        batches = iter_episode_jobs(worker, seeds, config, episodes_per_job=len(MODES))
         episodes = [episode for batch in batches for episode in batch]
         path = output / "manifest.json"
         write_json(path, {"config": config, "versions": versions, "episodes": episodes})

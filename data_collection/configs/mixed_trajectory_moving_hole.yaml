@@ -1,0 +1,16 @@
+trainer: data_collection.mixed_trajectory_moving_hole:collect
+reference_pilot: outputs/mixed_trajectory_pilot
+reference_manifest_sha256: e279d3750a074fccd1719d4d235d621961fa4f87038fdcdc33f3c078516f27fc
+output_root: outputs/mixed_trajectory_moving_hole
+record_range: [0, 25]
+random_steps: 35
+recovery_steps: 100
+minimum_free_gib: 15
+hole_motion:
+  mode: continuous
+  translation_m: [0.06, 0.0, 0.0]
+  start_seconds: 0.5
+  end_seconds: 2.5
+  duration_seconds: 1.5
+  minimum_distance_m: 0.08
+  stop_expert_insert: false

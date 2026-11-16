@@ -39,30 +39,32 @@ class ScriptedPegPolicy:
         task = env.unwrapped
         if task.control_mode != "pd_ee_delta_pose":
             raise ValueError("ScriptedPegPolicy requires control_mode='pd_ee_delta_pose'")
-        closing_hint = task.agent.tcp.pose.to_transformation_matrix()[0, :3, 1]
-        grasp_info = compute_grasp_info_by_obb(
+        self.reset_from_geometry(
             get_actor_obb(task.peg),
+            task.agent.tcp.pose.to_transformation_matrix()[0, :3, 1].cpu().numpy(),
+            task.peg_half_sizes[0, 0].item(), task.agent.build_grasp_pose,
+        )
+
+    def reset_from_geometry(self, obb, closing_hint, half_length, build_grasp_pose):
+        """Initialize the same expert from one environment's geometry and TCP."""
+        grasp_info = compute_grasp_info_by_obb(
+            obb,
             approaching=np.array([0, 0, -1]),
-            target_closing=closing_hint.cpu().numpy(),
+            target_closing=closing_hint,
             depth=0.025,
         )
-        grasp = task.agent.build_grasp_pose(
+        grasp = build_grasp_pose(
             np.array([0, 0, -1]), grasp_info["closing"], grasp_info["center"]
         )
-        self.half_length = task.peg_half_sizes[0, 0].item()
+        self.half_length = half_length
         grasp_offset = max(0.05, self.half_length / 2 + 0.01)
         self.grasp = grasp * sapien.Pose([-grasp_offset, 0, 0])
         self.phase = "reach"
         self.counter = 0
         self.lift_target = None
 
-    def tcp(self):
-        """Read the current world-frame tool-center pose."""
-        return to_pose(self.env.unwrapped.agent.tcp.pose)
-
-    def servo(self, target, translation_limit=0.02):
+    def servo(self, current, target, translation_limit=0.02):
         """Convert a target world pose to the installed normalized EE action."""
-        current = self.tcp()
         translation = (target.p - current.p) * 3.0
         translation_norm = np.linalg.norm(translation)
         if translation_norm > translation_limit:
@@ -73,34 +75,38 @@ class ScriptedPegPolicy:
             rotation *= 0.15 / rotation_norm
         return np.concatenate([translation / 0.1, -rotation / 0.1])
 
-    def tcp_error(self, target):
+    def tcp_error(self, current, target):
         """Measure translation and rotation errors at the tool center."""
-        current = self.tcp()
         return (
             np.linalg.norm(target.p - current.p),
             np.linalg.norm(rotation_error(current.q, target.q)),
         )
 
-    def tcp_for_peg(self, peg_target):
+    def tcp_for_peg(self, tcp, peg, peg_target):
         """Preserve the measured peg-to-tool transform for a desired peg pose."""
-        peg = to_pose(self.env.unwrapped.peg.pose)
-        return peg_target * peg.inv() * self.tcp()
+        return peg_target * peg.inv() * tcp
 
     def act(self, observation):
         """Return one finite batched native action for the current expert phase."""
         task = self.env.unwrapped
-        goal = to_pose(task.goal_pose)
+        action = self.act_from_poses(
+            to_pose(task.agent.tcp.pose), to_pose(task.peg.pose), to_pose(task.goal_pose)
+        )
+        return torch.as_tensor(action, device=task.device).reshape(self.env.action_space.shape)
+
+    def act_from_poses(self, tcp, peg, goal):
+        """Advance the policy using one lane's measured poses."""
         gripper = 1.0
 
         if self.phase == "reach":
             target = self.grasp * sapien.Pose([0, 0, -0.05])
-            motion = self.servo(target)
-            position_error, angle_error = self.tcp_error(target)
+            motion = self.servo(tcp, target)
+            position_error, angle_error = self.tcp_error(tcp, target)
             if position_error < 0.01 and angle_error < 0.05:
                 self.phase = "descend"
         elif self.phase == "descend":
-            motion = self.servo(self.grasp, translation_limit=0.01)
-            position_error, angle_error = self.tcp_error(self.grasp)
+            motion = self.servo(tcp, self.grasp, translation_limit=0.01)
+            position_error, angle_error = self.tcp_error(tcp, self.grasp)
             if position_error < 0.004 and angle_error < 0.03:
                 self.phase = "close"
         elif self.phase == "close":
@@ -109,21 +115,19 @@ class ScriptedPegPolicy:
             self.counter += 1
             if self.counter >= 8:
                 self.phase = "lift"
-                current = self.tcp()
                 self.lift_target = sapien.Pose(
-                    current.p + np.array([0, 0, 0.08]), current.q
+                    tcp.p + np.array([0, 0, 0.08]), tcp.q
                 )
         elif self.phase == "lift":
             gripper = -1.0
-            motion = self.servo(self.lift_target)
-            if self.tcp_error(self.lift_target)[0] < 0.015:
+            motion = self.servo(tcp, self.lift_target)
+            if self.tcp_error(tcp, self.lift_target)[0] < 0.015:
                 self.phase = "align"
                 self.counter = 0
         elif self.phase == "align":
             gripper = -1.0
             peg_target = goal * sapien.Pose([-0.02 - self.half_length, 0, 0])
-            motion = self.servo(self.tcp_for_peg(peg_target))
-            peg = to_pose(task.peg.pose)
+            motion = self.servo(tcp, self.tcp_for_peg(tcp, peg, peg_target))
             position_error = np.linalg.norm(peg_target.p - peg.p)
             angle_error = np.linalg.norm(rotation_error(peg.q, peg_target.q))
             if position_error < 0.002 and angle_error < 0.02:
@@ -134,15 +138,13 @@ class ScriptedPegPolicy:
                 self.phase = "insert"
         else:
             gripper = -1.0
-            relative_peg = goal.inv() * to_pose(task.peg.pose)
+            relative_peg = goal.inv() * peg
             lateral_error = np.linalg.norm(relative_peg.p[1:])
             advance = 0.006 if lateral_error < 0.0015 else 0.0
             peg_target = goal * sapien.Pose([relative_peg.p[0] + advance, 0, 0])
-            motion = self.servo(self.tcp_for_peg(peg_target))
+            motion = self.servo(tcp, self.tcp_for_peg(tcp, peg, peg_target))
 
-        action = np.concatenate([motion, [gripper]]).astype(np.float32)
-        native_action = torch.as_tensor(action, device=task.device).clamp(-1.0, 1.0)
-        return native_action.reshape(self.env.action_space.shape)
+        return np.clip(np.concatenate([motion, [gripper]]).astype(np.float32), -1.0, 1.0)
 
 
 def make_policy():

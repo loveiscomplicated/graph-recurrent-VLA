@@ -1,11 +1,13 @@
 """Collect every preregistered raw RGB-D test trajectory without filtering."""
 
+from functools import partial
 import json
 from pathlib import Path
 
 import numpy as np
 import torch
 
+from data_collection.collection_batches import collection_defaults, iter_episode_jobs
 from data_collection.episode_dataset import file_sha256
 from data_collection.scripted_policy import ScriptedPegPolicy
 from data_collection.storage import save_frame, write_json
@@ -26,6 +28,7 @@ def collect_episode(protocol, seed, mode, root):
     settings = protocol['policy']
     sensors = {name: {'width': settings['resolution'], 'height': settings['resolution']}
                for name in ('base_camera', 'hand_camera')}
+    torch.set_num_threads(1)
     env = make_peg_insertion_env(seed=seed, obs_mode='rgb+depth', sensor_configs=sensors,
                                  control_mode=settings['control_mode'], max_episode_steps=settings['max_frames'])
     policy = ScriptedPegPolicy()
@@ -91,8 +94,15 @@ def collect_episode(protocol, seed, mode, root):
     return receipt
 
 
+def collect_case(case, *, protocol, root):
+    """Collect one frozen seed and policy pair."""
+    seed, mode = case
+    return collect_episode(protocol, seed, mode, root)
+
+
 def collect(config):
     """Enforce the frozen protocol and save all planned seed/mode cases."""
+    config = collection_defaults(config)
     if file_sha256(config['protocol']) != config['protocol_sha256']:
         raise ValueError('Frozen test protocol SHA256 mismatch')
     protocol = json.loads(Path(config['protocol']).read_text())
@@ -104,13 +114,13 @@ def collect(config):
         episodes = []
         manifest = dict(status='RUNNING', protocol_sha256=config['protocol_sha256'], episodes=episodes)
         try:
-            for seed in protocol['seeds']:
-                for mode in protocol['policy']['modes']:
-                    episode = collect_episode(protocol, seed, mode, root)
-                    episodes.append(episode)
-                    write_json(root / 'manifest.json', manifest)
-                    print(f'{len(episodes)}/{len(protocol["seeds"])*2}: seed={seed}, mode={mode}, '
-                          f'lift={episode["switched"]}, frames={episode["observations"]}', flush=True)
+            cases = [(seed, mode) for seed in protocol['seeds'] for mode in protocol['policy']['modes']]
+            job = partial(collect_case, protocol=protocol, root=root)
+            for episode in iter_episode_jobs(job, cases, config):
+                episodes.append(episode)
+                write_json(root / 'manifest.json', manifest)
+                print(f'{len(episodes)}/{len(cases)}: seed={episode["seed"]}, mode={episode["mode"]}, '
+                      f'lift={episode["switched"]}, frames={episode["observations"]}', flush=True)
             manifest['status'] = 'COMPLETE'
         except BaseException:
             manifest['status'] = 'ERROR'

@@ -34,7 +34,10 @@ class DatasetWorkflowTests(unittest.TestCase):
     def test_config_and_command_use_bounded_independent_seed_ranges(self):
         config_path = Path(__file__).resolve().parents[1] / "data_collection/configs/visible_peg.yaml"
         config = load_config(config_path)
-        command = shard_command(config, Path("new_shard"), 30, 101000)
+        self.assertEqual(config["workers"], 2)
+        self.assertEqual(config["episodes_per_shard"], 8)
+        command = shard_command(config, Path("new_shard"), config["episodes_per_shard"], 101000)
+        self.assertEqual(command[command.index("--num-episodes") + 1], "8")
         self.assertEqual(command[command.index("--start-seed") + 1], "101000")
         self.assertEqual(command[command.index("--max-attempts") + 1], "1000")
         self.assertIn("--require-success", command)

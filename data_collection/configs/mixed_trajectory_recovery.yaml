@@ -1,0 +1,7 @@
+trainer: data_collection.mixed_trajectory_recovery:collect
+pilot_root: outputs/mixed_trajectory_pilot
+pilot_manifest_sha256: e279d3750a074fccd1719d4d235d621961fa4f87038fdcdc33f3c078516f27fc
+output_root: outputs/mixed_trajectory_recovery
+random_steps: 35
+recovery_steps: 100
+minimum_free_gib: 15
