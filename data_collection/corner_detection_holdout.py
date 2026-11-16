@@ -8,8 +8,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data_collection.collection_batches import collection_defaults, iter_episode_jobs
+from data_collection.collection_batches import collection_defaults, iter_batches, iter_episode_jobs
 from data_collection.episode_dataset import file_sha256
+from data_collection.episode_staging import persist_episodes, stage_batches
 from data_collection.mixed_trajectory_collection import (
     MODES, initial_fingerprint, random_action, validate_camera,
 )
@@ -91,7 +92,7 @@ def rollout(env, seed, mode, config, output, switch_step):
     arrays["actions"] = np.stack(actions)
     name = f"{mode}_{seed}.npz"
     path = output / name
-    np.savez_compressed(path, **arrays)
+    np.savez(path, **arrays)
     receipt = {
         "seed": seed, "mode": mode, "file": name, "sha256": file_sha256(path),
         "actor_ids": actor_ids, "initial_state_sha256": initial,
@@ -154,9 +155,15 @@ def collect(config):
         output.mkdir(parents=True, exist_ok=False)
         logger.record(environment={"env_id": "PegInsertionSide-v1", "physics": "physx_cpu",
                                    "renderer": "sapien_cpu", "versions": versions})
-        worker = partial(collect_seed, config=config, output=output.resolve())
-        batches = iter_episode_jobs(worker, seeds, config, episodes_per_job=len(MODES))
-        episodes = [episode for batch in batches for episode in batch]
+        def collect_batch(batch, staging):
+            worker = partial(collect_seed, config=config, output=staging)
+            results = iter_episode_jobs(worker, batch, config, episodes_per_job=len(MODES))
+            return [episode for rows in results for episode in rows]
+
+        groups = iter_batches(seeds, max(1, config['batch_episodes'] // len(MODES)))
+        persist = partial(persist_episodes, output=output)
+        episodes = [episode for rows in stage_batches(groups, collect_batch, persist, config)
+                    for episode in rows]
         path = output / "manifest.json"
         write_json(path, {"config": config, "versions": versions, "episodes": episodes})
         logger.link_output(path, kind="episode_metadata")

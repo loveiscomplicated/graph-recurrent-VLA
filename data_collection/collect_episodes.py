@@ -9,6 +9,7 @@ import argparse
 import importlib
 import importlib.metadata
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -63,6 +64,8 @@ def collect_episodes(
     require_success=False,
     save_step_gt=False,
     hole_motion=None,
+    compress_frames=True,
+    rejected_root=None,
 ):
     """A policy has reset(env, seed) and act(observation) -> native action.
 
@@ -138,7 +141,7 @@ def collect_episodes(
                 motion = EpisodeHoleMotion(env, hole_motion, policy)
             initial_extra = {"hole_motion": motion.frame_data()} if motion else {}
             save_frame(
-                pending / "frame_000000.npz", observation, info=info, ground_truth=gt,
+                pending / "frame_000000.npz", observation, compress=compress_frames, info=info, ground_truth=gt,
                 **initial_extra,
             )
             for step in range(steps):
@@ -176,6 +179,7 @@ def collect_episodes(
                 save_frame(
                     pending / f"frame_{length:06d}.npz",
                     observation,
+                    compress=compress_frames,
                     action=command,
                     reward=reward,
                     terminated=term,
@@ -199,7 +203,13 @@ def collect_episodes(
             if require_success and not success:
                 manifest["expert_failed"] += 1
                 # Keep failed expert attempts as evidence, outside approved episodes.
-                pending.rename(output / f"rejected_seed_{seed:06d}")
+                rejected = f"rejected_seed_{seed:06d}"
+                if rejected_root is None:
+                    pending.rename(output / rejected)
+                else:
+                    from .episode_staging import persist_tree
+                    persist_tree(pending, Path(rejected_root) / rejected)
+                    shutil.rmtree(pending)
                 print(f"Expert unsuccessful: seed={seed}, steps={length}", flush=True)
                 continue
             pending.rename(output / name)
@@ -239,6 +249,8 @@ def main():
     parser.add_argument("--max-episode-steps", type=int, default=None)
     parser.add_argument("--require-success", action="store_true")
     parser.add_argument("--save-step-gt", action="store_true")
+    parser.add_argument("--uncompressed-frames", action="store_true")
+    parser.add_argument("--rejected-root")
     parser.add_argument("--hole-motion", help="JSON motion settings; omit for a stationary box")
     behavior = parser.add_mutually_exclusive_group()
     behavior.add_argument(
@@ -332,6 +344,8 @@ def main():
             require_success=args.require_success,
             save_step_gt=args.save_step_gt,
             hole_motion=hole_motion,
+            compress_frames=not args.uncompressed_frames,
+            rejected_root=args.rejected_root,
         )
         if result["status"] != "COMPLETE":
             raise SystemExit(

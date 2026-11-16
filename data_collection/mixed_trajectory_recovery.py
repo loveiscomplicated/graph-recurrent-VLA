@@ -1,6 +1,7 @@
 """Branch from pilot trajectories and collect expert recovery after random actions."""
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
 import hashlib
 import io
 import json
@@ -14,6 +15,7 @@ import torch
 
 from data_collection.collection_batches import collection_defaults, iter_batches
 from data_collection.episode_dataset import file_sha256
+from data_collection.episode_staging import persist_episodes, stage_batches
 from data_collection.hole_motion import EpisodeHoleMotion
 from data_collection.mixed_trajectory_collection import (
     MODES,
@@ -246,6 +248,38 @@ def collect_cpu_cases(raw, output, cases, protocol, config, errors):
                     print(f'Collection error: {error}', flush=True)
 
 
+def iter_cases(cases, config, protocol, raw, output, errors):
+    """Use the existing CPU or CUDA recovery path for a bounded case group."""
+    if config.get('physics_device') == 'cuda':
+        from data_collection.batched_mixed_trajectory import collect_batches
+        yield from collect_batches([case['record'] for case in cases], config, protocol, output,
+                                   recovery_cases=cases, parent_root=raw)
+    else:
+        yield from collect_cpu_cases(raw, output, cases, protocol, config, errors)
+
+
+def iter_staged_cases(cases, config, protocol, raw, output, errors):
+    """Stage new recovery frames while retaining the source prefix's exact bytes."""
+    if not config.get('compress_frames', True):
+        yield from iter_cases(cases, config, protocol, raw, output, errors)
+        return
+    size = config['batch_episodes']
+    if config.get('physics_device') == 'cuda':
+        size = config.get('batch_size', size)
+    settings = dict(config, compress_frames=False, collection_output=str(output))
+
+    def collect_batch(batch, staging):
+        count = len(errors)
+        episodes = list(iter_cases(batch, settings, protocol, raw, staging, errors))
+        if len(errors) != count:
+            raise RuntimeError('Recovery batch failed. Inspect its staging directory.')
+        return episodes
+
+    persist = partial(persist_episodes, output=output)
+    for episodes in stage_batches(iter_batches(cases, size), collect_batch, persist, config):
+        yield from episodes
+
+
 def collect(config):
     """Freeze the branch plan and collect each selected case without success filtering."""
     config = collection_defaults(config)
@@ -280,12 +314,7 @@ def collect(config):
     with ExperimentLogger(team='graph', model='mixed_trajectory_recovery', config=config,
                           seed=protocol['generator'], job_type='collection') as logger:
         errors = []
-        if config.get('physics_device') == 'cuda':
-            from data_collection.batched_mixed_trajectory import collect_batches
-            receipts = collect_batches([case['record'] for case in cases], config, protocol, output,
-                                       recovery_cases=cases, parent_root=raw)
-        else:
-            receipts = collect_cpu_cases(raw, output, cases, protocol, config, errors)
+        receipts = iter_staged_cases(cases, config, protocol, raw, output, errors)
         try:
             for receipt in receipts:
                 index['episodes'].append(receipt)

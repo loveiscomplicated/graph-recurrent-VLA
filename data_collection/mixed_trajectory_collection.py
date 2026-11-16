@@ -1,5 +1,6 @@
 """Collect unfiltered, split-safe expert and random ManiSkill trajectories."""
 
+from functools import partial
 import hashlib
 import importlib.metadata
 import json
@@ -17,6 +18,7 @@ from mani_skill.utils import sapien_utils
 from data_collection.collect_episodes import initial_visibility
 from data_collection.collection_batches import collection_defaults, iter_batches
 from data_collection.episode_dataset import file_sha256
+from data_collection.episode_staging import persist_episodes, stage_batches
 from data_collection.hole_motion import EpisodeHoleMotion
 from data_collection.scripted_policy import ScriptedPegPolicy
 from data_collection.storage import save_frame, write_json
@@ -295,7 +297,7 @@ def iter_seed_episodes(record, config, protocol, root):
     try:
         fingerprints = set()
         for mode in MODES:
-            if shutil.disk_usage(root).free < config['minimum_free_gib'] * 1024**3:
+            if shutil.disk_usage(config.get('collection_output', root)).free < config['minimum_free_gib'] * 1024**3:
                 raise RuntimeError('Available storage fell below minimum_free_gib; collection stopped')
             episode = collect_episode(env, record, mode, protocol, root,
                                       compress=config.get('compress_frames', True))
@@ -331,6 +333,25 @@ def iter_episodes(records, config, protocol, root):
             jobs = [pool.submit(collect_seed, record, config, protocol, root) for record in batch]
             for job in as_completed(jobs):
                 yield from job.result()
+
+
+def iter_staged_episodes(records, config, protocol, root):
+    """Preserve paired seeds while compressing the previous batch in the background."""
+    if not config.get('compress_frames', True):
+        yield from iter_episodes(records, config, protocol, root)
+        return
+    batch_size = max(1, config['batch_episodes'] // len(MODES))
+    if config.get('physics_device') == 'cuda':
+        # GPU recovery replays the same lane partition as its source pilot.
+        batch_size = config.get('batch_size', config['batch_episodes'])
+    settings = dict(config, compress_frames=False, collection_output=str(root))
+
+    def collect_batch(batch, staging):
+        return list(iter_episodes(batch, settings, protocol, staging))
+
+    persist = partial(persist_episodes, output=root)
+    for episodes in stage_batches(iter_batches(records, batch_size), collect_batch, persist, config):
+        yield from episodes
 
 
 def collect(config):
@@ -371,7 +392,7 @@ def collect(config):
                           config=config, seed=config['seed_generator'], job_type='collection') as logger:
         try:
             order = {record['seed']: index for index, record in enumerate(records)}
-            for episode in iter_episodes(records, config, protocol, root):
+            for episode in iter_staged_episodes(records, config, protocol, root):
                 episodes.append(episode)
                 episodes.sort(key=lambda row: (order[row['seed']], MODES.index(row['mode'])))
                 write_json(root / 'manifest.json', manifest)

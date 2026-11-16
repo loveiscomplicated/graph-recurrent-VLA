@@ -2,31 +2,47 @@
 
 from concurrent.futures import ThreadPoolExecutor
 import json
-import os
 from pathlib import Path
 import shutil
-import subprocess
 
-from data_collection.collect_dataset import load_config, shard_command, verify_shard
+from data_collection.collect_dataset import load_config, stage_shard, verify_shard
+from data_collection.episode_staging import persist_tree, stage_batches
 from data_collection.storage import write_json
 from utils.experiment_logger import ExperimentLogger
 
 
-def collect_shard(settings, output, index, count):
-    """Reuse the raw collector and validate each completed shard."""
+def prepare_shard(settings, output, staging, index, count):
+    """Reuse complete resume shards and stage new raw episodes."""
     name = f"shard_{index:06d}"
     directory = output / "shards" / name
+    if directory.exists():
+        verification = verify_shard(directory, settings, count)
+    else:
+        name, verification = stage_shard(settings, output, staging, index, count)
     seed = settings["start_seed"] + index * settings["attempts_per_shard"]
-    command = shard_command(settings, directory, count, seed)
-    environment = dict(os.environ, OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1")
-    if not directory.exists():
-        with (output / "logs" / f"{name}.log").open("w") as log:
-            subprocess.run(command, env=environment, stdout=log, stderr=subprocess.STDOUT, check=True)
-    verification = verify_shard(directory, settings, count)
     if any(not seed <= item < seed + settings["attempts_per_shard"] for item in verification["seeds"]):
         raise ValueError(f"Shard seed is outside its allocated range: {directory}")
-    write_json(directory / "verification.json", verification)
-    return directory
+    return name, verification
+
+
+def collection_waves(counts, workers, output, config):
+    """Bound active shards and check disk space before each wave."""
+    start = 0
+    while start < len(counts):
+        stop = min(start + workers, len(counts))
+        free_gib = shutil.disk_usage(output).free / 2**30
+        estimate = config.get("disk_gib_per_episode", 0.066)
+        reserve = config.get("disk_reserve_gib", 0.5)
+        while stop > start:
+            new_count = sum(counts[index] for index in range(start, stop)
+                            if not (output / "shards" / f"shard_{index:06d}").exists())
+            if not new_count or free_gib >= reserve + estimate * new_count:
+                break
+            stop -= 1
+        if stop == start:
+            raise OSError("Insufficient free disk for the next collection wave")
+        yield range(start, stop)
+        start = stop
 
 
 def collect(config):
@@ -71,26 +87,25 @@ def collect(config):
             logger.record(source_run_id=previous_run)
         write_json(output / "run_identity.json", {"run_id": logger.run_id})
         episodes = []
-        # Bound the number of active shards and check disk space between waves.
+        def persist_batch(staging, staged):
+            directories = []
+            for name, verification in staged:
+                directory = output / "shards" / name
+                if (staging / name).exists():
+                    persist_tree(staging / name, directory)
+                write_json(directory / "verification.json", verification)
+                directories.append(directory)
+            return directories
+
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            start = 0
-            while start < len(counts):
-                stop = min(start + workers, len(counts))
-                free_gib = shutil.disk_usage(output).free / 2**30
-                estimate = config.get("disk_gib_per_episode", 0.066)
-                reserve = config.get("disk_reserve_gib", 0.5)
-                while stop > start:
-                    new_count = sum(counts[index] for index in range(start, stop)
-                                    if not (output / "shards" / f"shard_{index:06d}").exists())
-                    if not new_count or free_gib >= reserve + estimate * new_count:
-                        break
-                    stop -= 1
-                if stop == start:
-                    raise OSError("Insufficient free disk for the next collection wave")
-                jobs = [executor.submit(collect_shard, settings, output, index, counts[index])
-                        for index in range(start, stop)]
-                for job in jobs:
-                    directory = job.result()
+            def collect_batch(wave, staging):
+                jobs = [executor.submit(prepare_shard, settings, output, staging, index, counts[index])
+                        for index in wave]
+                return [job.result() for job in jobs]
+
+            waves = collection_waves(counts, workers, output, config)
+            for directories in stage_batches(waves, collect_batch, persist_batch, settings):
+                for directory in directories:
                     raw = json.loads((directory / "manifest.json").read_text())
                     for row in raw["episodes"]:
                         episodes.append(dict(row, path=f"shards/{directory.name}/{row['path']}"))
@@ -98,7 +113,6 @@ def collect(config):
                     write_json(output / "progress.json", {
                         "episodes": len(episodes), "target": settings["num_episodes"],
                     })
-                start = stop
         seeds = {row["seed"] for row in episodes}
         if len(seeds) != len(episodes) or seeds & original_seeds:
             raise ValueError("New episodes contain duplicate or previously collected seeds")

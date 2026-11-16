@@ -39,9 +39,9 @@ def slice_batch(tree, index):
     return tree[index:index + 1]
 
 
-def save_with_hash(path, observation, state, action, valid, status):
+def save_with_hash(path, observation, state, action, valid, status, *, compress):
     """Write and verify a raw frame using the common storage path."""
-    save_frame(path, observation, ground_truth=state, action=action[None],
+    save_frame(path, observation, compress=compress, ground_truth=state, action=action[None],
                action_valid=np.asarray(valid), collection=status)
     return file_sha256(path)
 
@@ -311,7 +311,8 @@ def run_batch(env, entries, mode, protocol, root, config, cases, parent_root, wr
                           grasp=bool(gripped[index]), success=success,
                           terminated=bool(terminated[index]), truncated=bool(truncated[index]))
             saved = writers.submit(save_with_hash, lane.pending / f'frame_{step:06d}.npz',
-                                   obs, state, action, valid, status)
+                                   obs, state, action, valid, status,
+                                   compress=config.get('compress_frames', True))
             lane.hashes.append(saved)
             queued.append(saved)
             if len(queued) >= 3 * len(lanes):
@@ -344,7 +345,7 @@ def collect_batches(records, config, protocol, root, *, recovery_cases=None, par
     max_steps = protocol['max_steps'] + (config['recovery_steps'] if recovery else 0)
     with ThreadPoolExecutor(max_workers=config.get('writers', config.get('workers', DEFAULT_WORKERS))) as writers:
         for start in range(0, len(records), batch_size):
-            if shutil.disk_usage(root).free < config['minimum_free_gib'] * 1024**3:
+            if shutil.disk_usage(config.get('collection_output', root)).free < config['minimum_free_gib'] * 1024**3:
                 raise RuntimeError('Available storage fell below minimum_free_gib')
             entries = records[start:start + batch_size]
             cases = recovery_cases[start:start + batch_size] if recovery else [None] * len(entries)

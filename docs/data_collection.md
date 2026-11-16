@@ -13,6 +13,21 @@ staging archives two seeds (eight episodes) per group. The caller-owned
 `collect_episodes` function and CLI run one simulator and serve as the workers
 for the sharded workflow.
 
+The RGB-D dataset workflows stage uncompressed batches and compress completed
+batches in a background writer while collection proceeds. This applies to
+sharded expert and Object21 BC datasets, mixed Pilot/Main and Recovery,
+independent/matched test collection, and the corner-detector holdout. Their
+existing NPZ paths, manifest schemas and raw frame arrays remain readable.
+The Moving-Hole archive workflow uses the same staging scheduler and writes
+Zstandard archives directly. The camera-visibility trajectory study produces
+only JSON metadata.
+
+Set `ram_root` to a writable RAM-backed mount with space for the active batches.
+The default is `/dev/shm` when present and the system temporary directory
+otherwise. On macOS, point `ram_root` to an existing RAM disk to enable
+memory-backed staging. For the sharded workflows, each worker produces one
+eight-episode shard, so a collection wave can have two active shards.
+
 ## Fixed-ID per-corner sequences
 
 This dataset-only workflow isolates per-corner temporal prediction before adding

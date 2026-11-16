@@ -22,7 +22,8 @@ import yaml
 
 from utils.experiment_artifacts import connect, digests, remote_matches, plan_upload
 from utils.experiment_logger import ExperimentLogger
-from .collection_batches import collection_defaults
+from .collection_batches import collection_defaults, iter_batches
+from .episode_staging import persist_tree, stage_batches, sync_directory, sync_file
 from .storage import write_json
 
 
@@ -184,12 +185,15 @@ def verify_shard(root, config, expected_count):
     }
 
 
-def collect_shard(config, root, index, count):
+def stage_shard(config, root, staging, index, count):
     """Collect and independently verify one bounded, disjoint seed range."""
     name = f"shard_{index:06d}"
-    directory = root / "shards" / name
+    directory = staging / name
+    diagnostics = root / "logs" / name
+    diagnostics.mkdir(exist_ok=True)
     seed = config["start_seed"] + index * config["attempts_per_shard"]
     command = shard_command(config, directory, count, seed)
+    command.extend(["--uncompressed-frames", "--rejected-root", str(diagnostics)])
     environment = dict(os.environ, OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1")
     with (root / "logs" / f"{name}.log").open("w") as stream:
         result = subprocess.run(command, env=environment, stdout=stream, stderr=subprocess.STDOUT)
@@ -197,16 +201,26 @@ def collect_shard(config, root, index, count):
         raise RuntimeError(f"collector {name} failed; inspect logs/{name}.log")
     verification = verify_shard(directory, config, count)
     write_json(directory / "verification.json", verification)
+    return name, verification
+
+
+def finalize_shard(root, staging, name, verification):
+    """Publish the raw tree and legacy TAR with their established path layout."""
+    directory = root / "shards" / name
+    persist_tree(staging / name, directory)
     archive = root / "archives" / f"{name}.tar"
     manifest = json.loads((directory / "manifest.json").read_text())
     # NPZ frames are already compressed. Archive only approved episodes and their
     # audit/config files; failed expert rollouts remain local diagnostic evidence.
-    with tarfile.open(archive.with_suffix(".partial"), "w") as bundle:
+    pending = archive.with_suffix(".partial")
+    with tarfile.open(pending, "w") as bundle:
         for name_in_shard in ("config.json", "manifest.json", "attempts.jsonl", "verification.json"):
             bundle.add(directory / name_in_shard, arcname=f"{name}/{name_in_shard}")
         for episode in manifest["episodes"]:
             bundle.add(directory / episode["path"], arcname=f"{name}/{episode['path']}")
-    archive.with_suffix(".partial").rename(archive)
+    sync_file(pending)
+    pending.rename(archive)
+    sync_directory(archive.parent)
     return {"path": str(archive), "shard": name, "verification": verification,
             "episodes": manifest["episodes"]}
 
@@ -307,11 +321,19 @@ def run(config):
             counts.append(count)
             remaining -= count
         completed = []
+
+        def persist_batch(staging, staged):
+            return [finalize_shard(root, staging, name, verification) for name, verification in staged]
+
         with ThreadPoolExecutor(max_workers=config["workers"]) as executor:
-            futures = [executor.submit(collect_shard, config, root, index, count)
-                       for index, count in enumerate(counts)]
-            for future in as_completed(futures):
-                completed.append(future.result())
+            def collect_batch(batch, staging):
+                futures = [executor.submit(stage_shard, config, root, staging, index, count)
+                           for index, count in batch]
+                return [future.result() for future in as_completed(futures)]
+
+            groups = iter_batches(list(enumerate(counts)), config["workers"])
+            for batch in stage_batches(groups, collect_batch, persist_batch, config):
+                completed.extend(batch)
                 progress.update(
                     episodes=sum(item["verification"]["episodes"] for item in completed),
                     completed_shards=len(completed), seconds=time.monotonic() - started,

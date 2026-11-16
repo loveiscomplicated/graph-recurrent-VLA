@@ -91,6 +91,8 @@ def collect(config):
         record_range=[start, stop], hole_motion=settings, minimum_free_gib=config['minimum_free_gib'],
         workers=config['workers'], batch_episodes=config['batch_episodes'], render_backend=config.get('render_backend'),
     )
+    if 'ram_root' in config:
+        pilot_config['ram_root'] = config['ram_root']
     if 'compress_frames' in config:
         pilot_config['compress_frames'] = config['compress_frames']
     physics_device = config.get('physics_device', 'cpu')

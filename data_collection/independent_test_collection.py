@@ -7,8 +7,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from data_collection.collection_batches import collection_defaults, iter_episode_jobs
+from data_collection.collection_batches import collection_defaults, iter_batches, iter_episode_jobs
 from data_collection.episode_dataset import file_sha256
+from data_collection.episode_staging import persist_episodes, stage_batches
 from data_collection.scripted_policy import ScriptedPegPolicy
 from data_collection.storage import save_frame, write_json
 from envs.maniskill import get_gt_state, make_peg_insertion_env
@@ -23,7 +24,7 @@ def observation_subset(observation):
                 extra={'tcp_pose': observation['extra']['tcp_pose']})
 
 
-def collect_episode(protocol, seed, mode, root):
+def collect_episode(protocol, seed, mode, root, *, compress=True):
     """Save one complete prefix and post-lift sequence, including unsuccessful cases."""
     settings = protocol['policy']
     sensors = {name: {'width': settings['resolution'], 'height': settings['resolution']}
@@ -71,7 +72,7 @@ def collect_episode(protocol, seed, mode, root):
                 action = policy.act(obs)
             native_action = action if action is not None else torch.zeros(env.action_space.shape, dtype=torch.float32)
             path = pending / f'frame_{frame:06d}.npz'
-            save_frame(path, observation_subset(obs), ground_truth=vars(gt),
+            save_frame(path, observation_subset(obs), compress=compress, ground_truth=vars(gt),
                        action=native_action, action_valid=np.asarray(action is not None),
                        test_frame=dict(frame=frame, phase=phase, grasp=grasp,
                                        after_lift=after if switched else -1))
@@ -97,7 +98,7 @@ def collect_episode(protocol, seed, mode, root):
 def collect_case(case, *, protocol, root):
     """Collect one frozen seed and policy pair."""
     seed, mode = case
-    return collect_episode(protocol, seed, mode, root)
+    return collect_episode(protocol, seed, mode, root, compress=False)
 
 
 def collect(config):
@@ -115,12 +116,17 @@ def collect(config):
         manifest = dict(status='RUNNING', protocol_sha256=config['protocol_sha256'], episodes=episodes)
         try:
             cases = [(seed, mode) for seed in protocol['seeds'] for mode in protocol['policy']['modes']]
-            job = partial(collect_case, protocol=protocol, root=root)
-            for episode in iter_episode_jobs(job, cases, config):
-                episodes.append(episode)
+            def collect_batch(batch, staging):
+                job = partial(collect_case, protocol=protocol, root=staging)
+                return list(iter_episode_jobs(job, batch, config))
+
+            persist = partial(persist_episodes, output=root)
+            for batch in stage_batches(iter_batches(cases, config['batch_episodes']), collect_batch, persist, config):
+                for episode in batch:
+                    episodes.append(episode)
+                    print(f'{len(episodes)}/{len(cases)}: seed={episode["seed"]}, mode={episode["mode"]}, '
+                          f'lift={episode["switched"]}, frames={episode["observations"]}', flush=True)
                 write_json(root / 'manifest.json', manifest)
-                print(f'{len(episodes)}/{len(cases)}: seed={episode["seed"]}, mode={episode["mode"]}, '
-                      f'lift={episode["switched"]}, frames={episode["observations"]}', flush=True)
             manifest['status'] = 'COMPLETE'
         except BaseException:
             manifest['status'] = 'ERROR'
