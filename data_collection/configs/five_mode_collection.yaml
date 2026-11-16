@@ -1,0 +1,21 @@
+trainer: data_collection.five_mode_collection:collect
+base_config: data_collection/configs/mixed_trajectory_pilot.yaml
+output_root: outputs/five_mode_collection
+seed_count: 25
+seed_generator: 20261116
+excluded_seed_protocols:
+  mixed_trajectory: outputs/mixed_trajectory_pilot/protocol.json
+batch_episodes: 8
+workers: 2
+minimum_free_gib: 1
+render_backend: cuda
+random_steps: 35
+recovery_steps: 100
+hole_motion:
+  mode: continuous
+  translation_m: [0.06, 0.0, 0.0]
+  start_seconds: 0.5
+  end_seconds: 2.5
+  duration_seconds: 1.5
+  minimum_distance_m: 0.08
+  stop_expert_insert: false

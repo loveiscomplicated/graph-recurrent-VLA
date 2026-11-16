@@ -966,11 +966,112 @@ confirmed that shared source frames and initial scenes stay within their
 split. The Graph State21 loader read real train and validation samples
 from the recovery cache.
 
+### Five-mode mixed trajectory dataset
+
+The five-mode RGB-D dataset groups these collection conditions under one
+policy-mode label. The label identifies both the action policy and whether
+the Box moves during the episode.
+
+| Policy mode | Box motion | Action policy |
+| --- | --- | --- |
+| `Fixed_Hole_expert` | Fixed | Expert throughout |
+| `Fixed_Hole_expert_random` | Fixed | Expert, then random |
+| `Fixed_Hole_expert_random_expert` | Fixed | Expert, then random, then expert recovery |
+| `Fixed_Hole_random` | Fixed | Random throughout |
+| `Moving_Hole_expert` | Moving | Expert throughout |
+
+For a new five-mode evaluation set, select reset seeds outside the training
+and validation splits and collect all five modes for each selected seed.
+This gives a paired expert comparison on the same initial scene and measures
+Moving-Hole performance on held-out scenes. Keep every episode from a reset
+seed in the same split.
+
+Run the five-mode collection from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/five_mode_collection.yaml
+```
+
+On the configured collection instance, invoke the same collector with the
+server's seed-inventory paths:
+
+```bash
+cd /workspace/moving_hole_collection
+./run_collection.sh -u gpu_benchmark/code/main.py \
+  --config gpu_benchmark/code/data_collection/configs/five_mode_collection_server.yaml
+```
+
+The example uses CPU physics with CUDA rendering, and requires `tar`, `zstd`,
+a writable staging mount, and the historical seed inventories configured by
+`base_config`, `exclusion_sources`, and `excluded_seed_protocols`. The seed
+sampler excludes every reset seed in the original mixed-trajectory protocol
+and all seeds in the named inventories and ranges. Add other experiment
+protocols with `records[].seed` to `excluded_seed_protocols` when their seeds
+also need to be excluded. The output protocol records the chosen seeds and
+the inventory hashes.
+
+With `batch_episodes: 8` and `workers: 2`, each base collection batch
+contains two seed jobs of four episodes each. Each worker collects three
+Fixed-Hole trajectories and one Moving-Hole expert trajectory per seed.
+The same two workers then collect the Fixed-Hole recovery episodes by
+replaying the matching Fixed-Hole expert-to-random trajectories. If the
+requested phase is reached but the switch delay does not fit, recovery
+branches at the last action in that phase. If the phase is never reached,
+recovery branches after one expert action.
+
+Each full archive contains ten episodes, with all five modes together for
+each of its two seeds. Its `episode_index.json` records the policy labels,
+episode paths, and measured Box offsets. The Moving-Hole expert uses the
+configured translation with the proximity guard active.
+
+For multiple collection hosts, generate one protocol with
+`build_dataset_protocol(resolve_config(config))` before starting any workers.
+Use the same `seed_count`, split counts, and exclusion inventories on each host.
+Set `protocol_path` to the frozen JSON and give each worker its own
+`record_range: [begin, end]` with the end excluded. Use a separate output
+directory for each worker. When `resume: true`, rerunning the same config
+checks archive hashes and collects ranges that have no valid receipt.
+
+After collection, build separate Main-camera detector-corner and TAPNext++
+Peg-surface caches on a CUDA host with the
+[TAPNext++ prerequisites](tapnextpp.md#tapnext-point-tracking) and `tar`/`zstd`.
+
+```bash
+WANDB_MODE=disabled python main.py --config data_collection/configs/five_mode_cache_cuda.yaml
+```
+
+Set `source_root` to a completed shard and `output_root` to its cache directory.
+The cache extracts one archive at a time and checks for 10 GiB of free space
+on the output filesystem by default. Set `minimum_free_gib` when the
+uncompressed input batch and cache outputs fit within a smaller reserve.
+Its manifest joins the two per-episode NPZs by reset
+seed, mode and split, records frame counts and hashes, and identifies episodes
+where no surface query initialization was possible. Archive receipts make
+completed batches reusable when the same cache configuration is rerun.
+
+#### Five-mode graph input
+
+In the detector-corner + surface-point GNN experiment, each selected
+`condition_1` frame contributes **one graph** with nodes from two caches:
+
+| Cache | Nodes in the graph |
+| --- | --- |
+| `corners` | The Peg and Box/Hole corners detected directly in that frame, using `corner_world_xyz`. |
+| `surface` | TAPNext++-tracked Peg surface points that are visible in that frame, have valid depth, and lie outside the configured exclusion radius around detected corners. Their 3D coordinates come from `surface_world_xyz`. |
+
+TAPNext++ initializes its queries on the Peg surface outside the exclusion
+radius around detected corners. To build each graph, pair the caches by episode
+and frame index and include both sets of nodes. The `condition_1`
+index controls frame membership. Graph node coordinates come from the two
+sources above. See the
+[surface-cache implementation](../data_collection/detector_surface_cache.py).
+
 ### Mixed trajectory collection with a moving Box
 
-Collect the first 25 reset seeds in the frozen Fixed-Hole pilot protocol in
-all four modes (100 total episodes). The original pilot manifest and protocol
-must be present locally. The initial scenes, camera, controller, random action
+The earlier four-mode Moving-Hole experiment ran all four moving policies on
+the first 25 reset seeds in the frozen Fixed-Hole pilot protocol (100 episodes).
+To reproduce it, keep the original pilot manifest and protocol locally.
+The initial scenes, camera, controller, random action
 streams, transition schedule, recovery procedure and raw frame schema come
 from the Fixed-Hole workflow above. The recovery collector replays the newly
 collected moving-Box prefix, including the same motion schedule. If the Box

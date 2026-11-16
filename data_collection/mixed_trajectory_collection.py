@@ -76,7 +76,14 @@ def load_exclusions(config):
     excluded.update(json.loads(Path(sources['matched_candidates']).read_text())['candidates'])
     for start, stop in config['excluded_ranges']:
         excluded.update(range(start, stop + 1))
-    return excluded, {name: file_sha256(path) for name, path in sources.items()}
+    hashes = {name: file_sha256(path) for name, path in sources.items()}
+    for name, path in config.get('excluded_seed_protocols', {}).items():
+        records = json.loads(Path(path).read_text())['records']
+        if not records or any(type(row['seed']) is not int or row['seed'] < 0 for row in records):
+            raise ValueError(f'Expected nonnegative reset seeds in {path}')
+        excluded.update(row['seed'] for row in records)
+        hashes[f'protocol/{name}'] = file_sha256(path)
+    return excluded, hashes
 
 
 def build_protocol(config):
@@ -287,8 +294,8 @@ def check_main_preconditions(config, protocol):
                            f'{required_bytes} bytes required including reserve')
 
 
-def iter_seed_episodes(record, config, protocol, root):
-    """Reuse the environment and check reset identity across all three policies."""
+def iter_seed_episodes(record, config, protocol, root, *, modes=MODES):
+    """Reuse the environment and check reset identity across the selected policies."""
     env = make_peg_insertion_env(
         seed=record['seed'], obs_mode='rgb+depth+segmentation',
         sensor_configs=camera_sensors(config['camera']), control_mode=config['control_mode'],
@@ -296,7 +303,7 @@ def iter_seed_episodes(record, config, protocol, root):
     )
     try:
         fingerprints = set()
-        for mode in MODES:
+        for mode in modes:
             if shutil.disk_usage(config.get('collection_output', root)).free < config['minimum_free_gib'] * 1024**3:
                 raise RuntimeError('Available storage fell below minimum_free_gib; collection stopped')
             episode = collect_episode(env, record, mode, protocol, root,

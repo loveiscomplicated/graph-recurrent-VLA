@@ -21,6 +21,15 @@ def stage_batches(batches, collect_batch, persist_batch, config):
     """Collect the next batch with at most one completed batch being persisted."""
     root = Path(tempfile.mkdtemp(dir=staging_root(config), prefix='episode_staging_'))
     print(f'Episode staging directory: {root}', flush=True)
+    if not config.get('overlap_persistence', True):
+        # Keep only one batch on staging mounts that cannot fit two raw batches.
+        for index, batch in enumerate(batches):
+            staging = root / f'batch_{index:06d}'
+            staging.mkdir()
+            result = collect_batch(batch, staging)
+            yield finish_batch(staging, result, persist_batch)
+        root.rmdir()
+        return
     with ThreadPoolExecutor(max_workers=1) as executor:
         pending = None
         for index, batch in enumerate(batches):

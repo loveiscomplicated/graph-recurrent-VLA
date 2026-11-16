@@ -52,7 +52,8 @@ def last_phase_action(root, row, phase):
     return None
 
 
-def plan_cases(root, manifest, protocol, random_steps, missing_phase_switch_steps=None):
+def plan_cases(root, manifest, protocol, random_steps, missing_phase_switch_steps=None,
+               *, allow_fixed_subset=False):
     """Keep the pilot schedule, advancing missed phases and supplying a nonempty expert prefix."""
     if manifest['status'] != 'COMPLETE' or file_sha256(root / 'protocol.json') != manifest['protocol_sha256']:
         raise ValueError('Expected a complete pilot with its original protocol')
@@ -60,7 +61,8 @@ def plan_cases(root, manifest, protocol, random_steps, missing_phase_switch_step
     by_case = {(row['seed'], row['mode']): row for row in episodes if row['split'] == 'pilot'}
     records = [row for row in protocol['records'] if row['split'] == 'pilot']
     expected_count = len(records)
-    if 'hole_motion' in protocol and 'record_range' in manifest['effective_config']:
+    allow_subset = 'hole_motion' in protocol or allow_fixed_subset
+    if allow_subset and 'record_range' in manifest['effective_config']:
         start, stop = manifest['effective_config']['record_range']
         records = records[start:stop]
         expected_count = stop - start
@@ -84,17 +86,21 @@ def plan_cases(root, manifest, protocol, random_steps, missing_phase_switch_step
             adjustment = 'last_action_in_requested_phase'
             if switch is None:
                 reference_step = (missing_phase_switch_steps or {}).get(seed)
-                if reference_step is None:
+                if reference_step is not None:
+                    switch = min(reference_step, parent['steps'] - 1)
+                    adjustment = 'fixed_hole_switch_step_after_unreached_phase'
+                elif allow_fixed_subset:
+                    switch = 1
+                    adjustment = 'one_initial_expert_action_after_unreached_phase'
+                else:
                     raise ValueError(f'No action in the requested phase for {parent["path"]}')
-                switch = min(reference_step, parent['steps'] - 1)
-                adjustment = 'fixed_hole_switch_step_after_unreached_phase'
         elif switch == 0:
             parent = by_case[seed, 'expert']
             switch = 1
             adjustment = 'one_initial_expert_action'
         recovery = switch + random_steps
         copy_count = recovery if adjustment is None else switch
-        if copy_count >= parent['steps'] and switch < parent['steps'] and 'hole_motion' in protocol:
+        if copy_count >= parent['steps'] and switch < parent['steps'] and allow_subset:
             copy_count = switch
             adjustment = 'replay_expert_prefix_only'
         if not 0 < copy_count < parent['steps']:

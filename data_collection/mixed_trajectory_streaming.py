@@ -20,13 +20,21 @@ def archive_batch(source, target, seed_range):
     expected = 4 * (seed_range[1] - seed_range[0])
     if audit['episodes'] != expected or audit['full_translation'] != expected:
         raise ValueError(f'Incomplete Moving-Hole batch: {source}')
+    return archive_verified_batch(source, target, seed_range, expected)
+
+
+def archive_verified_batch(source, target, seed_range, episodes, *, long_distance=False):
+    """Persist a verified collection batch as a checksummed Zstandard archive."""
     pending = target.with_suffix('.partial')
     print(f'Compressing {target.name}', flush=True)
+    encoder = ['zstd', '-q', '-3', '-T1']
+    if long_distance:
+        encoder.append('--long=27')
     with pending.open('wb') as output:
         with subprocess.Popen(['tar', '-C', str(source), '-cf', '-', '.'],
                               stdout=subprocess.PIPE) as tar:
             try:
-                subprocess.run(['zstd', '-q', '-3', '-T1'], stdin=tar.stdout, stdout=output, check=True)
+                subprocess.run(encoder, stdin=tar.stdout, stdout=output, check=True)
             finally:
                 tar.stdout.close()
             if tar.wait():
@@ -35,7 +43,7 @@ def archive_batch(source, target, seed_range):
         os.fsync(output.fileno())
     subprocess.run(['zstd', '-qt', str(pending)], check=True)
     receipt = dict(file=target.name, sha256=file_sha256(pending), bytes=pending.stat().st_size,
-                   record_range=list(seed_range), episodes=expected)
+                   record_range=list(seed_range), episodes=episodes)
     pending.rename(target)
     sync_directory(target.parent)
     print(f'Saved {target.name}', flush=True)
