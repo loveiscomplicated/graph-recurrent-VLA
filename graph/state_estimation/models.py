@@ -3,6 +3,7 @@
 import torch
 from torch import nn
 
+from graph.state_estimation.codec import COORDINATE_SCALE_M
 from graph.state_estimation.mamba import ObjectMamba
 from graph.state_estimation.spatial import (
     Object21Head,
@@ -99,15 +100,31 @@ class SpatialFirstEstimator(VertexTemporalEstimator):
 
     spatial_frame_limit = None
 
+    def __init__(
+        self, hidden=64, layers=2, dropout=0.0, history=8, heads=4, vertex_aux=False
+    ):
+        super().__init__(hidden, layers, dropout, history, heads)
+        self.vertex_head = nn.Linear(hidden, 3) if vertex_aux else None
+        if self.vertex_head is not None:
+            nn.init.zeros_(self.vertex_head.weight)
+            nn.init.zeros_(self.vertex_head.bias)
+
     def forward(self, frames):
         frames = frames[-self.history :]
         current = frames[-1]
         embeddings = [self.spatial_nodes(frame) for frame in frames]
+        spatial_vertices = None
+        if self.vertex_head is not None:
+            correction = self.vertex_head(embeddings[-1]).float() * COORDINATE_SCALE_M
+            spatial_vertices = current.position + correction
         temporal, binding = temporal_vertices(self.temporal, frames, embeddings)
         objects = self.combine(
             current, embeddings[-1], temporal, binding, spatial_after=False
         )
-        return self.head(objects, position_anchors(current))
+        output = self.head(objects, position_anchors(current))
+        if spatial_vertices is not None:
+            output["spatial_vertex_xyz"] = spatial_vertices
+        return output
 
 
 class ObjectTemporalEstimator(SpatialEstimator):
@@ -211,7 +228,15 @@ MODELS = {
 
 
 def build_model(
-    name, *, hidden=64, layers=2, dropout=0.0, history=8, heads=4, tbptt_steps=0
+    name,
+    *,
+    hidden=64,
+    layers=2,
+    dropout=0.0,
+    history=8,
+    heads=4,
+    tbptt_steps=0,
+    vertex_aux=False,
 ):
     """Construct an estimator from matched settings shared by the comparison."""
     if name not in MODELS:
@@ -229,4 +254,8 @@ def build_model(
         settings["heads"] = heads
     if name == "object_mamba":
         settings["tbptt_steps"] = tbptt_steps
+    if vertex_aux:
+        if name != "spatial_first":
+            raise ValueError("The spatial vertex head requires the spatial_first model")
+        settings["vertex_aux"] = True
     return MODELS[name](**settings)

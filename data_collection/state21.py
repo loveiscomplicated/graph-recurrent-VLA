@@ -21,6 +21,7 @@ class Sample:
     target: torch.Tensor
     frame_sha256: str | None = None
     diagnostics: dict | None = None
+    vertex_targets: dict[tuple[int, int], tuple[float, float, float]] | None = None
 
 
 @dataclass(frozen=True)

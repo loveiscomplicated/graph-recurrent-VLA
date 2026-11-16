@@ -16,7 +16,7 @@ from data_collection.state21 import load_dataset
 from data_collection.state21_batches import PreparedWindows
 from graph.state_estimation.models import MODELS, build_model
 from training.gnn.checkpoint import load_checkpoint, save_checkpoint
-from training.state21_loss import state21_loss
+from training.state21_loss import distance_loss, spatial_vertex_errors, state21_loss
 from utils.device_set import set_device
 from utils.experiment_logger import ExperimentLogger
 
@@ -90,16 +90,41 @@ def run_epoch(model, data, settings, device, *, optimizer=None, generator=None):
         raise ValueError("CUDA device does not support BF16")
     totals = {}
     count = 0
+    task = dict(settings["task"])
+    vertex_weight = task.pop("vertex_weight", 0.0)
+    if not math.isfinite(vertex_weight) or vertex_weight < 0:
+        raise ValueError("vertex_weight must be nonnegative and finite")
+    vertex_count = 0
+    vertex_squared_m, observed_squared_m = 0.0, 0.0
+    endpoint_errors = []
     with torch.set_grad_enabled(training):
         batches = data.batches(options["batch_size"], device, generator)
-        for batch_index, (frames, targets, _) in enumerate(batches, start=1):
+        for batch_index, (frames, targets, windows) in enumerate(batches, start=1):
             if training:
                 optimizer.zero_grad(set_to_none=True)
             with torch.autocast(
                 device.type, dtype=torch.bfloat16, enabled=mixed_precision
             ):
                 output = model(frames)
-            terms = state21_loss(output, targets, **settings["task"])
+            terms = state21_loss(output, targets, **task)
+            if "spatial_vertex_xyz" in output:
+                distances, observed = spatial_vertex_errors(
+                    output["spatial_vertex_xyz"], frames[-1], windows
+                )
+                vertex_loss = distances.new_zeros(())
+                if distances.numel():
+                    vertex_loss = distance_loss(distances, task["pos_unit_m"], 0.003)
+                    vertex_squared_m += float(distances.detach().square().sum())
+                    observed_squared_m += float(observed.square().sum())
+                    vertex_count += distances.numel()
+                terms["spatial_vertex"] = vertex_loss
+                if vertex_weight:
+                    terms["total"] = terms["total"] + vertex_weight * vertex_loss
+                if not training:
+                    vectors = output["object21"][:, 7:10] - targets[:, 7:10]
+                    endpoint_errors.append(vectors.float().norm(dim=-1).cpu())
+            elif vertex_weight:
+                raise ValueError("vertex_weight requires the B2 spatial vertex head")
             loss = terms["total"]
             if not torch.isfinite(loss):
                 raise FloatingPointError("Nonfinite Object21D loss")
@@ -128,7 +153,23 @@ def run_epoch(model, data, settings, device, *, optimizer=None, generator=None):
                 )
     if count == 0:
         raise ValueError("No Object21D windows to process")
-    return {name: value / count for name, value in totals.items()}
+    metrics = {name: value / count for name, value in totals.items()}
+    if vertex_count:
+        metrics.update(
+            matched_vertices=vertex_count,
+            spatial_vertex_rmse_mm=math.sqrt(vertex_squared_m / vertex_count) * 1000,
+            observed_vertex_rmse_mm=math.sqrt(observed_squared_m / vertex_count) * 1000,
+        )
+    if endpoint_errors:
+        errors_mm = torch.cat(endpoint_errors) * 1000
+        miss_rate = float((errors_mm > 3).double().mean())
+        metrics.update(
+            endpoint_miss_rate=miss_rate,
+            endpoint_within_3mm=1.0 - miss_rate,
+            endpoint_mean_mm=float(errors_mm.mean()),
+            endpoint_p90_mm=float(torch.quantile(errors_mm, 0.9)),
+        )
+    return metrics
 
 
 def dataset_identity(data, report):
@@ -203,6 +244,7 @@ def fit(config, *, prepared=None):
     model = build_model(**config["model"]).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), **config["optimizer"])
     first_epoch, best_loss, best_state = 1, float("inf"), None
+    best_validation = None
     resume = config.get("resume")
     initial_checkpoint = config.get("initial_checkpoint")
     if initial_checkpoint and resume:
@@ -217,6 +259,9 @@ def fit(config, *, prepared=None):
     if type(epochs) is not int or epochs < 1:
         raise ValueError("training.epochs must be a positive integer")
     early = _early_stopping_settings(options)
+    selection = options.get("checkpoint_metric", "state21")
+    if selection not in ("state21", "endpoint_miss_rate"):
+        raise ValueError("Unknown Object21D checkpoint metric")
     early_state = None
     if early:
         from training.gnn.temporal.insertion import update_early_stopping
@@ -293,9 +338,10 @@ def fit(config, *, prepared=None):
             )
             val_terms = run_epoch(model, validation, config, device)
             experiment.log({"train": train_terms, "validation": val_terms}, step=epoch)
-            validation_loss = val_terms["state21"]
+            validation_loss = val_terms[selection]
             if validation_loss < best_loss:
                 best_loss = validation_loss
+                best_validation = {"epoch": epoch, **val_terms}
                 best_state = {
                     name: value.detach().cpu().clone()
                     for name, value in model.state_dict().items()
@@ -333,8 +379,11 @@ def fit(config, *, prepared=None):
             "epochs": epoch,
             "train_frames_per_epoch": len(train.windows),
             "validation_frames_per_epoch": len(validation.windows),
-            "checkpoint_selection": "minimum validation Object21D loss",
-            "best_validation_loss": best_loss,
+            "checkpoint_selection": (
+                "minimum validation Object21D loss"
+                if selection == "state21"
+                else "minimum validation endpoint miss rate at 3 mm"
+            ),
             "training_wall_seconds": perf_counter() - started,
             "run_id": experiment.run_id,
             "dataset_sha256": identifier,
@@ -342,6 +391,12 @@ def fit(config, *, prepared=None):
                 report["near_duplicate_tcp_trajectories"]
             ),
         }
+        if selection == "state21":
+            summary["best_validation_loss"] = best_loss
+        else:
+            summary["best_validation_score"] = best_loss
+            summary["best_validation"] = best_validation
+            summary["last_validation"] = {"epoch": epoch, **val_terms}
         if early:
             summary.update(
                 epoch_limit=epochs,
@@ -360,7 +415,9 @@ def _checkpoint_config(config):
     """Extend the shared signature with precision without altering the fit objective."""
     snapshot = deepcopy(config)
     snapshot["task"]["checkpoint_amp"] = snapshot["training"]["amp"]
-    snapshot["task"]["checkpoint_selection"] = "state21"
+    snapshot["task"]["checkpoint_selection"] = snapshot["training"].get(
+        "checkpoint_metric", "state21"
+    )
     return snapshot
 
 

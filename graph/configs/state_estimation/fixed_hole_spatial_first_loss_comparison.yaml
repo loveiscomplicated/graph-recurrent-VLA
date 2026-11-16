@@ -1,0 +1,13 @@
+trainer: training.state21_spatial_supervision:compare
+source_config: graph/configs/state_estimation/fixed_hole_curriculum.yaml
+device: cuda:0
+epochs: 10
+matching:
+  gate_mm: 5
+  margin_mm: 2
+  workers: 4
+endpoint:
+  transition_mm: 3
+  weight: 1.0
+vertex_weight: 0.25
+output: outputs/state_estimation/fixed_hole_spatial_first_loss_comparison

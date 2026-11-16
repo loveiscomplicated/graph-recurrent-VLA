@@ -238,6 +238,35 @@ Object21D loss를 기준으로, 0.001을 넘는 개선이 10 epoch 연속 없으
 최대 100 epoch까지 실행한다. `last.pt`에 최저 검증 loss의 가중치와 조기 종료
 상태를 보존하며, `training.json`에 실제 종료 epoch와 종료 여부를 기록한다.
 
+### B2 공간 꼭짓점과 3 mm 끝점 손실
+
+`graph/configs/state_estimation/fixed_hole_spatial_first_loss_comparison.yaml`은
+기존 reset seed 학습·검증 분할을 사용한다. 원본 녹화의 Peg·Box·Hole pose와
+크기로 GT 꼭짓점을 복원한다. 추적 시작 프레임에서 같은 물체의 5 mm 이내 GT
+후보를 1:1로 매칭하고, 두 번째로 가까운 후보와 거리가 2 mm 이상 차이 나는
+경우만 채택한다. 현재 프레임에서 같은 GT 꼭짓점에 다시 매칭된 가시 관측을
+감독한다. GT는 모델 입력 바깥에서 라벨로만 읽으며 테스트 프레임은 읽지 않는다.
+
+B2는 시간 어텐션 전 현재 프레임의 공간 임베딩에서 관측점의 3D 좌표 보정값을
+예측한다. 보정값의 초기값은 0이다. 보조 손실은 보정 좌표와 GT 간 3D 거리에
+10 mm 스케일과 3 mm 전환점을 사용한 Smooth L1을 적용한다. 끝점 변형은
+XYZ별 Smooth L1을 끝점 3D 거리의 Smooth L1로 교체하며 같은 단위와 전환점을
+쓴다. 꼭짓점과 끝점 손실의 초기 가중치는 각각 0.25와 1.0이다.
+
+기준선·꼭짓점만·끝점만·두 손실 모두의 네 조건을 같은 초기 seed와 epoch 수로
+학습한다. 검증 3 mm 이내 비율이 가장 높은 epoch를 선택하고, 같은 비율이면
+먼저 도달한 epoch를 사용한다. `comparison.json`에 GT 대응 개수, 꼭짓점
+RMSE, 끝점 평균·P90 거리와 3 mm 이내 비율을 저장한다.
+`comparison.md`는 네 조건의 마지막 epoch에서 꼭짓점 RMSE의 기준선 대비
+변화율과 끝점 3 mm 이내 비율의 변화(%p)를 기록한다.
+
+원본 프레임이 없는 학습 호스트는 기존 그래프 bundle과 별도의 GT pose
+archive를 사용할 수 있다. 원본이 있는 호스트에서
+`data_collection.state21_vertex_archive.pack_vertex_references`에 유효
+curriculum 설정과 출력 경로를 전달한다. 생성한 archive의 경로와 SHA-256을
+비교 YAML의 `vertex_reference_archive.path`와 `sha256`으로 지정한다.
+실행 시 원본 캐시 해시, reset seed 분할, 에피소드와 프레임 수를 대조한다.
+
 ## 실행과 재현
 
 Python 3.11, PyTorch, NumPy, SciPy, PyYAML이 필요하다. 테스트는 pytest,

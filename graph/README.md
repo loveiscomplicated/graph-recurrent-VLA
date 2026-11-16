@@ -14,6 +14,7 @@ WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed
 WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_resume.yaml
 WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_holdout.yaml
 WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_early_stopping.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/state_estimation/fixed_hole_spatial_first_loss_comparison.yaml
 ```
 
 The comparison config defaults to model A on synthetic episodes with seeds
@@ -46,6 +47,12 @@ The B2 holdout config scores the original and resumed checkpoints on the same
 test frames and records the 3 mm endpoint hit rate and Object21D loss.
 The B2 early-stopping config continues from the 10-epoch checkpoint on the
 same graphs and stops according to validation Object21D loss.
+The B2 loss comparison needs the frozen split receipt and either the source
+caches and raw frames or the saved graph bundle and a verified GT pose archive.
+It trains four variants with matched initial seeds and epoch budgets.
+`comparison.json` records coverage and validation metrics. `comparison.md`
+reports final-epoch corner RMSE and endpoint hit rate within 3 mm, with
+changes relative to the baseline.
 
 ## Hole rim depth verification
 
