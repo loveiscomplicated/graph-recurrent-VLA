@@ -49,6 +49,43 @@ Other checkouts can add this repository's `visual/third_party/tapnet` directory 
 `PYTHONPATH` and pass an absolute path to the checkpoint in
 `visual/checkpoints/tapnextpp/`.
 
+## 파일럿 추적 캐시
+
+`visual/configs/tapnextpp_cache.yaml`은 혼합 궤적 파일럿의 RGB-D와 카메라
+캘리브레이션 파일을 해시로 확인하고 저장 순서대로 재생한다. RGB-D 검출기가
+찾은 Peg 마스크 내부에서 32개 표면점을 고르고, MLX 이동 영역 방식으로 추적한다.
+각 궤적에서 모델 상태를 초기화한다.
+
+NPZ의 `frame_indices`는 원본 프레임 번호다. `anchor_frame`은 32개 표면점을
+초기화한 첫 프레임이며, `query_xy`는 초기 좌표다. `surface_xy`는 `(T, 32, 2)`
+크기의 원본 이미지 픽셀 좌표 `(x, y)`, `surface_visible`은 `(T, 32)` 크기의
+가시 여부다. 초기화 전에는 좌표를 `NaN`, 가시 여부를 `false`로 기록한다.
+초기화할 수 없는 궤적도 보존하고 `anchor_frame=-1`로 표시한다.
+
+매니페스트에 원본 매니페스트, 모델 가중치, 캐시 파일의 SHA-256을 저장한다.
+CUDA에서는 `visual/configs/tapnextpp_cache_cuda.yaml`을 사용한다. 원본을
+다른 호스트에서 전송 중이라면 매니페스트를 먼저 복사하고
+`source_wait_timeout_seconds`로 새 궤적을 기다리는 시간을 지정할 수 있다.
+수집된 프레임 전체가 도착한 궤적부터 처리한다.
+실행 명령과 환경 준비는 [Visual README](../visual/README.md#tapnext-포인트-추적)를
+참고한다.
+
+### 꼭짓점 검출 추가
+
+`visual/configs/tapnextpp_corner_cache_cuda.yaml`은 원본 RGB-D와 TAPNext++
+캐시의 해시 및 프레임 순서를 확인한다. 기존 표면 추적 배열을 복사하고
+`TorchCornerDetector.main()`이 각 프레임에서 검출한 꼭짓점을 별도 실행 폴더에
+저장한다. 프레임 `i`의 검출은 `corner_offsets[i:i+2]`가 가리키는 반열린
+범위에 있다. 각 검출에는 물체 ID, 원본 픽셀 좌표, 월드 좌표와 카메라 좌표,
+검출 방법이 있다. 물체 ID 0은 Peg, 1은 Box다.
+
+평가는 GT와 물체 분할로 깊이가 뒷받침되는 기준 꼭짓점을 고른다. 파일럿의
+물체 ID는 `evaluation.pilot_corner_detection.confirm_actor_ids`로 100개
+리셋에서 검증한 뒤, 원본 매니페스트의 SHA-256과 함께 `actor_ids.json`에 둔다.
+`episode_metrics.jsonl`은 진행 중인 궤적별 점수를, `metrics.json`은 전체 및
+정책별 3·5 mm 정밀도와 재현율, GPU 상주 입력 기준 검출 시간과 호스트 출력
+시간을 기록한다. 실행 때 생성된 CUDA 컴파일 그래프 수를 함께 기록한다.
+
 ## 보조점 구현 감사 및 네 조건 비교
 
 저장소 루트에서 두 공식 서브모듈, 256×256 체크포인트, PyTorch·torchvision·OpenCV,
@@ -198,7 +235,7 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 아래 PyTorch MPS 전체 화면 재생 결과를 재현하려면
 `visual/configs/tapnextpp_surface_tracking_mps.yaml` 복사본에서
 `tap_native_patch_crop_xyxy`, `tap_mps_fp16_vit`,
-`tap_mps_fp16_recurrent_mlp`를 제거한다.
+`tap_mps_fp16_recurrent_mlp`, `tap_mps_skip_past_query_embeddings`를 제거한다.
 
 CUDA 기본 설정은 [관측 기반 이동 영역과 CUDA Graph](#cuda-이동-영역과-graph-재사용)를 사용한다.
 
@@ -375,6 +412,67 @@ PyTorch MPS 설정 파일은 넓은 패치 영역 `[0, 7, 24, 31]`과 두 FP16 �
 [넓은 영역 실행](../outputs/tapnextpp_surface_tracking/fc8d8ce76e8a409ba248a25e3f817eb5/summary.json) ·
 [좁은 영역 실행](../outputs/tapnextpp_surface_tracking/7534999d95f34437a15b03e42652b487/summary.json)
 
+PyTorch MPS 설정의 `tap_mps_skip_past_query_embeddings: true`는 프레임 0에서
+표면점을 처음 주입할 때 기존 위치 임베딩을 사용한다. 이어지는 프레임에는
+모든 query 시점이 이미 지났으므로 위치 임베딩을 샘플링하는 대신 TAPNext++의
+mask token을 바로 사용한다. `false`로 설정하면 모든 프레임에서 기존 계산을 한다.
+
+2026-11-15에 M4 Pro에서 동일한 149프레임을 끔 → 켬 → 켬 → 끔 순으로
+재생했다. 꼭짓점 검출기는 `bb01149` 소스로 고정했고, 체크포인트와 입력
+체크섬이 일치했다. 아래 시간은 각 조건에서 초기 프레임을 제외한 두 실행의
+프레임별 측정값을 합쳐 집계했다.
+
+| 조건 | 추적 평균 / P95 (ms) | 삽입 구간 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 매 프레임 query 위치 임베딩 | 65.22 / 66.67 | 65.34 / 66.40 | 102.51 / 110.56 | 211/240 | 37/66 |
+| 첫 프레임 이후 query 위치 임베딩 생략 | 62.67 / 63.74 | 62.60 / 63.36 | 100.30 / 108.46 | 211/240 | 37/66 |
+
+네 실행의 시간 외 추적 배열이 모두 바이트 단위로 일치했다. 삽입 구간의
+가림 복원 중앙 오차는 3.5488px였다.
+
+[끔 1](../outputs/tapnextpp_surface_tracking/f9a92eb028f34b779dbf41dbbd31a025/summary.json) ·
+[켬 1](../outputs/tapnextpp_surface_tracking/9550361e75b84749b4a77eba2f9638f8/summary.json) ·
+[켬 2](../outputs/tapnextpp_surface_tracking/a763b3720f20464b881e9a58aa356a4d/summary.json) ·
+[끔 2](../outputs/tapnextpp_surface_tracking/05a81d5309664ba9a44a28aeb3df2505/summary.json)
+
+### MPS recurrent 블록 컴파일
+
+PyTorch MPS 설정의 복사본에 `tap_mps_compile_recurrent: true`를 추가하면
+기존 FP16/FP32 구성을 유지한 채 recurrent residual 블록을 `torch.compile`로
+실행한다. 측정 전에 초기 프레임과 state가 있는 프레임을 각각 한 번 실행하며,
+그 시간을 실험 metadata의 `tracker_compile_warmup_ms`에 기록한다.
+이 옵션의 기본값은 `false`다.
+
+2026-11-15에 M4 Pro, PyTorch 2.14.1에서 동일한 149프레임을 끔 → 켬 → 켬 → 끔
+순으로 재생했다. 양쪽 모두 첫 프레임 이후 query 임베딩을 생략하고 576패치를
+사용했다. 꼭짓점 검출기는 `bb01149` 소스로 고정했다. 아래 시간은 조건별 두
+실행의 프레임 측정값을 합쳐 집계했으며, 초기 프레임과 워밍업은 제외했다.
+
+| 조건 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 전체 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| MPS 기본 | 62.69 / 63.28 | 62.83 / 63.16 | 98.69 / 104.38 | 211/240 | 37/66 |
+| recurrent 블록 컴파일 | 51.53 / 52.15 | 51.57 / 52.15 | 88.02 / 93.65 | 211/240 | 37/66 |
+
+240개 가림 샘플 각각에서 복원 가능 여부와 4px 판정이 일치했다. 삽입 복원
+오차의 중앙값은 3.5488px에서 3.5494px로 바뀌었고 삽입 복원 좌표의 최대
+차이는 0.2212px였다. 빈 Inductor 캐시로 시작한 컴파일 실행의 워밍업은
+2.13초였다. 결과는 이 MPS 호스트와 단일 에피소드에서 확인했다.
+
+[기본 1](../outputs/tapnextpp_surface_tracking/90f7fcaae59c430792b4c8bcc0a98cb0/summary.json) ·
+[컴파일 1](../outputs/tapnextpp_surface_tracking/e4227796908443e6a8150b84828e2c9d/summary.json) ·
+[컴파일 2](../outputs/tapnextpp_surface_tracking/2d6096a10a524f09acbc3b29bee857d4/summary.json) ·
+[기본 2](../outputs/tapnextpp_surface_tracking/56a6cef420284826a7778ff61adcd82c/summary.json)
+
+별도 프로토타입에서 single-step recurrence·정규화·MLP 게이트를 Metal 커널로
+처리하고 마지막 Transformer에서 표면 query의 출력만 계산했다. 같은 576패치에서
+평균 49.33ms, P95 50.16ms로 240개의 4px 판정을 유지했다. 384패치
+`[0, 11, 24, 27]`와 recurrent 컴파일 조합은 평균 38.39ms, P95 39.35ms였다.
+삽입에서 기존 성공 3건을 잃고 12건을 얻어 46/66을 기록했다. 패치 범위는
+같은 에피소드의 영상에서 선택했으며 다른 에피소드에서 검증하지 않았다.
+
+[Metal 조합](../outputs/tapnextpp_surface_tracking/c6683ceb696e4a1ab58a1cd3d5c54bc2/summary.json) ·
+[384패치](../outputs/tapnextpp_surface_tracking/a9f53e2122474011b7d48aeb26f4c436/summary.json)
+
 ### MLX 온라인 추적
 
 Apple Silicon의 MLX 0.32.4에서 공식 PyTorch 체크포인트를 시작할 때 한 번
@@ -388,6 +486,12 @@ uv pip install --python .venv/bin/python 'mlx==0.32.4' 'mlx-metal==0.32.4'
 PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
   .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking.yaml
 ```
+
+`visual/configs/tapnextpp_mlx_block.yaml`은 컴파일된 MPS 이전 실행의
+`tracks.npz`에서 query를 읽어 동일한 149프레임의 첫 블록 입력을 준비한다.
+첫 블록의 query 출력 상대 RMSE는 0.043%, 마지막 RG-LRU 상태의 상대 RMSE는
+0.000081%였다. 이 오차는 모델 내부 값이며 원본 영상 픽셀 오차와 단위가 다르다.
+[첫 블록 기록](../outputs/tapnextpp_mlx_block/a1ea5e25b27046d8a9848cd8bfc69ad4/summary.json)
 
 전체 재생은 2026-11-15에 M4 Pro에서 MLX → MPS → MPS → MLX 순으로 진행했다.
 두 경로에 동일한 체크포인트와 576패치, 초기 표면점 32개를 사용했고 검출기는
@@ -506,6 +610,50 @@ Attention을 별도 행렬곱과 softmax로 분리한 후보는 평균 44.65ms�
 [블록별 계측](../outputs/tapnextpp_mlx_layer_profile/c168e1a102364351af0e1987c25deef3/summary.json) ·
 [입력·상태 검증](../outputs/tapnextpp_mlx_verification/ad38ee23447f437f9c55d7f478f5eaed/summary.json)
 
+#### MLX 작업 영역 축소
+
+저장된 expert 에피소드의 오프라인 재생 비교에는
+`visual/configs/tapnextpp_surface_tracking_mlx_workspace.yaml`을 사용한다.
+기존 576패치 대신 `[2, 15, 16, 25]`의 140패치를 사용한다. 좌표는 32×32
+네이티브 패치 격자 기준이며 오른쪽·아래쪽 경계는 제외한다. 512px 원본
+영상에서는 x=32–255, y=240–399에 해당한다. 모델 해상도, 체크포인트,
+query 32개, 원본 좌표계 및 프레임마다 recurrent 상태를 갱신하는 방식은 같다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_surface_tracking_mlx_workspace.yaml
+```
+
+140패치 범위는 첫 관측에서 정하지 않았다. 같은 expert 에피소드의 후반
+프레임과 복원 결과도 확인하고 범위를 골랐다. 아래 수치는 이 에피소드에
+맞춘 오프라인 재생 결과다. Closed-loop에서 실행 정책이 다른 경로를 만들면
+Peg가 이 범위를 벗어날 수 있으므로 rollout 설정으로 사용하지 않는다.
+Closed-loop 평가에는 현재·과거 관측만으로 영역을 정하고, 가림이나 영역
+이탈 시 재탐색까지 포함해서 별도 rollout에서 지연 시간과 복원을 측정한다.
+
+2026-11-15 M4 Pro, MLX 0.32.4에서 `6fd015b`의 구현과 `bb01149`의
+검출기를 고정했다. 같은 149프레임에서 기존 → 140패치 → 140패치 → 기존
+순으로 재생했고, 각 조건의 첫 프레임을 제외한 296개 시간 표본을 합산했다.
+
+| 경로 | 추적 평균 / P95 (ms) | 삽입 추적 평균 / P95 (ms) | 검출 시작 → 추적 완료 평균 / P95 (ms) | 가림 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 기존 576패치 | 44.28 / 45.07 | 44.21 / 45.35 | 81.38 / 87.79 | 211/240 | 37/66 |
+| 작업 영역 140패치 | 17.25 / 23.05 | 16.71 / 19.07 | 52.88 / 62.51 | 236/240 | 62/66 |
+
+140패치는 기존 4px 성공을 모두 유지했고, 삽입 구간에서 25건이 추가로
+성공했다. 삽입 오차 중앙값은 3.57 → 2.88px였고 전체 가림 오차 중앙값은
+0.87 → 0.95px였다. 좌표와 가시성은 576패치와 달라졌다. 입력 query, GT,
+채점 mask 및 검출 결과는 일치했고 각 설정의 두 반복에서 시간 이외 배열도
+일치했다. RGB-D 융합까지 포함하면 140패치는 평균 54.05ms, P95 63.45ms였다.
+PyTorch MPS 및 CUDA 경로는 이번에 다시 실행하지 않았다.
+
+[기준 1](../outputs/tapnextpp_surface_tracking/4f65d1cefce047499f094d2439f83184/summary.json) ·
+[140패치 1](../outputs/tapnextpp_surface_tracking/6eb7ce1f16ce40adbbe3648e928888dd/summary.json) ·
+[140패치 2](../outputs/tapnextpp_surface_tracking/300d42d1764a4677901c68f2fb384ffa/summary.json) ·
+[기준 2](../outputs/tapnextpp_surface_tracking/49d8c7f0837a45c6838e67dd9d69aa60/summary.json) ·
+[재생 비교](../outputs/tapnextpp_surface_tracking/6eb7ce1f16ce40adbbe3648e928888dd/workspace_comparison.json) ·
+[패치 범위 탐색](../outputs/tapnextpp_surface_tracking/6eb7ce1f16ce40adbbe3648e928888dd/workspace_screening.json)
+
 #### 현재 관측으로 이동하는 MLX 작업 영역
 
 MLX 기본 설정은 모델에 들어갈 패치를
@@ -593,3 +741,115 @@ CUDA는 `tap_adaptive_crop: false`와 `tap_cuda_graph: false`를 사용한다.
 [CUDA 비교 결과](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/cuda_adaptive_comparison.json) ·
 [CUDA 상태 검증](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/check_cuda_graph.log) ·
 [Graph 프레임별 기록](../outputs/tapnextpp_surface_tracking/f67610fc6aea4e8285d7ecc214485ce8/tracks.npz)
+
+#### 통합 리플레이의 MPS 검출기 입력
+
+TAPNext++ 표면 추적 리플레이는 메인 검출기의 장치가 MPS이면 RGB, 깊이,
+카메라 내·외부 보정값을 프레임마다 MPS에 올려 검출기에 넘긴다. 추적과
+3D 융합에는 원래 호스트 프레임을 사용한다. 설정의 `detector_inputs`는
+기본값 `auto`와 비교용 `numpy`, 명시적 `mps`와 `cuda`를 지원한다.
+
+Apple M4 Pro에서 MLX 0.32.4 이동 영역 추적과 같은 Expert 에피소드
+`12615147`의 149프레임을 사용했다. NumPy → MPS → MPS → NumPy 순서로
+실행하고, 각 실행의 초기 프레임을 뺀 조건당 296프레임을 집계했다.
+검출 시간에는 프레임별 MPS 전송, Peg 출력 회수와 추적용 BGR 변환이
+포함된다. 전체 시간은 검출·추적·융합을 포함하며 파일 읽기와 모델
+로드, 워밍업 및 채점은 계측 구간 밖이다.
+
+| 구간 | NumPy 입력 평균 / p95 (ms) | MPS 입력 평균 / p95 (ms) |
+| --- | ---: | ---: |
+| 검출 및 입력 준비 | 36.04 / 43.95 | 33.30 / 40.31 |
+| TAPNext++ 추적 | 19.66 / 27.50 | 17.55 / 24.87 |
+| 3D 융합 | 1.16 / 1.63 | 1.12 / 1.75 |
+| 전체 | 56.85 / 70.19 | 51.96 / 63.37 |
+
+평균 전체 지연 기준 처리율은 **17.59 → 19.24 FPS**였다. 추적기와
+융합 설정은 두 조건에서 같았고, 표의 구간별 시간에는 실행 간 변동이 포함된다.
+추적 결과 좌표와 가시성, 강체 정합 결과, 융합 좌표와 영역 선택은 전체
+149프레임에서 두 조건과 모든 반복이 일치했다.
+메인 검출기의 물체 ID와 출력 순서, 픽셀·카메라·월드 좌표, 마스크,
+메타데이터와 진단 정보도 149프레임에서 정확히 일치했다.
+[통합 비교 원본](../outputs/tapnextpp_mps_detector_inputs/comparison.json) ·
+[검출기 출력 비교](../outputs/tapnextpp_mps_detector_inputs/detector_exact.json)
+
+#### 통합 리플레이의 CUDA 검출기 입력
+
+`detector_inputs: auto`는 CUDA 검출기에도 RGB-D와 보정값을 해당 장치의
+텐서로 넘긴다. TAPNext++의 BGR 입력과 3D 융합은 호스트 프레임을
+사용한다. 이전 입력 전달 방식을 재현하려면 `detector_inputs: numpy`를
+지정한다. CUDA 컴파일 워밍업에 사용할 에피소드 프레임 수는
+`detector_warmup_frames`로 지정할 수 있다.
+
+2026-11-15 Vast.ai RTX 3090에서 Expert 에피소드 `12615147`의 메인 카메라
+149프레임으로 비교했다. 양쪽 모두 2픽셀 격자와 확대 컴파일을 사용하는
+메인 CUDA 검출기 및 이동 영역 TAPNext++ CUDA Graph를 실행했다. 조건별로
+40프레임을 검출 워밍업에 사용했다. NumPy → CUDA → CUDA → NumPy 순서로
+실행했으며, 각 실행의 0번 프레임을 빼고 조건당 296프레임을 집계했다.
+검출 시간은 프레임 전송, Peg 출력 회수와 BGR 변환을 포함한다.
+
+| 구간 | NumPy 입력 평균 / p95 (ms) | CUDA 입력 평균 / p95 (ms) |
+| --- | ---: | ---: |
+| 검출 및 입력 준비 | 34.16 / 38.18 | 30.53 / 34.15 |
+| TAPNext++ 추적 | 9.42 / 8.92 | 9.44 / 8.96 |
+| 3D 융합 | 1.85 / 2.80 | 1.82 / 2.70 |
+| 전체 | 45.43 / 48.82 | 41.80 / 45.48 |
+
+전체 처리율은 **22.01 → 23.93 FPS**였다. 0번 프레임까지 포함하면
+21.96 → 23.87 FPS였다. 저장된 추적 좌표·가시성, 강체 정합과 융합 결과,
+추적 영역은 전체 149프레임에서 두 조건과 모든 반복이 일치했다.
+검출기의 물체 ID, 출력 순서, 픽셀·카메라·월드 좌표, 마스크, 메타데이터 및
+진단 정보도 149프레임에서 정확히 일치했다.
+[프레임별 검증과 통합 계측](../outputs/tapnextpp_cuda_detector_inputs/comparison.json)
+
+#### RTX 3090에서 꼭짓점 검출과 추적 중첩
+
+2026-11-15, RTX 3090에서 `af4dca2` 메인 검출기를 사용해 Expert 에피소드
+`12615147` 149프레임을 재생했다. 두 중첩 조건 모두 검출에 사용한 CUDA RGB
+텐서를 추적에도 사용했다. 현재 프레임의 Peg 마스크로 영역을 고른 뒤 같은
+CPU 스레드에서 별도 CUDA 스트림에 추적을 제출했다. 검출을 완료한 후 두
+결과로 융합했다. 조건별로 첫 프레임을 제외한 예열 후 두 반복을 집계했다.
+전체 시간은 입력 준비부터 융합 완료까지이며 GNN 실행은 측정 범위 밖이다.
+
+| 실행 순서 | 전체 평균 / P95 / 최대 (ms) | 가림 복원 ≤4px | 삽입 ≤4px |
+| --- | ---: | ---: | ---: |
+| 순차 실행 | 41.99 / 45.53 / 73.36 | 236/240 | 62/66 |
+| Peg 마스크 준비 후 중첩 | 35.19 / 38.26 / 71.53 | 236/240 | 62/66 |
+| 평면 피팅 완료 후 중첩 | 34.62 / 37.79 / 70.72 | 236/240 | 62/66 |
+
+동일 프로세스의 교차 재생에서는 전체 149프레임의 물체 ID, 출력 순서,
+픽셀·카메라·월드 좌표, 마스크, 메타데이터 및 진단 정보가 세 조건에서
+일치했다. 가시 Peg의 검출은 802/806건이 4px 이내였다. 앞선 별도 프로세스
+비교에서 마스크 준비 후 중첩 조건의 67번 프레임 검출 해시가 한 번 달랐고,
+교차 재생에서 67번 프레임의 모든 검출 필드가 일치했다. 별도 CPU 작업자
+스레드에서 추적을 호출한 조건은 평균 47.03ms로 늘었다. 이 결과는 CUDA
+리플레이 실험이며, 메인 실행은 순차 경로다. 검출 최적화의 품질 기준은
+[2,073프레임 홀드아웃](corner_detection.md#새-궤적에서-cuda와-mps-평가)이다.
+
+[교차 재생 결과와 검출 해시](../outputs/tapnextpp_cuda_overlap/schedules.json) ·
+[교차 재생 설정](../outputs/tapnextpp_cuda_overlap/schedules.yaml) ·
+[별도 프로세스의 해시 비교](../outputs/tapnextpp_surface_tracking/566261ca81cf4487913f167d8a831853/ab_comparison.json) ·
+[별도 CPU 작업자 스레드 비교](../outputs/tapnextpp_surface_tracking/58488d1ff4604912ad284e55eeba129e/ab_comparison.json)
+
+#### CUDA 평면·윤곽 결과 전송 묶기
+
+2026-11-16, 같은 RTX 3090과 Expert 에피소드 `12615147`에서
+[검출 결과 전송 묶기](corner_detection.md#cuda-평면윤곽-결과의-일괄-전송)를
+순차 실행과 평면 피팅 후 중첩에 각각 적용했다. 149프레임 전체를 채점하고,
+지연은 첫 프레임을 제외한 각 조건의 두 예열 후 반복을 합산했다. 조건의
+실행 순서를 두 번째 반복에서 뒤집었다. 삽입 시간은 동결 평가 자료에서
+삽입으로 표시된 21프레임에 대해 집계했다.
+
+| 실행 순서 | 전체 평균 / P95 (ms) | 삽입 평균 / P95 (ms) | 삽입 복원 ≤4px |
+| --- | ---: | ---: | ---: |
+| 순차 | 41.40 / 44.93 | 40.20 / 44.91 | 62/66 |
+| 순차와 전송 묶기 | 40.97 / 44.46 | 39.75 / 44.15 | 62/66 |
+| 평면 피팅 후 검출·추적 중첩 | 34.27 / 38.31 | 33.09 / 37.31 | 62/66 |
+| 평면 피팅 후 중첩과 전송 묶기 | 33.56 / 36.58 | 32.32 / 36.61 | 62/66 |
+
+전체 가림 복원은 네 조건에서 236/240건이었다. 149프레임의 검출 좌표,
+물체 ID, 마스크, 순서, 메타데이터와 진단 정보의 해시가 일치했다.
+강체 투영 좌표와 융합 좌표도 일치했다. 중첩에서 전송을 묶으면 융합까지
+평균 0.71 ms가 줄었고, 30 ms 목표까지 3.56 ms가 남았다.
+
+[교차 실행 결과](../outputs/corner_cuda_readbacks/integrated.json) ·
+[재생 설정](../outputs/corner_cuda_readbacks/integrated.yaml)

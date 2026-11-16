@@ -1,0 +1,10 @@
+trainer: evaluation.tapnextpp_cache:build
+source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+output_root: outputs/tapnextpp_cache
+checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+device: cuda:0
+detector_device: cuda:0
+surface_queries: 32
+tap_adaptive_crop: true
+tap_cuda_autocast: true
+tap_cuda_graph: true

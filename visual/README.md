@@ -27,7 +27,34 @@ PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=di
 ```
 
 지원 입력과 검증 결과는 [MLX 온라인 추적](../docs/tapnextpp.md#mlx-온라인-추적)에 있다.
+
+같은 환경과 혼합 궤적 파일럿 RGB-D가 있으면 다음 명령으로 추적 캐시를 생성한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  .venv/bin/python main.py --config visual/configs/tapnextpp_cache.yaml
+```
+
+기본 설정은 파일럿 전체를 처리한다. 설정에 `episodes: [pilot_12615147_expert]`를
+추가하면 지정한 궤적만 처리한다. `outputs/tapnextpp_cache/<run_id>/`에 궤적별
+NPZ와 해시가 담긴 매니페스트를 저장한다. 배열의 형식은
+[파일럿 추적 캐시](../docs/tapnextpp.md#파일럿-추적-캐시)를 참고한다.
+
+CUDA 호스트에 파일럿 RGB-D, 기존 추적 캐시와 검증된 `actor_ids.json`을
+준비한 뒤, 기본 꼭짓점 검출 결과를 별도 캐시에 추가할 수 있다.
+
+```bash
+WANDB_MODE=disabled python main.py --config visual/configs/tapnextpp_corner_cache_cuda.yaml
+```
+
+[캐시 형식과 검출 성능 지표](../docs/tapnextpp.md#꼭짓점-검출-추가)를 참고한다.
+
+저장된 expert 에피소드에 맞춘 오프라인 지연 시간 실험은
+[`tapnextpp_surface_tracking_mlx_workspace.yaml`](configs/tapnextpp_surface_tracking_mlx_workspace.yaml)로
+실행한다. 패치 범위와 비교 결과는 [MLX 작업 영역 축소](../docs/tapnextpp.md#mlx-작업-영역-축소)에 있다.
 PyTorch MPS 비교에는 `visual/configs/tapnextpp_surface_tracking_mps.yaml`을 사용한다.
+설정 복사본에 `tap_mps_compile_recurrent: true`를 추가하면
+[recurrent 블록 컴파일](../docs/tapnextpp.md#mps-recurrent-블록-컴파일)을 켠다.
 
 CUDA 기본 설정은 관측 기반 이동 영역과 CUDA Graph를 사용한다.
 [CUDA 검증 결과](../docs/tapnextpp.md#cuda-이동-영역과-graph-재사용)를 참고한다.

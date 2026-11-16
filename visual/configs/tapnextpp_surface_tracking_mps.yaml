@@ -14,4 +14,5 @@ detection_gate_m: 0.012
 
 tap_mps_fp16_vit: true
 tap_mps_fp16_recurrent_mlp: true
+tap_mps_skip_past_query_embeddings: true
 tap_native_patch_crop_xyxy: [0, 7, 24, 31]

@@ -1,5 +1,8 @@
 """Inference optimizations for the pinned TAPNext++ PyTorch model."""
 
+from contextlib import contextmanager
+from types import MethodType
+
 import torch
 
 
@@ -22,6 +25,36 @@ def enable_mps_fp16_vit(tracker):
         raise ValueError("tap_mps_fp16_vit requires an MPS tracker")
     for block in tracker._model.blocks:
         run_block_in_fp16(block.vit_block)
+
+
+def compile_mps_recurrent_blocks(tracker):
+    """Compile the recurrent residual blocks with their existing dtypes."""
+    if tracker.device.type != "mps":
+        raise ValueError("tap_mps_compile_recurrent requires an MPS tracker")
+    blocks = tracker._model.blocks
+    # Compile the shared forward once, passing each block's weights at call time.
+    recurrent_type = type(blocks[0].ssm_block)
+    compiled_forward = torch.compile(recurrent_type.forward, fullgraph=True, dynamic=False)
+    for block in blocks:
+        recurrent = block.ssm_block
+        recurrent.forward = MethodType(compiled_forward, recurrent)
+
+
+@contextmanager
+def use_past_query_mask_tokens(tracker):
+    """Skip spatial sampling while all queries precede the current frame."""
+    model = tracker._model
+    embed_queries = model.embed_queries
+
+    def embed_mask_tokens(timesteps, query_points):
+        batch, queries, _ = query_points.shape
+        return model.mask_token.expand(batch, timesteps, queries, -1)
+
+    model.embed_queries = embed_mask_tokens
+    try:
+        yield
+    finally:
+        model.embed_queries = embed_queries
 
 
 def crop_native_patches(tracker, crop):

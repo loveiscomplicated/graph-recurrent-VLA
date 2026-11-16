@@ -1,0 +1,7 @@
+trainer: evaluation.tapnextpp_corner_cache:build
+device: cuda:0
+threads: 2
+source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+track_manifest: outputs/tapnextpp_cache/20b53be2841c42dca78f5f1707ef7a49/manifest.json
+actor_ids: actor_ids.json
+output_root: outputs/tapnextpp_corner_cache

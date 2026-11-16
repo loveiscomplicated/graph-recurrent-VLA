@@ -15,7 +15,13 @@ from tapnet.tapnextpp.votsp2026.model import TAPNextPP
 from data_collection.episode_dataset import file_sha256
 from utils.experiment_logger import ExperimentLogger
 from visual.corner_detection import TorchCornerDetector
-from visual.tapnextpp_mps import crop_native_patches, enable_mps_fp16_vit, run_block_in_fp16
+from visual.tapnextpp_mps import (
+    compile_mps_recurrent_blocks,
+    crop_native_patches,
+    enable_mps_fp16_vit,
+    run_block_in_fp16,
+    use_past_query_mask_tokens,
+)
 from evaluation.tapnextpp_support import RGB_KEY, synchronize
 
 
@@ -117,6 +123,30 @@ def read_frames(config, episode):
     return frames
 
 
+def detector_inputs(frame, device, mode):
+    """Stage detector inputs while retaining the host frame for tracking and fusion."""
+    if mode in ("mps", "cuda"):
+        rgb, depth, intrinsic, extrinsic = frame
+        return (
+            torch.as_tensor(rgb, device=device),
+            torch.as_tensor(depth, device=device),
+            torch.as_tensor(intrinsic, device=device, dtype=torch.float32),
+            torch.as_tensor(extrinsic, device=device, dtype=torch.float32),
+        )
+    return frame
+
+
+def resolve_detector_input_mode(mode, device):
+    """Select the input representation and validate explicit accelerator modes."""
+    if mode not in ("auto", "numpy", "mps", "cuda"):
+        raise ValueError("detector_inputs must be auto, numpy, mps or cuda")
+    if mode == "auto":
+        return device.type if device.type in ("mps", "cuda") else "numpy"
+    if mode != "numpy" and mode != device.type:
+        raise ValueError(f"{mode} detector inputs require a {mode} detector")
+    return mode
+
+
 def track_surface_frame(tracker, config, bgr, query=None, state=None, observation_mask=None):
     """Track one frame and return positions in source image pixels."""
     crop = config.get("tap_crop_xyxy")
@@ -149,11 +179,15 @@ def track_surface_frame(tracker, config, bgr, query=None, state=None, observatio
 def replay(config, frames, tracker, detector):
     """Initialize once, track surface points only, and fuse current detections."""
     generator = np.random.default_rng(config["ransac_seed"])
+    skip_query_embeddings = config.get("tap_mps_skip_past_query_embeddings", False)
+    input_mode = config.get("detector_inputs", "numpy")
     state = None
     rows = []
-    for index, (rgb, depth, intrinsic, extrinsic) in enumerate(frames):
+    for index, frame in enumerate(frames):
+        rgb, depth, intrinsic, _ = frame
         begin = perf_counter()
-        detection = detector(rgb, depth, intrinsic, extrinsic)
+        inputs = detector_inputs(frame, detector.device, input_mode)
+        detection = detector(*inputs)
         peg = detection.object_id == 0
         corners_xyz = detection.camera_xyz[peg].cpu().numpy()
         corners_xy = detection.uv[peg].cpu().numpy()
@@ -167,9 +201,15 @@ def replay(config, frames, tracker, detector):
             if not len(template):
                 raise ValueError("Detector returned no initial Peg corners")
         start = perf_counter()
-        tracked, visible, state = track_surface_frame(
-            tracker, config, bgr, query if index == 0 else None, state, observation_mask=mask,
-        )
+        query_scope = nullcontext()
+        if skip_query_embeddings and state is not None:
+            # This replay only injects queries at step zero. TAPNext++ subtracts
+            # the current step, so all queries select the mask token from here on.
+            query_scope = use_past_query_mask_tokens(tracker)
+        with query_scope:
+            tracked, visible, state = track_surface_frame(
+                tracker, config, bgr, query if index == 0 else None, state, observation_mask=mask,
+            )
         synchronize(tracker.device)
         track_end = perf_counter()
         valid, current = lift(tracked, depth, mask, intrinsic, visible)
@@ -278,7 +318,8 @@ def load_tracker(config):
             raise ValueError("TAPNext++ MLX requires a full frame and optional native patch crop")
         torch_options = (
             "tap_cuda_autocast", "tap_cache_cuda_autocast", "tap_mps_fp16_vit",
-            "tap_mps_fp16_recurrent_mlp",
+            "tap_mps_fp16_recurrent_mlp", "tap_mps_skip_past_query_embeddings",
+            "tap_mps_compile_recurrent",
         )
         if any(config[key] for key in torch_options):
             raise ValueError("TAPNext++ MLX requires the PyTorch-specific flags to be disabled")
@@ -306,11 +347,15 @@ def load_tracker(config):
         tracker.cuda_graph_enabled = graph
     if config["tap_mps_fp16_vit"]:
         enable_mps_fp16_vit(tracker)
+    if config["tap_mps_skip_past_query_embeddings"] and tracker.device.type != "mps":
+        raise ValueError("tap_mps_skip_past_query_embeddings requires an MPS tracker")
     if config["tap_mps_fp16_recurrent_mlp"]:
         if tracker.device.type != "mps":
             raise ValueError("tap_mps_fp16_recurrent_mlp requires an MPS tracker")
         for block in tracker._model.blocks:
             run_block_in_fp16(block.ssm_block.mlp_block)
+    if config["tap_mps_compile_recurrent"]:
+        compile_mps_recurrent_blocks(tracker)
     if native_crop is not None:
         crop_native_patches(tracker, native_crop)
     return tracker
@@ -324,6 +369,9 @@ def evaluate(config):
         "tap_cache_cuda_autocast": False,
         "tap_mps_fp16_vit": False,
         "tap_mps_fp16_recurrent_mlp": False,
+        "tap_mps_skip_past_query_embeddings": False,
+        "tap_mps_compile_recurrent": False,
+        "detector_inputs": "auto",
         **config,
     }
     torch.set_num_threads(2)
@@ -333,6 +381,12 @@ def evaluate(config):
     frames = read_frames(config, episode)
     tracker = load_tracker(config)
     detector = TorchCornerDetector.main(device=config["detector_device"])
+    mode = resolve_detector_input_mode(config["detector_inputs"], detector.device)
+    config["detector_inputs"] = mode
+    warmup_frames = config.get("detector_warmup_frames", 1)
+    if type(warmup_frames) is not int or warmup_frames < 1:
+        raise ValueError("detector_warmup_frames must be a positive integer")
+    warmup_frames = min(warmup_frames, len(frames))
     with ExperimentLogger(team="visual", model="tapnextpp_surface_tracking", config=config,
                           seed=episode["seed"], job_type="evaluate") as logger:
         output = Path(config["output_root"]) / logger.run_id
@@ -344,9 +398,12 @@ def evaluate(config):
         if config["device"] == "mlx":
             logger.record(mlx_version=tracker.runtime_version)
         print(f"Output directory: {output}", flush=True)
+        # CUDA compilation can specialize on shapes that appear after frame zero.
+        for index in np.linspace(0, len(frames) - 1, warmup_frames, dtype=int)[1:]:
+            detector(*detector_inputs(frames[index], detector.device, mode))
         # Warm up on frame zero with disposable state before the measured replay.
-        rgb, depth, intrinsic, extrinsic = frames[0]
-        warm = detector(rgb, depth, intrinsic, extrinsic)
+        rgb, depth, _, _ = frames[0]
+        warm = detector(*detector_inputs(frames[0], detector.device, mode))
         warm_mask = warm.masks[0].cpu().numpy()
         query = choose_points(warm_mask, depth, config["surface_queries"])
         scope = nullcontext()
@@ -360,12 +417,12 @@ def evaluate(config):
             warm_frame = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
             warm_start = perf_counter()
             _, _, warm_state = track_surface_frame(tracker, config, warm_frame, query, observation_mask=warm_mask)
-            if config["device"] == "mlx" or config.get("tap_adaptive_crop"):
+            if config["tap_mps_compile_recurrent"] or config["device"] == "mlx" or config.get("tap_adaptive_crop"):
                 # The initial and continuation calls have different cache signatures.
                 track_surface_frame(tracker, config, warm_frame, state=warm_state, observation_mask=warm_mask)
             del warm_state
             synchronize(tracker.device)
-            if config["device"] == "mlx" or config.get("tap_adaptive_crop"):
+            if config["tap_mps_compile_recurrent"] or config["device"] == "mlx" or config.get("tap_adaptive_crop"):
                 logger.record(tracker_compile_warmup_ms=(perf_counter() - warm_start) * 1000)
             query, template, rows = replay(config, frames, tracker, detector)
         result, xy = report(config, frames, rows, template)

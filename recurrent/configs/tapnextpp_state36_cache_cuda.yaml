@@ -1,0 +1,11 @@
+trainer: data_collection.tapnextpp_state36_cache:build
+device: cuda:0
+threads: 2
+source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+corner_manifest: outputs/tapnextpp_corner_cache/cf495e63b2c5451e82b6a388f1ef7add/manifest.json
+output_root: outputs/tapnextpp_state36_cache
+model_seed: 0
+gnn_checkpoint: checkpoints/gnn.pt
+gnn_sha256: 3c642e0d4e977ec33d3431d1af9926d65c1945f0b0d989aff9c892cf35f3a8cf
+temporal_checkpoint: checkpoints/corner_transformer.pt
+temporal_sha256: fb555e95493a64b3e0a8d1e3138fc21adcc7d07d6cd9ec62ff1efcb79b88c076

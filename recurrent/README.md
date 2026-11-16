@@ -18,6 +18,15 @@ Graph embedding이 들어오기 전 단계라서, 입력은 simulator GT state�
 
 ## GPU 서버에서 바로 실행 (Vessl, Vast.ai 공통)
 
+혼합 궤적 파일럿의 꼭짓점 캐시와 같은 원본 RGB-D, 설정에 지정한
+Transformer와 GNN 가중치가 있으면 프레임별 GT와 Graph 추정값을 추가할 수 있다.
+
+```bash
+WANDB_MODE=disabled python main.py --config recurrent/configs/tapnextpp_state36_cache_cuda.yaml
+```
+
+파일 형식과 학습용 액션 마스크는 [State36 쌍 캐시](../docs/data_collection.md#파일럿-state36-쌍-캐시)를 참고한다.
+
 ```bash
 git clone https://github.com/loveiscomplicated/graph-recurrent-VLA.git
 cd graph-recurrent-VLA

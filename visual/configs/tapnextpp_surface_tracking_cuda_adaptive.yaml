@@ -1,0 +1,19 @@
+trainer: evaluation.tapnextpp_surface_tracking:evaluate
+device: cuda:0
+detector_device: cuda:0
+source: outputs/mixed_trajectory_pilot/pilot_12615147_expert
+frozen_queries: outputs/tracker_only/bd36033d353e4c7c9a19fbca6a93c644/replay.npz
+checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+output_root: outputs/tapnextpp_surface_tracking
+surface_queries: 32
+minimum_inliers: 4
+ransac_samples: 192
+ransac_seed: 42
+inlier_threshold_m: 0.005
+detection_gate_m: 0.012
+
+tap_input_resolution: 256
+tap_cuda_autocast: true
+tap_cache_cuda_autocast: true
+tap_adaptive_crop: true
+tap_cuda_graph: true

@@ -1,0 +1,8 @@
+trainer: evaluation.tapnextpp_cache:build
+source_manifest: outputs/mixed_trajectory_pilot/manifest.json
+output_root: outputs/tapnextpp_cache
+checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+device: mlx
+detector_device: auto
+surface_queries: 32
+tap_adaptive_crop: true

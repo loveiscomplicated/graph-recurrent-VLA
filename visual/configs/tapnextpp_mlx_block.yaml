@@ -1,0 +1,6 @@
+trainer: evaluation.tapnextpp_mlx_block:evaluate
+source: outputs/mixed_trajectory_pilot/pilot_12615147_expert
+reference_tracks: outputs/tapnextpp_surface_tracking/e4227796908443e6a8150b84828e2c9d/tracks.npz
+checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+output_root: outputs/tapnextpp_mlx_block
+tap_native_patch_crop_xyxy: [0, 7, 24, 31]

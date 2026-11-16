@@ -743,6 +743,23 @@ in-place resumption. Keep these files when planning a retry. On macOS use CPU
 physics and the host SAPIEN/MoltenVK renderer; CUDA has not been tested for this
 workflow on this host.
 
+### 파일럿 State36 쌍 캐시
+
+`recurrent/configs/tapnextpp_state36_cache_cuda.yaml`은 파일럿 원본과 완성된
+[TAPNext++ 꼭짓점 캐시](tapnextpp.md#꼭짓점-검출-추가)를 조인한다. 원본 프레임과
+부모 캐시 해시를 확인하고, 기존 배열을 복사한 궤적별 NPZ를 새 실행 폴더에 저장한다.
+
+`state36_gt`와 `state36_transformer`는 같은 `frame_indices`에 대응하는
+`float32 [T, 36]` 배열이다. 두 배열의 첫 15열은 동일한 로봇 상태다.
+나머지 21열은 각각 저장된 물체 GT와 해당 프레임까지의 검출을 기존 Transformer
+추적기와 GNN(seed 0)으로 처리한 추정값이다. Graph 입력은 저장된 꼭짓점과 관측된
+로봇 상태다. 추적기는 궤적마다 초기화한다. `counts`는 관측된 Peg 및 Box 노드
+수이며, `graph_has_nodes`는 GNN에 해당 프레임의 노드가 있었는지 나타낸다.
+
+`action[t]`는 관측 `t`에서 적용한 실제 제어 입력이다. 마지막 관측까지 보존하며,
+행동 학습에서는 `action_valid`가 참인 행을 고른다. 두 State36 배열과 `action`은
+같은 마스크로 인덱싱한다. 결과에는 세 정책의 궤적이 모두 포함된다.
+
 ### Mixed trajectory pilot results
 
 On 2026-11-14, the pilot collected 100 reset seeds and all 300 planned
