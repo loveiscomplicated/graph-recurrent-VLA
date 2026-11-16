@@ -5,6 +5,31 @@ association and the six preserved GNN comparisons, see [detector-only corner
 association and GNN](detected_corner_gnn.md). Dataset preparation remains in
 [data collection](data_collection.md#fixed-id-per-corner-sequences).
 
+## B2-2 spatial-first corner recovery
+
+The B2-2 prototype uses [direct corners and non-corner Peg surfaces](data_collection.md#five-mode-graph-input)
+for each frame in the original train and validation splits. Dataset preparation
+uses the frozen reset-seed assignments and retains pre-condition frame order.
+Offline 1:1 matching supplies verified vertex correspondence with a 5 mm gate
+and a 2 mm nearest-candidate margin. GT XYZ is stored separately from the
+observed graph and used as supervision.
+
+The spatial backbone runs on each frame, followed by causal attention on each
+verified corner's observations in 32-frame blocks. Last-observation coordinates
+carry across blocks. The model predicts XYZ relative to that observation.
+Loss is the XYZ mean squared error divided by (10 mm)², restricted to currently
+unmatched vertices that were observed at least once earlier in the episode.
+Observed positions pass through. Validation compares missing-corner 3D RMSE
+with the last-observation baseline on the same targets. This evaluates
+fixed-ID completion with offline correspondence, with no online association
+score.
+
+The full-history recipe sets `training.sequence_length: null`. Each causal
+sequence covers one episode, so a missing query can attend to observations
+before the former 32-frame boundary. It reuses the same manifest, seed,
+supervision mask and loss for 20 epochs. The batch size is two episodes to
+limit memory use, compared with eight 32-frame blocks in the reference run.
+
 ## Shared fixed-ID corner prediction
 
 The current isolated prototype uses the

@@ -1,5 +1,27 @@
 # Graph team
 
+## B2-2 corner tracking
+
+With the prepared train/validation episode manifest from the per-frame corner
+and non-corner Peg surface caches, run:
+
+```bash
+.venv/bin/python main.py --config graph/configs/state_estimation/spatial_corner_tracking.yaml
+```
+
+B2-2 applies spatial message passing before per-vertex causal attention. It
+predicts XYZ displacements from the last actual observation and passes through
+currently observed coordinates. Its 20-epoch CPU recipe uses the complete
+chronological train and validation episodes, before any visibility-condition
+filter. The training logger reports missing-corner RMSE and the last-observation
+baseline. See [the fixed-ID supervision contract](../docs/corner_prediction.md#b2-2-spatial-first-corner-recovery).
+
+For the full-episode history comparison, use the same prepared manifest:
+
+```bash
+.venv/bin/python main.py --config graph/configs/state_estimation/spatial_corner_tracking_full_history.yaml
+```
+
 ## Object21D state estimation
 
 From the repository root with PyTorch, NumPy, SciPy and PyYAML installed:

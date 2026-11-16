@@ -1,0 +1,19 @@
+trainer: training.spatial_corner_tracking:run
+seed: 0
+device: cpu
+cpu_threads: 4
+data:
+  manifest: outputs/spatial_corner_tracking/data/manifest.json
+model:
+  hidden: 64
+  layers: 2
+  heads: 4
+training:
+  epochs: 20
+  sequence_length: null
+  batch_size: 2
+  position_scale_m: 0.01
+optimizer:
+  lr: 0.0003
+  weight_decay: 0.01
+output_root: outputs/spatial_corner_tracking_full_history
