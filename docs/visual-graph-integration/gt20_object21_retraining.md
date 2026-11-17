@@ -43,7 +43,7 @@ GT 데이터는 네 작업이 병렬로 수집했고 가장 긴 작업이 177.3�
 
 데이터 해시, 176개 시드의 중복 부재, 20점 입력 모양, 체크포인트 선택, 테스트 예측의 유한성 및 최종 횡방향 수치를 검증했다. 횡방향 P50과 P90은 저장된 GT와 예측을 NumPy에서 따로 계산해 일치시켰다. 기존 GNN 구현과 시뮬레이터 코드는 편집하지 않았다.
 
-- [GT20 학습 결과 및 실험 ID](../../graph/research_backups/graph2/gt20_object21_retraining/remote/train/summary.json)
-- [검증 최저점 체크포인트 (로컬 백업)](../../graph/research_backups/graph2/gt20_object21_retraining/BACKUP.md) · [에폭별 기록](../../graph/research_backups/graph2/gt20_object21_retraining/remote/train/history.json)
-- [프레임별 기존·재학습 예측 및 GT (로컬 백업)](../../graph/research_backups/graph2/gt20_object21_retraining/BACKUP.md)
-- [GT 수집 코드](../../graph/research_backups/graph2/gt20_object21_retraining/collect_gt20.py) · [학습 및 평가 코드](../../graph/research_backups/graph2/gt20_object21_retraining/train_gt20.py)
+- [GT20 학습 결과 및 실험 ID](../../outputs/gt20_object21_retraining/remote/train/summary.json)
+- [검증 최저점 체크포인트](../../outputs/gt20_object21_retraining/remote/train/best.pt) · [에폭별 기록](../../outputs/gt20_object21_retraining/remote/train/history.json)
+- [프레임별 기존·재학습 예측 및 GT](../../outputs/gt20_object21_retraining/remote/train/test_predictions.npz)
+- [GT 수집 코드](../../outputs/gt20_object21_retraining/collect_gt20.py) · [학습 및 평가 코드](../../outputs/gt20_object21_retraining/train_gt20.py)

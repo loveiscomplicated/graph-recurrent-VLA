@@ -1,0 +1,539 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>Task10-I Stage2 — Final audited report</title><style>body{font:16px/1.6 system-ui;max-width:1200px;margin:30px auto;padding:0 24px;color:#203040;background:#f8fafc}table{border-collapse:collapse;background:white}td,th{padding:8px 12px;border:1px solid #ccd5df}img.plot{max-width:100%} .cards{display:flex;flex-wrap:wrap;gap:12px}.card{width:340px;padding:12px;background:white;border:1px solid #ccd5df;border-radius:8px} .card img{width:150px;image-rendering:pixelated}pre{white-space:pre-wrap;overflow-wrap:anywhere}a{color:#1459a6}h2{margin-top:40px}</style><h1>Task10-I Stage 2 — Diversity-aware Initial State Dataset Selection</h1>
+<p>상태: <strong>COMPLETED</strong>. ExperimentLogger UUID <code>34d10bf652b344a38d54b7672dbfe0c0</code>. 본 결과는 <strong>선정 계획</strong>이며 신규 Expert action/trajectory가 있는 학습 데이터셋이 아니다. Stage 3는 자동 실행하지 않았다.</p>
+<p>Engineering 이력: 첫 <code>/workspace/task10i_stage2_20261031/run</code>은 분포 summary의 <code>maximum</code> 출력 키 중복 오류로 BLOCKED를 보존했다. 수정은 분포 CSV 출력에만 적용했고 seed/weight/scale/selection은 변경하지 않았다. 회귀 테스트에 분포 출력 계약을 추가한 뒤 별도 Source/Output Root에서 전 단계를 재검증했다. 이전 선정 ID/순서와의 동등성은 별도 완료 감사로 확인한다.</p>
+<h2>1. 입력과 Source Identity — CONFIRMED</h2>
+<p>Vast.ai instance <strong>57987772</strong>에서 CPU NumPy/SciPy로 실행했다. Canonical <code>/workspace/task10i_stage1_20261031/verified_pool_v2</code>는 읽기 전용이다. Stage 1.5 <code>handoff/stage2_input_receipt.json</code>과 그 Artifact Index 전체를 검증했고, <strong>8,514개 전체 파일</strong>을 원본 path/size/SHA256과 다시 대조했다. Stage 1의 8,506 indexed files와 8개의 기존 bookkeeping 파일을 구분했다. Missing/Mismatch/Extra/Unreadable은 모두 0이다.</p>
+<p>926행 aggregate와 300개 eligible initial NPZ, Descriptor, RGB-D, Visibility evidence를 실제로 읽고 Stage 1.5 fingerprint와 대조했다. 기존 Primary Gate, 1.5mm depth / 0.0001px frustum tolerance, Physical/Replayed PASS는 변경하지 않았다. 기존 JSON의 역사적 macOS 절대경로는 provenance이며 새 로더는 실제 remote pool 상대경로로 읽는다.</p>
+<p>입력 <a href="../../outputs/task10i/stage2/run/stage2_input_identity.json">Identity</a>, <a href="../../outputs/task10i/stage2/run/stage2_input_receipt_verified.json">Receipt 검증</a>, <a href="../../outputs/task10i/stage2/run/input_candidate_readback.json">300개 Readback</a>, <a href="../../outputs/task10i/stage2/run/source_preservation_audit.json">Source 보존</a>, <a href="../../outputs/task10i/stage2/run/execution_source_identity.json">실행 Source</a>.</p>
+<h2>2. 기존 Train33 / Validation7 — CONFIRMED</h2>
+<p>Task10-G final release manifest, 실제 host metadata, dataset identity, 승인 Eligibility IDs, 320개 원본 HDF5 및 GT sidecar SHA를 대조했다. episode→parent seed→split→branch를 실제 자료로 연결했다. 기존 감사 NPZ에는 Hole GT가 없으므로 원본 GT sidecar의 <code>raw_hole_pose</code>, <code>raw_hole_radius</code>에서 복원했다. Peg/TCP/RGB-D/calibration을 저장 첫 프레임과 exact 대조하고, Parent 안 모든 branch의 초기 Peg/Hole/TCP/qpos/qvel/camera/image를 exact 비교했다. Box actor pose는 기존 raw GT에 없으며 추정하지 않았다. 거리 계산에는 실제 Hole frame을 사용한다.</p>
+<p>Train 33개는 <strong>82 logical episodes</strong>, Validation 7개는 <strong>23 logical episodes</strong>다. 원본 272/48 중 190/25 visibility-failed episodes는 Stage 3 계획의 제거 inventory로만 기록했고 원본은 수정하지 않았다. Existing Final/Test는 사용하지 않았다. <a href="../../outputs/task10i/stage2/run/existing_valid_parent_inventory.json">Parent inventory</a>, <a href="../../outputs/task10i/stage2/run/existing_episode_preservation_manifest.json">보존/제거 episode inventory</a>, <a href="../../outputs/task10i/stage2/run/existing_source_file_inventory.json">원본 SHA 목록</a>.</p>
+<h2>3. 신규300 분할과 무작위 추출 — CONFIRMED</h2>
+<p>정렬된 ID에 PCG64 seed <code>1010202601</code>를 적용한 uniform permutation으로 Validation Cohort20 / Diagnostic Holdout60 / Training220을 먼저 동결했다. Validation 앞9는 Primary, 뒤11는 Reserve다. Validation20 전체와 Holdout60은 Train/scale/greedy에서 제외했다. Source snapshot은 그대로 UNASSIGNED이며 Stage2 manifest에만 새 역할을 부여했다.</p>
+<p>Training220에서 Common44와 잔여 Random19를 독립 uniform permutation으로 비복원 추출했다. 최종 신규63의 분포는 uniform subset63과 동등하다: 각 63-subset을 만드는 44/19 분할 수가 동일하고 각 순서의 확률도 같다. 가장 좋은 Monte Carlo 결과로 R을 바꾸지 않았다. <a href="../../outputs/task10i/stage2/run/candidate_pool_split_manifest.json">분할/전체 trace</a>, <a href="../../outputs/task10i/stage2/run/random_seed_manifest.json">RNG</a>, <a href="../../outputs/task10i/stage2/run/sampling_trace.json">추출 trace</a>.</p>
+<h2>4. Feature와 거리 계약 — CONFIRMED</h2>
+<p>GT는 Dataset construction/분석 전용이다. Student 입력·모델은 바꾸지 않았다. 모든 pose는 world xyz,wxyz, m; quaternion 정규화 후 sign-invariant SO(3) angle <code>2 acos(abs(dot(q1,q2)))</code>을 사용한다. 180° reversal은 π 거리이며 Red/White 끝을 합치지 않는다. Yaw는 [-π,π] 주기 진단이며 objective에 중복 추가하지 않는다.</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>정의</th>
+<th style="text-align: right;">Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1</td>
+<td>world peg−TCP XYZ / coordinate scale의 RMS</td>
+<td style="text-align: right;">.30</td>
+</tr>
+<tr>
+<td>G2</td>
+<td>Peg world SO(3) geodesic / angular scale</td>
+<td style="text-align: right;">.20</td>
+</tr>
+<tr>
+<td>G3</td>
+<td>평균(position RMS, hole⁻¹·peg SO(3) / scale)</td>
+<td style="text-align: right;">.25</td>
+</tr>
+<tr>
+<td>G4</td>
+<td>Full length, square thickness / scale의 RMS</td>
+<td style="text-align: right;">.15</td>
+</tr>
+<tr>
+<td>G5</td>
+<td>8개 OBB corner 평균 u,v /128 / scale의 RMS</td>
+<td style="text-align: right;">.10</td>
+</tr>
+</tbody>
+</table>
+<p>최종 거리 <code>d=Σ weight_g·distance_g</code>. Group 차원 수로 가중치가 커지지 않도록 vector RMS를 쓴다. G3 안 position/orientation은 각 1/2이다. 원점 이동에 무관한 world displacement이며 TCP local frame으로 혼합하지 않는다. G5는 mask centroid/actor center와 다른 명시적 OBB-corner 평균이다.</p>
+<p>Scale은 기존 Train33+Train220 <strong>253개만</strong> fit한다. Vector는 coordinate IQR, rotation은 253개 내 upper-triangle pair-angle IQR이다. Floor는 위치1cm, length1cm, thickness2mm, angle10°, image4px이다. Nearly constant axis에도 이 floor를 사용한다. 실제 clearance가 thickness/2+3mm임을 모든 state에서 검사했으므로 hole radius를 독립 가중하지 않는다. scalar TCP distance·Yaw·image extent·boundary margin도 중복 또는 품질 진단으로만 둔다. 이것은 사전 정의 heuristic이며 검증된 최적 weight가 아니다.</p>
+<p><a href="../../outputs/task10i/stage2/run/feature_schema.json">Schema</a>, <a href="../../outputs/task10i/stage2/run/feature_normalization.json">Scale 실제 값과 fit IDs</a>, <a href="../../outputs/task10i/stage2/run/distance_protocol_frozen.json">Distance</a>, <a href="../../outputs/task10i/stage2/run/selection_protocol_frozen.json">Selection</a>. Holdout positive-control 차단·q/−q·wraparound·방향 반전·degenerate floor·miniature E2E는 <a href="../../outputs/task10i/stage2/run/contract_tests.log">테스트 로그</a>를 따른다.</p>
+<h2>5. R/D/Validation 선정 — CONFIRMED</h2>
+<p>R=기존33+Common44+Random19=<strong>96</strong>. D=동일 기존33+동일 Common44+Facility-location19=<strong>96</strong>. Shared Validation=기존7+Random9=<strong>16</strong>. D는 Training220의 <code>J(S)=mean_x min_s d(x,s)</code> 감소량을 매번 최대화했다. Pure farthest-point는 사용하지 않았다. Float64와 ID 정렬 tie-break로 전체 greedy continuation을 독립 두 번 실행하여 exact 일치했다.</p>
+<p>실제 R/D 교집합 <strong>78</strong>, R-exclusive <strong>18</strong>, D-exclusive <strong>18</strong>. 추가19 중 <strong>1개</strong>가 겹친다. R tail을 D 후보에서 배제하지 않았다. 신규 Expert 수집 고유 Parent union은 Validation9 포함 <strong>90개</strong>다(상한91).</p>
+<p><a href="../../outputs/task10i/stage2/run/dataset_R_parent_manifest.json">R manifest</a>, <a href="../../outputs/task10i/stage2/run/dataset_D_parent_manifest.json">D manifest</a>, <a href="../../outputs/task10i/stage2/run/shared_validation_parent_manifest.json">동일 Validation</a>, <a href="../../outputs/task10i/stage2/run/selection_identity.json">Hash freeze</a>, <a href="../../outputs/task10i/stage2/run/coverage_selection_order.json">전체 greedy 순서</a>, <a href="../../outputs/task10i/stage2/run/selection_overlap_audit.json">공통/차이 감사</a>.</p>
+<h2>6. Coverage 분석</h2>
+<h3>Training Candidate220</h3>
+<table>
+<thead>
+<tr>
+<th>dataset</th>
+<th>n</th>
+<th>mean</th>
+<th>median</th>
+<th>p90</th>
+<th>p95</th>
+<th>maximum</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>existing33</td>
+<td>220</td>
+<td>0.429777</td>
+<td>0.429303</td>
+<td>0.54995</td>
+<td>0.587937</td>
+<td>0.691092</td>
+</tr>
+<tr>
+<td>base77</td>
+<td>220</td>
+<td>0.303793</td>
+<td>0.354593</td>
+<td>0.467144</td>
+<td>0.493459</td>
+<td>0.602347</td>
+</tr>
+<tr>
+<td>R</td>
+<td>220</td>
+<td>0.266372</td>
+<td>0.331853</td>
+<td>0.446726</td>
+<td>0.476141</td>
+<td>0.602347</td>
+</tr>
+<tr>
+<td>D</td>
+<td>220</td>
+<td>0.249332</td>
+<td>0.321596</td>
+<td>0.411577</td>
+<td>0.440338</td>
+<td>0.500637</td>
+</tr>
+</tbody>
+</table>
+<p>기존33 대비 mean 감소는 R <strong>38.02%</strong>, D <strong>41.99%</strong>다. D의 R 대비 mean 감소는 <strong>6.40%</strong>다. Greedy 자체 objective에서의 개선은 독립 일반화 증거가 아니다. p90/p95/max는 표의 실제 값으로 별도 해석한다.</p>
+<h3>독립 Diagnostic Holdout60</h3>
+<table>
+<thead>
+<tr>
+<th>dataset</th>
+<th>n</th>
+<th>mean</th>
+<th>median</th>
+<th>p90</th>
+<th>p95</th>
+<th>maximum</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>existing33</td>
+<td>60</td>
+<td>0.412119</td>
+<td>0.39433</td>
+<td>0.560701</td>
+<td>0.566366</td>
+<td>0.730803</td>
+</tr>
+<tr>
+<td>base77</td>
+<td>60</td>
+<td>0.375171</td>
+<td>0.368505</td>
+<td>0.475431</td>
+<td>0.510871</td>
+<td>0.586552</td>
+</tr>
+<tr>
+<td>R</td>
+<td>60</td>
+<td>0.361772</td>
+<td>0.364346</td>
+<td>0.453996</td>
+<td>0.473598</td>
+<td>0.508257</td>
+</tr>
+<tr>
+<td>D</td>
+<td>60</td>
+<td>0.367467</td>
+<td>0.364346</td>
+<td>0.457905</td>
+<td>0.475047</td>
+<td>0.567599</td>
+</tr>
+</tbody>
+</table>
+<p>Holdout에서 D의 R 대비 mean 감소는 <strong>-1.57%</strong>다. 판정은 <strong>INCONCLUSIVE</strong>: 이 60개 초기 상태의 근접 Coverage에 한정한다. Tail 개선의 유무는 mean과 별개다. Holdout은 최종 Policy blind test가 아니며 어떤 결과도 seed/weight/algorithm 재선정에 사용하지 않았다.</p>
+<p><a href="../../outputs/task10i/stage2/run/random_vs_diversity_coverage.csv">Training metrics</a>, <a href="../../outputs/task10i/stage2/run/coverage_holdout_metrics.csv">Holdout metrics</a>, <a href="../../outputs/task10i/stage2/run/feature_group_coverage.csv">Group별 nearest 및 total-nearest에 대한 group 값</a>, <a href="../../outputs/task10i/stage2/run/nearest_set_distances.csv">개별 nearest parent</a>.</p>
+<h2>7. Conditional Random Monte Carlo 200회</h2>
+<p>Common44를 고정하고 잔여 후보에서 Random19를 200회 추출했다. 200개 독립 학습 실험이 아니다. Percentile은 random mean scores 중 해당 score 이하의 비율이며 낮을수록 더 나은 coverage다.</p>
+<table>
+<thead>
+<tr>
+<th>cohort</th>
+<th>mean</th>
+<th>median</th>
+<th>variance</th>
+<th>p5</th>
+<th>p95</th>
+<th>R_percentile</th>
+<th>D_percentile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>selection</td>
+<td>0.263499</td>
+<td>0.263512</td>
+<td>3.81638e-06</td>
+<td>0.260437</td>
+<td>0.266704</td>
+<td>93.5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>holdout</td>
+<td>0.364247</td>
+<td>0.364528</td>
+<td>1.28212e-05</td>
+<td>0.358162</td>
+<td>0.369795</td>
+<td>21</td>
+<td>83</td>
+</tr>
+</tbody>
+</table>
+<p><a href="../../outputs/task10i/stage2/run/random_monte_carlo_metrics.csv">200회 모든 metrics</a>, <a href="../../outputs/task10i/stage2/run/random_monte_carlo_sampling_trace.json">sample IDs trace</a>. 동결 R을 유지했다.</p>
+<h2>8. 분포 왜곡·경계·극단 상태 감사</h2>
+<p>Candidate300은 native random reset을 고정 Main visibility/physical/replay 조건으로 제한한 경험 분포다. R/D는 기존33을 포함하므로 300 신규만의 분포와 완전히 같을 필요는 없다. R/D 전체와 각 추가19, Common44를 따로 비교했다. Peg XYZ, periodic yaw/SO3 pair angle, length/thickness/radius, peg−hole, peg−TCP, image center/extent, margin을 기술 통계·KS statistic·Wasserstein distance로 보존했다. 중복 pair/부분집합의 의존성을 감안해 유의성 p-value를 주장하지 않는다.</p>
+<table>
+<thead>
+<tr>
+<th>population</th>
+<th>n</th>
+<th>minimum</th>
+<th>mean</th>
+<th>median</th>
+<th>fraction_below_0.1px</th>
+<th>fraction_below_1px</th>
+<th>fraction_below_4px</th>
+<th>fraction_below_8px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>candidate300</td>
+<td>300</td>
+<td>0.084652</td>
+<td>18.5424</td>
+<td>19.7605</td>
+<td>0.00333333</td>
+<td>0.01</td>
+<td>0.0566667</td>
+<td>0.17</td>
+</tr>
+<tr>
+<td>existing33</td>
+<td>33</td>
+<td>0.861119</td>
+<td>19.1158</td>
+<td>19.2457</td>
+<td>0</td>
+<td>0.030303</td>
+<td>0.0909091</td>
+<td>0.0909091</td>
+</tr>
+<tr>
+<td>R_tail19</td>
+<td>19</td>
+<td>1.77446</td>
+<td>15.8606</td>
+<td>17.2716</td>
+<td>0</td>
+<td>0</td>
+<td>0.0526316</td>
+<td>0.157895</td>
+</tr>
+<tr>
+<td>D_tail19</td>
+<td>19</td>
+<td>5.83355</td>
+<td>19.1361</td>
+<td>20.0536</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0.105263</td>
+</tr>
+<tr>
+<td>R</td>
+<td>96</td>
+<td>0.861119</td>
+<td>19.333</td>
+<td>19.9118</td>
+<td>0</td>
+<td>0.0104167</td>
+<td>0.0520833</td>
+<td>0.104167</td>
+</tr>
+<tr>
+<td>D</td>
+<td>96</td>
+<td>0.861119</td>
+<td>19.9813</td>
+<td>20.5331</td>
+<td>0</td>
+<td>0.0104167</td>
+<td>0.0416667</td>
+<td>0.09375</td>
+</tr>
+</tbody>
+</table>
+<p>Training253의 Peg XYZ/size p5/p95 밖인 축이 하나라도 있는 Parent를 극단 위치·크기 diagnostic으로 미리 정의했다. Candidate300 <strong>37.3%</strong>, R tail19 <strong>26.3%</strong>, D tail19 <strong>42.1%</strong>, R 전체 <strong>37.5%</strong>, D 전체 <strong>40.6%</strong>다. D tail만과 전체를 혼동하지 않는다. Margin은 objective에 포함하지 않았다.</p>
+<p>Coverage 개선만으로 ‘분포 왜곡 없음’을 확정하지 않는다. <strong>INCONCLUSIVE</strong>: 이 감사는 측정한 주변 분포·경계·SO3 통계 범위의 집중도를 보여주며, 통계적 동등성이나 고차원 분포 보존을 입증하지 않는다. 분포 차이가 정책 성능을 악화하는지는 <strong>NOT_TESTED</strong>다. <a href="../../outputs/task10i/stage2/run/initial_distribution_summary.csv">분포 summary</a>, <a href="../../outputs/task10i/stage2/run/distribution_shift_metrics.csv">shift</a>, <a href="../../outputs/task10i/stage2/run/boundary_margin_comparison.csv">boundary</a>, <a href="../../outputs/task10i/stage2/run/extreme_distribution_audit.json">extremes</a>.</p>
+<h2>9. 누출·중복 — CONFIRMED</h2>
+<p>Train/Validation exact ID overlap0, Train/Holdout0, Validation/Holdout0. 기존 split 재할당0, Final/Test 사용0, candidate ID/seed 충돌0. 신규 vs 기존33/7, R vs D, 각각 Train vs Validation/Holdout의 Peg/Hole/TCP pose·shape·qpos/qvel을 실제 비교했다. R/D 공통 Parent의 exact overlap은 의도된 것이다. Near 기준은 위치1mm, orientation1°, half-size/radius0.1mm, robot qpos0.001이다. 서로 다른 Split의 동일 초기 물리 상태는 차단한다. Near만으로 GT 누출을 단정하거나 후보를 제거하지 않는다.</p>
+<table>
+<thead>
+<tr>
+<th>comparison</th>
+<th>pairs</th>
+<th>exact_same_parent</th>
+<th>exact_distinct_parent</th>
+<th>near_distinct_parent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>new_vs_existing_train</td>
+<td>9900</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>new_vs_existing_validation</td>
+<td>2100</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>R_vs_D</td>
+<td>9216</td>
+<td>78</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>R_train_vs_validation</td>
+<td>1536</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>D_train_vs_validation</td>
+<td>1536</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>R_train_vs_holdout</td>
+<td>5760</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>D_train_vs_holdout</td>
+<td>5760</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><a href="../../outputs/task10i/stage2/run/near_duplicate_audit.csv">실제 거리·차원 CSV</a>, <a href="../../outputs/task10i/stage2/run/physical_duplicate_summary.json">duplicate summary</a>. CSV는 exact/near 전체와 각 left의 가장 가까운 physical threshold-ratio 상대를 기록한다. 전체 pair 수를 독립 표본 수로 해석하지 않는다.</p>
+<h2>10. Reserve와 Stage 3 Handoff</h2>
+<p>Validation11, Common176, R157, D157의 순서를 동결했다. Common/R은 별도 seed의 uniform order, D는 같은 greedy trajectory의 20번째 이후 continuation이다. Reserve는 역할 간 겹칠 수 있으며 초기 선정이나 미래 성공을 의미하지 않는다. Validation은 자기 Cohort만 사용한다. Common은 현재 R/D union에 없는 ID를 함께 대체한다. R/D tail은 자기 dataset에 없는 상대 dataset ID를 공유할 수 있다. 실패 Parent는 모든 queue에서 제외하고 skip 사유를 기록한다. 충돌 처리 순서는 Validation→Common→R→D, 각 initial slot rank/ID 순이다. 원래 실패 상태를 삭제하지 않고 모든 attempted/failed/replacement/final ID와 coverage 변화를 새 버전으로 추적한다. Exhaustion은 차단하며 임의 seed를 보충하지 않는다. 현재 실제 대체는 <strong>0회</strong>다.</p>
+<p><a href="../../outputs/task10i/stage2/run/stage3_collection_reserve_protocol.json">reserve protocol</a>, <a href="../../outputs/task10i/stage2/run/validation_reserve.csv">Validation11</a>, <a href="../../outputs/task10i/stage2/run/common_reserve.csv">Common</a>, <a href="../../outputs/task10i/stage2/run/random_reserve.csv">R</a>, <a href="../../outputs/task10i/stage2/run/coverage_reserve.csv">D</a>, <a href="../../outputs/task10i/stage2/run/stage3_parent_collection_union.json">고유 수집 union</a>, <a href="../../outputs/task10i/stage2/run/stage3_input_receipt.json">Stage3 input receipt</a>.</p>
+<h2>11. Logical Episode 구성과 Stage 3 검증 과제</h2>
+<table>
+<thead>
+<tr>
+<th>split</th>
+<th>original_logical</th>
+<th>preserved_logical</th>
+<th>new_parent_count</th>
+<th>logical_deficit</th>
+<th>target_logical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train</td>
+<td>272</td>
+<td>82</td>
+<td>63</td>
+<td>190</td>
+<td>272</td>
+</tr>
+<tr>
+<td>validation</td>
+<td>48</td>
+<td>23</td>
+<td>9</td>
+<td>25</td>
+<td>48</td>
+</tr>
+</tbody>
+</table>
+<p>기존 full-task/corrective source 및 branch별 비율과 모든 실패 parent의 실제 branch inventory는 <a href="../../outputs/task10i/stage2/run/stage3_demonstration_plan.json">수집 계획</a>에 있다. 목표272/48과 preserved82/23의 차이는190/25 logical episodes다. 새 Parent63/9를 선정한 사실만으로 그 수가 복원되지 않는다. 실패한 기존 Train63/Validation9 parent를 ID 정렬하여 신규 slot에 대응한 <strong>Parent별 branch 수·유형 template</strong>도 저장했다. Common44는 같은 앞44 template, R/D tail은 같은 뒤19 template를 각자 계승한다. Tail overlap이 서로 다른 template를 받으면 수집 union과 dataset별 포함을 별도 기록한다. 이 계획의 logical deficit는 각각190/190/25이며 성공한 episode가 있다는 뜻은 아니다. 모든 신규 Parent의 Full-task 성공 확인이 선행되어야 한다.</p>
+<p>Collector에서는 prefix/disturbance supervision=false, recovery=true다. Task10G BC는 승인 nominal의 actions/robot/timestep과 exact 일치한 prefix만 재활성화하고 disturbance는 항상 false다. Stage3는 이 원본 계약을 확인해야 한다. Parent마다 동일한 임의 branch 수를 만들지 않았다.</p>
+<p>Stage3는 실제 Expert 성공, Full-task/Corrective lineage, copied-prefix·supervision mask·action/RGB-D/GT clock 정합, reset(seed)+snapshot readback, 실패 attrition과 실제 collection 후 coverage를 검증해야 한다. 고정33/7이 무효가 되는 경우 silent replacement하지 않고 차단한다. 새 Final Evaluation은 이300과 기존 Final/Test에 없는 별도 seed가 필요하다.</p>
+<h2>12. 연구 질문과 해석 범위</h2>
+<ul>
+<li>Q1/Q2: 기존33과 신규300의 실제 위치·방향·크기·상대관계 범위는 <a href="../../outputs/task10i/stage2/run/initial_distribution_summary.csv">분포 summary</a>와 아래 그림에 있다. 신규 후보가 기존 nearest distance를 줄일 수 있는 미대표 영역을 제공함은 measured selection/holdout baseline로 확인한다.</li>
+<li>Q3/Q4: 고정 R/D의 기존33 대비 변화와 독립 Holdout 차이는 6절의 수치 범위에서만 해석한다.</li>
+<li>Q5/Q6: 분포 동일성은 INCONCLUSIVE다. 극단/작은 margin 비율과 orientation 통계를 별도 제시했고 margin 최적화는 하지 않았다.</li>
+<li>Q7: ID·seed·physical state·split 감사 범위에서 계획 identity는 CONFIRMED다.</li>
+<li>Q8: 고정 reserve와 충돌/실패 기록 규칙은 CONFIRMED다. 실제 대체 후 성공/coverage는 NOT_TESTED다.</li>
+</ul>
+<p><strong>NOT_TESTED:</strong> 실제 Expert 성공률·action 품질·정책 성공률·성능상 악영향. Simulator reset/action, GPU PhysX/CUDA/MPS inference, DINO/SAM2, Graph recache, GNN/GRU 학습·closed-loop 평가는 실행하지 않았다. Linux CPU 저장자료 분석만 수행했고 로컬 simulator도 실행하지 않았다. 기존 Task10-H source/process/checkpoint를 수정하지 않았다. 공통 ExperimentLogger를 disabled transport로 재사용했고 외부 publishing·Git commit·새 인스턴스 생성은 하지 않았다.</p>
+<h2>13. 그림과 이미지 근거</h2>
+<p><a href="../../outputs/task10i/stage2/delivery/gallery.html">전체 Gallery</a>는 원본 Main RGB와 별도로 그린 Peg OBB overlay, Descriptor, Visibility evidence, original snapshot/source를 연결한다. Stage1 annotated preview를 raw로 사용하지 않았다.</p>
+<h3>Peg world XY (m)</h3>
+<p><img class="plot" alt="Peg world XY (m)" src="../../outputs/task10i/stage2/run/figures/peg_xy.png" /></p>
+<h3>Peg orientation distribution</h3>
+<p><img class="plot" alt="Peg orientation distribution" src="../../outputs/task10i/stage2/run/figures/peg_yaw.png" /></p>
+<h3>Peg full length/thickness (m)</h3>
+<p><img class="plot" alt="Peg full length/thickness (m)" src="../../outputs/task10i/stage2/run/figures/peg_shape.png" /></p>
+<h3>Peg minus hole world XY (m)</h3>
+<p><img class="plot" alt="Peg minus hole world XY (m)" src="../../outputs/task10i/stage2/run/figures/peg_hole.png" /></p>
+<h3>Peg minus TCP world XY (m)</h3>
+<p><img class="plot" alt="Peg minus TCP world XY (m)" src="../../outputs/task10i/stage2/run/figures/tcp_peg.png" /></p>
+<h3>Mean OBB-corner center (image fraction)</h3>
+<p><img class="plot" alt="Mean OBB-corner center (image fraction)" src="../../outputs/task10i/stage2/run/figures/main_center.png" /></p>
+<h3>selection nearest-set coverage</h3>
+<p><img class="plot" alt="selection nearest-set coverage" src="../../outputs/task10i/stage2/run/figures/coverage_selection.png" /></p>
+<h3>holdout nearest-set coverage</h3>
+<p><img class="plot" alt="holdout nearest-set coverage" src="../../outputs/task10i/stage2/run/figures/coverage_holdout.png" /></p>
+<h3>Nearest distance distributions</h3>
+<p><img class="plot" alt="Nearest distance distributions" src="../../outputs/task10i/stage2/run/figures/nearest_ecdf.png" /></p>
+<h3>Conditional Random19 Monte Carlo (200 repeats)</h3>
+<p><img class="plot" alt="Conditional Random19 Monte Carlo (200 repeats)" src="../../outputs/task10i/stage2/delivery/random_mc_labeled.png" /></p>
+<h3>Boundary margin distribution</h3>
+<p><img class="plot" alt="Boundary margin distribution" src="../../outputs/task10i/stage2/run/figures/boundary_margin.png" /></p>
+<h3>Selected parents: shared and exclusive</h3>
+<p><img class="plot" alt="Selected parents: shared and exclusive" src="../../outputs/task10i/stage2/run/figures/selection_overlap.png" /></p>
+<h2>14. 최종 검증</h2>
+<p><a href="../../outputs/task10i/stage2/run/artifact_index.json">Artifact Index</a>, <a href="../../outputs/task10i/stage2/run/final_verification.json">Final Verification</a>, <a href="../../outputs/task10i/stage2/run/stage3_input_receipt.json">Stage3 Receipt</a>. 선정·Config hash를 다시 읽고 모든 JSON/CSV/PNG와 SHA/size를 검증했다. 단계별 atomic proof와 progress를 보존했다. 완료된 실행은 재선정 없이 readback만 수행한다. 미완료 resume는 동일 source/protocol에서 deterministic stage를 재검증하며 frozen 결과가 달라지면 차단한다.</p>
+<h2>15. 독립 완료 감사와 최종 해석</h2>
+<p>원격 실제 실행 Root는 <code>/workspace/task10i_stage2_20261031_v2/run</code>, UUID <code>34d10bf652b344a38d54b7672dbfe0c0</code>다. <a href="../../outputs/task10i/stage2/remote_execution/independent_completion_audit_v2.json">독립 원격 감사</a>는 원본340 Parent, 전체8,514 Canonical 파일, 764개 불변 Stage2 산출물, 별도 프로세스의 Greedy176 전체 trace exact 재현, Coverage와 Monte Carlo200회, Reserve 순서 및 Parent별 branch budget190/190/25를 확인했다. 첫 실패 Run의 선정 Identity/Order/Scale/Split/CSV는 새 Run과 SHA256 exact 일치한다.</p>
+<p>독립 SO(3) relative Rotation 구현의 objective와 frozen 구현은 최대 <strong>1.39×10⁻¹⁷</strong> 차이를 보인 Reserve 후반 동률 후보가 있다(rank95/129). 같은 원격 float64 구현·Runtime에서는 전체 순서가 exact 재현된다. macOS의 수치 재추출은 10⁻¹² 이내이고, 늦은 Reserve tie의 bitwise 순서까지 cross-platform 일치를 주장하지 않는다. Stage3는 다시 계산하지 않고 저장된 Queue를 사용한다. 최종 D19에는 이 동률 차이가 없다. <a href="../../outputs/task10i/stage2/local_completion_audit.json">로컬 전수 Readback/재계산</a>.</p>
+<p><strong>Selection Pool:</strong> D mean은 R보다 <strong>6.40% 낮고</strong> p90/p95/max도 낮다. <strong>독립 Holdout:</strong> D mean은 R보다 <strong>1.57% 높고</strong>, median은 동일하며 p90/p95/max도 더 높다. Conditional Random200에서 D의 Holdout mean percentile은 <strong>83</strong>, R은 <strong>21</strong>이다(낮을수록 좋음). 따라서 <strong>독립 Holdout Coverage 개선은 INCONCLUSIVE이며 이 표본에서는 관측되지 않았다</strong>. 이 결과를 보고 R/D나 weight·seed를 바꾸지 않았다. 실제 정책 성능·Expert 성공은 계속 <strong>NOT_TESTED</strong>다.</p>
+<p>D tail19의 작은 margin 집중은 이번 기술통계에서 관측되지 않았다: margin&lt;4px는 D tail0/19, R tail1/19이며 D tail 최소 margin5.834px다. 반면 사전 정의 위치·크기 extreme 비율은 D tail8/19(42.1%)로 R tail5/19(26.3%)보다 높다. 전체 D39/96(40.6%), R36/96(37.5%), Candidate112/300(37.3%)이다. 그러므로 경계 집중과 위치·크기 분포 변화는 구분해야 하며, 분포 보존이나 성능상의 무해성을 확정하지 않는다.</p>
+<p>기존33과 신규300은 범위가 완전히 분리된 두 분포가 아니다. 후보가 일부 방향·크기·상대관계 범위를 확장하며 내부의 빈 영역도 보충한다. 아래는 주변 범위의 예이고, 이 표만으로 다변량 Coverage를 판정하지 않는다.</p>
+<table>
+<thead>
+<tr>
+<th>feature</th>
+<th>existing33_range</th>
+<th>candidate300_range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>peg_xyz_0_m</td>
+<td>-0.074122 … 0.095769</td>
+<td>-0.099564 … 0.098491</td>
+</tr>
+<tr>
+<td>peg_xyz_1_m</td>
+<td>-0.127294 … -0.005111</td>
+<td>-0.124994 … -0.000103</td>
+</tr>
+<tr>
+<td>peg_yaw_rad</td>
+<td>0.562992 … 2.563091</td>
+<td>0.530176 … 2.607494</td>
+</tr>
+<tr>
+<td>g4_0_m</td>
+<td>0.172873 … 0.248118</td>
+<td>0.170179 … 0.249159</td>
+</tr>
+<tr>
+<td>g4_1_m</td>
+<td>0.031389 … 0.048830</td>
+<td>0.030015 … 0.049815</td>
+</tr>
+<tr>
+<td>g3p_0_m</td>
+<td>-0.133357 … 0.150143</td>
+<td>-0.144527 … 0.175658</td>
+</tr>
+<tr>
+<td>g3p_1_m</td>
+<td>-0.445586 … -0.238876</td>
+<td>-0.492843 … -0.207464</td>
+</tr>
+</tbody>
+</table>
+<p>기존 Full-task/Corrective 구성은 다음과 같다. Corrective source의 <code>nominal</code>도 독립 초기 상태 수로 더하지 않았다.</p>
+<table>
+<thead>
+<tr>
+<th>split</th>
+<th>inventory</th>
+<th>logical</th>
+<th>full_task</th>
+<th>corrective</th>
+<th>full_task_fraction</th>
+<th>corrective_fraction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train</td>
+<td>original</td>
+<td>272</td>
+<td>96</td>
+<td>176</td>
+<td>0.352941</td>
+<td>0.647059</td>
+</tr>
+<tr>
+<td>train</td>
+<td>preserved</td>
+<td>82</td>
+<td>33</td>
+<td>49</td>
+<td>0.402439</td>
+<td>0.597561</td>
+</tr>
+<tr>
+<td>validation</td>
+<td>original</td>
+<td>48</td>
+<td>12</td>
+<td>36</td>
+<td>0.25</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>validation</td>
+<td>preserved</td>
+<td>23</td>
+<td>6</td>
+<td>17</td>
+<td>0.26087</td>
+<td>0.73913</td>
+</tr>
+</tbody>
+</table>
+<p>수집 계획은 새 Train63마다 기존 실패63 slot의 실제 branch template를 대응하여 Full-task63+Corrective127=190개를 계획한다. Validation은 기존 실패9 slot의 Full-task6+Corrective19=25개를 계획한다. 모든 신규 Parent의 Full-task 성공 확인은 별도로 선행되어야 한다. Validation template에 Full-task logical entry가 없는 Parent도 성공 확인을 생략한다는 의미는 아니다. 자격 확인용 추가 trajectory를 학습 inventory에 자동 포함하지 않는다. 공유 tail이 다른 template를 받으면 필요한 branch union과 각 dataset inclusion을 분리한다.</p>
+<p>로컬 최종 Markdown/Static HTML은 원격 원문 전체와 이 감사 결과를 포함한다. 원격의 최소 HTML fallback은 표/그림을 펼치지 않으므로 로컬에서 정식 Markdown renderer로 HTML을 생성했다. 원본은 변경하지 않았다. Monte Carlo 그림은 겹친 subplot 제목만 별도 전달 그림으로 수정했다. 모든 원본 결과 SHA는 그대로다. Gallery의 Raw RGB/OBB와 원본 NPZ/Evidence/Snapshot 링크는 현재 저장소의 Canonical 자료로 연결했다.</p>
+<p>프로젝트 코드는 Git dirty 상태였고 새 Commit을 만들지 않았다. 원격 isolated source에는 <code>.git</code>가 없어 Logger의 commit이 null이므로 clean checkout 증거로 해석하지 않는다. <a href="../../outputs/task10i/stage2/local_source_provenance.json">로컬 Git/Source provenance</a>와 <a href="../../outputs/task10i/stage2/run/execution_source_identity.json">실제 frozen source</a>를 함께 사용한다. 분석은 Linux CPU, 전달 QA는 macOS 저장자료 분석으로 수행했다. Shared simulator/model/logger 코드는 변경하지 않았고 기존 ExperimentLogger를 재사용했다. 외부 Publishing·새 인스턴스·Stage3 실행은 없다.</p>
+<p>원격 실행 전 계약 테스트 <strong>11개 PASS</strong>, 전달 후 계약 테스트 <strong>12개 PASS</strong>다. 추가 테스트는 늦은 Resume가 새 Logger UUID로 기존 결과에 연결할 때 원래 sidecar/SHA를 보존하는 경우를 검증한다. 이 운영 복구 보강과 별도 감사·전달 helper는 현재 코드에 있고 원격 연구 실행 당시 Source는 별도로 보존했다. <a href="../../outputs/task10i/stage2/postrun_contract_tests.log">추가 계약 테스트 로그</a>. PNG 그림을 실제 열어 확인했고 모든 HTML 표/이미지 및 로컬 링크를 정적으로 검사했다. 이 세션에 사용할 브라우저가 없어 브라우저 스크린샷 검사는 실행하지 않았다.</p></html>

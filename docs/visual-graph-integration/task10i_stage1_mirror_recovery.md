@@ -1,0 +1,47 @@
+# Task10-I Stage1.5 — Canonical Candidate Pool Remote Mirror Recovery
+
+상태: **COMPLETED**, **STAGE2_READY=true**. 별도 실행 ID `7934732624c148ad86a8f4d518bf7c18`. Stage1 원본 UUID `098bd09a011b4c9d99ca881d6a83b760`는 변경하지 않았다.
+
+로컬 Canonical: `/Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/outputs/task10i/stage1/verified_pool_v2`
+
+검증된 원격 후보 풀: **`/workspace/task10i_stage1_20261031/verified_pool_v2`**, Vast.ai **57987772**.
+
+원격 감사 Root: `/workspace/task10i_stage1_5_mirror_7934732624c148ad86a8f4d518bf7c18`.
+
+## 원본 및 전체 파일 범위
+
+기존 Stage1 인덱스의 8,506개 파일을 원본 크기·SHA256과 전수 대조했다. 실제 디렉터리에는 인덱스 자체, progress, lock, ExperimentLogger 기록 및 fixture 자체 검증 파일 8개가 추가로 존재한다. 추가 목록은 [Source Inventory](../../outputs/task10i/stage1_5/mirror_recovery_v2/source_inventory.json)에 있다. 집계 범위 차이를 명시하고 **8,514개 전체**, **224,598,355 bytes**를 바이트 그대로 전달했다. Canonical JSON/CSV/NPZ를 수정·재생성·재압축하지 않았다.
+
+전송 전후 로컬 전체 경로·크기·SHA256이 동일하다. [원본 보존 감사](../../outputs/task10i/stage1_5/mirror_recovery_v2/source_preservation_audit.json).
+
+## 원격 복구
+
+전송 전 Partial 분류: `{"MATCHED": 8355, "MISSING": 159, "MISMATCHED": 0, "EXTRA": 1, "UNREADABLE": 0}`. 정상 파일은 SHA 확인 후 별도 Staging에 복사했으며 hardlink를 사용하지 않았다. 나머지는 로컬 Canonical에서 checksum rsync로 보냈다. Retry는 전송 오류에만 최대 4회이며 Partial은 Canonical 밖 감사 Root에 둔다. 로컬 tmux runner가 전 단계를 관리하고 원격 Hash/Readback은 독립 tmux에서 실행했다.
+
+Staging 전수 Hash PASS 후 기존 Partial을 `/workspace/task10i_stage1_20261031/verified_pool_v2_partial_before_7934732624c148ad86a8f4d518bf7c18`에 보존하고 같은 파일시스템의 rename으로 승격했다. 승격 후 최종 경로를 다시 전수 Hash 검사했다. 기존 `run_v3` 전체 byte inventory가 동일하며 BLOCKED/GL 진단을 보존했다.
+
+## 독립 원격 검증
+
+경로·크기·SHA256 **8,514/8,514 MATCHED**, MISSING=0, MISMATCHED=0, EXTRA=0, UNREADABLE=0. [전체 파일 감사](../../outputs/task10i/stage1_5/mirror_recovery_v2/remote_file_hash_audit.csv), [최종 검증](../../outputs/task10i/stage1_5/mirror_recovery_v2/remote_mirror_verification.json).
+
+926행 CSV와 aggregate NPZ의 모든 배열을 실제로 읽고 shape/dtype/finite를 확인했다. Eligible 300개 전부 ID·seed·UNASSIGNED·Physical VALID·Replay PASS·기존 Visibility PASS를 연결했다. 모든 초기 NPZ 배열이 aggregate의 동일 후보와 exact 일치하고, 로컬 Readback fingerprint와 원격 결과가 exact 일치했다. 각 후보의 Descriptor JSON/CSV/Export, Pose/Quaternion/Shape, Peg–TCP/Peg–Hole 관계, 투영·Boundary Margin을 대조했다. [후보 Readback](../../outputs/task10i/stage1_5/mirror_recovery_v2/remote_candidate_readback.json).
+
+300개 원본 RGB uint8 128×128×3 및 Depth int16 128×128 mm를 initial.npz의 rgb/depth_raw_mm key에서 읽었다. 비양수 Depth는 원본 그대로 보존했다. Gallery의 annotated_rgb_preview를 원본으로 사용하지 않았다. GT Evidence NPZ도 읽고 로컬 배열 fingerprint와 비교했다. Snapshot은 바이트 Hash만 검증하며 pickle 실행이나 Simulator Restore는 수행하지 않았다. [RGB-D Readback](../../outputs/task10i/stage1_5/mirror_recovery_v2/remote_raw_rgbd_readback.json).
+
+Export 데이터 경로는 모두 Pool Root 기준 상대 경로이므로 원격에서 직접 해결된다. JSON 내부의 macOS verification_root/generation_root는 과거 실행 provenance이며 데이터 로더 입력 경로로 사용하지 않는다. [Path Mapping](../../outputs/task10i/stage1_5/mirror_recovery_v2/remote_path_mapping.json). 원본 Source/Runtime identity를 보존했고 기존 원격 frozen source 파일도 전수 대조했다.
+
+## 기존 실험 보호 및 범위
+
+Task10-H 상태는 전송 전 읽기 전용으로 조사했다. 프로세스 종료·세션 종료·Source/Checkpoint/Dataset 변경을 수행하지 않았다. 전송은 4MiB/s로 제한했다. Simulator Reset/Render, 가시성 Gate 재실행, Expert 수집, Stage2 Diversity Selection, 모델 적재·학습·평가는 실행하지 않았다. GPU/PhysX backend 실행 검증은 이번 단계 범위에 없다. 기존 Stage1 실험 결과를 재생산했다고 주장하지 않는다.
+
+## 다음 단계 인계
+
+300개 후보 모두 UNASSIGNED이며 Expert NOT_TESTED다. **[stage2_input_receipt.json](../../outputs/task10i/stage1_5/mirror_recovery_v2/stage2_input_receipt.json)** 및 **[검증된 원격 경로](../../outputs/task10i/stage1_5/mirror_recovery_v2/verified_remote_pool_path.txt)**를 사용한다. Stage2를 시작하지 않았으며 이번 작업은 전달·무결성·읽기 검증에서 종료한다. 실행/재개 CLI와 코드 identity는 transfer_plan/config에 보존했다.
+
+## 연결 복구 이력 및 최종 감사
+
+첫 실행 `6e9dd459c0f34d958e60d46c59934bbd`는 제어 파일 전송 중 SSH 단절과 재시도 한도 도달로 BLOCKED 기록을 남겼다. 별도 실행 `7934732624c148ad86a8f4d518bf7c18`에서 동일 Canonical을 다시 사전 검증하고 Direct/Proxy 경로, SSH 연결 재사용, 압축 전송을 적용했다. 네트워크 오류와 중단된 전송 기록은 이전 감사 디렉터리와 transfer_attempts/transfer.log에 보존했다. 원본 Stage1과 실패한 감사 이력을 정상 결과로 바꾸지 않았다.
+
+새 경로/Hash/부분 복구/원자적 감사 기록 계약 테스트 4개가 통과했다. 테스트 초기 macOS /var→/private/var 경로 정규화 기대값을 수정한 뒤 전체 4개를 다시 실행했다. 최종 후보 내용에는 영향이 없다. 원격 최종 파일 감사 CSV의 8,514행을 Source Inventory와 다시 대조했고, Source Inventory 자체의 SHA도 원격 proof와 동일함을 확인했다. 후보/Raw RGB-D/Manifest Readback JSON은 로컬 baseline과 exact 일치한다.
+
+Stage2 Input Receipt와 불변 감사 산출물은 원격 감사 Root의 handoff/에도 전달하고 SHA로 재검증한다. 전송 로그·Cursor·Lock 및 인덱스 자신의 순환 참조는 불변 Artifact Index 범위에서 명시적으로 제외한다. 후보 Canonical 트리에는 어떤 감사 파일도 추가하지 않는다.

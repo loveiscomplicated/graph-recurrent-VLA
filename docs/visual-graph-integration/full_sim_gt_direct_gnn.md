@@ -42,6 +42,6 @@
 
 Vast.ai RTX 3090에서 PyTorch 2.14.1+cu132, ManiSkill 3.0.1, CPU PhysX 및 CUDA GNN 추론으로 실행했다. 네 실행의 완료 상태와 GNN 체크포인트 해시, 가시 GT 실험과의 프레임 정렬 및 GT 동일성을 확인했다. 각 조건에서 점 수와 모든 Object21 출력의 유한값, 기하 끝점과 잔차의 합을 검사했다. 저장소 모델과 환경 코드는 편집하지 않았다.
 
-- [단계별 비교 결과](../../graph/research_backups/graph2/full_sim_gt_direct_gnn/full/summary.json)
-- [프레임별 GT, 두 조건의 21D와 끝점 보정값 (로컬 백업)](../../graph/research_backups/graph2/full_sim_gt_direct_gnn/BACKUP.md)
-- [평가 코드](../../graph/research_backups/graph2/full_sim_gt_direct_gnn/evaluate_full_gt.py) · [비교 코드](../../graph/research_backups/graph2/full_sim_gt_direct_gnn/compare.py)
+- [단계별 비교 결과](../../outputs/full_sim_gt_direct_gnn/full/summary.json)
+- [프레임별 GT, 두 조건의 21D와 끝점 보정값](../../outputs/full_sim_gt_direct_gnn/full/frames.jsonl)
+- [평가 코드](../../outputs/full_sim_gt_direct_gnn/evaluate_full_gt.py) · [비교 코드](../../outputs/full_sim_gt_direct_gnn/compare.py)

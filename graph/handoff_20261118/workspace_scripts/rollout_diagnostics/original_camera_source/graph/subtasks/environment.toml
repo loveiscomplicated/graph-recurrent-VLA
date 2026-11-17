@@ -1,0 +1,12 @@
+# Independent budgets: ceil(2 * train-only P95 duration), rounded up to 10.
+# Existing 73 train episodes: P95 = 63, 22, 52, 47, 26 actions.
+version = "prefix-subtask-env-v1"
+observation_tolerance = 0.001
+state_tolerance = 0.001
+
+[max_steps]
+reach = 130
+grasp = 50
+transport = 110
+align = 100
+insert = 60

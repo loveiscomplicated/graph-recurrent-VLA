@@ -46,6 +46,6 @@
 
 RTX 3090에서 CPU PhysX, CUDA RGB-D 렌더링과 추론을 사용했다. 8개 시드씩 네 작업을 병렬로 수행했고 가장 긴 작업은 약 251초였다. 두 모델의 가중치와 이전 테스트 파일 SHA-256, 테스트 시드·프레임 정렬, 결과 크기 및 유한값을 검증했다. `ExperimentLogger`로 원격 실행을 기록하고 로컬에서 독립적으로 지표를 집계했다. 공유 모델 코드, 가중치 및 시뮬레이터 설정의 기본값을 편집하지 않았다.
 
-- [단계별 지표와 실행 정보](../../graph/research_backups/graph2/gt20_gnn_detected_tracking_test/full/summary.json)
-- [프레임별 기존·재학습 GNN 예측과 GT (로컬 백업)](../../graph/research_backups/graph2/gt20_gnn_detected_tracking_test/BACKUP.md)
-- [평가 코드](../../graph/research_backups/graph2/gt20_gnn_detected_tracking_test/evaluate.py) · [결과 대조 및 집계](../../graph/research_backups/graph2/gt20_gnn_detected_tracking_test/compare.py)
+- [단계별 지표와 실행 정보](../../outputs/gt20_gnn_detected_tracking_test/full/summary.json)
+- [프레임별 기존·재학습 GNN 예측과 GT](../../outputs/gt20_gnn_detected_tracking_test/full/frames.jsonl)
+- [평가 코드](../../outputs/gt20_gnn_detected_tracking_test/evaluate.py) · [결과 대조 및 집계](../../outputs/gt20_gnn_detected_tracking_test/compare.py)

@@ -37,8 +37,8 @@
 
 Vast.ai RTX 3090에서 ManiSkill 3.0.1, PyTorch 2.14.1+cu132로 CPU PhysX, CUDA 렌더링·추론을 실행했다. 세 시드 소규모 검증 후 300개 시드씩 네 작업으로 실행했다. 네 원격 실험의 완료 상태, Git commit, 가중치와 평가 설정 일치, GT 및 가시 GT 입구 수 일치, 21D 유한값, seed와 step 중복 여부를 확인했다.
 
-- [이전 버전과 프레임별 짝비교 요약](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/comparison.json)
-- [최신 검출기 세 조건별 집계](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/paired.json)
-- [모든 21D 프레임과 GT (로컬 백업)](../../graph/research_backups/graph2/hole_front_object21_latest_detector/BACKUP.md)
-- [실행 설정과 네 원격 run ID](../../graph/research_backups/graph2/hole_front_object21_latest_detector/full/summary.json)
-- [평가 스크립트](../../graph/research_backups/graph2/hole_front_object21_latest_detector/evaluate.py) · [병합 및 비교 스크립트](../../graph/research_backups/graph2/hole_front_object21_latest_detector/compare.py)
+- [이전 버전과 프레임별 짝비교 요약](../../outputs/hole_front_object21_latest_detector/full/comparison.json)
+- [최신 검출기 세 조건별 집계](../../outputs/hole_front_object21_latest_detector/full/paired.json)
+- [모든 21D 프레임과 GT](../../outputs/hole_front_object21_latest_detector/full/frames.jsonl)
+- [실행 설정과 네 원격 run ID](../../outputs/hole_front_object21_latest_detector/full/summary.json)
+- [평가 스크립트](../../outputs/hole_front_object21_latest_detector/evaluate.py) · [병합 및 비교 스크립트](../../outputs/hole_front_object21_latest_detector/compare.py)

@@ -46,4 +46,4 @@ Vast.ai `60785391`의 RTX 3090에서 CPU PhysX와 CUDA RGB-D 렌더링을 사용
 
 - 원본 200개 seed 및 179개 성공을 확인했고, 필드별 스텝 길이를 대조했다. 재실행 4개의 성공 여부·스텝 수·trace 길이를 원본과 대조했다.
 - 재실행은 공통 `ExperimentLogger`로 기록했다. W&B는 비활성화했다. 기존 평가·학습 코드는 수정하지 않았으며 외부 게시도 없었다.
-- [원본 로그 집계](../../graph/research_backups/graph2/fixed_hole_recurrent_rollout_diagnostics/archived_rollout_summary.json), [이전 카메라 실행 설정](../../graph/research_backups/graph2/fixed_hole_recurrent_rollout_diagnostics/original_camera_replay.yaml), [시점별 기록 및 체크포인트 해시 (로컬 백업)](../../graph/research_backups/graph2/fixed_hole_recurrent_rollout_diagnostics/BACKUP.md), [시점별 기록 도구](../../graph/research_backups/graph2/fixed_hole_recurrent_rollout_diagnostics/fixed_hole_trace.py)
+- [원본 로그 집계](../../outputs/fixed_hole_recurrent_rollout_diagnostics/archived_rollout_summary.json), [이전 카메라 실행 설정](../../outputs/fixed_hole_recurrent_rollout_diagnostics/original_camera_replay.yaml), [시점별 기록 및 체크포인트 해시](../../outputs/fixed_hole_recurrent_rollout_diagnostics/original_camera_experiments/7c5519ae7088471dae54da6d71b5a152/), [시점별 기록 도구](../../outputs/fixed_hole_recurrent_rollout_diagnostics/fixed_hole_trace.py)
