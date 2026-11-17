@@ -10,8 +10,8 @@ model:
   heads: 4
 training:
   epochs: 20
-  sequence_length: 32
-  batch_size: 8
+  sequence_length: null
+  batch_size: 2
   position_scale_m: 0.01
 optimizer:
   lr: 0.0003

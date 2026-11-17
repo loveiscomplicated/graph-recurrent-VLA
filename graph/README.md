@@ -11,16 +11,13 @@ and non-corner Peg surface caches, run:
 
 B2-2 applies spatial message passing before per-vertex causal attention. It
 predicts XYZ displacements from the last actual observation and passes through
-currently observed coordinates. Its 20-epoch CPU recipe uses the complete
-chronological train and validation episodes, before any visibility-condition
-filter. The training logger reports missing-corner RMSE and the last-observation
-baseline. See [the fixed-ID supervision contract](../docs/corner_prediction.md#b2-2-spatial-first-corner-recovery).
-
-For the full-episode history comparison, use the same prepared manifest:
-
-```bash
-.venv/bin/python main.py --config graph/configs/state_estimation/spatial_corner_tracking_full_history.yaml
-```
+currently observed coordinates. The default 20-epoch CPU recipe applies causal
+attention over each complete chronological episode with a batch size of two,
+before any visibility-condition filter. The training logger reports
+missing-corner RMSE and the last-observation baseline. The recorded full-history
+experiment remains reproducible with
+`spatial_corner_tracking_full_history.yaml`, which writes to its original output
+root. See [the fixed-ID supervision contract](../docs/corner_prediction.md#b2-2-spatial-first-corner-recovery).
 
 ## Corner visibility GNN
 
