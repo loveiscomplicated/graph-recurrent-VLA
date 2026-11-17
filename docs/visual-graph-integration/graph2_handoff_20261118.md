@@ -54,3 +54,14 @@ GitHub 안의 graph/handoff_20261118/workspace_scripts에는 원래 실험 디�
 HF 모델 저장소 Graph-Recurrent-VLA/graph-recurrent-models에는 최종 앞단 2개와 Mamba 비교 조건 10개를 알아볼 수 있는 이름으로 별도 게시한다. 원래 실험 run ID와 source hash는 handoff.json에서 확인한다. HF 전체 archive에는 원본 명칭과 디렉터리가 보존된다.
 
 인증 token과 SSH 개인키는 Git과 archive에 넣지 않았다. 팀원이 GitHub/HF 접근을 위해 자기 환경에 인증을 설정한다.
+
+## 업로드 완료 위치
+
+HF run ID는 d64a6e8b7d284915aafb41538539151e다. 모델 12개와 대표 영상 13개, 전체 워크스페이스 archive 및 전체 Git bundle을 게시했다. 두 HF 저장소 모두 비공개다.
+
+- [checkpoint 인계 파일](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/0da81bd94f33cb44c0cfec6a5a31d376f54c46c0/integration/d64a6e8b7d284915aafb41538539151e)
+- [rollouts 인계 파일](https://huggingface.co/datasets/Graph-Recurrent-VLA/experiment-backups/tree/9dd28d1c7bb0d40adc9862cd86b2b0e3048f590d/integration/d64a6e8b7d284915aafb41538539151e)
+
+graph/handoff_20261118/published_artifacts.json에는 정확한 파일 경로와 고정 revision을 기록했다. 같은 폴더 download_handoff.py를 실행하면 인증된 팀 계정으로 해당 버전의 자료를 내려받는다.
+
+huggingface_hub를 설치하고 hf auth login으로 인증한 뒤, python graph/handoff_20261118/download_handoff.py --output /workspace/handoff-download를 실행한다. data 폴더의 graph2_workspace_20261118.tar.gz를 /workspace에 풀어 기존 clone 위에 복원한다.

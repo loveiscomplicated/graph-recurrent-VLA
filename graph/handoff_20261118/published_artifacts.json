@@ -1,0 +1,176 @@
+{
+  "checkpoint": {
+    "repo_id": "Graph-Recurrent-VLA/graph-recurrent-models",
+    "repo_type": "model",
+    "files": [
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/config/7df30eaafe02e53b290b1e6b08a6787bde4912f92572053f564602dbb10f31fa/config.yaml",
+        "size": 13977
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/e56e87f4815052ec03a4a23267cd4e0c0d81a17f8832d8c3bc006315d6da6a6b/metrics.json",
+        "size": 191
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/e36d257a382616018cbb94437f3cec18edb68e5cb3a0e64577f626a869badaad/handoff.json",
+        "size": 13739
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/a6d20ea7d5594feb6014854046a73daa89557998b65e1f058ed8dd632b52ca53/SHA256SUMS.json",
+        "size": 214
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/91f745a4e40377695929832aa365bfa2b87edb75fd91c573fb337e25211e8845/final_transformer.pt",
+        "size": 211629
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/e03fd2671fad1f142990f908b5ff7addfac0a3d68c8f341dd5e9670e017b390d/final_gnn.pt",
+        "size": 978938
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/c77b325203f3a5a882ada29a20487700e6504dd639dbd510f5818b795649b5d6/mamba_baseline_s0.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/1edc9e8c3fb4972c83781f7adeaed7f628073b257cc98189b1b3eb8319984aaa/mamba_baseline_s1.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/6991e446dfb7d70bfd97fa8c259aa1eb38ca30c55cad2a89646b01f56025aff8/mamba_baseline_s2.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/fe8ed2c0c311930c459e1e2840fae7b00ded25f3864512b98ac0ea0cec6920b7/mamba_baseline_s3.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/89f530a0744ed370532a6860c3cf5e318156936ca9d239155991f3a36b11211d/mamba_baseline_s4.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/8646a424ce4ec3dfada15ea337ececd4a6048639b6e0c695ba54bec66437b5a6/mamba_finetuned_s0.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/149e09b9eae9439739ff23ceed10e20a997af667a63939a2b0f43d96cb3608a3/mamba_finetuned_s1.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/f016f963fb3c4714e954710ef00c9347ce30b9e67999f8ff32a29b430b1bbbc5/mamba_finetuned_s2.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/fd4d2f2d8445d97bbd426437d3a829dc918325d3a58f40a9322f29331f1b07f9/mamba_finetuned_s3.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/checkpoint/dabb87389f5e7be4d9c7e172d31ff0a8af9f8c673580697720416d14f7246565/mamba_finetuned_s4.pt",
+        "size": 632849
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/manifests/d9bf65d667a5e5c2d9a7aadbee62f2bb6d99192e62e1b2426148adef046b4381/manifest.json",
+        "size": 7376
+      }
+    ],
+    "revision": "0da81bd94f33cb44c0cfec6a5a31d376f54c46c0",
+    "url": "https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/0da81bd94f33cb44c0cfec6a5a31d376f54c46c0/integration/d64a6e8b7d284915aafb41538539151e",
+    "manifest_path": "integration/d64a6e8b7d284915aafb41538539151e/manifests/d9bf65d667a5e5c2d9a7aadbee62f2bb6d99192e62e1b2426148adef046b4381/manifest.json"
+  },
+  "rollouts": {
+    "repo_id": "Graph-Recurrent-VLA/experiment-backups",
+    "repo_type": "dataset",
+    "files": [
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/config/7df30eaafe02e53b290b1e6b08a6787bde4912f92572053f564602dbb10f31fa/config.yaml",
+        "size": 13977
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/e56e87f4815052ec03a4a23267cd4e0c0d81a17f8832d8c3bc006315d6da6a6b/metrics.json",
+        "size": 191
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/e36d257a382616018cbb94437f3cec18edb68e5cb3a0e64577f626a869badaad/handoff.json",
+        "size": 13739
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/metrics/a6d20ea7d5594feb6014854046a73daa89557998b65e1f058ed8dd632b52ca53/SHA256SUMS.json",
+        "size": 214
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/f284d4e2c688149c5da9cb66bb4eb6d67a3844d4f1ffa27c74e85b85dc5ab231/fixed_before_entrance_700451.mp4",
+        "size": 286447
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/4acd3a0d7823e5312a611552829b379a1894465fd46f3d8b8cf4c96c28d33083/fixed_deep_then_stalled_700866.mp4",
+        "size": 348377
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/f5dde852f7d1005a477d08870f301534ec82ff8a7c71b6b63b0ba8e87d2cfbdf/fixed_partial_700732.mp4",
+        "size": 310425
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/9ac32d85b34b55cba236c6120da8652e92c039ebf4a8162fa14382e51bb2ab84/fixed_shallow_700674.mp4",
+        "size": 257377
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/23df9e1b9dc116668e41e9fc1c6655faabadd25ec6cafa74c3ca3cbff131b79a/fixed_success_700882.mp4",
+        "size": 151129
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/d6bbfd5355008285a8451c37e3cc0638e2901d3761bd0ac336e5696fd136a331/moving_at_entrance_700549.mp4",
+        "size": 304461
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/21de5b5355105f586fdd5b6e87faaa9a67a78c8df220107a5a9e9b8fd93390d2/moving_before_entrance_700729.mp4",
+        "size": 325164
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/60f2a402be368cf918a5c1f4a58b3bb9be569f0651df3ce27fce994ebb603008/moving_deep_then_retreated_700882.mp4",
+        "size": 370967
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/ded08b9bfcbdfce8a45b27b0eb7615e73e5dfc4dcc82067acf9afbee6645efa0/moving_deep_then_retreated_grasp_loss_700831.mp4",
+        "size": 365704
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/588d91128b671bc954dff7ce641362613632a6e7c5e3555dd2cce1a6c7322790/moving_deep_then_stalled_700806.mp4",
+        "size": 299731
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/b01444c4d44302e9773fe7030b9be6b30adc83ef0645c5c594cb4bdb72971f6c/moving_never_aligned_aperture_700807.mp4",
+        "size": 359668
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/98fa2622637f3054923ef994531408d860d479ac7b95aff99965b6df9d1a97d1/moving_shallow_700674.mp4",
+        "size": 280166
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/rollouts/0bed542fb9347b1c3fe8f91a080a46057fd74867c855c33d14cecec4f3856b23/moving_success_700878.mp4",
+        "size": 187809
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/trajectory/fbdcdb25099c4b4685cca272d16d3d16451ea9f4010b8bd39a3e116323a51888/graph2_workspace_20261118.tar.gz",
+        "size": 322929072
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/trajectory/565e88f4c7e7e965bfa32d5c22a3e89fd260a49c756968c060c9d174c72db7c6/graph2_20261118.bundle",
+        "size": 23735532
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/trajectory/273cf12f7bbb0c05c882fd53c8f9dc724408833fee0d125fd0f3d4d49db631d5/README.md",
+        "size": 6710
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/artifacts/trajectory/f581973a8fffe3fca9f643c221d101b55f869e71de29a2a324a9d57dee96a09c/requirements-runtime.txt",
+        "size": 2502
+      },
+      {
+        "path": "integration/d64a6e8b7d284915aafb41538539151e/manifests/e0dc4cbd162f5b24a0cd2cb7fcd17826bca61659cf09f3b0730d592f42f78e8a/manifest.json",
+        "size": 10052
+      }
+    ],
+    "revision": "9dd28d1c7bb0d40adc9862cd86b2b0e3048f590d",
+    "url": "https://huggingface.co/datasets/Graph-Recurrent-VLA/experiment-backups/tree/9dd28d1c7bb0d40adc9862cd86b2b0e3048f590d/integration/d64a6e8b7d284915aafb41538539151e",
+    "manifest_path": "integration/d64a6e8b7d284915aafb41538539151e/manifests/e0dc4cbd162f5b24a0cd2cb7fcd17826bca61659cf09f3b0730d592f42f78e8a/manifest.json"
+  }
+}
