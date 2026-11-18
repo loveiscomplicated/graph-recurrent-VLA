@@ -181,6 +181,44 @@ Full per-frame predictions and executed source are preserved on the server in
 comparison artifacts were not modified; no simulator, detector rerun or
 artifact upload was performed.
 
+### Surface-context training only after first observation
+
+Run `python main.py --config graph/configs/train_observed_surface_corner_tracker.yaml`
+for the corrected Peg-surface experiment. It enables the same
+`after_first_observation` policy used by the corrected corner-only run, while
+retaining the surface model, data, seed, optimizer, stopping criteria and
+independent batch-throughput tuning. `ever_seen` is accumulated only from the
+physical corner's actual detector-assignment mask. Surface support does not
+initialize a corner or make an unseen slot eligible for supervision.
+
+The loss, every validation metric (including surface-support groups), the
+five-mode balanced selection score and early-stopping scheduler all use
+`valid & ever_seen & ~observed`. Regression tests change excluded GT and errors
+by large amounts and verify unchanged loss, zero direct gradient on excluded
+predictions, and unchanged validation/model-selection scores even when surface
+points are available before the corner's first detection.
+
+The existing Korean RTX 3090 instance `61163897` is reused. The original surface
+run `703d64668c584353a5150fef6b9559ea`, its checkpoints, logs and original source
+remain under their original paths. The new source checkout is
+`/workspace/observed_surface_corner_tracker/source`, with separate training
+outputs under `/workspace/observed_surface_corner_tracker/training` and tmux
+session `observed_surface_corner_tracker`. It loads no old checkpoint: the
+surface variant starts from seed-0 random initialization. Existing train and
+validation payloads are reused read-only; test payloads remain unused by this
+run. Supervision counts, source hashes, batch probes and launch information are
+retained locally in `outputs/observed_surface_corner_tracker/` and on the host.
+No recurring watch or automatic instance shutdown is configured.
+
+Startup verification passed 15 local/server CPU contracts plus CUDA causal and
+BF16 backward checks. An independent per-episode NumPy calculation exactly
+matched the CUDA supervision audit: train retains 1374969 missing point-frames
+and excludes 2524585 before first observation; validation retains 166754 and
+excludes 317966. Batch tuning selected 64 episodes. The first three epochs and
+both best/last checkpoint saves were verified, and hashes of the previous
+run's checkpoints, history, completion/config records and original trainer
+source remained unchanged. These are startup checks, not final quality results.
+
 ### Held-out comparison of the original corner trackers
 
 With the source release/raw archives, prepared test dataset and both frozen
@@ -280,6 +318,64 @@ their SHA-256 in `results.json`. The comparison run is
 predictions independently reproduced all reported body means/P90s. No
 simulator backend, detector rerun, model update or artifact publication was
 executed by this comparison.
+
+### Peg surface context in spatial attention
+
+`graph/configs/train_five_mode_surface_corner_tracker.yaml` selects an additive
+variant through the same training loop. The original corner-only config and
+the already-running baseline deployment remain unchanged. It uses identical
+train/validation episodes, corner coordinates/masks, targets, train-only fallback,
+width 48, four heads, missing-only loss, optimizer, learning rates and stopping
+criteria. Seed 0 initializes every shared parameter identically to the baseline.
+The new six-input surface projection is initialized after those shared weights.
+
+`data_collection.five_mode_surface_context:prepare` verifies the original release
+and every selected surface NPZ receipt, checks frame indices/track IDs, and
+writes a separate dense 32-point sidecar for the 4050 train/validation episodes.
+It does not read test members or change existing corner/target bytes. Context
+is current world XYZ relative to the train-fitted Peg center and to the current
+observed TCP, scaled by 0.1 m. Track IDs only identify padded storage positions;
+the model has no learned surface ID or independent surface time history.
+
+After the first corner temporal block, the 20 corner queries attend to corner
+keys/values plus the encoded current surface points. Only Peg queries 0–7 may
+attend to those points; Box/Hole queries retain their existing same-body mask.
+Unavailable surface rows are masked, leaving corner keys available in frames
+with no surface support. Only the 20 corner states enter the second temporal
+block and prediction head. Directly detected corner coordinates still pass
+through exactly. Surface information can persist through the corner temporal
+states, without processing surface sequences in a temporal attention block.
+
+The original release has no explicit surface object-ID array. The pinned no-plan
+producer and surface audit identify its queries as Peg-only; no Box/Hole points
+are inferred from proximity or GT. The cache's visibility/depth/corner-exclusion
+gates are inherited. This experiment does not regenerate per-frame object masks
+or establish that every surviving track is free of drift. No TAPNext++ weights
+are trained and no RGB-D simulator is executed by this offline workflow.
+
+Validation additionally separates missing Peg errors in frames with/without
+surface support; the selection score remains the same five-mode average. Batch
+tuning is rerun independently using the new model's measured training throughput
+and the same 85% memory / 95% peak-throughput thresholds. The new run is randomly
+initialized, with no baseline checkpoint loaded, and uses a separate output
+directory and tmux session `five_mode_surface_corner_tracker`.
+
+The separate run was launched on 2026-11-18 KST on Vast instance `61163897`
+in South Korea: one RTX 3090, 80 GB disk, $0.2503704/hour including disk
+(transfer fees separate), below the requested $0.50/hour ceiling. China,
+Hong Kong and Macao were excluded. The original baseline instance was not
+accessed or changed. Seven CPU contracts passed locally and on the new server;
+the CUDA preflight and BF16 training/backward probes also passed.
+The sidecar preserves 17474357 train and 2131343 validation surface points.
+No held-out test member was read. Batch tuning selected 64; 96 exceeded the
+85% allocator memory target and 128 ran out of memory during the bounded probe.
+The first two epochs completed with atomic best/last checkpoints and about
+11.6–11.9 seconds per epoch, with sampled GPU utilization 99%. The run's
+`batch_tuning.json` retains exact candidate throughput and memory measurements.
+The different selected batch (baseline 96, variant 64) changes optimizer steps
+per epoch and must be reported when comparing learning curves. This launch
+verification does not establish final tracking quality. No recurring watch or
+automatic instance shutdown was configured.
 
 Fixed-ID histories use GT-assisted offline certificates. For detector-only online
 association and the six preserved GNN comparisons, see [detector-only corner

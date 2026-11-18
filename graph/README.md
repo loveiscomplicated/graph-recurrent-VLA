@@ -51,6 +51,28 @@ paths and hashes in the config. The
 document identical-input FP32 scoring and the separation of never-observed
 from previously observed Hole points.
 
+For the matched Peg-surface variant, prepare a separate surface sidecar and
+use the same training entrypoint with its own config:
+
+```bash
+python main.py --config data_collection/configs/prepare_five_mode_surface_context.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_five_mode_surface_corner_tracker.yaml
+```
+
+The existing corner dataset stays unchanged. Only Peg corner queries can
+attend to same-frame surface keys/values; no surface temporal states or
+surface prediction targets are added. See the same guide for the comparison.
+
+For the Peg-surface variant with first-observation eligibility applied to both
+loss and validation/model selection, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_observed_surface_corner_tracker.yaml
+```
+
+This uses the existing corner dataset and surface sidecar, starts with random
+weights, and saves a separate run under `/workspace/observed_surface_corner_tracker`.
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,
