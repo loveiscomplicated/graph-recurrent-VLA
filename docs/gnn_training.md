@@ -141,6 +141,89 @@ GNN trainer suite), and the graph-input contract also passed on the remote host.
 CUDA execution was confirmed through the first train/validation epoch; no
 continuous monitoring was started.
 
+### Held-out evaluation of the surface-input GNN
+
+The selected GNN and a linked inference/test package were explicitly published
+on 2026-11-18 to
+[the original training run on Hugging Face](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/b651e110136acc7ea69f27186e44c4f98aba6964/graph/59ec6322bb104095b2f4025afc5209b2).
+The package retains run ID `59ec6322bb104095b2f4025afc5209b2` and contains only
+its epoch-62 `best.pt` checkpoint, requested/effective training config, history,
+data identity, linked `pipeline_config.json`, `usage.json`, a checksummed UTF-8
+source bundle, CPU inference verification and the full/paired/stage test JSON
+reports. No last checkpoint or raw test payload was published.
+
+`pipeline_config.json` points to the already-published epoch-443 tracker at
+revision `d444f69b37056bf5534fea4dd88d794afce632af`, SHA256
+`f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc`,
+and the content-addressed GNN file whose SHA256 is
+`0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241`.
+The config records input units/shapes, physical slot order, causal node
+eligibility, graph construction, provenance features, Object21 fields and
+precision/aggregation differences between the reports. `inference_source.json`
+materializes 23 exact source files including a GT-free inference example;
+`usage.json` explains extraction, model loading and episode inference. The
+example validates both checkpoint hashes and runs entirely from the extracted
+source tree. Its CPU smoke verified finite Object21 outputs, measurement
+pass-through, causal node validity and frozen parameters.
+
+The original training records were recovered into a local publication mirror
+at `outputs/surface_gnn_publication`; original run metadata/config/metrics are
+preserved separately. Publishing used the existing
+`python -m tools.publish_experiment --experiments-dir
+outputs/surface_gnn_publication/experiments --run-id
+59ec6322bb104095b2f4025afc5209b2 --include checkpoint metrics` workflow.
+The manifest and receipt record immutable revision
+`b651e110136acc7ea69f27186e44c4f98aba6964`. Remote file identities and both
+linked checkpoint downloads are verified in the local
+`publication_verification.json`. The Korean instance was briefly resumed to
+recover the checkpoint after stopped-instance copy failed, then returned to
+its prior stopped state. No training or simulator execution ran during posting.
+
+Run `python main.py --config
+data_collection/configs/prepare_five_mode_object_test_targets.yaml` to export only
+the 450 held-out label payloads; this explicit test-only mode leaves the original
+train/validation preparation default unchanged. Transfer the resulting sidecar
+to the configured `target_root`, then run `WANDB_MODE=disabled python main.py
+--config graph/configs/evaluate_frozen_surface_tracker_gnn.yaml` with the existing
+test corner/surface caches and frozen checkpoint files. The evaluator verifies
+release membership, disjoint development/test reset seeds, frame counts, TCP
+alignment and payload/checkpoint checksums. First-observation eligibility applies
+to GNN input nodes; Object21 errors are evaluated on every test frame, including
+frames with incomplete or empty node support.
+
+Training run `59ec6322bb104095b2f4025afc5209b2` stopped at epoch 102 after 40
+epochs without the required validation improvement. Its selected checkpoint is
+epoch 62, validation loss 0.5958381360862066, checkpoint SHA256
+`0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241`.
+The saved best weights were checked equal to the resumable last checkpoint's
+best-model state. Evaluation keeps the epoch-443 surface tracker frozen and uses
+the same GNN graph, provenance features and validation precision: strict FP32
+tracker rollout, FP32/TF32 GNN. No models are updated or selected on test results.
+
+On all 450 test episodes (90 reset seeds, 86,179 frames), frame-pooled Euclidean
+errors were:
+
+| Object21 quantity | Mean (mm) | P90 (mm) |
+| --- | ---: | ---: |
+| Peg center position | 2.587466 | 4.494915 |
+| Hole center position | 5.981179 | 17.826778 |
+| Peg-tip minus Hole vector | 7.472465 | 24.245449 |
+
+Peg/Hole positions are the Object21 TCP-relative centers; their position error
+equals world-center error because prediction and GT share the same TCP. The
+tip-minus-Hole metric is the norm of the difference between two world-axis 3D
+vectors, not the difference of their scalar lengths. P90 uses NumPy's linear
+percentile over all frame errors, without averaging episode percentiles.
+The report also includes per-mode statistics and frame predictions/targets.
+Remote results live in `/workspace/surface_tracker_gnn/test_evaluation`; a local
+copy lives in `outputs/frozen_surface_tracker_gnn_test`. The evaluation source is
+isolated at `/workspace/surface_tracker_gnn/evaluation_source`, preserving the
+training source snapshot and all earlier runs. The shared `ExperimentLogger`
+records evaluation identity, checkpoint lineage and output receipts. Three CPU
+contracts passed locally, two metric contracts passed remotely, and the complete
+CUDA test inference finished successfully. No simulator or artifact publishing
+was executed.
+
 The Graph-team trainer now supports optimization, validation and checkpoint
 resume. It is independent of prediction layout: a task supplies the loss and
 scalar metrics. The first supported training recipe is gated MPNN Object21

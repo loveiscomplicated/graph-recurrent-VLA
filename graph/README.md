@@ -32,6 +32,17 @@ Requires the existing train/validation corner and surface datasets plus the
 corrected surface tracker checkpoint. The tracker is frozen; only GNN weights
 are optimized. See [GNN training](../docs/gnn_training.md#frozen-surface-tracker-inputs).
 
+Evaluate the validation-selected surface-input GNN on the fixed test split:
+
+```bash
+python main.py --config data_collection/configs/prepare_five_mode_object_test_targets.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_frozen_surface_tracker_gnn.yaml
+```
+
+Transfer the test target sidecar to `target_root`; existing held-out corner and
+surface inputs and both hash-pinned checkpoints are required. The evaluation
+reports frame-pooled 3D means and P90s without tuning on test results.
+
 ## Five-mode spatial/temporal corner tracker
 
 Train the graph2 20-slot Transformer from random initialization using the
