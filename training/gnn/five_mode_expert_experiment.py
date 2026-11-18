@@ -78,7 +78,14 @@ def verify_prepared_baseline(current, prepared):
             for key in right:
                 compare(left[key], right[key], f"{location}/{key}")
         elif type(right) is float:
-            if not math.isclose(left, right, rel_tol=1e-4, abs_tol=1e-3):
+            # CUDA FP32 quaternion roundoff is amplified by acos in rotation quantiles.
+            # These are diagnostic only; mean-based selection guards retain the tighter check.
+            rotation_quantile = (
+                "_rotation_error_deg/" in location
+                and location.rsplit("/", 1)[-1] in ("median", "p95")
+            )
+            absolute_tolerance = 0.01 if rotation_quantile else 1e-3
+            if not math.isclose(left, right, rel_tol=1e-4, abs_tol=absolute_tolerance):
                 raise ValueError(f"Prepared baseline metric differs at {location}; re-prepare on this environment")
         elif left != right:
             raise ValueError(f"Prepared baseline identity differs at {location}")

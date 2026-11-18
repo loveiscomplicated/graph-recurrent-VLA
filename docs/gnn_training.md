@@ -252,6 +252,10 @@ Each run replays the frozen baseline on its execution device and verifies it
 against the prepared report. Comparisons permit `rtol=1e-4`, `atol=1e-3` for
 numeric roundoff; identities/counts are exact, and the prepared reference values
 remain the guard thresholds. This is not a claim of bitwise CPU/CUDA equivalence.
+Diagnostic rotation medians/P95 allow 0.01° absolute replay difference because
+FP32 quaternion rounding can be amplified by `acos`; a CUDA replay on the same
+host differed by 0.0015–0.0021° in two subgroup medians. Mean metrics keep the
+tighter check, and every model-selection guard remains unchanged.
 Each arm records `history.json`, optimizer/RNG-bearing `last.pt`, any eligible
 `best.pt`, and `selection.json` through `ExperimentLogger`. Resume is explicitly
 unsupported by this experimental runner. Compare arm selections on validation

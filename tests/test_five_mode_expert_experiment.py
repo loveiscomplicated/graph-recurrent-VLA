@@ -139,6 +139,20 @@ def test_prepared_baseline_tolerates_only_small_numeric_roundoff():
         workflow.verify_prepared_baseline(current, baseline)
 
 
+def test_rotation_quantile_roundoff_does_not_relax_mean_based_verification():
+    baseline = {"metrics": {"hole_rotation_error_deg": {"mean": 1.0, "median": 0.255, "p95": 2.0}}}
+    current = deepcopy(baseline)
+    current["metrics"]["hole_rotation_error_deg"]["median"] += 0.003
+    workflow.verify_prepared_baseline(current, baseline)
+    current["metrics"]["hole_rotation_error_deg"]["mean"] += 0.003
+    with pytest.raises(ValueError, match="metric differs"):
+        workflow.verify_prepared_baseline(current, baseline)
+    current = deepcopy(baseline)
+    current["metrics"]["hole_rotation_error_deg"]["median"] += 0.02
+    with pytest.raises(ValueError, match="metric differs"):
+        workflow.verify_prepared_baseline(current, baseline)
+
+
 def test_box_augmentation_cannot_change_original_observations_or_targets():
     episode = dict(seed=1, policy_mode="Fixed_Hole_expert", split="train",
                    files=dict(corners=dict(sha256="a" * 64)))
