@@ -1,0 +1,43 @@
+trainer: training.gnn.trainer:train
+seed: 0
+device: cuda:0
+data:
+  factory: training.gnn.packed_five_mode_data:build_data
+  manifest: dataset/manifest.json
+  condition_index: dataset/condition_index.json
+  condition: condition_2
+  include_surface: true
+  matmul_precision: high
+  expected_frames:
+    train: 43383
+    validation: 6744
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+training:
+  epochs: 200
+  batch_size: 1792
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 8
+    min_epochs: 1
+    min_delta: 0.001
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.0001
+  fused: true
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+initial_weights: outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt
+output:
+  root: outputs/five_mode_condition_2_peg_surface

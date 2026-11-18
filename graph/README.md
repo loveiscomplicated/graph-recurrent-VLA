@@ -1,5 +1,136 @@
 # Graph team
 
+## Recovered Five-mode graph training
+
+For fresh training on the full release (900 seeds), place the release
+`manifest.json`, `condition_index.json`, and its 18 TAR shards under
+`dataset/` in the training checkout on a PyTorch CUDA host. The detector
+index selects the same 502,598 training and 60,011 validation frames for
+both variants. Each run initializes new weights and uses validation loss
+for early stopping.
+
+```bash
+python main.py --config graph/configs/train_five_mode_condition_1_detector_corners.yaml
+python main.py --config graph/configs/train_five_mode_condition_1_peg_surface.yaml
+```
+
+Tune `training.batch_size` for the target GPU. The complete directed graph
+requires more memory when the Peg surface tracks are included.
+
+Run the paired evaluation on the 62,309 held-out `condition_1` frames
+using the same release files. Set the two checkpoint paths in the config to
+the completed runs' `best.pt` files.
+
+```bash
+python main.py --config graph/configs/evaluate_five_mode_condition_1.yaml
+```
+
+To fine-tune both validation-best Condition 1 models on the detector-selected
+Condition 2 split, place each source `best.pt` at the `initial_weights` path in
+its config. Both recipes use 43,383 training frames, 6,744 validation frames,
+and validation-loss early stopping.
+
+```bash
+python main.py --config graph/configs/finetune_five_mode_condition_2_detector_corners.yaml
+python main.py --config graph/configs/finetune_five_mode_condition_2_peg_surface.yaml
+```
+
+After both runs finish, set their validation-best checkpoint paths in the paired
+evaluation config and evaluate the 5,181 detector-selected Condition 2 test
+frames.
+
+```bash
+python main.py --config graph/configs/evaluate_five_mode_condition_2_finetuning_comparison.yaml
+```
+
+For staged Peg-surface fine-tuning, use the same release and place the
+pinned Condition 1 validation-best checkpoint at the config's
+`initial_weights` path.
+
+```bash
+python main.py --config graph/configs/finetune_five_mode_peg_surface_curriculum.yaml
+```
+
+The three stages sample 80,000 training frames per epoch at Condition 1
+to Condition 2 ratios of 80:20, 60:40, and 50:50. The selection criterion
+is Condition 2 validation endpoint error, with Condition 1 validation
+endpoint error capped at 110% of the initial checkpoint's value. Each
+stage records its handoff checkpoint in `selection.json`. A stage can
+hand off its original input if no eligible checkpoint improves it.
+
+For the earlier visibility-based routing comparison, use the same release and the three
+SHA-256-pinned checkpoints in the config. The RTX 3090 recipe fixes the
+57-epoch model on Condition 1 and selects the Condition 2 checkpoint by
+mean endpoint error on the validation split.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_five_mode_routed.yaml
+```
+
+The evaluator saves per-frame test endpoints, mean and P95 errors, and
+GT-adjusted changes across adjacent frames in the same episode. Its mixed-model
+candidate selection is a historical diagnostic, separate from the fixed C1
+epoch-57/C2 epoch-35 inference mapping below. See the
+[Five-mode routing result](../docs/GNN_leaderboard_Nov_wee3.md#five-mode-가시성-조건별-모델-선택).
+
+With the same release and the selected 50:50 checkpoint, run the
+Condition 2 endpoint diagnostics on the CUDA host:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_five_mode_endpoint_diagnostics.yaml
+```
+
+The evaluator reports disjoint visibility groups and the effect of
+substituting each geometric term with its GT value after inference. See
+the [endpoint diagnostics](../docs/GNN_leaderboard_Nov_wee3.md#five-mode-condition_2-끝점-오차-진단).
+
+### Recovered subset
+
+On a PyTorch CUDA host, place the supervised subset manifest and its pinned
+`batches/` learning archives under `dataset/` in the training checkout.
+Run from that checkout with the experiment YAML:
+
+```bash
+python main.py --config condition_1_detector_corners.yaml
+python main.py --config condition_1_peg_surface.yaml
+```
+
+The recipes use `training.gnn.packed_five_mode_data:build_data` to decode and
+check the train and validation frames once and keep the observations and
+targets on the device. Both recipes select `data.condition: condition_1`
+from the same frozen splits. Every corner comes from the current-frame detector.
+`data.include_surface` adds non-corner Peg tracks. See
+[Five-mode graph input](../docs/data_collection.md#five-mode-graph-input). The trainer
+records the effective configuration, validation metrics and checkpoints via
+ExperimentLogger.
+
+With both runs complete and their checkpoint directories in the checkout, run
+the paired holdout evaluation:
+
+```bash
+python main.py --config graph/configs/evaluate_recovered_five_mode.yaml
+```
+
+The config selects both validation-best snapshots, verifies matching held-out
+frame IDs and targets, and records mean 3D errors through ExperimentLogger.
+
+For two-condition fine-tuning, `data.condition` selects the primary train
+condition and the validation condition. Set `data.balanced_train_condition`
+to add a second training condition. Batches default to 50:50. Use
+`data.train_mix.weights` to set integer weights by condition and
+`data.train_mix.frames_per_epoch` to fix the total sampled training frames.
+Each epoch draws without replacement from both train pools. The batch size
+must be divisible by the sum of the weights.
+
+The guarded Peg-surface continuation uses
+`training.gnn.finetune_five_mode_curriculum:train` to evaluate both validation
+conditions and retain a checkpoint only when its Condition 1 endpoint error
+stays within the configured degradation limit. After that decision is fixed,
+`graph/configs/evaluate_five_mode_peg_surface_balanced_conditions.yaml` compares
+the selected checkpoint and the unselected final epoch on both pinned test
+cohorts. This diagnostic comparison records full Object21 metrics and does not
+select or replace a checkpoint using test results.
+
 ## B2-2 corner tracking
 
 With the prepared train/validation episode manifest from the per-frame corner

@@ -61,7 +61,7 @@ def read_inputs(path, expected_hash, device):
 
 
 @torch.inference_mode()
-def cache_episode(detector, root, row):
+def cache_episode(detector, root, row, *, frame_reader=read_inputs):
     """Preserve native detector order using offsets, including frames with no corners."""
     name = row["path"]
     if Path(name).name != name or name in {"", ".", ".."}:
@@ -77,7 +77,7 @@ def cache_episode(detector, root, row):
     coordinates, object_ids, methods, rim_flags = [], [], [], []
     for index, digest in enumerate(hashes):
         path = episode / f"frame_{index:06d}.npz"
-        result = detector(*read_inputs(path, digest, detector.device))
+        result = detector(*frame_reader(path, digest, detector.device))
         points = torch.cat((result.uv, result.xyz, result.camera_xyz), dim=1).cpu().numpy()
         ids = result.object_id.cpu().numpy()
         if (len(ids) != len(points) or len(ids) != len(result.metadata)

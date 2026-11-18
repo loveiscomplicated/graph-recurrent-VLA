@@ -13,7 +13,6 @@ from data_collection.episode_dataset import file_sha256
 from data_collection.temporal.fixed_id_corner_sequences import load_source_episode, read_manifest, read_source_manifest
 from graph.build_graph import EdgeType, GraphBatch, NodeType
 from graph.gated_mpnn import VertexEdgeGatedMPNN
-from graph.temporal.detected_corner_tracking import DetectedCornerTracker
 from training.fixed_id_gnn import evaluate_batch, load_temporal
 from training.gnn.loss import object21_loss
 from utils.experiment_logger import ExperimentLogger, write
@@ -45,6 +44,8 @@ def graph_batch(xyz, kinds, valid, observed, tcp):
 
 def rollout_episode(model, source, threshold_m, device):
     """Produce all detector-only tracked points without GT in the forward path."""
+    from graph.temporal.detected_corner_tracking import DetectedCornerTracker
+
     tracker = DetectedCornerTracker(model, threshold_m, device)
     frames = []
     counts = dict(matches=0, new_tracks=0)

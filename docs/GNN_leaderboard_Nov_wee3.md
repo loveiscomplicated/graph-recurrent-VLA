@@ -84,6 +84,163 @@
 - 검출 꼭짓점 단독 · 추가 학습 10에포크 best. [체크포인트](../outputs/expanded_direct_corner_gnn_strong_jitter/7236d4a3f008467bbae8dd09f8d22a9e/best.pt) · [평가 JSON](../outputs/expanded_direct_corner_gnn_strong_jitter/7236d4a3f008467bbae8dd09f8d22a9e/condition_1_test_jitter_evaluation.json)
 - 검출 꼭짓점 + Peg 표면점 · 추가 학습 4에포크 best. [체크포인트](../outputs/expanded_surface_corner_gnn_strong_jitter/10fa325e42df4e7c8e48230056aa2991/best.pt) · [평가 JSON](../outputs/expanded_surface_corner_gnn_strong_jitter/10fa325e42df4e7c8e48230056aa2991/condition_1_test_jitter_evaluation.json)
 
+## Five-mode 테스트 · Peg 표면점 모델 추가 학습
+
+2026-11-17 KST에 전체 Five-mode 릴리스의 검출기 기준 `condition_1/test` 62,309프레임과 `condition_2/test` 5,181프레임을 Vast.ai 61028523의 RTX 3090에서 평가했습니다. 평가 전후의 프레임 ID, 검출 꼭짓점, Peg 표면점, TCP와 Object21 GT를 맞췄습니다. 두 실험은 `condition_1`에서 학습한 표면점 모델의 동일한 57에포크 `best.pt`에서 별도로 시작했습니다.
+
+50:50 혼합은 에포크당 `condition_1` 40,000프레임과 `condition_2` 40,000프레임을 사용했습니다. `condition_2` 단독은 매 에포크 `condition_2/train` 43,383프레임을 사용했습니다. 두 실험 모두 검증에서 `condition_1` 평균 끝점 오차의 시작값 2.773 mm 대비 10% 이내 악화(3.050 mm 이하)를 허용하고, 이 기준을 충족하는 모델 중 `condition_2` 평균 끝점 오차가 가장 낮은 가중치를 선택했습니다. 두 실험 모두 허용치를 충족한 새 가중치가 없어 5에포크에서 조기 종료했고, 시작 체크포인트가 최종 선택됐습니다. 아래 표의 **추가 학습 후** 수치는 각 실험의 5에포크 `last.pt` 평가입니다. 변화율은 반올림 전 값으로 계산했습니다.
+
+### 50:50 혼합
+
+| 테스트 지표 | `condition_1` 전 → 후 | 변화 | `condition_2` 전 → 후 | 변화 |
+| --- | ---: | ---: | ---: | ---: |
+| Hole 기준 Peg 끝점 | 2.03 → 2.71 mm | +33.5% | 21.31 → 15.72 mm | −26.2% |
+| Peg 위치 | 1.34 → 1.91 mm | +42.6% | 10.69 → 7.99 mm | −25.3% |
+| Hole 위치 | 1.45 → 2.03 mm | +40.3% | 7.67 → 7.05 mm | −8.1% |
+| Peg 회전 | 1.14° → 1.26° | +10.5% | 5.29° → 4.21° | −20.4% |
+| Hole 회전 | 0.65° → 1.22° | +85.9% | 1.53° → 1.90° | +24.0% |
+| Hole 반지름 | 0.66 → 0.87 mm | +33.1% | 1.73 → 1.69 mm | −2.0% |
+| 테스트 손실 | 0.04211 → 0.06495 | +54.2% | 2.00578 → 1.34486 | −33.0% |
+
+### `condition_2` 단독
+
+| 테스트 지표 | `condition_1` 전 → 후 | 변화 | `condition_2` 전 → 후 | 변화 |
+| --- | ---: | ---: | ---: | ---: |
+| Hole 기준 Peg 끝점 | 2.03 → 4.13 mm | +103.7% | 21.31 → 16.52 mm | −22.5% |
+| Peg 위치 | 1.34 → 2.74 mm | +105.0% | 10.69 → 8.66 mm | −18.9% |
+| Hole 위치 | 1.45 → 2.54 mm | +75.3% | 7.67 → 7.23 mm | −5.7% |
+| Peg 회전 | 1.14° → 1.71° | +50.4% | 5.29° → 4.41° | −16.8% |
+| Hole 회전 | 0.65° → 1.45° | +122.0% | 1.53° → 2.26° | +47.4% |
+| Hole 반지름 | 0.66 → 0.99 mm | +51.4% | 1.73 → 1.81 mm | +4.9% |
+| 테스트 손실 | 0.04211 → 0.12156 | +188.7% | 2.00578 → 1.43267 | −28.6% |
+
+5에포크 가중치의 `condition_1`·`condition_2` 검증 끝점 오차는 50:50 혼합에서 3.423 mm·15.877 mm, 단독 학습에서 4.780 mm·17.176 mm였습니다. 테스트에서는 50:50 혼합의 오차가 단독 학습보다 표의 모든 지표에서 낮았습니다.
+
+- 추가 학습 전 기준. [57에포크 체크포인트](../outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt) · [Condition 1 평가 JSON](../outputs/five_mode_condition_1_test_comparison.json) · [Condition 2 평가 JSON](../outputs/five_mode_condition_2_before_finetuning_test_comparison.json)
+- 평가한 5에포크 체크포인트와 검증 기록은 61028523의 `/workspace/five_mode_finetune_comparison`에 있습니다. 50:50 혼합은 `outputs/finetune_peg_surface_balanced/mix_1_1/4180338f5737449eb9c98cbd274128d5/`, 단독 학습은 `outputs/finetune_peg_surface_condition_2_only/mix_0_1/bc2c700b6d8a4305bb509a92bcfdab96/`입니다. 각 경로에서 `last.pt`, `history.json`, `selection.json`을 확인할 수 있습니다.
+
+## Five-mode 전체 릴리스 · 검출기 기준 테스트
+
+2026-11-17 KST에 900개 시드, 4,500개 에피소드의 Five-mode 전체 릴리스에서 `VertexEdgeGatedMPNN`을 평가했습니다. 이 비교는 RGB-D 검출 꼭짓점으로 분류한 `condition_1/test` 62,309프레임과 `condition_2/test` 5,181프레임을 사용합니다. 각 조건에서 네 체크포인트의 테스트 프레임 ID와 순서가 일치했습니다. 평가 장비는 RTX 3090이며 배치 크기는 1,792입니다. [릴리스 매니페스트](../outputs/five_mode_recovery/release/manifest.json) · [검출기 기준 프레임 인덱스](../outputs/five_mode_recovery/release/condition_index.json)
+
+두 기준 모델은 같은 `condition_1` 학습 502,598프레임과 검증 60,011프레임으로 처음부터 학습했습니다. 검출 단독 모델은 101에포크에서 조기 종료했고 98에포크가 검증 loss 기준 best입니다. Peg 표면점 모델은 57에포크에서 조기 종료했고 해당 가중치가 best입니다. 표면점 모델은 매 프레임의 검출 꼭짓점에 TAPNext++로 추적한 비꼭짓점 Peg 표면점을 더합니다.
+
+### `condition_1/test` · 62,309프레임
+
+| 모델 | Best 에포크 | 테스트 loss ↓ | Peg 중심 (mm) ↓ | Hole 중심 (mm) ↓ | Peg 끝점의 Hole 상대 위치 (mm) ↓ | Peg 회전 (°) ↓ | Hole 회전 (°) ↓ | Hole 반지름 (mm) ↓ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 검출 꼭짓점 단독 | 98 | 0.13382 | 2.61 | 2.63 | 3.59 | 1.97 | 1.68 | 2.27 |
+| 검출 꼭짓점 + Peg 표면점 · 추가 학습 전 | 57 | **0.04211** | **1.34** | **1.45** | **2.03** | **1.14** | **0.65** | **0.66** |
+| 검출 꼭짓점 + Peg 표면점 · 80:20 | 추가 1 | 0.05211 | 1.48 | 1.72 | 2.33 | 1.21 | 0.79 | 0.68 |
+| 검출 꼭짓점 + Peg 표면점 · 90:10 | 추가 7 | 0.04597 | 1.42 | 1.59 | 2.18 | 1.16 | 0.80 | 0.68 |
+
+### `condition_2/test` · 5,181프레임
+
+| 모델 | Best 에포크 | 테스트 loss ↓ | Peg 중심 (mm) ↓ | Hole 중심 (mm) ↓ | Peg 끝점의 Hole 상대 위치 (mm) ↓ | Peg 회전 (°) ↓ | Hole 회전 (°) ↓ | Hole 반지름 (mm) ↓ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 검출 꼭짓점 단독 | 98 | 6.76143 | 32.24 | 13.64 | 60.97 | 19.27 | 2.53 | 2.20 |
+| 검출 꼭짓점 + Peg 표면점 · 추가 학습 전 | 57 | 2.00578 | 10.69 | 7.67 | 21.31 | 5.29 | **1.53** | 1.73 |
+| 검출 꼭짓점 + Peg 표면점 · 80:20 | 추가 1 | 1.60959 | 9.71 | **6.75** | 18.00 | **4.63** | 1.69 | 1.83 |
+| 검출 꼭짓점 + Peg 표면점 · 90:10 | 추가 7 | **1.55591** | **9.38** | 6.76 | **17.31** | 4.83 | 1.72 | **1.57** |
+
+### 혼합 추가 학습과 체크포인트 선택
+
+80:20과 90:10 실험은 각각 원래 Peg 표면점 모델의 57에포크 best에서 시작했습니다. 혼합 비율은 `condition_1 : condition_2`의 프레임 비율이며, 매 에포크 80,000프레임을 중복 없이 샘플링했습니다. 초기 모델의 `condition_1` 검증 끝점 오차는 2.773 mm였습니다. 이 값을 기준으로 정한 상한을 지킨 후보 중 `condition_2` 검증 끝점 오차가 가장 낮은 체크포인트를 선택했습니다. 최소 5에포크를 실행하고, 적격 후보의 오차가 0.1 mm 이상 개선되지 않은 상태가 5에포크 연속 이어지면 종료했습니다.
+
+| 혼합 비율 | 시작 가중치 | 초기 학습률 | `condition_1` 검증 상한 | 조기 종료 에포크 | 선택 | `condition_1` 검증 끝점 (mm) | `condition_2` 검증 끝점 (mm) |
+| --- | --- | ---: | ---: | ---: | --- | ---: | ---: |
+| 80:20 | 57에포크 best | `1e-4` | +10% (3.050 mm) | 6 | 80:20의 1에포크 | 3.049 | 19.415 |
+| 60:40 | 80:20의 1에포크 | `1e-4` | +10% (3.050 mm) | 5 | 80:20의 1에포크 유지 | 3.049 | 19.415 |
+| 50:50 | 80:20의 1에포크 | `1e-4` | +10% (3.050 mm) | 5 | 80:20의 1에포크 유지 | 3.049 | 19.415 |
+| 90:10 | 57에포크 best | `3e-5` | +5% (2.911 mm) | 12 | 90:10의 7에포크 | 2.903 | 19.000 |
+
+60:40과 50:50에서 학습한 모든 에포크가 `condition_1` 검증 상한을 넘었습니다. 두 단계가 넘긴 체크포인트의 SHA-256은 80:20 best와 일치했습니다. 90:10은 추가 학습 전 대비 `condition_1/test`의 평균 끝점 오차가 7.4% 증가했고, `condition_2/test`에서는 18.8% 감소했습니다. +5% 상한은 체크포인트를 선택하는 검증셋에 적용했습니다.
+
+- 검출 단독 98에포크 · [체크포인트](../outputs/five_mode_condition_1_detector_corners/09e84d04d29c4a278ad02bc0035f5be7/best.pt)
+- Peg 표면점 57에포크 · [체크포인트](../outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt)
+- 80:20의 1에포크 · [체크포인트](../outputs/finetune_five_mode_peg_surface_curriculum/mix_4_1/a16d77e4d55d4b09be4863359f539368/best.pt) · [80:20 → 60:40 → 50:50 선택 및 테스트 JSON](../outputs/finetune_five_mode_peg_surface_curriculum/test_before_after.json)
+- 90:10의 7에포크 · [체크포인트](../outputs/finetune_five_mode_peg_surface_90_10/mix_9_1/0dab2f4b69d440adb24123cf2004da91/best.pt) · [선택 및 테스트 JSON](../outputs/finetune_five_mode_peg_surface_90_10/test_comparison.json)
+- 기준 모델 평가 · [Condition 1 JSON](../outputs/five_mode_condition_1_test_comparison.json) · [Condition 2 JSON](../outputs/five_mode_condition_2_before_finetuning_test_comparison.json)
+
+### Five-mode 가시성 조건별 모델 선택
+
+2026-11-17 KST에 Vast.ai 61028523의 RTX 3090에서 같은 릴리스의
+`condition_2/validation` 6,744프레임을 배치 크기 1,600으로 평가했습니다.
+`condition_1`에는 Peg 표면점 모델의 57에포크 `best.pt`를 고정했습니다.
+검증 평균 끝점 오차가 가장 낮은 50:50 혼합의 5에포크 `last.pt`를
+`condition_2`에 선택했습니다. 50:50은 57에포크에서 별도로 시작한 혼합 실험입니다.
+
+| `condition_2` 검증 후보 | Hole 기준 Peg 끝점 평균 (mm) | P95 (mm) |
+| --- | ---: | ---: |
+| 90:10 추가 학습 7에포크 | 19.00 | 67.43 |
+| 50:50 추가 학습 5에포크 `last.pt` | **15.88** | **60.89** |
+
+같은 테스트 프레임 ID와 순서에서 배치 크기 1,792로 평가했습니다.
+각 셀은 57에포크 단일 모델에서 조건별 모델 선택으로의 변화입니다.
+
+| 테스트 조건 | 프레임 | Hole 기준 Peg 끝점 평균 (mm) | P95 (mm) |
+| --- | ---: | ---: | ---: |
+| `condition_1` | 62,309 | 2.03 → 2.03 | 4.17 → 4.17 |
+| `condition_2` | 5,181 | 21.31 → **15.72** | 65.01 → **55.09** |
+| 두 조건 합계 | 67,490 | 3.51 → **3.08** | 10.71 → **8.34** |
+
+전환 오차는 같은 에피소드의 연속 두 프레임에서 `‖Δ예측 − ΔGT‖`를
+계산했습니다. 벡터는 Hole 기준 Peg 끝점입니다. `condition_3`를 사이에 둔
+두 프레임은 연속 전환에 포함하지 않았습니다.
+
+| 테스트 전환 | 연속 프레임 쌍 | 전환 평균 (mm) | 전환 P95 (mm) |
+| --- | ---: | ---: | ---: |
+| `condition_1 → condition_2` | 728 | 9.50 → 9.29 | 39.72 → 35.99 |
+| `condition_2 → condition_1` | 668 | 9.83 → 9.26 | 39.35 → 30.41 |
+| 두 방향 합계 | 1,396 | 9.66 → **9.27** | 39.74 → **32.15** |
+
+전환 오차가 10 mm를 초과한 비율은 26.4%에서 **25.4%**로 줄었습니다.
+`condition_1` 안에서 연속한 프레임의 전환 오차 P95는 2.69 mm였습니다.
+[평가 설정](../graph/configs/evaluate_five_mode_routed.yaml) ·
+[선택 기록](../outputs/five_mode_routed_evaluation/2902e0d2718a442383a7f9cf396faa0d/selection.json) ·
+[전체 지표](../outputs/five_mode_routed_evaluation/2902e0d2718a442383a7f9cf396faa0d/results.json) ·
+[프레임별 예측](../outputs/five_mode_routed_evaluation/2902e0d2718a442383a7f9cf396faa0d/test_endpoint_predictions.npz)
+
+### Five-mode `condition_2` 끝점 오차 진단
+
+2026-11-17 KST에 선택한 50:50 혼합 5에포크 `last.pt`를 RTX 3090에서
+다시 평가했습니다. 앞선 조건별 모델 선택 실험과 같은 5,181개
+`condition_2/test` 프레임과 Object21 GT를 사용했습니다. 재추론한 끝점의
+좌표 차이는 앞선 실행 대비 축별 최대 0.033 mm였고, 평균과 P95는 소수점
+둘째 자리까지 일치했습니다.
+
+그룹은 해당 프레임의 검출 꼭짓점으로 판정했습니다. Peg 관측 부족은
+꼭짓점 2–3개 또는 꼭짓점 4개 이상이면서 평면 적합 RMS 1 mm 이하입니다.
+Hole 림 부족은 검출 림 꼭짓점 1–2개입니다.
+
+| 관측 상태 | 프레임 | Hole 기준 Peg 끝점 평균 (mm) | P95 (mm) |
+| --- | ---: | ---: | ---: |
+| Peg 점 부족·공면만 | 4,242 | 11.22 | 26.90 |
+| Hole 림 부족만 | 743 | 30.03 | 75.86 |
+| 두 문제 모두 | 196 | 58.76 | 115.13 |
+
+Peg만 관측이 부족한 그룹에서 꼭짓점 2–3개는 1,119프레임에 평균 19.35 mm,
+P95 79.45 mm였습니다. 4개 이상 공면은 3,123프레임에 평균 8.31 mm,
+P95 21.11 mm였습니다. 전체 P95를 초과하는 259프레임 중 168개는 Hole 림이
+부족했습니다.
+
+모델 출력의 기하 항 `Peg 중심 + R(q)·(+X)·Peg X 반길이 − Hole 중심`에서
+한 항만 GT 값으로 바꿨습니다. 나머지 예측값과 모델의 끝점 보정량을 고정하고
+동일한 GT 끝점과 비교했습니다. 셀은 평균 / P95이며 단위는 mm입니다.
+
+| 관측 상태 | 원래 예측 | Peg 중심 GT | Peg 회전 GT | Peg X 반길이 GT | Hole 중심 GT |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 전체 | 15.72 / 55.09 | **11.01** / 51.65 | 13.00 / 53.53 | 15.45 / 53.34 | 11.75 / **32.27** |
+| Peg 점 부족·공면만 | 11.22 / 26.90 | **6.36 / 15.01** | 8.72 / 17.98 | 10.87 / 26.20 | 11.06 / 26.76 |
+| Hole 림 부족만 | 30.03 / 75.86 | 29.61 / 75.23 | 29.89 / 72.09 | 30.12 / 76.05 | **6.07 / 13.35** |
+| 두 문제 모두 | 58.76 / 115.13 | **41.13 / 64.61** | 41.53 / 65.05 | 58.84 / 115.49 | 48.20 / 118.96 |
+
+전체 평균은 Peg 중심을 바꿨을 때 4.71 mm, 전체 P95는 Hole 중심을 바꿨을
+때 22.81 mm 줄어 가장 큰 개선을 보였습니다. 개별 치환의 변화량에는
+다른 항과 끝점 보정량이 서로 상쇄하던 효과도 포함됩니다.
+[평가 설정](../graph/configs/evaluate_five_mode_endpoint_diagnostics.yaml) ·
+[전체 지표](../outputs/five_mode_endpoint_diagnostics/36a7446e73c740eb9ac1751b3d94736c/results.json) ·
+[프레임별 예측과 검출 통계](../outputs/five_mode_endpoint_diagnostics/36a7446e73c740eb9ac1751b3d94736c/test_endpoint_diagnostics.npz)
 
 ## Hugging Face 체크포인트
 

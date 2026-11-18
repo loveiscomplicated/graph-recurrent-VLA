@@ -1,0 +1,35 @@
+trainer: evaluation.gnn.five_mode_routed:evaluate
+device: cuda:0
+matmul_precision: high
+batch_size:
+  validation: 1600
+  test: 1792
+manifest:
+  path: dataset/manifest.json
+  sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+condition_index:
+  path: dataset/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+cohorts:
+  validation:
+    condition_2:
+      frames: 6744
+  test:
+    condition_1:
+      frames: 62309
+      frame_ids_sha256: f5c88abfaa5224c24bf8c3c63f43125f251057505b0bf7e3c668af2b7c89a2ae
+    condition_2:
+      frames: 5181
+      frame_ids_sha256: 6d0b9da51c6b218bdffd4eb7bbdf5ce1874355bee5bdb85586e751d992070a9a
+checkpoints:
+  condition_1:
+    path: outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt
+    sha256: 9c2b05a27353acd001a5a342b137f7df58f6e824c9dc4a0cc89034a7a6ea703a
+  condition_2_candidates:
+    mix_90_10_epoch_7:
+      path: outputs/finetune_five_mode_peg_surface_90_10/mix_9_1/0dab2f4b69d440adb24123cf2004da91/best.pt
+      sha256: 5a34d0c7eb7c0f7cef3b77774b41ccf591a32188d23dc87fecb2a4defcc7e01d
+    mix_50_50_epoch_5:
+      path: outputs/finetune_peg_surface_balanced/mix_1_1/4180338f5737449eb9c98cbd274128d5/last.pt
+      sha256: 2b22d694c47a00720085e55d103e9a95a287ca7f27e83fe2a72dd7357a168eab
+output_root: outputs/five_mode_routed_evaluation

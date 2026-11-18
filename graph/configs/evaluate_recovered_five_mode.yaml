@@ -1,0 +1,11 @@
+trainer: evaluation.gnn.five_mode_supervised:evaluate
+device: cuda:0
+matmul_precision: high
+manifest: dataset/manifest.json
+condition: condition_1
+expected_frames: 7220
+batch_size: 512
+checkpoints:
+  detector_corners: outputs/condition_1_detector_corners/fef468c06cf44aff8bbff44e3dd94697/best.pt
+  peg_surface: outputs/condition_1_peg_surface/c1d5d8d552b64e8aa9a8d3dc69e5fea9/best.pt
+output: outputs/condition_1_test_comparison.json

@@ -1,0 +1,40 @@
+trainer: training.gnn.trainer:train
+seed: 0
+device: cpu
+data:
+  factory: training.gnn.packed_five_mode_data:build_data
+  manifest: outputs/five_mode_recovery/training_subset_manifest.json
+  condition: condition_2
+  include_surface: true
+  expected_frames:
+    train: 13632
+    validation: 1298
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+training:
+  epochs: 40
+  batch_size: 128
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 8
+    min_epochs: 1
+    min_delta: 0.001
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.0001
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+initial_weights: outputs/vast_backups/60669483/condition_1_peg_surface/c1d5d8d552b64e8aa9a8d3dc69e5fea9/best.pt
+output:
+  root: outputs/finetune_vast_epoch40_condition_2

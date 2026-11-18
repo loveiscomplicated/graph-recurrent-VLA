@@ -1,0 +1,48 @@
+trainer: training.gnn.finetune_five_mode_curriculum:train
+seed: 0
+device: cuda:0
+data:
+  factory: training.gnn.packed_five_mode_data:build_data
+  manifest: dataset/manifest.json
+  condition_index: dataset/condition_index.json
+  manifest_sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+  condition_index_sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+  matmul_precision: high
+  frame_counts:
+    condition_1: {train: 502598, validation: 60011}
+    condition_2: {train: 43383, validation: 6744}
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+initial_weights: outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt
+curriculum:
+  initial_weights_sha256: 9c2b05a27353acd001a5a342b137f7df58f6e824c9dc4a0cc89034a7a6ea703a
+  ratios: [[4, 1], [3, 2], [1, 1]]
+  frames_per_epoch: 80000
+  condition_1_max_degradation: 0.10
+training:
+  epochs: 200
+  batch_size: 1600
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 5
+    min_epochs: 5
+    min_delta: 0.0001
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.0001
+  fused: true
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+output:
+  root: outputs/finetune_five_mode_peg_surface_curriculum

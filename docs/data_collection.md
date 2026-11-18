@@ -1087,6 +1087,34 @@ seed, mode and split, records frame counts and hashes, and identifies episodes
 where no surface query initialization was possible. Archive receipts make
 completed batches reusable when the same cache configuration is rerun.
 
+The supervised recovery workflow adds an aligned `targets` NPZ for every
+episode, with `frame_indices`, `object21` of shape `[T, 21]`, `robot15` of
+shape `[T, 15]`, and world-frame `tcp` of shape `[T, 3]` in metres.
+Robot15 follows the Recurrent feature order and includes the terminal
+observation. The exporter checks its TCP position against the Object21
+origin and its gripper coordinates against the last two Panda joints.
+The batch receipt pins the raw archive and
+each frame, the three feature files, and the detector-based visibility index.
+Retained episodes are accepted only when their original raw archive and the
+published cache members match their recorded hashes and frame counts.
+
+On a Linux CUDA/Vulkan collection host, start the persistent batch worker with
+`python main.py --config /path/to/worker.yaml`. Set `trainer` to
+`data_collection.five_mode_recovery:worker`, supply the tracking settings from
+`five_mode_cache_cuda.yaml`, and set `root` to the queue directory and
+`scratch` to a mount with space for one uncompressed batch. Submit a JSON
+request to `<root>/inbox` containing the batch key, its old archive receipt,
+frozen protocol, and effective collection config. Results go to
+`<root>/results/<key>`. The first batch compares the single-read cache path
+against the reference on the assigned device. Preserve the compressed raw
+archive locally alongside the verified supervised release.
+
+For either observed-graph model, point `data.factory` at
+`training.gnn.five_mode_supervised_data:build_data`, and set `data.manifest`
+and `data.condition_index` to the restored release files. Choose
+`data.condition` for the visibility subset and use `data.include_surface`
+to select whether the existing collator receives the surface tracks.
+
 #### Five-mode graph input
 
 **Five-mode 꼭짓점은 현재 프레임의 Main 카메라 RGB-D 꼭짓점 검출 결과로만

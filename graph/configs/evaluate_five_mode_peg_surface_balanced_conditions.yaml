@@ -1,0 +1,27 @@
+trainer: evaluation.gnn.five_mode_checkpoint_comparison:evaluate
+device: cuda:0
+matmul_precision: high
+batch_size: 1792
+manifest:
+  path: dataset/manifest.json
+  sha256: 92f40b985c592e9b1d7bf2c009f9aa756bdd7073eac0ea030b469c2adca9bc38
+condition_index:
+  path: dataset/condition_index.json
+  sha256: 2032e14041abb40a3f929a9e4ec967ffc8f32e9b360ac60836c1e16a62924891
+cohorts:
+  condition_1:
+    frames: 62309
+    frame_ids_sha256: f5c88abfaa5224c24bf8c3c63f43125f251057505b0bf7e3c668af2b7c89a2ae
+  condition_2:
+    frames: 5181
+    frame_ids_sha256: 6d0b9da51c6b218bdffd4eb7bbdf5ce1874355bee5bdb85586e751d992070a9a
+checkpoints:
+  selected_source:
+    role: selected checkpoint; original condition_1 validation best
+    path: outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt
+    sha256: 9c2b05a27353acd001a5a342b137f7df58f6e824c9dc4a0cc89034a7a6ea703a
+  epoch_8_last_unselected:
+    role: diagnostic only; failed the condition_1 validation retention guard
+    path: outputs/finetune_five_mode_peg_surface_balanced_conditions/mix_1_1/93c2d14277804d089129482cc1cc6b81/last.pt
+    sha256: 003162f67874fa960e7e296a50cc603bb9c02e69798b75ad3f5a05b98ff0390b
+output_root: outputs/five_mode_peg_surface_balanced_conditions_test
