@@ -16,6 +16,34 @@ runs synthetic preprocessed C1/C2 observations, and checks C3 abstention. It
 records results through `ExperimentLogger`; it does not execute RGB-D detection
 or measure dataset accuracy. See the [inference contract and verification](../docs/gnn_training.md#five-mode-current-frame-hard-routing).
 
+To diagnose the frozen C2 epoch-35 Peg-surface baseline on the pinned 6,744
+validation frames, use the same Python dependencies, the checkpoint, and the
+supervised release shards at the paths in this config:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 .venv/bin/python main.py --config graph/configs/diagnose_five_mode_condition_2_validation.yaml
+```
+
+The CPU recipe reports C2 A–E geometry errors, policy/motion distributions and
+per-frame predictions through `ExperimentLogger`. It accepts validation only
+and performs no model selection. See the [subtype results](../docs/gnn_training.md#five-mode-c2-validation-subtypes).
+
+To audit whether the current release contains typed Box surface points and
+prepare the controlled C2 continuation experiments, use the same GNN Python
+environment, the pinned release shards, and the epoch-35 checkpoint:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config data_collection/configs/audit_five_mode_surfaces.yaml
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 .venv/bin/python main.py --config graph/configs/prepare_five_mode_condition_2_experiments.yaml
+```
+
+Preparation emits three training YAMLs and runs one disposable training minibatch
+for each ready Peg-only arm. The current release has no typed Box points, so
+the Box arm fails preflight until new surface data is ready. Full training is
+an explicit run of an emitted YAML; preparation does not replace the baseline.
+See [C2 improvement experiments](../docs/gnn_training.md#c2-expert-improvement-experiments)
+for sampling, validation-only selection and the Box-data requirements.
+
 For fresh training on the full release (900 seeds), place the release
 `manifest.json`, `condition_index.json`, and its 18 TAR shards under
 `dataset/` in the training checkout on a PyTorch CUDA host. The detector

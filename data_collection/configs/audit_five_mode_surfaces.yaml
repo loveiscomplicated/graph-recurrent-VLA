@@ -1,0 +1,10 @@
+trainer: data_collection.five_mode_surface_audit:audit
+splits: [train, validation]
+manifest:
+  path: outputs/five_mode_recovery/release/manifest.json
+  sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+condition_index:
+  path: outputs/five_mode_recovery/release/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+condition_2_frames: {train: 43383, validation: 6744}
+output_root: outputs/five_mode_surface_audit

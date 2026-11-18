@@ -1,0 +1,93 @@
+trainer: training.gnn.five_mode_expert_experiment:run
+phase: prepare
+variant: peg_uniform
+seed: 0
+device: cpu
+torch_num_threads: 2
+matmul_precision: highest
+coplanarity_tolerance_m: 0.001
+baseline:
+  path: outputs/five_mode_condition_2_peg_surface/bd92c40236124b8f84a945f90f3544f3/best.pt
+  sha256: 4720dcaadd73a72c98fa0197c6fc26f53a0830995d19a4368e05473054097311
+data:
+  factory: training.gnn.five_mode_experiment_data:build_data
+  condition: condition_2
+  include_surface: true
+  surface_mode: peg
+  manifest:
+    path: outputs/five_mode_recovery/release/manifest.json
+    sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+  reference_manifest:
+    path: outputs/five_mode_recovery/release/manifest.json
+    sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+  condition_index:
+    path: outputs/five_mode_recovery/release/condition_index.json
+    sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+  surface_audit:
+    path: outputs/five_mode_surface_audit/ae4d3e0cd91844f7aba658c6a1236e42/results.json
+    sha256: 8d0d1d3993566851eda2c4c5557b9bba56a08224fe4b2ecffb75f981a61b73b3
+  cohorts:
+    train:
+      frames: 43383
+      frame_ids_sha256: 2d2c0ee55c1f40b4085d9d679de06659d94dd61fd2d5c18aa2ce3d3ff6ce2a9c
+    validation:
+      frames: 6744
+      frame_ids_sha256: 640e35d958c47cec0a46d3019c8fea2f2fab9891ccb8e5d11cb14c3cca99734b
+model:
+  name: vertex_edge_gated_mpnn
+  num_semantic_ids: 16
+  hidden: 64
+  layers: 2
+  global_geometry: true
+  readout: multiseed
+  readout_seeds: 4
+  readout_dim: 16
+  readout_heads: 4
+task:
+  factory: training.gnn.tasks:Object21Task
+  settings:
+    pos_unit_m: 0.01
+    consistency_weight: 0.05
+    size_units_m: [0.04, 0.01, 0.01, 0.02]
+sampling:
+  mode: uniform
+  max_episode_frames_per_batch: 4
+  max_seed_frames_per_batch: 8
+training:
+  epochs: 40
+  batch_size: 128
+  gradient_clip_norm: 1.0
+  early_stopping:
+    patience: 8
+    min_epochs: 5
+    min_delta: 0.01  # Validation endpoint improvement in mm.
+evaluation:
+  batch_size: 64
+optimizer:
+  name: adamw
+  lr: 0.00001
+  weight_decay: 0.0001
+  fused: false
+scheduler:
+  name: step
+  step_size: 10
+  gamma: 0.5
+selection:
+  minimum_e_hole_improvement: 0.05
+  maximum_degradation: 0.10
+  absolute_guard_slack: 0.01  # mm or degrees, according to each guarded metric.
+  guard_metrics:
+    - peg_position_error_mm
+    - hole_position_error_mm
+    - peg_rotation_error_deg
+    - hole_rotation_error_deg
+    - peg_half_size_x_error_mm
+    - peg_half_size_y_error_mm
+    - peg_half_size_z_error_mm
+    - hole_radius_error_mm
+preparation:
+  smoke_batch_size: 8
+  training_device: cuda:0
+training_output_root: outputs/five_mode_condition_2_experiments
+output:
+  root: outputs/five_mode_condition_2_preparation

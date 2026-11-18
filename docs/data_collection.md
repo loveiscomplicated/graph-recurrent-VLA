@@ -1188,6 +1188,50 @@ pixel within 3 px and seeds image-space surface FPS with those 24 pixels.
 If the four rim corners or enough eligible pixels are missing, tracking waits
 for a subsequent frame that supports the requested placement.
 
+#### Surface availability in the supervised release
+
+To inspect actual object-identified surface points without reading GT or test
+members, run from the repository root with the pinned release shards:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config data_collection/configs/audit_five_mode_surfaces.yaml
+```
+
+On 2026-11-18 KST, the audit checksum-verified all 4,050 train/validation surface
+NPZ members in `outputs/five_mode_recovery/release/`. None contained
+`surface_object_id`, and there were zero explicitly identified Box/Hole points.
+The producer's historical no-plan path tracks Peg only (`object_id=0` by
+default); the current Peg-surface baseline uses these untyped points as Peg.
+Their coordinates must not be relabeled as Box by proximity or GT matching.
+The presence of support for two-object plans in code does not establish that
+this release contains two-object tracks.
+
+| Split | Audited episodes | Untyped surface points, all frames | Untyped points in C2 | Identified Box points |
+| --- | ---: | ---: | ---: | ---: |
+| Train | 3,600 | 17,474,357 | 748,715 | 0 |
+| Validation | 450 | 2,131,343 | 108,285 | 0 |
+
+[Audit results](../outputs/five_mode_surface_audit/ae4d3e0cd91844f7aba658c6a1236e42/results.json) ·
+[Verified surface-member receipts](../outputs/five_mode_surface_audit/ae4d3e0cd91844f7aba658c6a1236e42/verified_surface_members.json).
+The audit reads only `surface` payloads and full manifest/index metadata.
+
+The C2 Box-surface experiment therefore needs a new candidate release before
+training. Preserve the original current-frame `corners` NPZ bytes, Peg surface
+coordinates/order, TCP/targets, raw-episode provenance, frame IDs and seed splits.
+Append only visible, depth-valid, non-corner Box tracks with `surface_object_id=1`;
+tag existing Peg tracks as 0. Keep frame offsets aligned and missing tracks
+absent. The additive builder below reuses the existing FPS, tracking and RGB-D
+lifting primitives and gates every frame by its current Box mask. Running the
+older full cache builder would also recompute detector/Peg data and is not an
+input-preserving matched comparison. The full augmentation has not been executed
+on the local Mac.
+
+After producing a candidate release, audit its train/validation surfaces and pin
+the new manifest/audit hashes. Keep `reference_manifest` fixed on the original
+release. The experiment loader verifies identical original observations and
+supervision, and rejects missing object IDs or an unchanged Peg-only cache.
+See [C2 experiment setup](gnn_training.md#c2-expert-improvement-experiments).
+
 
 ### Mixed trajectory collection with a moving Box
 

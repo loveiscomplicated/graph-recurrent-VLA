@@ -1,0 +1,24 @@
+trainer: evaluation.gnn.five_mode_subtype_diagnostics:evaluate
+split: validation
+device: cpu
+torch_num_threads: 2
+matmul_precision: highest
+batch_size:
+  validation: 64
+manifest:
+  path: outputs/five_mode_recovery/release/manifest.json
+  sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+condition_index:
+  path: outputs/five_mode_recovery/release/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+cohorts:
+  validation:
+    condition_2:
+      frames: 6744
+      frame_ids_sha256: 640e35d958c47cec0a46d3019c8fea2f2fab9891ccb8e5d11cb14c3cca99734b
+coplanarity_tolerance_m: 0.001
+checkpoint:
+  path: outputs/five_mode_condition_2_peg_surface/bd92c40236124b8f84a945f90f3544f3/best.pt
+  sha256: 4720dcaadd73a72c98fa0197c6fc26f53a0830995d19a4368e05473054097311
+  selected_epoch: 35
+output_root: outputs/five_mode_condition_2_validation_diagnostics

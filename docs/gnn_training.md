@@ -105,6 +105,181 @@ subtype-aware propagation, confidence, abstention
 and learned temporal updates remain separate follow-up work; this implementation
 provides no C3 temporal prediction.
 
+## Five-mode C2 validation subtypes
+
+With the supervised release, pinned C2 epoch-35 Peg-surface checkpoint, PyTorch,
+NumPy and PyYAML, run the validation-only diagnostic from the repository root:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 .venv/bin/python main.py --config graph/configs/diagnose_five_mode_condition_2_validation.yaml
+```
+
+`evaluation.gnn.five_mode_subtype_diagnostics:evaluate` verifies the release,
+condition-index and checkpoint hashes. It uses the existing packed Peg-surface
+loader and frozen checkpoint wrapper, validates every selected episode's C2
+membership against current-frame detector corners, and verifies the ordered
+6,744 validation frame IDs against SHA-256
+`640e35d958c47cec0a46d3019c8fea2f2fab9891ccb8e5d11cb14c3cca99734b`.
+It rejects any split other than validation before reading inputs. Only validation
+episode NPZ members are read; the full manifest/index contain other splits'
+metadata. Neither a checkpoint nor a threshold is selected or changed.
+
+A–E are disjoint detector-support groups: A has 2–3 Peg corners and 1–2 rim
+corners; B has 2–3 Peg and at least 3 rim; C has at least 4 coplanar Peg and
+1–2 rim; D has at least 4 coplanar Peg and at least 3 rim; E has at least 4
+noncoplanar Peg and 1–2 rim. Best-fit-plane RMS strictly above 1 mm is
+noncoplanar. Box exterior and tracked surface points never enter these counts.
+
+On 2026-11-18 KST, the CPU run below evaluated all 6,744 frames from 243 episodes
+and 72 reset seeds, using batch size 64, two Torch threads and Torch 2.14.1.
+The frozen model is the C1-initialized C2 fine-tune, not a fresh C2 model.
+Distances below are mean Euclidean errors in mm; rotations are mean sign-invariant
+quaternion angular errors in degrees, using training's unchanged `geometry_errors`.
+Endpoint is Object21 slice `7:10`, the world-aligned Peg tip relative to Hole.
+
+| Subtype | Frames | Endpoint mm | Peg position mm | Hole position mm | Peg rotation ° | Hole rotation ° |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| A | 102 | 23.53 | 5.77 | 25.79 | 4.27 | 5.31 |
+| B | 1,915 | 11.20 | 7.87 | 1.92 | 5.27 | 1.01 |
+| C | 149 | 27.13 | 7.50 | 24.35 | 5.52 | 6.27 |
+| D | 3,654 | 8.63 | 4.94 | 2.06 | 4.95 | 0.97 |
+| E | 924 | 41.38 | 4.59 | 40.96 | 3.79 | 6.62 |
+| All C2 | 6,744 | 14.48 | 5.79 | 8.20 | 4.88 | 1.94 |
+
+| Subtype | Fixed Expert | Fixed Expert→Random | Fixed Expert→Random→Expert | Fixed Random | Moving Expert | Fixed / Moving total |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| A | 45 | 0 | 0 | 0 | 57 | 45 / 57 |
+| B | 261 | 777 | 472 | 112 | 293 | 1,622 / 293 |
+| C | 40 | 11 | 22 | 0 | 76 | 73 / 76 |
+| D | 502 | 1,373 | 1,035 | 68 | 676 | 2,978 / 676 |
+| E | 159 | 70 | 175 | 361 | 159 | 765 / 159 |
+| All C2 | 1,007 | 2,231 | 1,704 | 541 | 1,261 | 5,483 / 1,261 |
+
+Policy headings map directly to `Fixed_Hole_expert`, `Fixed_Hole_expert_random`,
+`Fixed_Hole_expert_random_expert`, `Fixed_Hole_random`, `Moving_Hole_expert`.
+Fixed/Moving overall endpoint means were 15.46/10.24 mm. Within E, Fixed/Moving
+means were 45.74/20.38 mm; subtype and policy mixtures differ substantially.
+
+E has both the highest mean endpoint error (41.38 mm; P95 113.34 mm) and the
+largest contribution to total endpoint error: 13.70% of frames account for
+39.15% of the summed errors. E + `Fixed_Hole_random` is the first failure group
+to inspect: 361 frames from 14 episodes/seeds have endpoint mean 75.47 mm,
+Hole-position mean 73.28 mm, Peg-position mean 2.23 mm and Hole-rotation mean
+10.75°. It accounts for 27.90% of all C2 endpoint error and 71.26% of E's error.
+This identifies a Hole-estimation diagnostic priority; it is not a causal
+ablation or evidence that extra Peg points would repair the failure.
+
+Rim-limited A/C/E together have endpoint/Hole-position means 38.02/37.53 mm,
+versus 9.51/2.01 mm in B/D. B has the largest Peg-position mean (7.87 mm), and C
+the largest Peg-rotation mean (5.52°). A and C have only 102/149 frames from
+10/22 seeds. All numbers are descriptive frame-weighted validation estimates;
+adjacent frames and policy imbalance limit independent-sample interpretations.
+
+The run reuses `ExperimentLogger` without publishing or changing training code.
+[Full metrics and policy/motion strata](../outputs/five_mode_condition_2_validation_diagnostics/d90b8f05ad06450fb231cb9b3311229c/results.json) ·
+[Aligned validation predictions and errors](../outputs/five_mode_condition_2_validation_diagnostics/d90b8f05ad06450fb231cb9b3311229c/validation_predictions.npz).
+Outputs include median/P95, Hole radius and Peg-size errors, support counts,
+per-frame subtype/evidence and source hashes. Tests cover subtype boundaries,
+zero-support groups, aggregation, and a synthetic end-to-end run with deliberately
+unavailable train/test archives. CUDA/MPS inference, RGB-D detector execution
+and simulator backends were not run for this diagnostic. No test samples were
+read or used for model selection.
+
+## C2 expert improvement experiments
+
+The preparation workflow keeps C2 epoch 35 as an immutable external baseline.
+With the current release, its pinned surface audit, and the GNN Python
+dependencies, run:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 .venv/bin/python main.py --config graph/configs/prepare_five_mode_condition_2_experiments.yaml
+```
+
+`phase: prepare` verifies 43,383 train and 6,744 validation frame IDs, recomputes
+their detector subtypes, replays the fixed validation baseline, and emits
+`peg_uniform.yaml`, `peg_focus.yaml`, `peg_box_focus.yaml` and
+`experiment_plan.json` under a new run directory. It performs one disposable
+eight-frame optimization minibatch for each current-data Peg arm, then discards
+those model copies. Preparation does not train full epochs, select an improved
+model, overwrite the source checkpoint or change the live router.
+
+| Arm | Initialization and inputs | Sampling | Current readiness |
+| --- | --- | --- | --- |
+| Frozen reference | Epoch 35, original detector corners + Peg surface + TCP | No optimization | Baseline retained |
+| `peg_uniform` | Same epoch-35 weights and inputs | Every train frame once plus a uniform replay subset | Ready |
+| `peg_focus` | Same epoch-35 weights and inputs | Every train frame once plus every C2-E frame once | Ready |
+| `peg_box_focus` | Same weights/capacity; add typed non-corner Box points | Same sampling as `peg_focus` | Blocked: current release has no identified Box tracks |
+
+All arms keep `VertexEdgeGatedMPNN` hidden 64/layers 2, complete directed graphs,
+TCP reference, and the original Object21 loss, including endpoint weight 2 and
+consistency weight 0.05. The recipe uses a new AdamW optimizer at `1e-5`, maximum
+40 continuation epochs, validation patience 8/minimum 5 epochs, and a StepLR
+decay every 10 epochs. This isolates focused sampling and then additional
+observations; it is not the separate C1-initialized versus fresh C2 comparison.
+
+The verified train subtype counts are A=600, B=9,302, C=615, D=26,716, E=6,150.
+Both ready arms use 49,533 draws and 387 batches at batch size 128 in their first
+epoch. Every one of the 43,383 frames is used at least once and at most twice.
+Focus uses 12,300 E draws; the seeded uniform control uses 7,013. Sampling keeps
+at most four frames per episode and eight per reset seed in a batch, prevents a
+duplicate frame inside the same batch, and emits a smaller batch when needed.
+All 1,981 train episodes/607 contributing reset seeds remain represented.
+Epoch logs record actual subtype/policy exposure; the replay RNG is separate
+from model RNG and inspection does not advance it.
+
+Training an emitted YAML is explicit. Replace `RUN_ID` with the directory
+printed by preparation; emitted configs request `cuda:0` by default:
+
+```bash
+WANDB_MODE=disabled python main.py --config outputs/five_mode_condition_2_preparation/RUN_ID/peg_uniform.yaml
+WANDB_MODE=disabled python main.py --config outputs/five_mode_condition_2_preparation/RUN_ID/peg_focus.yaml
+```
+
+Checkpoint selection uses the fixed full validation cohort, never test:
+
+- Minimize overall C2 endpoint mean, with at least 0.01 mm improvement over the
+  currently retained score.
+- Require at least 5% improvement in C2-E Hole-position mean: from 40.9563 mm
+  to at most 38.9084 mm, and no increase in E endpoint mean.
+- Limit overall Peg/Hole position, rotation, size/radius degradation to 10%
+  plus 0.01 mm/degree numeric slack. Limit each subtype, policy and Fixed/Moving
+  endpoint mean to 110% of its own frozen baseline.
+- Keep the original epoch-35 checkpoint selected if no candidate passes every
+  guard. Early stopping counts guarded improvements; thresholds are preset
+  preparation settings, not values tuned on test.
+
+Each run replays the frozen baseline on its execution device and verifies it
+against the prepared report. Comparisons permit `rtol=1e-4`, `atol=1e-3` for
+numeric roundoff; identities/counts are exact, and the prepared reference values
+remain the guard thresholds. This is not a claim of bitwise CPU/CUDA equivalence.
+Each arm records `history.json`, optimizer/RNG-bearing `last.pt`, any eligible
+`best.pt`, and `selection.json` through `ExperimentLogger`. Resume is explicitly
+unsupported by this experimental runner. Compare arm selections on validation
+only, and retain the baseline when none improves it. Experimental checkpoints
+use their own data factory and are not automatically accepted by the existing
+Peg-only live inference wrapper.
+
+Box data must be available before the third arm can run. The optional
+`include_box_surface=True` extension to `pack_episode`/`read_splits` keeps
+surface object IDs 0/1 intact instead of filtering to Peg. Default calls retain
+the original Peg-only behavior. The Box arm requires explicit IDs in every
+selected surface episode and actual Box points in both train and validation.
+It compares the candidate's Peg-only projection against `reference_manifest`,
+requiring unchanged detector NPZ hashes (including rim flags), raw provenance,
+Peg coordinates/order, TCP, targets and frame IDs. Classification always uses
+the original detector corners. No current observation is filled from history.
+See the [surface availability audit and augmentation requirements](data_collection.md#surface-availability-in-the-supervised-release).
+
+On 2026-11-18 KST, full current-data preparation and both disposable optimizer
+probes ran on CPU. The recomputed frozen validation reports matched all prior
+subtype/policy/motion summaries exactly. Full continuation training, CUDA/MPS
+training, Box track generation and simulator execution were not run. No test
+sample payload or forbidden shared cache was read, and no artifact was published.
+[Prepared plan and probe results](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/experiment_plan.json) ·
+[Uniform control YAML](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_uniform.yaml) ·
+[C2-E focus YAML](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_focus.yaml) ·
+[Box focus YAML, currently blocked](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_box_focus.yaml).
+
 
 ## Surface graph GNN smoke test
 
