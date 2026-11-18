@@ -107,6 +107,52 @@ sum of learned Hole center errors. All Condition 3 frames had a current Box
 exterior detection. [Diagnostic results](../outputs/recent_corner_completion/60097fc29695416e997ddb40e55c8af8/results.json)
 include the recency baselines on these same groups.
 
+## Persistent corner tracking with shape loss
+
+An episode starts with no tracks. Each unmatched current RGB-D detection
+starts a track, and every track stays active until the episode ends. The
+tracker uses one-to-one association separately for Peg, Box exterior and
+Hole rim. Peg association uses the world-space or TCP-transported hypothesis
+with more matches, breaking ties by distance. Box and Hole rim association
+use world-space last detections. The learned forecaster takes the last
+position, age, measured velocity, TCP and gripper kinematics, and the current
+detector point set. Forecasts are recomputed from the latest real detection in
+each frame. Current detections pass through unchanged. Unmatched reappearances
+can introduce duplicate tracks.
+
+The frozen Object21 GNN receives current detections for Condition 1. For
+Conditions 2 and 3 it also receives all currently missing track forecasts.
+Visibility classes still come from current detections. Detector history and
+robot kinematics come from the Five-mode `corners` and `targets` members.
+Object21 GT supplies the downstream loss and the rigid transport of the last
+detection for each missing-point target.
+
+The shape term applies Smooth L1 to the difference between predicted and
+reference pair distances, scaled by 10 mm. Pairs belong to Peg or to the
+combined Box exterior and Hole rim and include at least one forecast.
+Reference distances come from the same-frame, rigidly transported targets so
+that anchors seen at different times can be compared. Shape is averaged per
+frame and body. The absolute corner-position loss and frozen GNN Object21 loss
+also supervise the pose.
+
+The [paired pilot config](../graph/configs/train_persistent_corner_tracking.yaml)
+uses the same initialization and 8,192 sampled frames each from Conditions
+2 and 3 in both runs. Shape weights are 0 and 0.5. Each run saves the minimum
+mean Condition 2 and 3 validation Object21 loss. The evaluator compares both
+checkpoints, the previous eight-frame model, and current detections on the
+same 84,081 validation frames. It records mean within-body distance error and
+the Hole center error when the latest rim is current, 1–8 frames old, 9 or
+more frames old, or has never been detected in the episode.
+
+On the 2026-11-17 KST CPU pilot, both runs selected epoch 3. On Condition 3,
+shape loss reduced Peg and Box-with-rim distance errors from 12.61 and 5.90 mm
+to 11.40 and 4.99 mm. Hole center errors were 87.20 mm for the eight-frame
+model, 61.27 mm for persistent tracking, and 61.39 mm with shape loss. The
+4,863 frames with a rim last detected at least nine frames earlier went from
+84.49 to 12.32 mm with persistent tracking and shape loss. The 9,366 frames
+with no prior rim detection still averaged 104.57 mm. The test split was
+reserved. [Paired validation results](../outputs/persistent_corner_tracking/de8e92117e1347d28ed1772f17629aa9/results.json)
+include both checkpoint hashes and the three position metrics.
 
 ## Shared fixed-ID corner prediction
 

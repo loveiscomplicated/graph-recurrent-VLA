@@ -1,0 +1,37 @@
+trainer: training.gnn.persistent_corner_tracking:train_and_compare
+seed: 0
+device: cpu
+cpu_threads: 6
+data:
+  manifest:
+    path: outputs/five_mode_recovery/release/manifest.json
+    sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+  condition_index:
+    path: outputs/five_mode_recovery/release/condition_index.json
+    sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+  validation_frame_ids_sha256: 1901e3edd4d32c19660c5083d753318b0a9b9c988c58d3548b5d83c96d4dcf14
+  train_frames: [0, 8192, 8192]
+frozen_gnn:
+  path: outputs/five_mode_condition_1_detector_corners/09e84d04d29c4a278ad02bc0035f5be7/best.pt
+  sha256: 34a0da5ec05c4d38a74941210b7b74e8467d97023460da2a7077fb8d4ec6510f
+association:
+  match_m: 0.020
+model:
+  hidden: 64
+  max_offset_m: 0.15
+training:
+  batch_size: 128
+  epochs: 3
+  patience: 2
+  learning_rate: 0.001
+  loss_scale_m: 0.010
+  motion_weight: 0.25
+shape_weights:
+  no_shape_loss: 0.0
+  shape_loss: 0.5
+evaluation:
+  batch_size: 256
+  recent_validation_trace:
+    path: outputs/recent_corner_completion/8d1683bfe3c64e34831f6962582c43de/validation_errors.npz
+    sha256: bfb427a223d03b25de3534b0cf45714b63a02713258ef70e89704e6bf4a9a7cc
+output_root: outputs/persistent_corner_tracking

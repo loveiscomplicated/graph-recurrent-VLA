@@ -258,6 +258,20 @@ WANDB_MODE=disabled python main.py --config graph/configs/diagnose_recent_corner
 
 See the [recent-corner training protocol](../docs/corner_prediction.md#learned-recent-corner-completion-for-object21).
 
+With the same Five-mode release, frozen Condition 1 GNN checkpoint, and
+saved recent-model validation trace, run matched persistent trackers with
+and without a shape loss from the repository root. The local recipe uses
+PyTorch, NumPy, SciPy and PyYAML.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_persistent_corner_tracking.yaml
+```
+
+The pilot trains on an equal sample of Conditions 2 and 3 and selects
+each checkpoint by their mean validation Object21 loss. The result includes
+the full validation split and groups Condition 3 by the last Hole rim detection.
+See [persistent corner tracking](../docs/corner_prediction.md#persistent-corner-tracking-with-shape-loss).
+
 ### Recovered subset
 
 On a PyTorch CUDA host, place the supervised subset manifest and its pinned
