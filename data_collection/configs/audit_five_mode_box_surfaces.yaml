@@ -1,0 +1,10 @@
+trainer: data_collection.five_mode_surface_audit:audit
+splits: [train, validation]
+manifest:
+  path: outputs/five_mode_box_surface_parallel/generated/candidate/manifest.json
+  sha256: 82a79f8c63298a6be0867e86d4d75a4fac895ab3d7c3528f6b967c99a83c0932
+condition_index:
+  path: outputs/five_mode_recovery/release/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+condition_2_frames: {train: 43383, validation: 6744}
+output_root: outputs/five_mode_box_surface_audit

@@ -3,6 +3,7 @@
 from copy import deepcopy
 from itertools import islice
 import math
+import os
 from pathlib import Path
 
 import torch
@@ -28,6 +29,27 @@ VARIANTS = {
     "peg_focus": ("peg", "focus"),
     "peg_box_focus": ("peg_box", "focus"),
 }
+
+
+class FirstOptimizerUpdate:
+    """Write one startup receipt after a real optimizer step, without a monitoring process."""
+
+    def __init__(self, output, logger, variant, device):
+        self.output = output
+        self.logger = logger
+        self.variant = variant
+        self.device = device
+        self.recorded = False
+
+    def batch_completed(self, totals=None, denominators=None):
+        if self.recorded or totals is None:
+            return
+        path = self.output / "training_started.json"
+        write_json(path, dict(pid=os.getpid(), variant=self.variant, device=str(self.device),
+                              first_optimizer_update_executed=True))
+        self.logger.link_output(path, kind="metrics")
+        self.recorded = True
+        print(f"First optimizer update completed: {path}", flush=True)
 
 
 def validation_report(model, loader, groups, task):
@@ -181,9 +203,11 @@ def train(config, data, reference_model, baseline, task, device, generator, logg
     selected_epoch, stale = 0, 0
     history = []
     early = config["training"]["early_stopping"]
+    startup = FirstOptimizerUpdate(output, logger, config["variant"], device)
     for epoch in range(1, config["training"]["epochs"] + 1):
         sampling = data.train.sampling_summary()
-        metrics = run_epoch(model, data.train, task, device, optimizer, config["training"]["gradient_clip_norm"])
+        metrics = run_epoch(model, data.train, task, device, optimizer,
+                            config["training"]["gradient_clip_norm"], progress=startup)
         report = validation_report(model, data.validation, data.validation_groups, task)
         reasons = selection_rejections(report, baseline, config["selection"])
         score = report["overall"]["metrics"]["endpoint_error_mm"]["mean"]

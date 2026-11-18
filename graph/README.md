@@ -66,6 +66,16 @@ an explicit run of an emitted YAML; preparation does not replace the baseline.
 See [C2 improvement experiments](../docs/gnn_training.md#c2-expert-improvement-experiments)
 for sampling, validation-only selection and the Box-data requirements.
 
+The completed production Box cache has a dedicated CUDA preparation config:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/prepare_five_mode_box_surface_experiment.yaml
+```
+
+It pins the typed candidate while preserving the original reference. Run its
+emitted `peg_box_focus.yaml` explicitly for formal training. See
+[production Box-surface inputs](../docs/gnn_training.md#production-box-surface-candidate).
+
 To read the complete Five-mode train split as chronological graph episodes,
 use `training.gnn.five_mode_sequence_data:build_train_loader`. This loader does
 not accept a visibility condition or condition index. It keeps all frames in

@@ -247,6 +247,7 @@ def test_prepare_and_rejected_training_keep_baseline_and_never_read_test(tmp_pat
     monkeypatch.setattr(workflow, "selection_rejections", lambda *args: ["forced rejection"])
     trained = workflow.run(arm)
     selection = json.loads((trained / "selection.json").read_text())
+    assert json.loads((trained / "training_started.json").read_text())["first_optimizer_update_executed"] is True
     assert selection["inherited_baseline"] is True
     assert selection["selected_epoch"] == 0
     assert selection["test_samples_read"] is False

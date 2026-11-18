@@ -284,6 +284,90 @@ sample payload or forbidden shared cache was read, and no artifact was published
 [C2-E focus YAML](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_focus.yaml) ·
 [Box focus YAML, currently blocked](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_box_focus.yaml).
 
+### Production Box-surface candidate
+
+The completed additive cache is available separately from the original Peg-only
+reference at `outputs/five_mode_box_surface_parallel/generated/candidate/`.
+Its production `five_mode_supervised_v1` manifest SHA-256 is
+`82a79f8c63298a6be0867e86d4d75a4fac895ab3d7c3528f6b967c99a83c0932`.
+It contains all 4,050 train/validation episodes and no test records. A new
+[surface audit](../outputs/five_mode_box_surface_audit/fdead29ace9f47cab83fce10f4201278/results.json)
+verified typed Box points on all 43,383 C2 train and 6,744 C2 validation frames:
+1,331,826 and 208,178 Box points respectively.
+
+Prepare against this candidate on the intended CUDA training host:
+
+```bash
+WANDB_MODE=disabled OPENBLAS_NUM_THREADS=1 python main.py --config graph/configs/prepare_five_mode_box_surface_experiment.yaml
+```
+
+The dedicated config keeps `reference_manifest` on the original release and
+pins the new candidate and audit. After the input-preservation checks pass,
+the emitted `peg_box_focus.yaml` starts the formal Box-input continuation with
+the same validation-only selection guards above. This preparation does not
+automatically launch the control arms or the formal training run.
+
+Formal training writes `training_started.json` immediately after its first
+successful optimizer update, including PID, variant and device. This one-time
+receipt allows a launcher to verify startup and disconnect without adding a
+watch process or monitoring the run to completion.
+
+On 2026-11-18 KST, the formal `peg_box_focus` run started on the previously idle
+Vast.ai instance `61071953` (RTX 3090), in tmux session
+`box_surface_training_7bcd0fb7`. It uses the isolated directory
+`/workspace/five_mode_box_training_7bcd0fb7` and frozen epoch-35 initialization.
+The recorded run ID is `bcdcffda15254715836e4c5b2fd62a72`; remote source snapshot
+commit is `e2233db04acceb5f88b67893300eea588e7f3496`.
+The first real CUDA optimizer update was verified, then startup verification
+disconnected. No ongoing watcher, automatic test evaluation or control-arm
+training was launched. Instances `61114793`, `61159793` and `61163897` were
+excluded from training. The original reference shards and checkpoint remain
+unchanged; checksum-matched reference copies are isolated inside the new run
+directory. [Startup receipt](../outputs/five_mode_box_training_launch/7bcd0fb70e34405da728f8600cd10211/startup_receipt.json).
+
+#### Completed Box-focus validation comparison
+
+A single status check on 2026-11-18 KST confirmed normal exit code 0 and
+`ExperimentLogger.status="finished"` after eight continuation epochs. No epoch
+passed all validation guards. `selection.json` retained the original Peg-only
+C2 epoch-35 checkpoint, SHA-256
+`4720dcaadd73a72c98fa0197c6fc26f53a0830995d19a4368e05473054097311`.
+Its `selected_epoch: 0` means inheritance of that external baseline, not a new
+epoch-zero Box-input model. The selected checkpoint's bytes were verified.
+
+Because selection retained the exact baseline checkpoint, all selected-model
+geometry metrics are unchanged. In particular, E Hole-position error remains
+40.96 mm: zero model improvement. Tiny differences between repeated GPU replay
+statistics are roundoff, not a new model result. These are saved evaluations on
+the same 6,744 validation frames; no fresh model inference or test evaluation
+was run for this comparison.
+
+The unselected final epoch should be distinguished from the selected baseline:
+
+| Group | Frames | Baseline endpoint mm | Unselected epoch-8 endpoint mm | Baseline Hole position mm | Unselected epoch-8 Hole position mm |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| All C2 | 6,744 | 14.48 | 18.13 | 8.20 | 14.28 |
+| A | 102 | 23.53 | 20.83 | 25.79 | 20.58 |
+| B | 1,915 | 11.20 | 15.00 | 1.92 | 8.82 |
+| C | 149 | 27.13 | 28.53 | 24.35 | 24.38 |
+| D | 3,654 | 8.63 | 13.60 | 2.06 | 10.15 |
+| E | 924 | 41.38 | 40.53 | 40.96 | 39.59 |
+
+Epoch 8 reduced E Hole-position mean by 1.37 mm (3.33%), while overall endpoint
+mean increased by 25.19% and B/D Hole estimates degraded. The lowest unselected
+E Hole-position error was 39.31 mm at epoch 1, a 4.02% reduction, short of the
+5% target (38.91 mm). Every epoch missed both overall-endpoint improvement and
+the E Hole-position target. Validation loss nevertheless fell from 2.2827 to
+1.5503 over epochs 1–8. Early stopping counted eight epochs without an eligible
+selection improvement; it does not establish an optimization plateau.
+
+The matched Peg control arms were not trained, so this run does not isolate
+the effect of Box surface independently of continuation and focus sampling.
+No restart, additional training, repeated status checks or ongoing monitoring
+followed this inspection. Only completed result files were fetched afterward.
+[Saved comparison including all geometry metrics](../outputs/five_mode_box_training_launch/7bcd0fb70e34405da728f8600cd10211/completion/validation_comparison.json) ·
+[Completed epoch history](../outputs/five_mode_box_training_launch/7bcd0fb70e34405da728f8600cd10211/completion/history.json).
+
 ## Full Five-mode train sequences
 
 `training.gnn.five_mode_sequence_data:build_train_loader` reads all 3,600
