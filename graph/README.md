@@ -73,6 +73,20 @@ WANDB_MODE=disabled python main.py --config graph/configs/train_observed_surface
 This uses the existing corner dataset and surface sidecar, starts with random
 weights, and saves a separate run under `/workspace/observed_surface_corner_tracker`.
 
+Compare both corrected, validation-selected models on the same frozen 450 test
+episodes, scoring only previously observed, currently missing corners:
+
+```bash
+python main.py --config data_collection/configs/prepare_observed_tracker_test_surfaces.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_observed_corner_surface_comparison.yaml
+```
+
+Preparation requires the existing frozen test dataset and original surface
+release. Evaluation requires both hash-pinned best checkpoints and the source
+training manifest; host paths are in the configs. The
+[paired corrected-model results](../docs/corner_prediction.md#held-out-comparison-of-corrected-corner-and-surface-models)
+record the common target mask and per-body mean/P90 errors.
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,

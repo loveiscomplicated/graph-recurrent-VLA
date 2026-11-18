@@ -1,0 +1,19 @@
+trainer: evaluation.observed_corner_surface_comparison:evaluate
+data_root: /workspace/observed_corner_surface_comparison/dataset
+test_manifest_sha256: 4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b
+surface_context: /workspace/observed_corner_surface_comparison/test_surfaces
+surface_manifest_sha256: e8f724d7558b282dd460d3e4922f6508eb59eba7de3c98c5c60eddd5fcb59755
+output: /workspace/observed_corner_surface_comparison/results
+device: cuda:0
+cpu_threads: 4
+batch_size: 16
+models:
+  corner_only:
+    kind: corner
+    checkpoint: /workspace/observed_corner_surface_comparison/corner_only.pt
+    sha256: ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf
+  surface_context:
+    kind: surface
+    checkpoint: /workspace/observed_surface_corner_tracker/training/best.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+training_data_root: /workspace/five_mode_corner_tracking/dataset

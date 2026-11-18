@@ -219,6 +219,63 @@ both best/last checkpoint saves were verified, and hashes of the previous
 run's checkpoints, history, completion/config records and original trainer
 source remained unchanged. These are startup checks, not final quality results.
 
+### Held-out comparison of corrected corner and surface models
+
+Run the two config-driven commands under the corrected-model comparison in
+`graph/README.md`. The surface sidecar preparer now accepts either the original
+train/validation pair or an explicit test-only split, rejecting mixed splits.
+Test preparation pins the existing corner-test manifest and copies only the
+corresponding original surface members; it does not rerun detection, association
+or surface tracking and does not modify earlier prepared data.
+
+On 2026-11-18 KST, both corrected checkpoints were frozen before this evaluation:
+corner-only run `ce2cf47a432c46edb9757156aff49a89`, validation-best epoch 374,
+SHA-256 `ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf`;
+surface-context run `3a94383216fd448b903946c57164170b`, validation-best epoch 443,
+SHA-256 `f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc`.
+Both were trained with `after_first_observation`. Their training dataset
+manifest hashes and train-fitted fallback arrays match exactly.
+
+The comparison used all 450 held-out episodes from 90 reset seeds and 86179
+frames, with no overlap against train/validation reset seeds. The corner-test
+manifest remains `4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b`.
+The aligned test sidecar contains 2179554 surface points and has manifest hash
+`e8f724d7558b282dd460d3e4922f6508eb59eba7de3c98c5c60eddd5fcb59755`.
+Both models receive identical corner coordinates, masks, TCP, episode boundaries
+and priors. Only the surface variant receives current-frame surface context.
+Both execute in FP32, TF32 disabled, batch 16, on the same Korean RTX 3090.
+No weights, association rules or thresholds are changed using these scores.
+
+The primary mask is the per-episode causal cumulative OR of actual corner
+detections, intersected with current non-detection. First detections, padding,
+never-observed slots and pre-first-observation frames are excluded. There are
+173765 common eligible point-frames; 319785 other missing point-frames are
+excluded before first observation. Means and P90 pool Euclidean world-coordinate
+errors over those exact point-frames, before rigid correction or GNN processing.
+
+| Target | Eligible point-frames | Corner-only mean / P90 (mm) | Surface context mean / P90 (mm) |
+| --- | ---: | ---: | ---: |
+| Peg | 96079 | 12.07 / 27.21 | 8.57 / 18.70 |
+| Box exterior | 43124 | 3.07 / 5.10 | 2.78 / 4.83 |
+| Hole rim | 34562 | 1.92 / 3.28 | 1.75 / 3.14 |
+| All | 173765 | 7.82 / 16.07 | 5.78 / 12.46 |
+
+The surface run has lower means and P90s for all three bodies in this paired
+test; Peg mean/P90 decrease by 29.0%/31.3%. This compares two seed-0 training
+runs with different autotuned training batches (96 corner-only versus 64
+surface), and their early-stopping histories differ. It does not isolate the
+surface architecture's effect from those optimization differences or measure
+closed-loop control success.
+
+Evaluation run `5ed17150f590443ab01a2ec1e4482ebb` uses the common
+`ExperimentLogger`. [Results](../outputs/observed_corner_surface_comparison/results.json),
+[saved paired predictions](../outputs/observed_corner_surface_comparison/predictions.npz)
+and [independent float64/mask verification](../outputs/observed_corner_surface_comparison/independent_verification.json)
+are stored locally. The isolated remote checkout/results are under
+`/workspace/observed_corner_surface_comparison/`; previous training runs and
+checkpoints remain unchanged. CUDA evaluation was executed; no simulator or
+policy rollout was run.
+
 ### Held-out comparison of the original corner trackers
 
 With the source release/raw archives, prepared test dataset and both frozen
