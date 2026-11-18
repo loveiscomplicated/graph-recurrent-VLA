@@ -1,7 +1,9 @@
 """Apply Gaussian coordinate noise to detector corners during training."""
 
 from functools import partial
+import hashlib
 from math import isfinite
+from os.path import relpath
 from pathlib import Path
 
 import torch
@@ -11,10 +13,40 @@ from data_collection.episode_dataset import canonical_hash
 
 def jitter_std_mm(settings):
     """Read a nonnegative per-axis standard deviation in millimetres."""
-    value = settings.get("corner_jitter_std_mm", 0.0)
+    return read_std_mm(settings, "corner_jitter_std_mm")
+
+
+def read_std_mm(settings, key):
+    """Validate a configured noise magnitude."""
+    value = settings.get(key, 0.0)
     if type(value) not in (float, int) or not isfinite(value) or value < 0:
-        raise ValueError("data.corner_jitter_std_mm must be a finite nonnegative number")
+        raise ValueError(f"data.{key} must be a finite nonnegative number")
     return float(value)
+
+
+def fixed_validation_rows(rows, identity, settings, *, corner_counts=None):
+    """Freeze one draw per validation frame, shared across graph variants."""
+    std_mm = read_std_mm(settings, "validation_corner_jitter_std_mm")
+    if not std_mm:
+        return rows
+    seed = settings.get("validation_corner_jitter_seed", 0)
+    if type(seed) is not int or not 0 <= seed < 2**64:
+        raise ValueError("data.validation_corner_jitter_seed must be an integer in [0, 2**64)")
+    updated = []
+    for xyz, kinds, tcp, target, sample_id in rows:
+        path = relpath(Path(sample_id.removeprefix("original::")).resolve())
+        frame_digest = hashlib.sha256(f"{seed}:{path}".encode()).digest()
+        generator = torch.Generator().manual_seed(int.from_bytes(frame_digest[:8], "big"))
+        length = len(xyz) if corner_counts is None else corner_counts[sample_id]
+        jittered = xyz.clone()
+        offset = torch.randn((length, 3), generator=generator, dtype=xyz.dtype)
+        jittered[:length] += offset * (std_mm / 1000)
+        updated.append((jittered, kinds, tcp, target, sample_id))
+    prior_identity = identity.pop("dataset_sha256")
+    identity["resume_from_dataset_sha256"] = prior_identity
+    identity["validation_corner_jitter"] = {"std_mm_per_axis": std_mm, "seed": seed}
+    identity["dataset_sha256"] = canonical_hash(identity)
+    return updated
 
 
 def training_collate(collate, identity, std_mm, *, corner_counts=None):

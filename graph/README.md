@@ -113,6 +113,30 @@ same complete directed graph topology and TCP reference as the direct-corner run
 OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/train_expanded_surface_corner_gnn.yaml
 ```
 
+The [Condition 2 fine-tuning recipe](configs/finetune_condition_2_surface_corner_gnn.yaml)
+loads the expanded surface model's 44-epoch `best.pt` weights and requires the
+compact Condition 2 train and validation cache referenced in the config.
+It uses validation loss for early stopping.
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/finetune_condition_2_surface_corner_gnn.yaml
+```
+
+For the expanded Condition 2 run, use the same recipe with the added
+Five-mode train-only detector-corner and surface cache in `data.imported_surface`.
+Set `data.expected_frames.train` to the sum of the original and imported
+selection counts. The generated run config records both inputs and keeps
+the original Condition 2 validation split.
+
+The [mixed Condition 1 and 2 recipe](configs/finetune_mixed_condition_surface_corner_gnn.yaml)
+requires both conditions' original and imported compact graph caches. It
+shuffles the combined train frames and selects checkpoints using the original
+Condition 2 validation split.
+
+```bash
+OMP_NUM_THREADS=4 .venv/bin/python main.py --config graph/configs/finetune_mixed_condition_surface_corner_gnn.yaml
+```
+
 For detector-coordinate augmentation, copy either expanded recipe and set
 `data.corner_jitter_std_mm: 1.0`. The value is the Gaussian standard deviation
 per world-coordinate axis in millimetres. The surface recipe also needs
@@ -137,6 +161,14 @@ For the stronger perturbation experiment, use the same commands with
 from the 1 mm fine-tuning best weights and train for 10 epochs with a 5 mm
 per-axis standard deviation. The paired test compares clean inputs and per-axis
 standard deviations of 4, 5, and 6 mm.
+
+The continuation recipes `resume_expanded_direct_corner_gnn_strong_jitter.yaml`
+and `resume_expanded_surface_corner_gnn_strong_jitter.yaml` restore the 10-epoch
+`last.pt` and cap training at epoch 20. Run either with `main.py --config`.
+They keep the original validation frame IDs and fix the validation perturbation
+per frame using `data.validation_corner_jitter_std_mm` and
+`data.validation_corner_jitter_seed`. The restored checkpoint is evaluated
+under the noisy validation condition before early stopping begins.
 
 ## Fixed-Hole Expert curriculum
 

@@ -9,11 +9,11 @@ import torch
 from data_collection.episode_dataset import file_sha256
 
 
-def read_compact_splits(settings, splits):
+def read_compact_splits(settings, splits, *, condition="condition_1"):
     """Verify each compact archive and enforce exact frame coverage by split."""
     index_path = Path(settings["visibility_index"])
     manifest_path = Path(settings["cache_manifest"])
-    index = json.loads(index_path.read_text())["condition_1"]
+    index = json.loads(index_path.read_text())[condition]
     manifest = json.loads(manifest_path.read_text())
     index_hash = file_sha256(index_path)
     if manifest["visibility_index_sha256"] != index_hash:
@@ -60,7 +60,7 @@ def read_compact_splits(settings, splits):
     }
 
 
-def read_imported_train(settings):
+def read_imported_train(settings, *, condition="condition_1"):
     """Load the imported training frames without changing the original splits."""
-    rows, identity = read_compact_splits(settings, ("train",))
+    rows, identity = read_compact_splits(settings, ("train",), condition=condition)
     return rows["train"], identity

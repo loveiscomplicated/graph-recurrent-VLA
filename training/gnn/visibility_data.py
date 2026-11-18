@@ -16,7 +16,7 @@ from graph.build_graph import NodeType
 from graph.utils.object21_targets import object21_from_gt
 from training.detected_corner_gnn import graph_batch
 from training.gnn.data import DataBundle, TrainingBatch
-from training.gnn.corner_jitter import jitter_positions, jitter_std_mm, training_collate
+from training.gnn.corner_jitter import fixed_validation_rows, jitter_positions, jitter_std_mm, read_std_mm, training_collate
 from training.gnn.imported_direct_data import read_imported_train
 
 
@@ -100,7 +100,8 @@ def build_data(config, shuffle_generator):
     """Prepare only the indexed training and validation frames."""
     settings = config["data"]
     std_mm = jitter_std_mm(settings)
-    if std_mm and (settings.get("vertex_match") is not None or any(
+    validation_std_mm = read_std_mm(settings, "validation_corner_jitter_std_mm")
+    if (std_mm or validation_std_mm) and (settings.get("vertex_match") is not None or any(
         "detection_manifest" not in source or "cache" in source for source in settings["sources"]
     )):
         raise ValueError("Corner jitter requires direct detector inputs")
@@ -180,10 +181,13 @@ def build_data(config, shuffle_generator):
     print(f"Loaded {settings['condition']} frames: {identity['frames']}", flush=True)
 
     train_collate = training_collate(collate, identity, std_mm)
+    validation = fixed_validation_rows(samples["validation"], identity, settings)
+    validation_generator = torch.Generator().manual_seed(0) if validation_std_mm else None
     batch_size = config["training"]["batch_size"]
     return DataBundle(
         train=DataLoader(samples["train"], batch_size=batch_size, collate_fn=train_collate,
                          shuffle=True, generator=shuffle_generator),
-        validation=DataLoader(samples["validation"], batch_size=batch_size, collate_fn=collate),
+        validation=DataLoader(validation, batch_size=batch_size, collate_fn=collate,
+                              generator=validation_generator),
         identity=identity,
     )

@@ -62,6 +62,29 @@
 - 검출 꼭짓점 단독. [추가 학습 체크포인트](../outputs/expanded_direct_corner_gnn_jitter/4495468003974a3289cf5f2e8ba9b203/best.pt) · [강건성 평가 JSON](../outputs/expanded_direct_corner_gnn_jitter/4495468003974a3289cf5f2e8ba9b203/condition_1_test_jitter_evaluation.json)
 - 검출 꼭짓점 + Peg 표면점. [추가 학습 체크포인트](../outputs/expanded_surface_corner_gnn_jitter/a7b48ca74df14bc3b7fefe45ef279d56/best.pt) · [강건성 평가 JSON](../outputs/expanded_surface_corner_gnn_jitter/a7b48ca74df14bc3b7fefe45ef279d56/condition_1_test_jitter_evaluation.json)
 
+### 검출 꼭짓점 노이즈 강건성 · 5 mm 추가 학습
+
+2026-11-17 KST에 동일한 `condition_1/test` 2,573프레임에서 비교했습니다. 각 모델의 1 mm 추가 학습 best(3에포크)를 시작점으로 삼아, 검출 꼭짓점에 축별 표준편차 5 mm의 가우시안 노이즈를 적용해 10에포크 더 학습했습니다. 5 mm 학습 후에는 원본 검증 loss가 가장 낮았던 체크포인트를 사용했습니다. 검출 단독은 10에포크, 표면점 추가는 4에포크입니다.
+
+테스트 노이즈는 좌표축별 표준편차입니다. 두 모델과 학습 전후에 같은 프레임의 같은 검출 꼭짓점에 동일한 난수(seed 20261117)를 사용했습니다. 표면점, TCP, GT는 원본을 유지했습니다. 각 셀은 **5 mm 추가 학습 전 → 후**입니다.
+
+| 모델 | 테스트 노이즈 | Peg 중심 (mm) ↓ | Hole 중심 (mm) ↓ | Peg 끝점의 Hole 상대 위치 (mm) ↓ | Object21 loss ↓ |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 검출 꼭짓점 단독 | 원본 | 0.968 → 1.150 | 3.177 → 5.111 | 2.991 → 4.726 | 0.06485 → 0.15513 |
+| 검출 꼭짓점 + Peg 표면점 | 원본 | 1.865 → 1.890 | 2.741 → 4.443 | 2.772 → 4.742 | 0.06254 → 0.15031 |
+| 검출 꼭짓점 단독 | 4 mm | 2.917 → 2.863 | 5.236 → 6.036 | 6.083 → 6.442 | 0.22579 → 0.26404 |
+| 검출 꼭짓점 + Peg 표면점 | 4 mm | 2.684 → 2.121 | 5.440 → 5.482 | 5.906 → 5.917 | 0.21898 → 0.22184 |
+| 검출 꼭짓점 단독 | 5 mm | 3.534 → 3.436 | 6.100 → 6.506 | 7.262 → 7.219 | 0.31494 → 0.32422 |
+| 검출 꼭짓점 + Peg 표면점 | 5 mm | 3.017 → 2.241 | 6.464 → 6.019 | 7.065 → 6.486 | 0.30568 → 0.26182 |
+| 검출 꼭짓점 단독 | 6 mm | 4.161 → 4.023 | 7.014 → 7.041 | 8.482 → 8.065 | 0.42142 → 0.39651 |
+| 검출 꼭짓점 + Peg 표면점 | 6 mm | 3.371 → 2.381 | 7.538 → 6.625 | 8.276 → 7.122 | 0.41000 → 0.31039 |
+
+표면점 추가 모델은 5·6 mm에서 세 위치 오차와 Object21 loss가 모두 줄었습니다. 검출 단독 모델의 Object21 loss는 6 mm에서 줄었습니다. 원본 입력의 loss는 두 모델 모두 약 2.4배로 증가했습니다.
+
+- 검출 꼭짓점 단독 · 추가 학습 10에포크 best. [체크포인트](../outputs/expanded_direct_corner_gnn_strong_jitter/7236d4a3f008467bbae8dd09f8d22a9e/best.pt) · [평가 JSON](../outputs/expanded_direct_corner_gnn_strong_jitter/7236d4a3f008467bbae8dd09f8d22a9e/condition_1_test_jitter_evaluation.json)
+- 검출 꼭짓점 + Peg 표면점 · 추가 학습 4에포크 best. [체크포인트](../outputs/expanded_surface_corner_gnn_strong_jitter/10fa325e42df4e7c8e48230056aa2991/best.pt) · [평가 JSON](../outputs/expanded_surface_corner_gnn_strong_jitter/10fa325e42df4e7c8e48230056aa2991/condition_1_test_jitter_evaluation.json)
+
+
 ## Hugging Face 체크포인트
 
 아래 고정 Hole 모델의 체크포인트는 같은 비공개 모델 저장소에 있습니다. 각 행의 Transformer와 GNN을 한 쌍으로 사용합니다. 링크는 고정된 revision의 `best.pt`를 가리킵니다. [모델 저장소](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models)

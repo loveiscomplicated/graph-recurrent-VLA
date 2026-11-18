@@ -3,7 +3,9 @@
 import pytest
 import torch
 
-from training.gnn.corner_jitter import corner_prefix_counts, jitter_std_mm, training_collate
+from training.gnn.corner_jitter import (
+    corner_prefix_counts, fixed_validation_rows, jitter_std_mm, training_collate,
+)
 from training.gnn.visibility_data import collate
 
 
@@ -62,6 +64,26 @@ def test_prefix_checks_exact_coordinates_and_types():
     assert corner_prefix_counts([fused], [direct]) == {"frame": 2}
     with pytest.raises(ValueError, match="Detector prefix"):
         corner_prefix_counts([fused], [(direct[0] + 0.001, *direct[1:])])
+
+
+def test_fixed_validation_matches_across_graph_variants_without_using_training_rng():
+    row = sample()
+    settings = {"validation_corner_jitter_std_mm": 5.0, "validation_corner_jitter_seed": 23}
+    direct = (row[0][:2], row[1][:2], *row[2:])
+    fused = (*row[:-1], "original::frame")
+    state = torch.get_rng_state()
+    direct_identity = {"dataset_sha256": "original"}
+    noisy_direct = fixed_validation_rows([direct], direct_identity, settings)[0]
+    noisy_fused = fixed_validation_rows([fused], {"dataset_sha256": "fused"}, settings,
+                                        corner_counts={"original::frame": 2})[0]
+    again = fixed_validation_rows([direct], {"dataset_sha256": "original"}, settings)[0]
+    assert torch.equal(state, torch.get_rng_state())
+    assert torch.equal(noisy_direct[0], noisy_fused[0][:2])
+    assert torch.equal(noisy_direct[0], again[0])
+    assert not torch.equal(noisy_direct[0], direct[0])
+    assert torch.equal(row[0][2], noisy_fused[0][2])
+    assert direct_identity["resume_from_dataset_sha256"] == "original"
+    assert direct_identity["dataset_sha256"] != "original"
 
 
 @pytest.mark.parametrize("invalid", [True, "1", -1.0, float("nan"), float("inf")])
