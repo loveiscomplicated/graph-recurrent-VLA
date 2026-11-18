@@ -17,6 +17,29 @@ never-observed slots are excluded from input nodes. See
 [corner-only GNN training](../docs/gnn_training.md#frozen-corner-only-tracker-inputs)
 for graph construction, batch tuning, stopping rules and the tmux run.
 
+Compare the original graph2 GNN and the validation-selected new GNN on the
+same corrected tracker outputs for all 450 test episodes:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_frozen_tracker_gnn_comparison.yaml
+```
+
+Requires the existing test corner dataset and the checksum-verified Object21
+test sidecar from `data_collection/configs/prepare_five_mode_object_test_targets.yaml`,
+both GNN checkpoints, the frozen tracker, and the evaluation source-hash receipt.
+Set host paths first. See [paired test comparison](../docs/gnn_training.md#paired-gnn-test-with-one-frozen-tracker).
+
+To compare the original tracker + original GNN against the newly trained
+tracker + new GNN under the same graph and metric protocol, run:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_original_retrained_tracker_gnn.yaml
+```
+
+This additionally requires the hash-pinned original `final_transformer.pt`.
+Each GNN uses its paired tracker; masks, precision, batches and scoring stay
+common. See [original versus retrained pairs](../docs/gnn_training.md#original-versus-retrained-tracker-and-gnn-pairs).
+
 ## GNN from a frozen surface-context tracker
 
 With CUDA PyTorch, NumPy, SciPy and PyYAML, prepare the aligned Object21 target

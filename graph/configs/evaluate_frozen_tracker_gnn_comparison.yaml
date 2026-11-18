@@ -1,0 +1,33 @@
+trainer: evaluation.frozen_tracker_gnn_comparison:evaluate
+device: cuda:0
+cpu_threads: 4
+data_root: /workspace/five_mode_corner_tracking_test/dataset
+test_manifest_sha256: 4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b
+training_data_root: /workspace/five_mode_corner_tracking/dataset
+targets_root: /workspace/frozen_tracker_gnn/test_targets
+targets_manifest_sha256: ccd934d1ea9a9cb7b887b91c1c06058c98e2dc3241d6cd08ddcc81ec01389b39
+output: /workspace/frozen_tracker_gnn/test_comparison
+source_hash_manifest: /workspace/frozen_tracker_gnn/evaluation_source_sha256.json
+tracker_batch_size: 16
+gnn_batch_size: 4096
+tracker:
+  checkpoint: /workspace/observed_corner_tracker/training/best.pt
+  sha256: ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf
+models:
+  existing:
+    checkpoint: /workspace/frozen_tracker_gnn/existing_gnn.pt
+    sha256: e03fd2671fad1f142990f908b5ff7addfac0a3d68c8f341dd5e9670e017b390d
+  retrained:
+    checkpoint: /workspace/frozen_tracker_gnn/training/best.pt
+    sha256: a47139a38981113a86e31d03dc2f4409086c3958fdadd95396c841ae588e0123
+    epoch: 54
+model:
+  num_semantic_ids: 24
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  extra_node_dim: 1
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m: [0.04, 0.01, 0.01, 0.02]

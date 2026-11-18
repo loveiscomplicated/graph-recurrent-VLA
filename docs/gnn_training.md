@@ -74,6 +74,112 @@ accuracy results. The earlier 4096-batch check is preserved separately as
 Nine local tests passed, including the existing first-observation supervision
 tests. This workflow does not execute a simulator or publish artifacts.
 
+## Paired GNN test with one frozen tracker
+
+`graph/configs/evaluate_frozen_tracker_gnn_comparison.yaml` compares the original
+graph2 `final_gnn.pt` (SHA-256
+`e03fd2671fad1f142990f908b5ff7addfac0a3d68c8f341dd5e9670e017b390d`)
+against the new corner-only-input GNN selected at epoch 54 (SHA-256
+`a47139a38981113a86e31d03dc2f4409086c3958fdadd95396c841ae588e0123`).
+Both checkpoints have hidden width 64, two intra-object layers and one
+actual-detection provenance feature. Only the GNN weights differ.
+
+The evaluation loads all 450 held-out episodes / 86,179 frames and their
+checksum-verified Object21 targets. It checks TCP/frame alignment, Peg center
+agreement with GT, release identity and seed separation from train/validation.
+The frozen observed-only epoch-374 tracker is executed once. For each frame
+batch the evaluator constructs one graph and passes that exact graph and its
+provenance tensor to both GNNs. Previously seen missing slots are filled;
+never-seen nodes/edges are excluded. There is no surface input or rigid
+correction. All inference uses strict FP32 with TF32 disabled, batch 4096
+for both GNNs. No optimizer, checkpoint selection or test-driven tuning runs.
+
+The primary table averages five per-mode frame-means equally, matching the
+preceding corner-only GNN validation report. The artifact also retains pooled
+frame means and each mode's metrics. Object21 uses the unchanged training loss,
+including rotation/size and endpoint correction regularization; the three
+physical errors are Euclidean 3D distances in millimetres. Full Object21 labels
+remain eligible on every frame regardless of incomplete node support.
+
+The isolated detached evaluation checkout is
+`/workspace/frozen_tracker_gnn/evaluation_code`; original training source and
+checkpoints are preserved. Results, per-frame predictions and the single common
+tracker input are under `/workspace/frozen_tracker_gnn/test_comparison`.
+The existing `ExperimentLogger` records the effective config and local outputs.
+Checkpoint file hashes and GNN parameter/buffer digests must remain unchanged.
+New aggregation tests cover complete vector norms, unequal mode lengths,
+endpoint regularization and nonfinite rejection. Six local tests and three
+server CPU tests passed before actual CUDA evaluation. Protected leaderboard
+implementations and dependencies were not modified; no simulator or external
+artifact publishing was executed.
+
+On 2026-11-18 CUDA evaluation run `e0452ccb4f0644d3933a7f161a387e4d`
+completed on the German RTX 3090. Both GNNs received the identical graph
+tensors; their parameter/buffer digests and all checkpoint hashes remained
+unchanged. The equal-mode test results were:
+
+| Metric (lower is better) | Existing graph2 GNN | New GNN, epoch 54 | Reduction |
+| --- | ---: | ---: | ---: |
+| Object21 loss | 3.88193140 | 0.77707746 | 79.98% |
+| Peg position mean | 14.032225 mm | 3.439475 mm | 75.49% |
+| Hole position mean | 38.910361 mm | 6.993515 mm | 82.03% |
+| Peg tip minus Hole vector mean | 28.675327 mm | 9.237956 mm | 67.78% |
+
+The common input archive SHA-256, complete unrounded metrics, per-mode and
+pooled results, source hashes and checkpoint identities are in
+[results.json](../outputs/frozen_tracker_gnn/test_comparison/results.json).
+Per-frame predictions include the endpoint residual required to reproduce
+the full Object21 loss. This is a comparison of frozen GNN weights under the
+new tracker input distribution; no original-tracker pipeline result is implied.
+
+## Original versus retrained tracker and GNN pairs
+
+`graph/configs/evaluate_original_retrained_tracker_gnn.yaml` uses the same
+paired evaluator and metrics as the shared-tracker comparison above, adding
+an explicit `existing_tracker` receipt. The existing GNN now receives the
+original graph2 epoch-333 tracker (`final_transformer.pt`, SHA-256
+`91f745a4e40377695929832aa365bfa2b87edb75fd91c573fb337e25211e8845`).
+The new GNN receives its epoch-374 retrained tracker. The two GNN checkpoints
+remain the original `final_gnn.pt` and the validation-selected epoch-54 model.
+No weights are updated and no checkpoint is reselected.
+
+Each tracker retains its own original train-fitted fallback. Both pairs use
+the identical detector observations, physical-slot association, TCP, 450 test
+episodes / 86,179 frames, Object21 labels, graph construction, actual-detection
+provenance and first-observation eligibility. The tracker predictions differ;
+never-seen slots are omitted on both sides. No extra rigid-body correction or
+surface feature is added. Object21 labels cover all frames. Strict FP32 with
+TF32 disabled, tracker batch 16 and GNN frame batch 4096 apply to both pairs.
+The primary metrics are equal means over the five per-mode frame-means;
+frame-pooled and per-mode results are retained as well.
+
+The German RTX 3090 uses a separate detached snapshot at
+`/workspace/frozen_tracker_gnn/paired_evaluation_code`. Outputs are isolated in
+`/workspace/frozen_tracker_gnn/paired_tracker_comparison`, including each
+tracker's masked coordinates, each GNN's Object21 and endpoint residual,
+common targets, frame identities and checksum receipts. The earlier
+shared-tracker comparison remains intact. Seven local CPU tests passed,
+including shared/default versus explicit old/new tracker pairing; four
+server CPU tests precede CUDA execution. The common model and loss code,
+protected leaderboard dependencies, simulator and publishing workflows are
+unchanged.
+
+On 2026-11-18 CUDA run `2449e359bd5247ae9c6324e601cac67f` completed both
+frozen pairings on all 450 test episodes. The equal-mode results were:
+
+| Metric (lower is better) | Original tracker + original GNN | New tracker + new GNN | Reduction |
+| --- | ---: | ---: | ---: |
+| Object21 loss | 4.13649812 | 0.77707745 | 81.21% |
+| Peg position mean | 15.797320 mm | 3.439475 mm | 78.23% |
+| Hole position mean | 39.124535 mm | 6.993515 mm | 82.12% |
+| Peg tip minus Hole vector mean | 30.284424 mm | 9.237956 mm | 69.50% |
+
+The [full paired results](../outputs/frozen_tracker_gnn/paired_tracker_comparison/results.json)
+retain complete precision, pooled/per-mode metrics and both tracker input
+receipts. The newly trained pair agrees with the preceding shared-tracker
+evaluation to the displayed precision. This measures the two tracker/GNN
+pairings under the common graph/masking protocol described above.
+
 ## Frozen surface tracker inputs
 
 `graph/configs/train_frozen_surface_tracker_gnn.yaml` uses the common GNN trainer,
