@@ -92,10 +92,64 @@ def validate_surface(arrays, frames, query_count):
         raise ValueError("Invalid surface track offsets, coordinates or query IDs")
 
 
+def build_surface_arrays(frames, corners, tracker, detector, settings):
+    """Build frame-aligned surface tracks with independent Peg and Box anchors."""
+    from data_collection.detector_surface_cache import track_episode
+
+    plan = settings.get("plan")
+    count = settings["surface_queries"]
+    if plan is None:
+        tracked = track_episode(frames, corners, tracker, detector, settings)
+        surface = {key: value for key, value in tracked.items() if key.startswith("surface_")}
+        validate_surface(surface, len(frames), count)
+        surface["frame_indices"] = corners["frame_indices"]
+        return surface
+    if plan not in ("PLAN_A", "PLAN_B"):
+        raise ValueError("tracking.plan must be PLAN_A or PLAN_B")
+    if count != 32 or settings["corner_exclusion_px"] != 2:
+        raise ValueError("PLAN_A and PLAN_B require 32 surface queries per object and a 2 px corner exclusion")
+
+    streams = [
+        track_episode(frames, corners, tracker, detector, settings, object_id=object_id)
+        for object_id in (0, 1)
+    ]
+    query_counts = [len(stream["surface_query_xy"]) for stream in streams]
+    anchors = np.asarray([int(stream["surface_anchor_frame"]) for stream in streams])
+    for stream, actual, anchor in zip(streams, query_counts, anchors, strict=True):
+        if plan == "PLAN_B" and anchor >= 0 and actual < count:
+            raise ValueError("PLAN_B must retain all 32 surface FPS queries")
+        validate_surface(stream, len(frames), actual if plan == "PLAN_B" else count)
+
+    per_frame = [np.diff(stream["surface_offsets"]) for stream in streams]
+    order = np.argsort(np.concatenate([
+        np.repeat(np.arange(len(frames)), counts) for counts in per_frame
+    ]), kind="stable")
+    object_ids = np.repeat(np.arange(2, dtype=np.int8), query_counts)
+    first_anchor = min((anchor for anchor in anchors if anchor >= 0), default=-1)
+    ids = np.concatenate((
+        streams[0]["surface_track_id"], streams[1]["surface_track_id"] + query_counts[0],
+    ))[order]
+    surface = {
+        key: np.concatenate([stream[key] for stream in streams])[order]
+        for key in ("surface_uv", "surface_world_xyz")
+    }
+    surface.update(
+        frame_indices=corners["frame_indices"],
+        surface_offsets=np.r_[0, np.cumsum(per_frame[0] + per_frame[1])],
+        surface_anchor_frame=np.asarray(first_anchor),
+        surface_object_anchor_frames=anchors,
+        surface_query_xy=np.concatenate([stream["surface_query_xy"] for stream in streams]),
+        surface_query_object_id=object_ids,
+        surface_track_id=ids,
+        surface_object_id=object_ids[ids],
+    )
+    validate_surface(surface, len(frames), sum(query_counts))
+    return surface
+
+
 def cache_batch(source, target, receipt, records, detector, tracker, settings):
     """Extract one verified archive and commit both cache files per episode."""
     from data_collection.corner_detection_cache import cache_episode, write_episode
-    from data_collection.detector_surface_cache import track_episode
     from evaluation.tapnextpp_surface_tracking import read_frames
 
     archive = source / receipt["file"]
@@ -112,11 +166,7 @@ def cache_batch(source, target, receipt, records, detector, tracker, settings):
         for case, episode, path in read_episode_index(batch, records):
             detection = cache_episode(detector, path.parent, episode)
             frames = read_frames({"source": path}, episode)
-            tracked = track_episode(frames, detection, tracker, detector, settings)
-            surface = {name: value for name, value in tracked.items() if name.startswith("surface_")}
-            frame_count = case["observations"]
-            validate_surface(surface, frame_count, settings["surface_queries"])
-            surface["frame_indices"] = detection["frame_indices"]
+            surface = build_surface_arrays(frames, detection, tracker, detector, settings)
             name = f'{case["seed"]}_{case["policy_mode"]}.npz'
             files = {}
             for kind, arrays in zip(CACHE_TYPES, (detection, surface), strict=True):
@@ -175,6 +225,13 @@ def build(config):
         "runtime": {"torch": str(torch.__version__), "cuda": torch.version.cuda,
                     "opencv": cv2.__version__, "numpy": np.__version__},
     }
+    if settings.get("plan") is not None:
+        tracking_sources = ["detector_surface_cache.py"]
+        if settings["plan"] == "PLAN_B":
+            tracking_sources.append("peg_edge_queries.py")
+        identity["tracking_source_sha256"] = {
+            name: file_sha256(Path(__file__).with_name(name)) for name in tracking_sources
+        }
     torch.set_num_threads(2)
     cv2.setNumThreads(1)
     with collection_lock(target), ExperimentLogger(team="visual", model="five_mode_cache",

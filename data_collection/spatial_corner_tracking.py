@@ -1,4 +1,4 @@
-"""Prepare complete corner-tracking episodes from direct corners and Peg surface points."""
+"""Prepare complete corner-tracking episodes from direct corners and surface tracks."""
 
 import argparse
 import json
@@ -37,11 +37,14 @@ def pack_episode(raw, row, corners, surface, output, split, episode_id):
         corner_xyz = corners["corner_world_xyz"][corner_slice]
         corner_kind = corners["corner_object_id"][corner_slice]
         surface_xyz = surface["surface_world_xyz"][surface_slice]
+        surface_kinds = surface.get("surface_object_id")
+        surface_kinds = (np.zeros(len(surface_xyz), dtype=np.int8) if surface_kinds is None
+                         else surface_kinds[surface_slice])
         observed = {(int(kind), j): point for j, (kind, point) in enumerate(zip(corner_kind, corner_xyz, strict=True))}
         matches = match_vertices(observed, reference, gate_m=0.005, margin_m=0.002)
         identity = [VERTEX_ID[matches[key]] if key in matches else -1 for key in observed]
         xyz.append(np.concatenate((corner_xyz, surface_xyz)))
-        kinds.append(np.concatenate((corner_kind, np.zeros(len(surface_xyz), dtype=np.int8))))
+        kinds.append(np.concatenate((corner_kind, surface_kinds)))
         ids.extend(identity + [-1] * len(surface_xyz))
         is_corner.extend([True] * len(corner_xyz) + [False] * len(surface_xyz))
         offsets.append(offsets[-1] + len(xyz[-1]))
@@ -60,7 +63,7 @@ def pack_episode(raw, row, corners, surface, output, split, episode_id):
             "split": split, "sha256": file_sha256(output), "seed": row["seed"]}
 
 
-def read_cache(root, receipt, fields, frames):
+def read_cache(root, receipt, fields, frames, *, optional=()):
     """Verify cached arrays and their episode-local frame sequence."""
     path = root / receipt["file"]
     if file_sha256(path) != receipt["sha256"]:
@@ -68,7 +71,7 @@ def read_cache(root, receipt, fields, frames):
     with np.load(path, allow_pickle=False) as archive:
         if not np.array_equal(archive["frame_indices"], np.arange(frames)):
             raise ValueError(f"Frame index mismatch: {path}")
-        return {field: archive[field] for field in fields}
+        return {field: archive[field] for field in (*fields, *(key for key in optional if key in archive))}
 
 
 def prepare_imported(settings, fallback=None):
@@ -109,7 +112,8 @@ def prepare_imported(settings, fallback=None):
                     corners = read_cache(cache, record["files"]["corners"],
                                          ("corner_offsets", "corner_world_xyz", "corner_object_id"), case["observations"])
                     surface = read_cache(cache, record["files"]["surface"],
-                                          ("surface_offsets", "surface_world_xyz"), case["observations"])
+                                          ("surface_offsets", "surface_world_xyz"), case["observations"],
+                                          optional=("surface_object_id",))
                 episode_id = f"five_mode_{case['seed']}_{case['policy_mode']}"
                 receipts.append(pack_episode(raw, row, corners, surface, destination / f"{episode_id}.npz",
                                              case["split"], episode_id))

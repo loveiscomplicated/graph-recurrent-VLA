@@ -1103,15 +1103,63 @@ In the detector-corner + surface-point GNN experiment, each selected
 | Cache | Nodes in the graph |
 | --- | --- |
 | `corners` | The Peg and Box/Hole corners detected directly in that frame, using `corner_world_xyz`. |
-| `surface` | TAPNext++-tracked Peg surface points that are visible in that frame, have valid depth, and lie outside the configured exclusion radius around detected corners. Their 3D coordinates come from `surface_world_xyz`. |
+| `surface` | TAPNext++ tracks for Peg and Box/Hole that are visible in that frame, have valid depth, and lie outside the configured corner exclusion radius. The arrays use `surface_world_xyz` for coordinates and `surface_object_id` for object identity. |
 
-TAPNext++ initializes its queries on the Peg surface outside the exclusion
-radius around detected corners. To build each graph, pair the caches by episode
+| Graph plan for both Peg and Box/Hole | Corner nodes | TAPNext++ nodes per object |
+| --- | --- | --- |
+| **PLAN_A** | Detect corners in each frame with the corner detector. | Track 32 initial surface FPS queries. |
+| **PLAN_B** | Detect corners in each frame with the corner detector. | Keep the same 32 initial surface FPS coordinates and append edge queries at a target spacing of 3 px. |
+
+Both plans exclude a 2 px neighborhood around detected corners and initialize
+Peg and Box/Hole independently. PLAN_B infers edge segments from detected
+3D corners, grouping Box exterior and Hole rim corners separately. It assigns
+3 px targets to distinct pixels with valid depth inside the object's mask,
+within 0.65 px perpendicular distance of the projected edge. This is the
+standard edge-query placement for both objects in PLAN_B. The sampler
+skips pixels already selected by surface FPS and leaves unsupported targets
+empty. The number of added points varies by object and episode.
+To build each graph, pair the caches by episode
 and frame index and include both sets of nodes. For new condition selection,
 use the [per-frame detector index](#꼭짓점-가시성-프레임-인덱스).
 Surface points contribute graph nodes only. The early expanded runs used the
 [historical selection](#기존-추적-기반-프레임-선택). See the
 [surface-cache implementation](../data_collection/detector_surface_cache.py).
+
+Set `tracking.plan` to `PLAN_A` or `PLAN_B` in
+`data_collection/configs/five_mode_cache_cuda.yaml` or a copy of it. Point
+the config at the raw Five-mode shard and use a separate `output_root` for
+each plan. Run
+`WANDB_MODE=disabled python main.py --config path/to/config.yaml` on a CUDA
+host with the cache prerequisites above. PLAN_A is selected in the supplied
+config. Existing settings without a plan and existing caches without surface
+object IDs use the historical Peg-only workflow.
+
+For standalone Box/Hole placement trials, the same `track_episode` helper accepts
+`object_id=1` and starts an independent TAPNext++ stream from the detector's
+Box mask. This uses valid-depth interior pixels outside the corner exclusion
+radius. Omit `tracking.plan` for these historical object-specific trials.
+For a Box grid trial, pass `box_grid_spacing_px` in the helper's tracking
+settings. The grid is anchored at Main-camera pixel `(0, 0)`, and all
+intersections on the Box mask with valid depth outside the exclusion radius
+become initial queries. The number of queries can vary by episode.
+
+For a Box Shape-First trial, pass `box_shape_first: true` instead of
+`box_grid_spacing_px` and set `surface_queries` to the desired count.
+The sampler adapts the legacy FD2 variant. Neighboring valid normals that
+differ by more than 20° supply candidates for up to a quarter of the queries.
+It selects these by 3D FPS and uses them as seeds when filling the remaining
+slots by 3D FPS. Both stages use the same eroded Box mask, valid depth and
+corner exclusion as the Box image-space FPS baseline.
+
+To reproduce the standalone four-side Hole rim trial, set
+`box_rim_queries: true` in place of the other Box
+placement options. With `surface_queries: 96` and `corner_exclusion_px: 2`,
+the sampler places six evenly spaced targets on each detected rim side after
+trimming both ends by 2 px. It assigns each target a distinct valid-depth Box
+pixel within 3 px and seeds image-space surface FPS with those 24 pixels.
+If the four rim corners or enough eligible pixels are missing, tracking waits
+for a subsequent frame that supports the requested placement.
+
 
 ### Mixed trajectory collection with a moving Box
 

@@ -1,7 +1,8 @@
 trainer: data_collection.five_mode_cache:build
 source_root: outputs/five_mode_collection
-output_root: outputs/five_mode_caches
+output_root: outputs/five_mode_plan_a_caches
 tracking:
+  plan: PLAN_A
   device: cuda:0
   detector_device: cuda:0
   checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
