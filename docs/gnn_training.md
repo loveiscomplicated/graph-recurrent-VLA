@@ -280,6 +280,24 @@ sample payload or forbidden shared cache was read, and no artifact was published
 [C2-E focus YAML](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_focus.yaml) ·
 [Box focus YAML, currently blocked](../outputs/five_mode_condition_2_preparation/47585e8ed9f343f2ba02e5e183f9ff59/peg_box_focus.yaml).
 
+## Full Five-mode train sequences
+
+`training.gnn.five_mode_sequence_data:build_train_loader` reads all 3,600
+episodes and 681,842 frames in the full release's train split without consulting
+the visibility-condition index. Every cache member is checksum-verified when it
+is read, and `corners`, optional Peg `surface`, and `targets` must all have the
+contiguous frame indices `0..T-1` recorded for that episode.
+
+Each loader sample is one full episode. Collation right-pads variable episode
+lengths and returns `frame_mask`, `frame_indices`, `lengths`, and `episode_ids`.
+The `GraphBatch` contains `B*T` frame graphs in episode-major, time-minor order.
+Each frame uses the B2-2 spatial topology: object-internal Delaunay links,
+bidirectional edges, no Peg-to-Box/Hole cross edge, and an 8 cm maximum edge
+length by default. Set `data.max_edge_m` to change that limit. Use
+`batch.reshape_frames(output)` to restore a frame-level result to `[B,T,...]`.
+Episode order may be shuffled during training; frame order inside an episode is
+always chronological. The runnable construction example is in the
+[Graph README](../graph/README.md#recovered-five-mode-graph-training).
 
 ## Surface graph GNN smoke test
 

@@ -44,6 +44,51 @@ an explicit run of an emitted YAML; preparation does not replace the baseline.
 See [C2 improvement experiments](../docs/gnn_training.md#c2-expert-improvement-experiments)
 for sampling, validation-only selection and the Box-data requirements.
 
+To read the complete Five-mode train split as chronological graph episodes,
+use `training.gnn.five_mode_sequence_data:build_train_loader`. This loader does
+not accept a visibility condition or condition index. It keeps all frames in
+each episode in ascending `frame_indices` order and can shuffle only the episode
+order. For the current full release, pin the expected inventory in the calling
+config:
+
+```python
+import torch
+
+from training.gnn.five_mode_sequence_data import build_train_loader
+
+config = {
+    "data": {
+        "manifest": "outputs/five_mode_recovery/release/manifest.json",
+        "include_surface": False,
+        "expected_train_episodes": 3600,
+        "expected_train_frames": 681842,
+        "shuffle_episodes": True,
+        "num_workers": 0,
+        "max_edge_m": 0.08,
+    },
+    "training": {"episode_batch_size": 4},
+}
+loader, identity = build_train_loader(config, torch.Generator().manual_seed(0))
+for batch in loader:
+    frame_graphs = batch.graph       # B*T B2-2 Delaunay graphs in time order
+    valid_frames = batch.frame_mask  # [B,T], excluding sequence padding
+    frame_numbers = batch.frame_indices
+```
+
+The loader verifies each episode's `corners`, optional Peg `surface`, and
+`targets` members against their release checksums when read. It rejects missing
+or noncontiguous frame indices. Variable episode lengths are right-padded in a
+batch; padded graph frames have no valid nodes and frame index `-1`. Use
+`batch.reshape_frames(frame_encoder(batch.graph))` to restore a frame encoder's
+`[B*T,...]` result to `[B,T,...]`, and call `loader.dataset.close()` after a
+single-process read when the loader will no longer be reused.
+
+Frame edges follow B2-2 rather than the older Five-mode complete-graph baseline.
+The loader triangulates Peg and Box/Hole nodes separately, emits both directions
+for every retained Delaunay link, rejects links longer than `data.max_edge_m`
+(8 cm by default), and creates no Peg-to-Box/Hole cross edge. Detector corners
+are vertex nodes and optional TAPNext++ points are non-corner tracker nodes.
+
 For fresh training on the full release (900 seeds), place the release
 `manifest.json`, `condition_index.json`, and its 18 TAR shards under
 `dataset/` in the training checkout on a PyTorch CUDA host. The detector
