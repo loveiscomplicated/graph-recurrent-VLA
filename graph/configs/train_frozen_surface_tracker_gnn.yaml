@@ -1,0 +1,59 @@
+trainer: training.gnn.trainer:train
+device: cuda
+seed: 0
+cpu_threads: 4
+model:
+  name: frozen_surface_tracker_gated_mpnn
+  factory: graph.gated_mpnn:VertexEdgeGatedMPNN
+  num_semantic_ids: 20
+  hidden: 64
+  layers: 2
+  edge_embedding_dim: 16
+  dropout: 0.0
+  use_semantic_ids: false
+  use_confidence: false
+  coord_scale_m: 0.05
+  size_scales_m: [0.04, 0.01, 0.01, 0.02]
+  extra_node_dim: 2
+data:
+  factory: training.frozen_surface_tracker_gnn:build_data
+  corner_root: /workspace/five_mode_corner_tracking/dataset
+  corner_manifest_sha256: ab59a7ef8278000be7022aca120caedeeac6ea5895844dd875c8a2640333f417
+  surface_root: /workspace/five_mode_surface_corner_tracking/surfaces
+  target_root: /workspace/surface_tracker_gnn/targets
+  tracker_checkpoint: /workspace/observed_surface_corner_tracker/training/best.pt
+  tracker_sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  rollout_batch_size: 16
+  rollout_cache: /workspace/surface_tracker_gnn/cache/frozen_frames.pt
+task:
+  factory: training.frozen_surface_tracker_gnn:TrackerObject21Task
+  settings:
+    pos_unit_m: 0.01
+    consistency_weight: 0.05
+    size_units_m: [0.04, 0.01, 0.01, 0.02]
+batch_tuning:
+  candidates: [64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]
+  timed_steps: 8
+  memory_fraction: 0.85
+  throughput_fraction: 0.95
+training:
+  epochs: 600
+  batch_size: 64
+  gradient_clip_norm: 1.0
+  log_interval_seconds: 20
+  compile: {enabled: false, dynamic: true}
+  early_stopping:
+    patience: 40
+    min_epochs: 60
+    min_delta: 0.0001
+optimizer:
+  name: adamw
+  lr: 0.0003
+  weight_decay: 0.0001
+scheduler:
+  name: step
+  step_size: 60
+  gamma: 0.5
+output:
+  root: /workspace/surface_tracker_gnn/training
+resume: null

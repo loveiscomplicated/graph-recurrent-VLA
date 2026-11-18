@@ -74,6 +74,73 @@ accuracy results. The earlier 4096-batch check is preserved separately as
 Nine local tests passed, including the existing first-observation supervision
 tests. This workflow does not execute a simulator or publish artifacts.
 
+## Frozen surface tracker inputs
+
+`graph/configs/train_frozen_surface_tracker_gnn.yaml` uses the common GNN trainer,
+`ExperimentLogger`, Object21 objective, checkpoint handling and early stopping.
+The new data/task plugins are in `training/frozen_surface_tracker_gnn.py`;
+the Gated MPNN implementation and historical detector-only recipes are unchanged.
+
+Prerequisites: CUDA PyTorch, NumPy, SciPy, PyYAML, prepared Five-mode corner and
+Peg-surface datasets, corrected tracker weights and the Object21 target sidecar.
+Prepare labels with `python main.py --config
+data_collection/configs/prepare_five_mode_object_targets.yaml`, transfer the
+output to the training host, then run `WANDB_MODE=disabled python main.py --config
+graph/configs/train_frozen_surface_tracker_gnn.yaml` from its source snapshot.
+
+The 4500-episode release keeps its original seed-disjoint split: 3600 train,
+450 validation, 450 held-out test. Target preparation reads only train/validation
+payloads, verifies original member checksums, and retains TCP for exact frame
+alignment checks against the existing corner dataset. No GT enters the GNN inputs.
+
+The surface tracker is the observed-only epoch-443 model, checkpoint SHA256
+`f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc`.
+It runs in FP32 eval/inference mode with gradients disabled. Its parameter/buffer
+hash must remain unchanged after rollout. Measured coordinates must pass through
+exactly. The resulting per-frame positions are cached once; GNN epochs do not run
+or update the tracker. Never-observed slots are invalid and have no incident
+edges; measured versus previously observed missing slots have separate flags.
+Surface points influence the GNN only through tracker output. There is no extra
+surface-node input or rigid correction. Each frame's Object21 target remains valid
+even when some or all corner nodes are unavailable; corner supervision eligibility
+is not an Object21 target mask.
+
+The GNN is randomly initialized: hidden width 64, two gated message-passing
+layers, two provenance features, no semantic IDs or confidence inputs. AdamW
+starts at 0.0003 with weight decay 0.0001, gradient norm clipping at 1, and learning
+rate halving every 60 epochs. Early stopping uses validation Object21 loss,
+40 stale epochs, absolute minimum improvement 0.0001 and at least 60 epochs;
+600 is a maximum guard. Best and resumable last checkpoints are retained.
+No test result selects the checkpoint or stop epoch.
+
+The data plugin benchmarks full forward/backward/clipping/AdamW steps on dense
+20-node graphs for batches 64–16384. It selects the largest batch reaching at least
+95% of peak measured throughput while staying below 85% allocated device memory.
+The common trainer reseeds and constructs a new model/optimizer after probing,
+so benchmark updates never become GNN initialization. Actual selected batch,
+benchmark results, cache hash, input identities and effective config are recorded.
+
+The existing Korean RTX 3090 uses the isolated root
+`/workspace/surface_tracker_gnn`; previous tracker runs remain untouched.
+Launch under tmux session `surface_tracker_gnn`, with console output in
+`/workspace/surface_tracker_gnn/train.log`. Existing caches are reused only after
+matching their receipt and all configured input manifest/checkpoint checksums.
+Local contract tests run on CPU; actual CUDA startup is checked on the training
+host. This workflow does not execute the simulator or publish artifacts.
+
+On 2026-11-18 the Korean RTX 3090 started run
+`59ec6322bb104095b2f4025afc5209b2` with batch 8192 selected by the expanded probe.
+The first epoch completed with train loss 5.077094 and validation loss 2.377549
+in 13.3 seconds; these are startup checks, not a final accuracy claim. Both
+`best.pt` and `last.pt` are handled by the common trainer under the run directory.
+The earlier short 2048-batch startup probe and its outputs were preserved in
+the same root, with its console moved to `startup_probe.log`; the full run was
+randomly initialized again and reused only the frozen input cache.
+CPU verification passed nine tests (the new graph-input contract and existing
+GNN trainer suite), and the graph-input contract also passed on the remote host.
+CUDA execution was confirmed through the first train/validation epoch; no
+continuous monitoring was started.
+
 The Graph-team trainer now supports optimization, validation and checkpoint
 resume. It is independent of prediction layout: a task supplies the loss and
 scalar metrics. The first supported training recipe is gated MPNN Object21

@@ -17,6 +17,21 @@ never-observed slots are excluded from input nodes. See
 [corner-only GNN training](../docs/gnn_training.md#frozen-corner-only-tracker-inputs)
 for graph construction, batch tuning, stopping rules and the tmux run.
 
+## GNN from a frozen surface-context tracker
+
+With CUDA PyTorch, NumPy, SciPy and PyYAML, prepare the aligned Object21 target
+sidecar from the local Five-mode release, then train a fresh GNN:
+
+```bash
+python main.py --config data_collection/configs/prepare_five_mode_object_targets.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_frozen_surface_tracker_gnn.yaml
+```
+
+Set host paths first and transfer the target sidecar to `data.target_root`.
+Requires the existing train/validation corner and surface datasets plus the
+corrected surface tracker checkpoint. The tracker is frozen; only GNN weights
+are optimized. See [GNN training](../docs/gnn_training.md#frozen-surface-tracker-inputs).
+
 ## Five-mode spatial/temporal corner tracker
 
 Train the graph2 20-slot Transformer from random initialization using the
