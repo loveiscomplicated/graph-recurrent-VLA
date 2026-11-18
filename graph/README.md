@@ -1,5 +1,22 @@
 # Graph team
 
+## GNN from a frozen corner-only tracker
+
+With CUDA PyTorch, NumPy, SciPy and PyYAML, prepare aligned Object21 labels
+from the Five-mode release, then train a fresh GNN on the frozen epoch-374
+corner-only tracker. Set host paths first; the training host needs the existing
+corner dataset, target sidecar and hash-pinned checkpoint:
+
+```bash
+python main.py --config data_collection/configs/prepare_frozen_tracker_gnn_targets.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_frozen_tracker_gnn.yaml
+```
+
+The original 3600/450/450 split is retained. Only GNN parameters are optimized;
+never-observed slots are excluded from input nodes. See
+[corner-only GNN training](../docs/gnn_training.md#frozen-corner-only-tracker-inputs)
+for graph construction, batch tuning, stopping rules and the tmux run.
+
 ## Five-mode spatial/temporal corner tracker
 
 Train the graph2 20-slot Transformer from random initialization using the

@@ -1,0 +1,38 @@
+trainer: training.frozen_tracker_gnn:train
+data_root: /workspace/five_mode_corner_tracking/dataset
+targets_root: /workspace/frozen_tracker_gnn/targets
+cache_root: /workspace/frozen_tracker_gnn/cache
+output: /workspace/frozen_tracker_gnn/training
+seed: 0
+cpu_threads: 4
+precision: FP32 tensors; TF32 GNN matmul; strict FP32 frozen tracker
+tracker:
+  checkpoint: /workspace/observed_corner_tracker/training/best.pt
+  sha256: ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf
+  inference_batch_size: 32
+model:
+  num_semantic_ids: 24
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  extra_node_dim: 1
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m: [0.04, 0.01, 0.01, 0.02]
+batch_tuning:
+  candidates: [128, 256, 512, 1024, 1536, 2048, 3072, 4096, 6144, 8192, 10240, 12288, 16384]
+  timed_steps: 5
+  memory_fraction: 0.85
+  throughput_fraction: 0.95
+training:
+  maximum_epochs: 1000
+  learning_rates: [0.0003, 0.0001, 0.00003]
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  patience: 20
+  minimum_relative_improvement: 0.005
+  selection: equal-mode mean validation Object21 loss on all validation frames
+source:
+  base_git_commit: b9b61a724249e65e43685f4ec56835b9af6e8653
+  source_hash_manifest: /workspace/frozen_tracker_gnn/source_sha256.json

@@ -1,5 +1,79 @@
 # GNN training
 
+## Frozen corner-only tracker inputs
+
+Run the preparation and training configs documented at the beginning of
+`graph/README.md`. `training.frozen_tracker_gnn:train` uses the corrected
+corner-only tracker selected at epoch 374, SHA-256
+`ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf`.
+The tracker runs in strict FP32 evaluation mode with all parameters frozen.
+Its causal outputs are cached once; current detections must pass through
+exactly, and every parameter/buffer is checked unchanged after generation.
+The checkpoint file hash is checked before and after GNN training. No tracker
+parameter enters the optimizer. No GNN checkpoint is loaded: the GNN starts
+from seed-0 random weights after batch probing is discarded.
+
+Target preparation uses only the original 3600 training and 450 validation
+episodes from the 4500-episode release. It joins by seed/mode/frame, verifies
+release member checksums, exact frame indices, TCP coordinates and Peg center
+agreement with corner GT. The 450 held-out test payloads are excluded from
+preparation, cache generation, optimization and selection. The source release
+manifest is pinned to SHA-256
+`be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8`.
+No simulator, RGB-D decoder, surface features or old State36 cache is needed.
+
+Only slots actually observed at least once up to the current frame become
+graph nodes. Previously observed missing slots use direct frozen tracker
+coordinates; never-seen predictions are omitted. No rigid-body correction
+is added. The GNN retains graph2's 20 padded slots, Peg type 0, Box/Hole type 1,
+complete directed edges without self-edges, one actual-detection provenance
+feature, and no semantic IDs/confidence features. The unchanged
+`VertexEdgeGatedMPNN` uses hidden width 64 and two intra-object layers plus
+one cross-object layer. The original Object21 loss is reused unchanged.
+
+Full Object21 labels supervise every train/validation frame, including frames
+with incomplete graph support. First-observation eligibility applies to input
+nodes, rather than masking whole Object21 labels. Validation logs per-mode
+loss and Peg/endpoint/Hole position errors; selection averages the five
+per-mode frame-mean losses equally. Each strict minimum saves `best.pt`.
+Twenty epochs without 0.5% relative improvement lower the learning rate
+from 0.0003 to 0.0001, then 0.00003; a further plateau stops training. The
+safety limit is 1000 epochs. AdamW uses weight decay 0.01 and clipping at 1.0.
+
+GNN training keeps FP32 tensors and enables TF32 matrix multiplication only
+after strict FP32 tracker caching. The shared model/loss and protected
+leaderboard dependencies remain unchanged. Batch probes time complete
+forward/backward/clipping/AdamW steps with all 20 nodes present. Selection
+chooses the largest candidate within 95% of peak eligible throughput and
+below 85% of device memory. The initial GNN parameters and RNG are restored
+before training. Source-file hashes, target/cache receipts, effective config
+and measured batch sizes are recorded. Atomic `last.pt` retains model,
+optimizer, plateau and RNG state; no resume launcher is implemented.
+The shared `ExperimentLogger` records local metrics and output sidecars;
+artifacts are not automatically published.
+
+The existing German RTX 3090 instance `61159793` runs the isolated snapshot
+at `/workspace/frozen_tracker_gnn/code`, with outputs under
+`/workspace/frozen_tracker_gnn/training`, console log
+`/workspace/frozen_tracker_gnn/train.log`, and tmux session `frozen_tracker_gnn`.
+Connect using `ssh -p 60777 root@185.113.120.195`, then
+`tmux attach -t frozen_tracker_gnn`. The server checkout is detached. Earlier
+tracker runs remain separate. Three CPU tests passed locally and on this
+server, covering node/edge validity, empty graphs, omitted-point invariance
+and a real Object21 backward update. CUDA execution evidence is in the log.
+
+On 2026-11-18 the final expanded probe selected batch **10240**: 36,084
+dense-graph frames/second and 20,304,625,664 peak reserved bytes (18.91 GiB).
+Batch 12288 exceeded the 85% memory budget; 16384 raised a handled OOM.
+Run `19372a661d564b5c927c2de20987ff00` was randomly initialized afterward.
+At startup epoch 3 completed in 14.41 seconds with train loss 2.498674 and
+mode-balanced validation loss 2.085237; both `best.pt` and `last.pt` existed
+and the frozen tracker hash was unchanged. These are startup checks, not final
+accuracy results. The earlier 4096-batch check is preserved separately as
+`startup_probe_training`/`startup_probe.log`; its weights are not reused.
+Nine local tests passed, including the existing first-observation supervision
+tests. This workflow does not execute a simulator or publish artifacts.
+
 The Graph-team trainer now supports optimization, validation and checkpoint
 resume. It is independent of prediction layout: a task supplies the loss and
 scalar metrics. The first supported training recipe is gated MPNN Object21
