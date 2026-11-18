@@ -24,6 +24,9 @@ class DetectedCornerVisibilityTest(unittest.TestCase):
             (square[:0], 0),
             (square[:3], 3),
             (square[:2], 0),
+            (square[:2], 1),
+            (square[:1], 4),
+            (noncoplanar, 0),
         ]
         xyz, kinds, rim, offsets = [], [], [], [0]
         for peg, rim_count in fixtures:
@@ -42,7 +45,6 @@ class DetectedCornerVisibilityTest(unittest.TestCase):
         actual = classify_episode(arrays, len(fixtures), tolerance_m=0.001)
         self.assertEqual(actual, {
             "condition_1": [0],
-            "condition_2": [2],
-            "condition_3": [3, 4],
-            "unclassified": [1, 5, 6],
+            "condition_2": [1, 2, 5, 7],
+            "condition_3": [3, 4, 6, 8, 9],
         })

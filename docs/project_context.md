@@ -7,8 +7,11 @@ from `visual`, plus [initial-visibility collection](data_collection.md) and
 [GPU observation output](gpu_observations.md) from `develop`. These are reusable
 tools, separate from existing model/training experiments. Dataset selection and
 storage live in `data_collection/`; the shared simulator remains responsible for
-environment creation, raw observations and GT. The default visibility gate
-requires both peg ends plus the grasp band; full-surface confirmation is optional.
+environment creation, raw observations and GT. The initial-observation collector
+defaults to requiring both Peg ends plus the grasp band, with optional
+full-surface confirmation. For the Graph team's Five-mode dataset, the
+current-frame RGB-D detector supplies observed corners and their visibility
+labels after collection. See [Five-mode graph input](data_collection.md#five-mode-graph-input).
 
 ## Original shared prototype context
 

@@ -23,10 +23,14 @@ root. See [the fixed-ID supervision contract](../docs/corner_prediction.md#b2-2-
 
 For a new Five-mode visibility index, use the
 [per-frame detector corner workflow](../docs/data_collection.md#꼭짓점-가시성-프레임-인덱스).
-The training recipes below reproduce earlier experiments with their recorded
-TAPNext++/GT frame selections. Detector corners and tracked non-corner Peg
-surface points can both enter a graph, and only detector corners enter the new
-visibility classifier.
+For current Five-mode training and evaluation, use the
+[Five-mode graph inputs](../docs/data_collection.md#five-mode-graph-input).
+Both corner nodes and visibility labels come from the current-frame detector.
+Optional tracked non-corner surface points contribute only to the graph.
+
+The recipes below reproduce earlier experiments with their recorded inputs
+and frame selections. Shared-cache access follows the
+[repository rules](../AGENTS.md#forbidden-cache-access).
 
 With the Pilot and Recovery raw datasets, their shared TAPNext++ caches, and the
 [historical corner visibility index](../docs/data_collection.md#기존-추적-기반-프레임-선택)
@@ -85,7 +89,9 @@ visibility index determines membership, so its TAPNext++ and GT criteria
 still apply when selecting frames.
 
 The [expanded direct detector recipe](configs/train_expanded_direct_corner_gnn.yaml)
-adds the Five-mode `condition_1/train` frames to the original training set. It
+adds Five-mode `condition_1/train` frames selected by the
+[historical index](../docs/data_collection.md#기존-추적-기반-프레임-선택)
+to the original training set. It
 requires the compact, checksum-verified detector cache at the path configured
 under `data.imported_direct_train`. With that cache in place, run:
 

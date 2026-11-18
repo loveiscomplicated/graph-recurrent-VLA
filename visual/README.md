@@ -4,6 +4,12 @@ ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출)
 
 ## TAPNext++ 포인트 추적
 
+Five-mode의 Peg·Box·Hole 꼭짓점은 각 프레임의 RGB-D 검출기 출력이다.
+Five-mode에서 TAPNext++는 비꼭짓점 표면점만 추적한다. 아래 파일럿 캐시와
+가림 복원 명령은 별도 Visual 실험을 재현할 때 사용한다.
+[Five-mode 입력 규칙](../docs/data_collection.md#five-mode-graph-input)
+
+
 공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.
 가중치 다운로드와 두 프레임 추론 예제는 [TAPNext++ 가이드](../docs/tapnextpp.md)를 참고한다.
 

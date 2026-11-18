@@ -1,5 +1,10 @@
 # TAPNext++ point tracking
 
+Five-mode에서 TAPNext++의 용도는 선택적 비꼭짓점 표면점 추적에 한정한다.
+꼭짓점 좌표와 가시성 조건은 현재 RGB-D 프레임의 꼭짓점 검출기 출력으로
+정한다. 아래 파일럿 캐시와 3D 꼭짓점 복원 절차는 별도 실험 기록이다.
+[Five-mode 입력 규칙](data_collection.md#five-mode-graph-input)
+
 The Visual prototype uses the upstream PyTorch tracker in the `visual/third_party/tapnet`
 submodule. The submodule pins the same upstream revision used by the original
 local benchmark. Run the commands below from the team repository root.

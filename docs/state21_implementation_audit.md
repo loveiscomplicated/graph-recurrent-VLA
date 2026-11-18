@@ -56,6 +56,11 @@ Graph 모델 및 builder, 데이터 adapter와 split 검사, 팀 YAML, 학습 �
 
 ## 입력과 모델
 
+이 절은 당시 Object21D 실험의 입력을 기록한다. 현재 Five-mode의 관측
+꼭짓점과 가시성 라벨은 해당 프레임 RGB-D 검출기에서만 얻는다. TAPNext++는
+선택적 비꼭짓점 표면점에 사용한다.
+[Five-mode 입력 규칙](data_collection.md#five-mode-graph-input)
+
 실데이터 표면점은 기존 [TAPNext++ 표면 replay](tapnextpp.md#프레임-0부터-표면점-추적과-3d-꼭짓점-복원)
 로 생성한 캐시를 사용한다. 어댑터는 raw manifest, replay archive, 선택된 원본
 frame의 SHA-256을 확인한다. 원본 RGB-D 레코드에 저장된 관측 TCP와 GT에서 복원한

@@ -11,6 +11,11 @@ RGB-D + camera calibration -> visual.corner_detection.detect_tensors
 It does not define a simulator-wide or cross-team interface. The detector and
 shared simulator remain unchanged. GT is not used for graph construction.
 
+For Five-mode graphs, use the current frame's `corners` cache as the sole
+source of observed Peg, Box exterior, and Hole rim corner nodes. The visibility
+index reads the same detections. TAPNext++ tracks can enter only as optional
+non-corner surface nodes. See [Five-mode graph input](data_collection.md#five-mode-graph-input).
+
 ## Run a smoke check
 
 From the repository root, use Python 3.11, `requirements.txt`, and

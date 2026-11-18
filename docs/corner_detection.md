@@ -21,8 +21,12 @@ WANDB_MODE=disabled python main.py --config visual/configs/corner_detection_cach
 검출 방식과 Hole 림 표시가 들어 있다. 원본 reset seed, 정책, 수집 split과
 검출기 소스 해시는 `manifest.json`에서 조회할 수 있다. 학습용 split을
 결정할 때는 같은 reset seed에서 갈라진 궤적을 한 그룹으로 묶는다.
-새 Five-mode 조건 분류는 이 캐시의 프레임별 Peg 검출과 Hole 림 표시에
-기반한다. [조건 분류 기준](data_collection.md#꼭짓점-가시성-프레임-인덱스)
+Five-mode에서 Peg, Box 외곽, Hole 림의 관측 꼭짓점 좌표는 모두 해당
+프레임의 RGB-D 검출기에서 가져온다. 검출 누락은 빈 관측으로 남긴다.
+가시성 분류는 이 캐시의 Peg 검출과 Hole 림 표시를 사용한다. TAPNext++는
+선택적인 비꼭짓점 표면점에만 사용한다.
+[Five-mode 입력 규칙](data_collection.md#five-mode-graph-input) ·
+[조건 분류 기준](data_collection.md#꼭짓점-가시성-프레임-인덱스)
 
 필요하면 YAML의 `episodes`로 원본 매니페스트에 있는 궤적 경로를 골라 소량
 검증할 수 있다. 전체 실행의 `manifest.json`은 모든 NPZ 저장과 읽기 검증이

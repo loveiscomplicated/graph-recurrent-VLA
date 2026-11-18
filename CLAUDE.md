@@ -12,6 +12,9 @@ Graph corner workflows have separate guides for
 [detector-only association and GNN](docs/detected_corner_gnn.md).
 Follow the detector-only guide's [exact evaluation preservation criteria](docs/detected_corner_gnn.md#evaluation-preservation)
 before changing dependencies of its six protected leaderboard results.
+For Five-mode observed corners and visibility labels, follow the
+[per-frame detector requirement](docs/data_collection.md#five-mode-graph-input)
+in `AGENTS.md`.
 
 Follow the **Code readability** rules in `AGENTS.md`: use descriptive names,
 give functions clear responsibilities, and separate logical steps with readable

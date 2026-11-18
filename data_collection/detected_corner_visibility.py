@@ -11,7 +11,7 @@ import tarfile
 import numpy as np
 
 
-CONDITIONS = ("condition_1", "condition_2", "condition_3", "unclassified")
+CONDITIONS = ("condition_1", "condition_2", "condition_3")
 SPLITS = ("train", "validation", "test")
 CORNER_FIELDS = (
     "frame_indices", "corner_offsets", "corner_world_xyz",
@@ -27,8 +27,48 @@ def coplanarity_tolerance(value):
     return tolerance
 
 
+def _classify_validated_frame(xyz, kinds, rim, tolerance_m):
+    """Apply the condition thresholds to already-validated detector arrays."""
+    peg = kinds == 0
+    peg_count = np.count_nonzero(peg)
+    rim_count = np.count_nonzero((kinds == 1) & rim)
+    if peg_count >= 4 and rim_count >= 3:
+        peg_xyz = xyz[peg].astype(np.float64)
+        centered = peg_xyz - peg_xyz.mean(axis=0)
+        singular_values = np.linalg.svd(centered, compute_uv=False)
+        plane_rms_m = singular_values[-1] / np.sqrt(peg_count)
+        if plane_rms_m > tolerance_m:
+            return "condition_1"
+    if peg_count >= 2 and rim_count >= 1:
+        return "condition_2"
+    return "condition_3"
+
+
+def classify_frame(xyz, kinds, rim, *, tolerance_m):
+    """Classify one frame from its current detector corners only.
+
+    ``xyz`` and ``kinds`` contain every merged detector corner in the frame.
+    ``rim`` identifies which Box corners belong to the Hole rim. TAPNext++
+    surface points are deliberately absent from this interface.
+    """
+    xyz = np.asarray(xyz)
+    kinds = np.asarray(kinds)
+    rim = np.asarray(rim)
+    tolerance = coplanarity_tolerance(tolerance_m)
+    count = len(kinds)
+    if (
+        xyz.shape != (count, 3) or not np.isfinite(xyz).all()
+        or kinds.shape != (count,) or kinds.dtype.kind not in "iu"
+        or not np.isin(kinds, (0, 1)).all()
+        or rim.shape != (count,) or rim.dtype != np.bool_
+    ):
+        raise ValueError("Invalid current-frame detector corners")
+    return _classify_validated_frame(xyz, kinds, rim, tolerance)
+
+
 def classify_episode(corners, frame_count, *, tolerance_m):
     """Return original frame numbers grouped by detector-corner condition."""
+    tolerance = coplanarity_tolerance(tolerance_m)
     frames, offsets, xyz, kinds, rim = (corners[name] for name in CORNER_FIELDS)
     points = len(kinds)
     if (
@@ -45,22 +85,9 @@ def classify_episode(corners, frame_count, *, tolerance_m):
 
     groups = {condition: [] for condition in CONDITIONS}
     for frame, (start, stop) in enumerate(zip(offsets[:-1], offsets[1:], strict=True)):
-        frame_kinds = kinds[start:stop]
-        peg = frame_kinds == 0
-        peg_count = np.count_nonzero(peg)
-        rim_count = np.count_nonzero((frame_kinds == 1) & rim[start:stop])
-        condition = "unclassified"
-        if peg_count >= 4 and rim_count >= 3:
-            points_m = xyz[start:stop][peg].astype(np.float64)
-            centered = points_m - points_m.mean(axis=0)
-            singular_values = np.linalg.svd(centered, compute_uv=False)
-            plane_rms_m = singular_values[-1] / np.sqrt(peg_count)
-            if plane_rms_m > tolerance_m:
-                condition = "condition_1"
-        elif peg_count == 3 and rim_count == 2:
-            condition = "condition_2"
-        elif peg_count <= 1 and rim_count == 0:
-            condition = "condition_3"
+        condition = _classify_validated_frame(
+            xyz[start:stop], kinds[start:stop], rim[start:stop], tolerance,
+        )
         groups[condition].append(frame)
     return groups
 
@@ -152,7 +179,7 @@ def run(config):
             rows.append(dict(row, frame_indices=groups))
 
     result = {
-        "format": "detected_corner_visibility_v1",
+        "format": "detected_corner_visibility_v2",
         "selection_manifest": source.as_posix(),
         "selection_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
         "effective_config": config,

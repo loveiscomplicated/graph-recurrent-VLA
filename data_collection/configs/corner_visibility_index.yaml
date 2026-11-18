@@ -3,4 +3,4 @@ selection_manifest: outputs/five_mode_caches/selected_800_seeds/manifest.json
 expected_seeds: 800
 expected_episodes: 4000
 coplanarity_tolerance_m: 0.001
-output: outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility.json
+output: outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility_all_frames.json

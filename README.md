@@ -12,10 +12,14 @@ the saved-frame example, and the CPU/MPS extraction verification.
 
 ## Data collection and GPU observations
 
-`data_collection/` selects episodes by the first Main frame's peg visibility.
-The default requires both ends and the grasp band; full camera-facing surface
-confirmation is an explicit alternative. The simulator also supports native
-CUDA RGB-D rendering and a separate raw observation output device.
+The initial-observation collector selects episodes by the first Main frame's
+Peg visibility. The default requires both ends and the grasp band, with
+full camera-facing surface confirmation available as an option. Five-mode
+collects paired rollouts and assigns visibility labels afterward from the
+current-frame RGB-D corner detector. TAPNext++ supplies optional non-corner
+surface points. See [Five-mode graph input](docs/data_collection.md#five-mode-graph-input).
+The simulator also supports native CUDA RGB-D rendering and a separate raw
+observation output device.
 
 - [Data collection](docs/data_collection.md): filtering, policies and saved data.
 - [GPU observations](docs/gpu_observations.md): rendering and device checks.

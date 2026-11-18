@@ -7,9 +7,12 @@ association and GNN](detected_corner_gnn.md). Dataset preparation remains in
 
 ## B2-2 spatial-first corner recovery
 
-The B2-2 prototype uses [direct corners and non-corner Peg surfaces](data_collection.md#five-mode-graph-input)
-for each frame in the original train and validation splits. Dataset preparation
-uses the frozen reset-seed assignments and retains pre-condition frame order.
+The B2-2 prototype reads observed corners from the current-frame RGB-D detector
+and uses TAPNext++ only for non-corner Peg surface points. Missing-corner
+predictions are model outputs. The input follows the
+[Five-mode graph input rules](data_collection.md#five-mode-graph-input).
+Dataset preparation uses the frozen train and validation reset-seed assignments
+and retains pre-condition frame order.
 Offline 1:1 matching supplies verified vertex correspondence with a 5 mm gate
 and a 2 mm nearest-candidate margin. GT XYZ is stored separately from the
 observed graph and used as supervision.

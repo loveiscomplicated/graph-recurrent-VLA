@@ -7,6 +7,10 @@ supervision from the Visual corner detector's output and raw saved GT.
 
 For the matched Baseline/A/B/AB experiment, see
 [vertex geometry and readout ablation](#vertex-geometry-and-readout-ablation).
+For Five-mode training, the current-frame detector supplies all corner nodes,
+and TAPNext++ supplies only optional non-corner surface nodes.
+See [Five-mode graph input](data_collection.md#five-mode-graph-input).
+
 
 ## Surface graph GNN smoke test
 

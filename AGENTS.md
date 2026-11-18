@@ -22,9 +22,13 @@ unless the user explicitly authorizes it for the current task. This covers
 `outputs/shared_tracking_cache/tapnext_recovery_state36.npz`, and copies of
 those artifacts. Without that authorization, do not open, inspect, parse, or
 copy the cache, including its embedded metadata. Check indirect inputs before
-launching a loader, script, or config that could access it. For the Five-mode
-graph, use the per-frame `corners` cache and the non-corner Peg `surface` cache
-described in [the data collection guide](docs/data_collection.md#five-mode-graph-input).
+launching a loader, script, or config that could access it.
+
+For Five-mode, source every observed Peg, Box exterior, and Hole rim corner
+from the current RGB-D frame's detector output in the `corners` cache.
+Use these detections for both graph corner nodes and visibility classification.
+Leave undetected corners absent. TAPNext++ may supply optional non-corner
+`surface` points only. See [Five-mode graph input](docs/data_collection.md#five-mode-graph-input).
 
 ## Code readability
 

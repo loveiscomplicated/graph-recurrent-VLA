@@ -820,6 +820,7 @@ Five-mode 선택 매니페스트와 그 매니페스트가 참조하는 `corners
 ```
 
 조건 분류에는 현재 프레임에서 검출기가 병합한 꼭짓점만 사용한다.
+검출이 없는 프레임도 분류하며, 검출 누락을 이전 프레임이나 추적으로 채우지 않는다.
 `corner_object_id == 0`인 점을 Peg로 센다. `corner_object_id == 1`이면서
 `corner_contour_hole == true`인 점을 Hole 림으로 센다. Box 외곽, TAPNext++ 추적점,
 GT 매칭은 분류에서 제외한다.
@@ -827,9 +828,12 @@ GT 매칭은 분류에서 제외한다.
 | 키 | 판정 |
 | --- | --- |
 | `condition_1` | Peg 4개 이상이며 비공면, Hole 림 3개 이상 |
-| `condition_2` | Peg 정확히 3개, Hole 림 정확히 2개 |
-| `condition_3` | Peg 0–1개, Hole 림 0개 |
-| `unclassified` | 위 조건에 해당하지 않는 모든 프레임 |
+| `condition_2` | `condition_1`에 해당하지 않으며 Peg 2개 이상, Hole 림 1개 이상 |
+| `condition_3` | Peg 0–1개 또는 Hole 림 0개 |
+
+모든 프레임은 세 조건 중 하나에 속한다. 예를 들어 Peg 4개가 공면이고
+Hole 림 4개가 검출되면 `condition_2`, Peg 7개와 Hole 림 0개면
+`condition_3`이다.
 
 비공면은 Peg의 검출 3D 좌표를 최적 적합 평면에 투영했을 때 수직 거리의
 RMS가 `coplanarity_tolerance_m`을 초과하는 경우다. 기본값은 1 mm다.
@@ -845,7 +849,7 @@ RMS가 `coplanarity_tolerance_m`을 초과하는 경우다. 기본값은 1 mm다
 집계했다. 각 detector NPZ의 SHA-256을 확인하고 프레임별 분류를 독립 계산으로 검증했다.
 전체 중 112,174프레임에서 검출기가 Hole 림 점을 4개 넘게 표시했다.
 [선택 매니페스트](../outputs/five_mode_caches/selected_800_seeds/manifest.json) ·
-[분류 결과](../outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility.json)
+[분류 결과](../outputs/five_mode_caches/selected_800_seeds/detected_corner_visibility_all_frames.json)
 
 ### 기존 추적 기반 프레임 선택
 
@@ -855,17 +859,24 @@ TAPNext++가 추적한 꼭짓점 쿼리를 현재 깊이로 3D 복원하고, 원
 후보와의 거리 차이는 2 mm 이상이다. Hole은 로컬 −X 삽입구의 네 모서리만
 세고, Peg는 매칭된 물리 꼭짓점의 affine rank를 계산했다. 이 방식은
 초기 Five-mode 확장 실험의 가져온 프레임 선택에도 사용됐다.
+이 인덱스의 용도는 해당 실험의 재현에 한정한다. 현재 Five-mode 프레임
+선택에는 [꼭짓점 가시성 프레임 인덱스](#꼭짓점-가시성-프레임-인덱스)를 사용한다.
 
 기존 `outputs/corner_visibility_index/frame_locations.json`은 그 실험들의
 재현용 프레임 목록이다. 조건마다 `train`, `validation`, `test` 원본 NPZ
-경로가 들어 있다. Pilot과 Recovery의 reset seed를 합쳐 분할 난수 seed 0,
+경로가 들어 있다. 당시 `condition_2`는 Peg 3개와 Hole 림 2개,
+`condition_3`은 Peg 0–1개와 Hole 림 0개였다.
+Pilot과 Recovery의 reset seed를 합쳐 분할 난수 seed 0,
 validation과 test 각 10개 seed로 나눴다. 동일 reset seed의 에피소드는
 같은 split에 속한다.
 
 ### 프레임별 검출 꼭짓점과 TAPNext++ 표면점 연결
 
-원본 Pilot/Recovery와 대응하는 기존 공유 TAPNext++ NPZ가 있는 상태에서
-저장소 루트 기준으로 실행한다. 설정은 로컬 MPS의 현재 메인 RGB-D 검출기를 사용한다.
+아래 명령은 기존 Pilot/Recovery 연결본의 재현 절차다. 입력은 원본
+Pilot/Recovery와 대응하는 기존 공유 TAPNext++ NPZ다. 해당 NPZ에 접근할 때는
+[캐시 접근 규칙](../AGENTS.md#forbidden-cache-access)을 따른다. 현재 Five-mode의
+캐시 생성 절차는 [Five-mode mixed trajectory dataset](#five-mode-mixed-trajectory-dataset)에
+있다. 기존 설정은 로컬 MPS의 메인 RGB-D 검출기를 사용한다.
 
 ```bash
 .venv/bin/python main.py --config data_collection/configs/link_detector_corners_pilot.yaml
@@ -1057,8 +1068,10 @@ Set `protocol_path` to the frozen JSON and give each worker its own
 directory for each worker. When `resume: true`, rerunning the same config
 checks archive hashes and collects ranges that have no valid receipt.
 
-After collection, build separate Main-camera detector-corner and TAPNext++
-Peg-surface caches on a CUDA host with the
+After collection, the cache builder runs the Main-camera RGB-D corner detector
+independently on each saved frame and records its detections in `corners`.
+It writes TAPNext++ non-corner tracks to `surface`. For this combined build,
+use a CUDA host with the
 [TAPNext++ prerequisites](tapnextpp.md#tapnext-point-tracking) and `tar`/`zstd`.
 
 ```bash
@@ -1075,6 +1088,14 @@ where no surface query initialization was possible. Archive receipts make
 completed batches reusable when the same cache configuration is rerun.
 
 #### Five-mode graph input
+
+**Five-mode 꼭짓점은 현재 프레임의 Main 카메라 RGB-D 꼭짓점 검출 결과로만
+정의한다.** Peg, Box 외곽, Hole 림에 모두 적용한다. 해당 프레임에서 검출되지
+않은 꼭짓점은 관측 꼭짓점 목록에서 빠진다. 이전 프레임의 검출이나 TAPNext++
+추적으로 꼭짓점을 이어 가거나 채우는 방식은 이 입력에 사용하지 않는다.
+`condition_1/2/3`과 현재 Five-mode 그래프의 꼭짓점 좌표는 같은 `corners`
+캐시를 사용한다. TAPNext++는 선택적으로 추가하는 비꼭짓점 `surface` 점만
+제공한다.
 
 In the detector-corner + surface-point GNN experiment, each selected
 `condition_1` frame contributes **one graph** with nodes from two caches:
