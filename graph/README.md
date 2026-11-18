@@ -2,6 +2,20 @@
 
 ## Recovered Five-mode graph training
 
+To verify the unified current-frame router locally, install the repository and
+corner-detector dependencies and place the two pinned Peg-surface `best.pt`
+files at the paths in the smoke config. No dataset or simulator is needed:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/smoke_five_mode_hard_routing.yaml
+.venv/bin/python -m pytest tests/test_five_mode_hard_routing.py tests/test_detected_corner_visibility.py tests/test_five_mode_supervised_data.py -q
+```
+
+The smoke command loads the actual C1 epoch-57 and C2 epoch-35 weights on CPU,
+runs synthetic preprocessed C1/C2 observations, and checks C3 abstention. It
+records results through `ExperimentLogger`; it does not execute RGB-D detection
+or measure dataset accuracy. See the [inference contract and verification](../docs/gnn_training.md#five-mode-current-frame-hard-routing).
+
 For fresh training on the full release (900 seeds), place the release
 `manifest.json`, `condition_index.json`, and its 18 TAR shards under
 `dataset/` in the training checkout on a PyTorch CUDA host. The detector
@@ -72,6 +86,53 @@ GT-adjusted changes across adjacent frames in the same episode. Its mixed-model
 candidate selection is a historical diagnostic, separate from the fixed C1
 epoch-57/C2 epoch-35 inference mapping below. See the
 [Five-mode routing result](../docs/GNN_leaderboard_Nov_wee3.md#five-mode-가시성-조건별-모델-선택).
+
+For current-frame inference, `graph.five_mode_hard_routing` combines detector
+execution, condition classification, complete directed graph construction, and
+selection of the Condition 1 or Condition 2 Peg-surface expert. The detector is
+called once; its merged corners are used unchanged for both classification and
+graph corner nodes. Pass only the current frame's visible, depth-valid,
+non-corner TAPNext++ Peg points as `peg_surface_xyz`.
+
+```python
+from graph.five_mode_hard_routing import build_hard_routing_pipeline
+
+pipeline = build_hard_routing_pipeline({
+    "device": "cuda:0",
+    "detector_device": "cuda:0",
+    "coplanarity_tolerance_m": 0.001,
+    "checkpoints": {
+        "condition_1": {
+            "path": "outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt",
+            "sha256": "9c2b05a27353acd001a5a342b137f7df58f6e824c9dc4a0cc89034a7a6ea703a",
+        },
+        "condition_2": {
+            "path": "outputs/five_mode_condition_2_peg_surface/bd92c40236124b8f84a945f90f3544f3/best.pt",
+            "sha256": "4720dcaadd73a72c98fa0197c6fc26f53a0830995d19a4368e05473054097311",
+        },
+    },
+})
+result = pipeline.predict_rgbd(
+    rgb, depth_raw_mm, intrinsic_cv, extrinsic_cv,
+    peg_surface_xyz, tcp_xyz,
+)
+if result.prediction_status == "unavailable":
+    # condition_3 has no configured expert yet.
+    handle_condition_3(result)
+else:
+    consume_object21(result.object21, result.condition)
+```
+
+The two checkpoint hashes and their recorded training condition are verified at
+load time, together with the Peg-surface model and packed-data contracts. The
+result includes corner/surface counts and `condition_evidence` with Peg plane
+RMS, noncoplanarity and tolerance. A Condition 3 frame returns
+`prediction_status="unavailable"`, `object21=None` and `selected_model=None`
+without running either expert. `predict_detection` is the equivalent entrypoint
+when the caller has already run the current-frame detector. The output tensor
+uses the model device; detector tensors may use another device. Pass empty
+surface inputs as shape `[0,3]`. Object21 centers are TCP-relative with world
+axes, and `object21[7:10]` is the world-aligned Peg endpoint relative to Hole.
 
 With the same release and the selected 50:50 checkpoint, run the
 Condition 2 endpoint diagnostics on the CUDA host:

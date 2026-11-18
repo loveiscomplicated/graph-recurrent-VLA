@@ -11,6 +11,100 @@ For Five-mode training, the current-frame detector supplies all corner nodes,
 and TAPNext++ supplies only optional non-corner surface nodes.
 See [Five-mode graph input](data_collection.md#five-mode-graph-input).
 
+## Five-mode current-frame hard routing
+
+`graph.five_mode_hard_routing:build_hard_routing_pipeline` loads the pinned
+Peg-surface experts and creates one current-frame `TorchCornerDetector.main`.
+See the [Graph README](../graph/README.md#recovered-five-mode-graph-training)
+for the Python API and this CPU smoke command:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/smoke_five_mode_hard_routing.yaml
+```
+
+Prerequisites are PyTorch, NumPy, PyYAML, the corner-detector requirements, and
+the two checkpoint files named in that config. The smoke workflow constructs a
+CPU detector but feeds synthetic preprocessed detections to `predict_detection`;
+it executes both real checkpoints without reading any dataset, GT or tracking
+cache. Results and source hashes use the existing `ExperimentLogger`. It is a
+functional inference check, not an accuracy evaluation or training run.
+
+`predict_rgbd(rgb, depth_raw_mm, intrinsic_cv, extrinsic_cv, peg_surface_xyz,
+tcp_xyz, masks=None)` calls the detector exactly once. Classification and graph
+construction consume that same merged detector result. An already-detected
+frame can use `predict_detection(detection, peg_surface_xyz, tcp_xyz)` directly.
+All corner nodes remain current observations; surface points do not affect the
+condition. Box exterior nodes enter the graph but not the Hole rim count.
+
+The builder checks SHA-256 before checkpoint deserialization, uses
+`weights_only=True` and strict state loading, and verifies the checkpoint's
+training condition, `include_surface=True`, packed Five-mode data factory and
+`VertexEdgeGatedMPNN` model. Both experts are frozen in evaluation mode:
+
+| Current detector condition | Expert | Result |
+| --- | --- | --- |
+| C1 | C1-only validation-best epoch 57 | `prediction_status="available"` |
+| C2 | C1-initialized, C2-fine-tuned validation-best epoch 35 | `prediction_status="available"` |
+| C3 | No spatial expert called | `prediction_status="unavailable"`, `object21=None`, `selected_model=None` |
+
+The result also exposes `condition`, `selected_model`, Peg/rim/surface counts,
+and `condition_evidence`. The evidence records plane RMS in metres, its
+noncoplanarity decision and the configured tolerance (1 mm by default). Plane
+RMS and noncoplanarity are `None` with fewer than four Peg corners. The classifier
+fits a best-fit plane and treats RMS strictly greater than the tolerance as
+noncoplanar. `classify_episode` validates tolerance once and calls its existing
+internal validated helper; the new inference code leaves that implementation
+unchanged.
+
+Corner and surface coordinates and TCP must be finite and representable as
+float32. Surface points must be world-frame `[S,3]`, including `[0,3]` for no
+points; TCP must be world-frame `[3]`. Only current visible, depth-valid,
+non-corner Peg surface points belong in this API. The caller supplies that
+provenance; the coordinate-only API cannot verify tracker visibility or corner
+exclusion. Detector tensors are detached through CPU before transfer to the
+model device, so detector and model devices may differ. The returned Object21
+tensor stays on the model device. Its centers are TCP-relative, quaternions use
+world wxyz convention, and slice `7:10` is the Peg-tip-minus-Hole vector in world
+axes, as in training.
+
+The graph reuses the packed loader's `graph_batch`: detector corners followed by
+Peg surface nodes, complete directed edges, no self-loops, and TCP coordinate
+reference. Contract tests compare every graph field exactly against
+`pack_episode` plus `PackedFrameBatches`, for both C1 and C2. This pipeline is
+separate from `evaluation/gnn/five_mode_routed.py`, which uses a frozen condition
+index and historically selected between mixed C2 candidate models offline.
+The existing offline evaluator and its results are preserved.
+
+On 2026-11-18 KST, the CPU smoke loaded both recorded checkpoint hashes and
+produced finite `[21]` predictions for C1/C2 and explicit C3 abstention:
+[smoke results](../outputs/five_mode_hard_routing_smoke/4bca5f9f12ba4778b4d717bbcb7888cb/results.json).
+CPU and MPS tensor-transfer tests also ran. CUDA, real RGB-D detector execution
+and simulator backends were not exercised by this check. The existing C1/C2
+test accuracy values were not reevaluated.
+
+The available release is `outputs/five_mode_recovery/release/`; `dataset/` is
+absent locally. Its manifest SHA-256 is
+`be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8` and its condition
+index SHA-256 is `9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e`.
+The index has 135,861/17,326/18,689 C3 train/validation/test frames. Inventory
+checks confirmed 900 seeds, 4,500 episodes, five modes per seed, seed-disjoint
+splits and exhaustive, disjoint condition membership. The ordered C3 frame-ID
+SHA-256 values in packed-loader order are:
+
+| Split | Frame-ID SHA-256 |
+| --- | --- |
+| Train | `80a9d46c215e0b2964ca092e8e6b72e1edbfa9689327b0ff906a2b85b8a0ca7c` |
+| Validation | `55ec9a27bbe464a07a9b1c77d954e7498689964b9a85a33aad8f0e0f3f651a81` |
+| Test | `eaf778868ea665edf22ae89975fe31b7087517a90467fe08f9351081f929aa66` |
+
+These inventory checks read only the release manifest and condition index;
+they did not rerun detection or recompute condition membership from shard bytes.
+The [C2 A–E validation diagnostic](#five-mode-c2-validation-subtypes) below is
+complete; matched C1-initialized versus fresh C2 training remains next. C3
+subtype-aware propagation, confidence, abstention
+and learned temporal updates remain separate follow-up work; this implementation
+provides no C3 temporal prediction.
+
 
 ## Surface graph GNN smoke test
 

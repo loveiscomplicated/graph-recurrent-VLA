@@ -1,0 +1,12 @@
+trainer: evaluation.gnn.five_mode_hard_routing_smoke:evaluate
+device: cpu
+detector_device: cpu
+coplanarity_tolerance_m: 0.001
+checkpoints:
+  condition_1:
+    path: outputs/five_mode_condition_1_peg_surface/adddc72d35f94deb995385af2e3f89e7/best.pt
+    sha256: 9c2b05a27353acd001a5a342b137f7df58f6e824c9dc4a0cc89034a7a6ea703a
+  condition_2:
+    path: outputs/five_mode_condition_2_peg_surface/bd92c40236124b8f84a945f90f3544f3/best.pt
+    sha256: 4720dcaadd73a72c98fa0197c6fc26f53a0830995d19a4368e05473054097311
+output_root: outputs/five_mode_hard_routing_smoke
