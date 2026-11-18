@@ -125,6 +125,162 @@ verified, including checkpoint reload and equality of training/validation
 target counts with the startup audit. These are launch checks, not final
 accuracy results.
 
+#### Held-out evaluation after first observation
+
+The observed-only run completed normally at epoch 382 after 4449 seconds.
+Validation selected epoch 374 with five-mode balanced mean 6.1764 mm; checkpoint
+SHA-256 is `ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf`.
+Compare this frozen model with the original graph2 final Transformer using:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_observed_corner_tracker_comparison.yaml
+```
+
+On 2026-11-18 KST, the same 450 test episodes (90 seeds, 86179 frames) were
+processed on the German RTX 3090 with identical detector coordinates, physical
+slot masks, TCP and episode boundaries. Each checkpoint retains its own
+train-fitted fallback. Both execute FP32 with TF32 disabled, batch 16 and no
+Box/Hole rigid correction. The primary mask is now explicitly
+`ever_seen & ~observed` for both models; padding is already absent from the
+flattened test arrays. It selects 173765 point-frames and excludes 319785
+pre-first-observation missing point-frames. First sightings, current detections
+and never-observed slots are not scored. Both model results use the same saved
+mask hash, with no test-based model or threshold selection.
+
+| Target | Evaluated point-frames | Existing mean / P90 (mm) | Retrained mean / P90 (mm) |
+| --- | ---: | ---: | ---: |
+| Peg | 96079 | 29.56 / 80.79 | 12.07 / 27.21 |
+| Box exterior | 43124 | 9.04 / 16.73 | 3.07 / 5.10 |
+| Hole rim | 34562 | 4.80 / 9.33 | 1.92 / 3.28 |
+| All | 173765 | 19.54 / 54.66 | 7.82 / 16.07 |
+
+P90s by trajectory mode are existing → retrained:
+
+| Mode | Peg (mm) | Box (mm) | Hole (mm) |
+| --- | ---: | ---: | ---: |
+| Fixed Expert | 20.69 → 11.65 | 11.00 → 4.11 | 5.34 → 3.14 |
+| Fixed Expert → Random | 98.29 → 39.20 | 16.08 → 4.52 | 8.94 → 2.90 |
+| Fixed Expert → Random → Expert | 97.18 → 21.79 | 14.17 → 4.46 | 9.07 → 3.05 |
+| Fixed Random | 71.87 → 8.15 | 26.00 → 4.32 | 13.96 → 4.56 |
+| Moving Expert | 35.18 → 18.88 | 13.64 → 6.37 | 5.73 → 2.87 |
+
+These scores use the observed-only population and must not be substituted for
+the earlier all-missing comparison. They measure coordinate tracking, not
+Object21 estimation or closed-loop policy success. The original model's values
+exactly match its previously reported post-observation subset. An independent
+NumPy rescore reconstructs causal histories from each episode's observations,
+checks the packed mask hash, and reproduces all body means/P90s from saved
+predictions. All four comparison CPU contracts passed, including invariance
+to arbitrary errors outside the eligible population.
+
+The evaluation run is `d3263c4b9d2c4102a6f01b77285e8013`.
+[Results](../outputs/observed_corner_tracker/test_comparison/results.json) ·
+[independent verification](../outputs/observed_corner_tracker/test_comparison/verification.json).
+Full per-frame predictions and executed source are preserved on the server in
+`/workspace/observed_corner_tracker/test_comparison/`. Models and historical
+comparison artifacts were not modified; no simulator, detector rerun or
+artifact upload was performed.
+
+### Held-out comparison of the original corner trackers
+
+With the source release/raw archives, prepared test dataset and both frozen
+checkpoints available, run these config-driven workflows (adjust host paths):
+
+```bash
+python main.py --config data_collection/configs/prepare_five_mode_tracker_test.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_five_mode_corner_tracker_comparison.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/diagnose_five_mode_corner_tracker_comparison.yaml
+```
+
+On 2026-11-18 KST, all 450 test episodes (90 reset seeds, 86179 frames) were
+evaluated on the existing German RTX 3090 instance. The existing model is the
+graph2 final GT-free Transformer, epoch 333, SHA-256
+`91f745a4e40377695929832aa365bfa2b87edb75fd91c573fb337e25211e8845`, downloaded
+from the revision-pinned handoff. The new model is the epoch-495 checkpoint
+above. No model, threshold or association rule was selected or adjusted using
+these test results.
+
+Both receive byte-identical current detector coordinates, slot assignments,
+observed masks, TCP and episode boundaries. Each retains its own checkpoint's
+train-fitted fallback for never-observed slots; no test-derived prior is fitted.
+Both use the same extracted architecture, batch 16, full causal sequences and
+FP32 with TF32 disabled. Results below score exactly the same missing slots,
+before Box/Hole rigid correction. There is no GNN or policy in this evaluation.
+
+| Target | Missing point-frames | Existing mean / P90 (mm) | New mean / P90 (mm) |
+| --- | ---: | ---: | ---: |
+| Peg | 208945 | 28.93 / 73.03 | 10.65 / 23.88 |
+| Box exterior | 210627 | 7.22 / 15.53 | 2.67 / 4.56 |
+| Hole rim | 73978 | 26.63 / 64.24 | 19.51 / 53.95 |
+| All | 493550 | 19.32 / 55.00 | 8.57 / 22.70 |
+
+The gains differ by trajectory mode. The following are existing → new P90s:
+
+| Mode | Peg (mm) | Box (mm) | Hole (mm) |
+| --- | ---: | ---: | ---: |
+| Fixed Expert | 15.20 → 15.18 | 5.89 → 4.18 | 52.11 → 53.66 |
+| Fixed Expert → Random | 84.58 → 41.61 | 15.47 → 4.18 | 68.09 → 56.26 |
+| Fixed Expert → Random → Expert | 74.93 → 25.72 | 10.47 → 4.32 | 63.74 → 57.63 |
+| Fixed Random | 82.00 → 6.45 | 22.45 → 5.00 | 69.75 → 51.90 |
+| Moving Expert | 25.32 → 18.64 | 11.89 → 4.95 | 52.22 → 48.68 |
+
+Fixed Expert Peg is effectively unchanged and its Hole P90 slightly worsens;
+the pooled improvement must not be described as uniform improvement in every
+mode. These are coordinate-completion results, not closed-loop success rates.
+
+#### Why the Hole tail remains large
+
+| Missing Hole condition | Point-frames | Existing mean / P90 (mm) | New mean / P90 (mm) |
+| --- | ---: | ---: | ---: |
+| No observation yet in the causal history | 39416 | 45.76 / 81.13 | 34.56 / 59.46 |
+| Observed previously, currently missing | 34562 | 4.80 / 9.33 | 2.35 / 4.09 |
+
+Forty-eight episodes from 11 reset seeds have no Hole observation anywhere in
+the episode. Before any Hole observation, missing slots account for 53.3% of
+the scored Hole points but 94.4% of the new model's summed Hole distance error.
+All 27650 new-model Hole errors above 20 mm occur before first observation.
+Thus the dominant remaining issue is initial Hole localization without a
+measurement, rather than degradation of previously observed Hole tracks.
+
+The input audit separates detection and association. Of 73978 missing Hole
+point-frames, only nine contain an unassigned raw candidate within 5 mm of that
+GT corner. During all 9854 uninitialized-Hole frames, Box association is already
+initialized; 9847 frames have zero raw Hole candidates within 5 mm of any GT
+rim corner, and none have three such candidates even at 15 mm. Observed Hole
+coordinates have 3.06 mm P90 error, and the nearest-GT-corner ID mismatch count
+is zero. Successful Hole initialization fits its Box-relative center to P90
+2.20 mm and radius to P90 1.24 mm. The matcher's 30 mm radius ceiling excludes
+none of these test episodes. These findings do not support numbering errors or
+that radius limit as the primary source of the large Hole tail.
+
+The fixed-camera geometry supplies a further explanation. At the initial
+frame, episodes without any Hole observation have median angle 79.03° between
+the outward Hole normal and camera direction, versus 58.60° in the observed
+group (90° means edge-on). Raw RGB examples for seeds 24186063, 29577066 and
+49991136 show the Hole face as a narrow grazing-view strip. Their actual raw
+calibration agrees with the configured camera position. This supports
+foreshortening/limited image support as an important detector-input limitation;
+it does not prove that every missing frame has the same visibility cause.
+In all-unseen frames, a shared center displacement explains 97.35% of the new
+model's four-corner squared error: the dominant error is where the unobserved
+opening lies, rather than its four-corner shape. Its center error normal to
+the Box face is P90 6.74 mm, while the error within that plane is P90 58.95 mm.
+The recorded old-model and new-model development seed inventories both have
+zero overlap with the 90 test seeds.
+
+Evidence: [paired results](../outputs/five_mode_corner_tracking_test/comparison/results.json),
+[independent rescore and diagnostics](../outputs/five_mode_corner_tracking_test/comparison/diagnostics.json),
+[raw RGB and corner overlays](../outputs/five_mode_corner_tracking_test/hole_observation_examples.png),
+[example calibration/depth audit](../outputs/five_mode_corner_tracking_test/hole_observation_examples.json).
+The [per-frame prediction artifact](../outputs/five_mode_corner_tracking_test/comparison/predictions.npz)
+was also copied locally and its SHA-256 verified. It remains on the server at
+`/workspace/five_mode_corner_tracking_test/comparison/predictions.npz`, with
+their SHA-256 in `results.json`. The comparison run is
+`ab0aa1c452f64989a6f1935a7ff3ab03`. Five CPU contracts passed and saved
+predictions independently reproduced all reported body means/P90s. No
+simulator backend, detector rerun, model update or artifact publication was
+executed by this comparison.
+
 Fixed-ID histories use GT-assisted offline certificates. For detector-only online
 association and the six preserved GNN comparisons, see [detector-only corner
 association and GNN](detected_corner_gnn.md). Dataset preparation remains in

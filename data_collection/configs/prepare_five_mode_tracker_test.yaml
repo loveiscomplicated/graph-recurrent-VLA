@@ -1,0 +1,6 @@
+trainer: data_collection.five_mode_tracker_test:prepare
+release: /Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/outputs/five_mode_recovery/release
+raw_root: /Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/outputs/five_mode_recovery/release/original_rgbd
+manifest_sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+output: outputs/five_mode_corner_tracking_test/dataset
+workers: 8

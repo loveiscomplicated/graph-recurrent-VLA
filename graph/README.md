@@ -32,6 +32,25 @@ objective for reproduction. See
 [observed-corner supervision](../docs/corner_prediction.md#training-only-after-first-observation)
 for the separate run, test exclusions and startup checks.
 
+To compare the original graph2 tracker with the corrected epoch-374 model on
+the same 450 test episodes, scoring only previously observed missing points:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_observed_corner_tracker_comparison.yaml
+```
+
+The config pins both checkpoint hashes, the test manifest and per-body target
+counts. See [the observed-only test results](../docs/corner_prediction.md#held-out-evaluation-after-first-observation).
+
+For the frozen existing-versus-new comparison on all 450 held-out episodes,
+prepare with `data_collection/configs/prepare_five_mode_tracker_test.yaml`, then
+run `python main.py --config graph/configs/evaluate_five_mode_corner_tracker_comparison.yaml`.
+Both frozen checkpoints and the prepared test payloads are required; set their
+paths and hashes in the config. The
+[held-out results and Hole diagnosis](../docs/corner_prediction.md#held-out-comparison-of-the-original-corner-trackers)
+document identical-input FP32 scoring and the separation of never-observed
+from previously observed Hole points.
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,

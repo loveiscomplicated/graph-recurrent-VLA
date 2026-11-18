@@ -1,0 +1,4 @@
+trainer: evaluation.five_mode_corner_tracker_diagnostics:analyze
+comparison: /workspace/five_mode_corner_tracking_test/comparison
+data_root: /workspace/five_mode_corner_tracking_test/dataset
+camera_world_position_m: [0.65, -0.30, 0.65]

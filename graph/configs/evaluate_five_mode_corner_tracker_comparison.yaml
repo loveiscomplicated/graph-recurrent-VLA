@@ -1,0 +1,15 @@
+trainer: evaluation.five_mode_corner_tracker_comparison:evaluate
+data_root: /workspace/five_mode_corner_tracking_test/dataset
+test_manifest_sha256: 4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b
+output: /workspace/five_mode_corner_tracking_test/comparison
+device: cuda:0
+cpu_threads: 4
+batch_size: 16
+models:
+  existing:
+    checkpoint: /workspace/five_mode_corner_tracking_test/existing_transformer.pt
+    sha256: 91f745a4e40377695929832aa365bfa2b87edb75fd91c573fb337e25211e8845
+  new:
+    trusted_training_checkpoint: true
+    checkpoint: /workspace/five_mode_corner_tracking/training/best.pt
+    sha256: 5b6faab3863efa321862ef6ef3e54eb7a0302a0c57b11aa3580070258a754b7a
