@@ -1,0 +1,24 @@
+trainer: training.five_mode_corner_tracker:train
+data_root: /workspace/five_mode_corner_tracking/dataset
+output: /workspace/five_mode_corner_tracking/training
+seed: 0
+cpu_threads: 4
+model:
+  width: 48
+  heads: 4
+batch_tuning:
+  candidates: [8, 16, 24, 32, 48, 64, 96, 128, 192, 256]
+  timed_steps: 4
+  memory_fraction: 0.85
+  throughput_fraction: 0.95
+training:
+  maximum_epochs: 2000
+  learning_rates: [0.0003, 0.0001, 0.00003]
+  patience: 40
+  minimum_improvement_mm: 0.05
+  selection: validation mode-balanced mean missing-corner 3D error in millimetres
+source:
+  base_git_commit: b9b61a724249e65e43685f4ec56835b9af6e8653
+  dataset_hf_revision: cab29e26c0025430bf8b7aafda437d23dfd6da52
+  dataset_hf_run_id: d9ef38b515f44db295ee6d84d0db5279
+  source_hash_manifest: /workspace/five_mode_corner_tracking/source_sha256.json

@@ -1,5 +1,130 @@
 # Fixed-ID corner prediction
 
+## Five-mode spatial/temporal tracker from scratch
+
+The separate `graph.temporal.spatial_temporal_corner.SpatialTemporalCornerTracker`
+extracts the graph2 handoff's width-48, four-head, two-temporal-block model.
+Its state-dictionary layout and forward computation are preserved, including
+same-body spatial attention and exact passthrough of current detections.
+The historical fixed-ID/lifecycle implementations and preserved leaderboards
+are unchanged.
+
+Run the two config-driven commands near the beginning of `graph/README.md`.
+`data_collection.five_mode_corner_tracking:prepare` reads the Five-mode release
+and its matching raw archives. It pins the release manifest, verifies archive,
+frame and detector-member hashes, derives the 20 GT corners with the existing
+evaluation convention, and applies the extracted GT-free physical matcher.
+Only `corners` supplies observations; no surface tracks or legacy State36 cache
+are read. GT is used for coordinate labels and validation, never for slot
+association. Raw RGB/depth pixels are not decoded or modified.
+
+The source release is HF `Graph-Recurrent-VLA/graph-recurrent-rollouts`, revision
+`cab29e26c0025430bf8b7aafda437d23dfd6da52`, integration run
+`d9ef38b515f44db295ee6d84d0db5279`: 900 reset seeds, five modes per seed,
+4500 episodes and 852102 observations. All five episodes of a seed retain their
+original split. Training preparation reads only 3600 train and 450 validation
+episodes. The 450 test episodes are opened only for the frozen comparison below.
+The local source manifest SHA-256 is
+`be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8`.
+
+The model starts with random weights and a zero displacement head; no prior
+checkpoint is loaded. The fallback for never-observed slots is fitted only on
+training GT. Ten-dimensional causal features, full-episode histories,
+missing-only Smooth L1 and fixed 20-slot ordering follow the handoff model.
+AdamW uses BF16 autocast with FP32 loss/error accumulation and gradient clipping.
+The validation selection score averages the missing-point mean 3D error of
+the five policy modes equally, so long random episodes do not determine the
+score solely by their frame count. Logs also retain pooled mean/P90, body,
+last-observation-age and depth-stage diagnostics. Depth stages follow the
+historical entrance-plane coordinate; on random trajectories they do not
+by themselves certify that the peg is inside the aperture.
+
+Before training, CUDA preflight checks nonzero-head causality, prefix/padding
+invariance and exact preservation of detector coordinates. Batch tuning times
+full forward/backward/AdamW steps at the longest training sequence. It selects
+the largest candidate within 95% of the best measured throughput and below
+85% of GPU memory capacity. It restores the original random parameters before
+the actual training run. No batch tuning uses validation quality or test data.
+
+The learning rates are 0.0003, 0.0001 and 0.00003. Forty epochs without at least
+0.05 mm score improvement reduce the learning rate; the same plateau at the
+last rate stops training. The safety limit is 2000 epochs. `best.pt` uses the
+strictly lowest validation score, even for improvements smaller than 0.05 mm.
+`last.pt` atomically saves model, optimizer and RNG states every epoch; it
+retains the dataset/config identity and history. No automatic resume launcher
+is implemented. `completed.json` distinguishes plateau stopping from the limit.
+The common `ExperimentLogger` records the effective config and local metrics;
+publishing is not automatic.
+
+On 2026-11-18 KST, Vast instance `61159793` was rented in Germany with one RTX
+3090 and 100 GB disk at $0.2185185/hour including disk (transfer fees separate).
+The requested budget is $0.25/hour and China/Hong Kong/Macao offers were excluded.
+The deployment uses a source snapshot based on graph2 `b9b61a7`; exact hashes
+are retained in `outputs/five_mode_corner_tracking/source_sha256.json` and on
+the server. The tmux session is `five_mode_corner_tracker`, under
+`/workspace/five_mode_corner_tracking`. No recurring watch is configured.
+Training completed normally after 505 epochs (5953 seconds), stopping at the
+lowest-learning-rate plateau. The validation-selected checkpoint is epoch 495,
+with five-mode balanced missing-point mean 7.5313 mm. Its SHA-256 is
+`5b6faab3863efa321862ef6ef3e54eb7a0302a0c57b11aa3580070258a754b7a`.
+
+The prepared payload contains 681842 training and 84081 validation frames.
+Local and server CPU contracts passed (three tests), and the server executed
+CUDA causality/prefix checks and a finite BF16 backward/optimizer step. Batch
+tuning selected 96 episodes: at the longest 287-frame sequence it measured
+301.6 episodes/s versus the best 303.4 at batch 64. Batch 96 reserved 17.77 GB;
+batch 128 exceeded the 85% memory budget and 192 ran out of memory during the
+bounded probe. Parameters were restored before training. The actual training
+process was confirmed active in tmux with 99% sampled GPU utilization.
+
+### Training only after first observation
+
+The original handoff and first Five-mode run supervised every current missing
+slot, including slots that had never been observed. For the user's tracking
+objective, `graph/configs/train_observed_corner_tracker.yaml` instead sets
+`training.supervision: after_first_observation`. Launch it with the root
+`main.py` as shown near the beginning of `graph/README.md`.
+
+For each episode and physical slot, `ever_seen` is the cumulative OR of actual
+detector assignment masks up to the current frame. The supervised mask is
+`valid & ever_seen & ~observed`: pre-first-observation frames, never-observed
+slots, current detections and padding receive no direct loss. There is no
+future-derived eligibility. The same function masks every validation summary,
+the five-mode balanced checkpoint-selection score and the plateau scheduler.
+Zero-target training batches are skipped; a validation mode without any eligible
+targets raises an error instead of silently changing the selection weights.
+`supervision.json`, the effective config and logger metadata record included
+and excluded point-frame counts. Epoch and validation counts are checked against
+the startup audit.
+
+The model architecture, features, train-fitted fallback, 3600/450 train/validation
+episodes, optimizer, BF16 precision, learning rates and plateau conditions are
+unchanged. The 450 test episodes and their earlier results do not enter training
+or checkpoint selection. Weights and optimizer start fresh; batch tuning is
+rerun with the new loss and restores the initial random parameters afterward.
+Its stress batch includes the longest sequence and at least one supervised
+episode, so an empty-target sequence cannot invalidate the backward benchmark.
+The historical configs default to `all_missing` to preserve prior experiments.
+
+The rerun uses the same German Vast RTX 3090 instance `61159793`, with a separate
+code checkout at `/workspace/observed_corner_tracker/code`, outputs under
+`/workspace/observed_corner_tracker/training`, and tmux session
+`observed_corner_tracker`. Original code, outputs and the other surface-context
+experiment remain separate. Source hashes, launch information and startup
+evidence are retained locally under `outputs/observed_corner_tracker/` and on
+the server. No recurring watch or automatic instance shutdown is configured.
+
+Startup verification on 2026-11-18 KST passed 13 local CPU contracts and nine
+server CPU contracts, followed by CUDA causal checks and BF16 training probes.
+The train mask includes 1374969 missing point-frames and excludes 2524585
+pre-first-observation point-frames. Validation includes 166754 and excludes
+317966 respectively; its eligible Peg/Box/Hole counts are 95842/39062/31850.
+The selected batch remains 96, with approximately 11 seconds per epoch and
+99% sampled GPU utilization. Initial epochs and atomic best/last saves were
+verified, including checkpoint reload and equality of training/validation
+target counts with the startup audit. These are launch checks, not final
+accuracy results.
+
 Fixed-ID histories use GT-assisted offline certificates. For detector-only online
 association and the six preserved GNN comparisons, see [detector-only corner
 association and GNN](detected_corner_gnn.md). Dataset preparation remains in

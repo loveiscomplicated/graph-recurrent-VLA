@@ -1,5 +1,37 @@
 # Graph team
 
+## Five-mode spatial/temporal corner tracker
+
+Train the graph2 20-slot Transformer from random initialization using the
+4500-episode Five-mode release. Preparation requires NumPy, SciPy, PyYAML,
+`zstd`, the supervised release and matching original RGB-D archives:
+
+```bash
+OPENBLAS_NUM_THREADS=1 python main.py --config data_collection/configs/prepare_five_mode_corner_tracking.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/train_five_mode_corner_tracker.yaml
+```
+
+Set the preparation source paths and the training data/output paths for the
+host. Training requires CUDA PyTorch with BF16 support. The existing split
+contains 3600 training, 450 validation and 450 held-out test episodes; this
+workflow reads train/validation payloads only. See
+[Five-mode tracker training](../docs/corner_prediction.md#five-mode-spatialtemporal-tracker-from-scratch)
+for data identity, batch tuning, early stopping and the tmux launch.
+
+For tracking only after a corner has actually been observed, use the corrected
+recipe on the existing CUDA host:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_observed_corner_tracker.yaml
+```
+
+It starts from random weights and applies the same causal
+`valid & ever_seen & ~observed` mask to loss, validation, checkpoint selection
+and early stopping. The earlier config retains its historical all-missing
+objective for reproduction. See
+[observed-corner supervision](../docs/corner_prediction.md#training-only-after-first-observation)
+for the separate run, test exclusions and startup checks.
+
 ## Hole rim depth verification
 
 With the saved fresh trajectory frames and the shared PyTorch environment,

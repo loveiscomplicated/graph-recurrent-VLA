@@ -1,0 +1,10 @@
+trainer: data_collection.five_mode_corner_tracking:prepare
+release: /Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/outputs/five_mode_recovery/release
+raw_root: /Users/jeong-yunseong/Documents/programming/graph-recurrent-VLA/outputs/five_mode_recovery/release/original_rgbd
+manifest_sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+output: outputs/five_mode_corner_tracking/dataset
+workers: 8
+source_hf:
+  repo_id: Graph-Recurrent-VLA/graph-recurrent-rollouts
+  revision: cab29e26c0025430bf8b7aafda437d23dfd6da52
+  run_id: d9ef38b515f44db295ee6d84d0db5279
