@@ -1,0 +1,5 @@
+trainer: evaluation.gnn.recent_corner_hole_diagnostics:diagnose
+test_config: graph/configs/evaluate_recent_corner_completion.yaml
+reference_trace:
+  path: outputs/recent_corner_completion/55c8f287b4734569869795d52c3d7478/test_errors.npz
+  sha256: 2f93c5ef0fcf4dbca6c2bec03dd8b771e51b243804616f5b13b7a036ee17d00a

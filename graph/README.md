@@ -218,6 +218,46 @@ The evaluator reports disjoint visibility groups and the effect of
 substituting each geometric term with its GT value after inference. See
 the [endpoint diagnostics](../docs/GNN_leaderboard_Nov_wee3.md#five-mode-condition_2-끝점-오차-진단).
 
+With the full supervised release, its `original_rgbd` archives, `zstd`,
+and the detector-only Condition 1 best checkpoint, run the recent-corner
+completion diagnostic on validation from the repository root:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_five_mode_corner_oracle.yaml
+```
+
+The frozen GNN compares current detector corners with one or two recent GT
+corners added. The evaluator verifies the detector conditions against
+the release and saves paired errors and candidate coverage. See the
+[evaluation protocol](../docs/corner_prediction.md#recent-gt-corner-completion-for-object21).
+
+To train a detector-history recovery and selection model, use the supervised
+release shards, detector condition index and the same detector-only checkpoint.
+The local recipe uses PyTorch, NumPy, SciPy and PyYAML. It selects a checkpoint
+by Condition 2 validation Object21 loss and compares it with recency rules on
+the full validation cohort.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/train_recent_corner_completion.yaml
+```
+
+For the held-out comparison, use the saved epoch-6 checkpoint and the same
+release. The evaluator sends Condition 1 directly to the detector-only GNN
+and applies learned and recency selection to Conditions 2 and 3.
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_recent_corner_completion.yaml
+```
+
+With the held-out `test_errors.npz`, replay the saved model to audit which
+Hole rim candidates reached the GNN on Condition 3:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/diagnose_recent_corner_hole.yaml
+```
+
+See the [recent-corner training protocol](../docs/corner_prediction.md#learned-recent-corner-completion-for-object21).
+
 ### Recovered subset
 
 On a PyTorch CUDA host, place the supervised subset manifest and its pinned

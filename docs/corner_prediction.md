@@ -33,6 +33,80 @@ in that episode. It uses a batch size of two episodes to limit memory use and
 reuses the same manifest, seed, supervision mask and loss for 20 epochs. The
 recorded bounded-history reference used non-overlapping 32-frame blocks with a
 batch size of eight and carried last-observation coordinates across blocks.
+## Recent GT corner completion for Object21
+
+The validation diagnostic uses the detector-only 98-epoch Five-mode
+`VertexEdgeGatedMPNN` checkpoint with fixed weights. It independently
+classifies the same validation frames using the [current detector rules](data_collection.md#꼭짓점-가시성-프레임-인덱스)
+and verifies each condition against the release index before adding points.
+
+For each frame, offline one-to-one GT matching uses the 5 mm distance
+gate and 2 mm nearest-candidate margin from B2-2. Candidates are physical Peg,
+Box exterior, or Hole rim vertices last matched 1–8 frames earlier in the same
+episode, with no same-object detector point within 5 mm in the current frame.
+The evaluator orders candidates by last-observed age, previous match error,
+then fixed vertex ID. It appends the current GT world XYZ of the first one or
+two candidates in the original graph format.
+
+Full-cohort summaries add up to the specified point count. `exact_one` compares
+the detector and one-point variants where at least one point is available.
+`exact_two` compares all three variants on the same frames where at least two
+points are available. All three geometric errors are per-frame Euclidean
+distances reported in millimetres. The recorded candidate IDs, ages, and
+coordinates describe an offline diagnostic with ideal recovered coordinates.
+
+## Learned recent corner completion for Object21
+
+The detector-only 98-epoch GNN stays in evaluation mode with frozen parameters.
+The train cohort starts from the 43,383 Condition 2 frames and a fixed sample
+of 10,846 Condition 1 frames. Frames without a candidate are excluded from
+updates because their graph cannot change. All three conditions use the same
+84,081 validation frames and frame order as the GT-corner diagnostic.
+
+Candidate association uses the existing one-to-one distance assignment within
+detector corner families. The last two real detections give a motion estimate.
+Tracks last seen 1–8 frames earlier can supply candidates in recency order, with
+at most three candidates per frame. The tracker suppresses candidates near a
+current detection of the same family. Candidate inputs use the estimated
+motion, current detections, and observed TCP history. The motion target is the
+last detector coordinate transported by the object's measured rigid pose.
+GT Object21 and motion targets enter supervision only.
+
+The model predicts a displacement for each candidate and scores the feasible
+empty subset, singleton subsets, and pairs. Training uses the existing
+Object21 loss for each subset, averaged by the learned choice probabilities
+with a small uniform exploration component. A weighted motion loss and a
+per-node cost are auxiliary terms. Inference takes the highest-scoring subset.
+Validation compares detector-only, learned selection, the most recent one or
+two candidates, and the most recent candidates at the learned selection's
+per-frame count. All selection variants use the same recovered coordinates.
+
+The 2026-11-17 KST CPU run used 29,198 Condition 2 frames and 4,619
+Condition 1 frames with candidates. Epoch 6 had the lowest Condition 2
+validation Object21 loss. Its Condition 2 mean endpoint error was 38.48 mm,
+compared with 65.72 mm from current detections, 40.09 mm from up to two recent
+nodes, and 39.73 mm from recency at the learned count. Condition 1 mean
+endpoint error changed from 4.11 to 4.38 mm. [Training history](../outputs/recent_corner_completion/89e98c1a91244187a328d882a90edbff/history.json)
+and [paired validation results](../outputs/recent_corner_completion/8d1683bfe3c64e34831f6962582c43de/results.json)
+record the remaining metrics.
+
+The held-out recipe verifies the detector-based conditions and frame IDs in
+the same release. Condition 1 uses current detector corners in every route.
+On Conditions 2 and 3 it compares detector-only input, learned selection,
+and the same three recency rules as validation. The tracker still reads the
+preceding detector observations across condition boundaries within an episode.
+Object21 GT supplies evaluation targets.
+
+The Condition 3 diagnostic replays selection and verifies each Hole error
+against the held-out prediction trace. On 18,689 test frames, 16,616 had no
+Hole rim candidate, 147 had a candidate and did not select a rim, and 1,926
+selected at least one rim. Their learned-selection Hole center mean errors
+were 99.33 mm, 49.85 mm, and 20.33 mm, respectively. The 15,721 frames with
+no current or preceding eight-frame rim detection contributed 94.34% of the
+sum of learned Hole center errors. All Condition 3 frames had a current Box
+exterior detection. [Diagnostic results](../outputs/recent_corner_completion/60097fc29695416e997ddb40e55c8af8/results.json)
+include the recency baselines on these same groups.
+
 
 ## Shared fixed-ID corner prediction
 

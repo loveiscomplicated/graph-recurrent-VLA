@@ -1,0 +1,38 @@
+trainer: training.gnn.recent_corner_completion:train
+seed: 0
+device: cpu
+cpu_threads: 6
+data:
+  manifest:
+    path: outputs/five_mode_recovery/release/manifest.json
+    sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+  condition_index:
+    path: outputs/five_mode_recovery/release/condition_index.json
+    sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+  validation_frame_ids_sha256: 1901e3edd4d32c19660c5083d753318b0a9b9c988c58d3548b5d83c96d4dcf14
+  condition_2_train_frames: 43383
+  condition_1_train_frames: 10846
+  sampling_seed: 0
+frozen_gnn:
+  path: outputs/five_mode_condition_1_detector_corners/09e84d04d29c4a278ad02bc0035f5be7/best.pt
+  sha256: 34a0da5ec05c4d38a74941210b7b74e8467d97023460da2a7077fb8d4ec6510f
+association:
+  max_age: 8
+  max_candidates: 3
+  match_m: 0.020
+  duplicate_m: 0.005
+model:
+  hidden: 64
+  max_offset_m: 0.050
+training:
+  batch_size: 128
+  epochs: 6
+  patience: 2
+  learning_rate: 0.001
+  uniform_exploration: 0.15
+  point_cost: 0.05
+  motion_loss_scale_m: 0.010
+  motion_loss_weight: 0.25
+evaluation:
+  batch_size: 256
+output_root: outputs/recent_corner_completion

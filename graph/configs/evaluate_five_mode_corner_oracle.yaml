@@ -1,0 +1,26 @@
+trainer: evaluation.gnn.five_mode_corner_oracle:evaluate
+device: cpu
+cpu_threads: 6
+batch_size: 256
+manifest:
+  path: outputs/five_mode_recovery/release/manifest.json
+  sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+condition_index:
+  path: outputs/five_mode_recovery/release/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+raw_catalog:
+  path: outputs/five_mode_recovery/release/raw_local_catalog.json
+  sha256: 2f0a3083c700bfc41a5e9d4f4683ed1cf10b3d50781c10c145fdc5ab565169f6
+checkpoint:
+  path: outputs/five_mode_condition_1_detector_corners/09e84d04d29c4a278ad02bc0035f5be7/best.pt
+  sha256: 34a0da5ec05c4d38a74941210b7b74e8467d97023460da2a7077fb8d4ec6510f
+expected_frames:
+  condition_1: 60011
+  condition_2: 6744
+  condition_3: 17326
+coplanarity_tolerance_m: 0.001
+candidates:
+  max_age: 8
+  gate_m: 0.005
+  margin_m: 0.002
+output_root: outputs/five_mode_corner_oracle

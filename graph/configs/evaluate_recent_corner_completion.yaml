@@ -1,0 +1,18 @@
+trainer: evaluation.gnn.recent_corner_completion:evaluate_test
+device: cpu
+cpu_threads: 6
+checkpoint:
+  path: outputs/recent_corner_completion/89e98c1a91244187a328d882a90edbff/best.pt
+  sha256: a4e8d2ac475e07090b6fbd7f079bab19ba6a9209b7bff2fb6019e8e9e5514572
+expected_epoch: 6
+data:
+  test_frame_ids_sha256: 7d9741c256c9ed68a8aa8cfce0c550b7ff472c3c0f9887b2257ded56dd1e9469
+  coplanarity_tolerance_m: 0.001
+expected_frames:
+  condition_1: 62309
+  condition_2: 5181
+  condition_3: 18689
+completion_conditions: [2, 3]
+evaluation:
+  batch_size: 256
+output_root: outputs/recent_corner_completion
