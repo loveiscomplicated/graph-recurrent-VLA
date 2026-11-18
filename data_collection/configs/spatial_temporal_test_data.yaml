@@ -1,0 +1,16 @@
+trainer: data_collection.spatial_temporal_corner_tracking:prepare_test
+source:
+  manifest: outputs/five_mode_recovery/release/manifest.json
+  raw_root: outputs/five_mode_recovery/release/original_rgbd
+  verify_raw_archives: true
+output:
+  root: outputs/spatial_temporal_corner_tracking/test_data
+splits: [test]
+matching:
+  gate_m: 0.005
+  margin_m: 0.002
+expected:
+  episodes:
+    test: 450
+  frames:
+    test: 86179

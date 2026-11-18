@@ -1,0 +1,5 @@
+trainer: data_collection.spatial_temporal_corner_transfer:export_test_labels
+data:
+  manifest: outputs/spatial_temporal_corner_tracking/test_data/manifest.json
+output:
+  root: outputs/spatial_temporal_corner_tracking/test_supervision_packet

@@ -33,6 +33,12 @@ in that episode. It uses a batch size of two episodes to limit memory use and
 reuses the same manifest, seed, supervision mask and loss for 20 epochs. The
 recorded bounded-history reference used non-overlapping 32-frame blocks with a
 batch size of eight and carried last-observation coordinates across blocks.
+
+The separate [spatial-temporal corner tracking](spatial_temporal_corner_tracking.md)
+workflow extends this spatial-first idea with pooled current-object surface
+context, detector-only online association, uncertainty, and a frozen-rollout
+complete-graph Object21 stage.
+
 ## Recent GT corner completion for Object21
 
 The validation diagnostic uses the detector-only 98-epoch Five-mode

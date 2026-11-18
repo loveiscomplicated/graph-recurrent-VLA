@@ -1,0 +1,10 @@
+trainer: evaluation.spatial_temporal_object21:evaluate
+device: cuda:0
+checkpoint: /path/to/spatial_temporal_object21/best.pt
+checkpoint_sha256: null
+# Omit to use frozen_tracker_rollouts.pt next to the checkpoint.
+rollout_cache: null
+evaluation:
+  batch_size: 96
+output:
+  root: outputs/spatial_temporal_object21_evaluation

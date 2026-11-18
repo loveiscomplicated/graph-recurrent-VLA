@@ -1,0 +1,42 @@
+trainer: training.spatial_temporal_corner_tracker:train
+seed: 0
+device: cuda:0
+data:
+  # Prepared by data_collection/configs/spatial_temporal_corner_tracking.yaml
+  # from current detector corners and TAPNext++ non-corner surfaces.
+  manifest: outputs/spatial_temporal_corner_tracking/data/manifest.json
+  max_edge_m: 0.08
+  num_workers: 2
+  graph_cache_root: outputs/spatial_temporal_corner_tracking/graph_cache
+  expected_episodes:
+    train: 3600
+    validation: 450
+model:
+  coordinate_frame: world
+  hidden: 64
+  spatial_layers: 2
+  temporal_layers: 2
+  heads: 4
+  dropout: 0.0
+  association_dim: 32
+  position_scale_m: 0.01
+training:
+  epochs: 40
+  patience: 10
+  episode_batch_size: 2
+  cpu_threads: 4
+  log_every_batches: 25
+  gradient_clip: 1.0
+  visible_weight: 1.0
+  missing_weight: 2.0
+  reappearance_weight: 2.0
+  association_weight: 0.25
+  association_temperature: 0.1
+  rigidity_weight: 0.25
+  rigidity_scale_m: 0.01
+  uncertainty_weight: 0.05
+optimizer:
+  lr: 0.0003
+  weight_decay: 0.01
+output:
+  root: outputs/spatial_temporal_corner_tracker

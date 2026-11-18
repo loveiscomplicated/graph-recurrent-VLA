@@ -1,0 +1,46 @@
+trainer: training.spatial_temporal_object21:train
+seed: 0
+device: cuda:0
+tracker:
+  checkpoint: /path/to/spatial_temporal_corner_tracker/best.pt
+  sha256: null
+data:
+  # Unfiltered recovered Five-mode release. The workflow reads every train and
+  # validation frame in chronological episode order before freezing rollouts.
+  manifest: outputs/five_mode_recovery/release/manifest.json
+  max_edge_m: 0.08
+  expected_episodes:
+    train: 3600
+    validation: 450
+association:
+  distance_limit_m: 0.03
+  embedding_weight_m: 0.01
+gnn:
+  num_semantic_ids: 24
+  hidden: 64
+  layers: 2
+  dropout: 0.0
+  use_semantic_ids: false
+  extra_node_dim: 3
+downstream_features:
+  uncertainty_scale_m: 0.01
+  age_scale_frames: 10
+training:
+  epochs: 40
+  patience: 10
+  frame_batch_size: 96
+  cpu_threads: 4
+  gradient_clip: 1.0
+  rollout_log_every_episodes: 25
+  # Complete-graph cost is quadratic. Fail rather than silently truncate if
+  # association creates an implausible number of duplicate lifecycle tracks.
+  max_tracks_per_frame: 128
+optimizer:
+  lr: 0.0003
+  weight_decay: 0.01
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m: [0.04, 0.01, 0.01, 0.02]
+output:
+  root: outputs/spatial_temporal_object21

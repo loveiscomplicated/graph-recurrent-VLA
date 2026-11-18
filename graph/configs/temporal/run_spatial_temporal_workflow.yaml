@@ -1,0 +1,11 @@
+trainer: training.spatial_temporal_workflow:run
+configs:
+  train_tracker: graph/configs/temporal/train_spatial_temporal_corner_tracker.yaml
+  calibrate_association: graph/configs/temporal/calibrate_spatial_temporal_association.yaml
+  evaluate_tracker: graph/configs/temporal/evaluate_spatial_temporal_corner_tracker.yaml
+  train_object21: graph/configs/temporal/train_spatial_temporal_object21.yaml
+  evaluate_object21: graph/configs/temporal/evaluate_spatial_temporal_object21.yaml
+execution:
+  device: cuda:0
+output:
+  root: outputs/spatial_temporal_workflow

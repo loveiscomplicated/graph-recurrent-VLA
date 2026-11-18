@@ -1,0 +1,20 @@
+trainer: data_collection.spatial_temporal_corner_tracking:prepare
+source:
+  manifest: outputs/five_mode_recovery/release/manifest.json
+  raw_root: outputs/five_mode_recovery/release/original_rgbd
+  verify_raw_archives: true
+output:
+  root: outputs/spatial_temporal_corner_tracking/data
+splits:
+  - train
+  - validation
+matching:
+  gate_m: 0.005
+  margin_m: 0.002
+expected:
+  episodes:
+    train: 3600
+    validation: 450
+  frames:
+    train: 681842
+    validation: 84081

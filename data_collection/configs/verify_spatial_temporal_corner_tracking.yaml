@@ -1,0 +1,5 @@
+trainer: data_collection.spatial_temporal_corner_audit:verify
+data:
+  manifest: outputs/spatial_temporal_corner_tracking/data/manifest.json
+output:
+  result: outputs/spatial_temporal_corner_tracking/verification.json

@@ -1,5 +1,27 @@
 # Graph team
 
+For full chronological spatial-temporal tracking followed by frozen-tracker
+Object21 training, install Torch/CUDA, NumPy, SciPy, PyYAML and OpenCV, prepare
+the full detector/surface episode dataset, and run from the repository root:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/temporal/run_spatial_temporal_workflow.yaml
+```
+
+See [spatial-temporal corner tracking](../docs/spatial_temporal_corner_tracking.md)
+for preparation, checksum verification, validation calibration and prerequisites.
+
+For an explicitly authorized held-out test, prepare the separate test dataset
+with `data_collection/configs/spatial_temporal_test_data.yaml`, then evaluate the
+validation-selected checkpoints without retraining or association calibration:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/temporal/evaluate_spatial_temporal_test.yaml
+```
+
+The recipe pins the two checkpoint hashes and association settings. The guide
+above describes test-data transfer and the separate test rollout cache.
+
 ## Recovered Five-mode graph training
 
 To verify the unified current-frame router locally, install the repository and
@@ -337,6 +359,15 @@ missing-corner RMSE and the last-observation baseline. The recorded full-history
 experiment remains reproducible with
 `spatial_corner_tracking_full_history.yaml`, which writes to its original output
 root. See [the fixed-ID supervision contract](../docs/corner_prediction.md#b2-2-spatial-first-corner-recovery).
+
+## Spatial-temporal corner tracking
+
+The B2-3 workflow adds TAPNext++ surface context to a detector-only tracker:
+an object-internal Delaunay GNN encodes each frame, a causal Transformer
+forecasts and associates corner tracks, and a separately trained complete-graph
+GNN estimates Object21 from frozen tracker rollouts. Training, evaluation,
+input contracts and the four root-entrypoint configs are documented in
+[spatial-temporal corner tracking](../docs/spatial_temporal_corner_tracking.md).
 
 ## Corner visibility GNN
 

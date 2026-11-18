@@ -1,0 +1,6 @@
+trainer: data_collection.spatial_temporal_corner_transfer:restore
+data:
+  packet: supervision_packet
+  release_manifest: release/manifest.json
+output:
+  root: outputs/spatial_temporal_corner_tracking/data

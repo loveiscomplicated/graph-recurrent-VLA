@@ -1,0 +1,24 @@
+trainer: evaluation.spatial_temporal_held_out:evaluate
+device: cuda:0
+tracker:
+  checkpoint: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_corner_tracker/52b03758bf794e3a859821ae67d54427/best.pt
+  sha256: ce43b0d36d3a8aee58cbcaa401cd28072d70b426b31666f663bc49d9e9702a72
+object21:
+  checkpoint: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_object21/e960d262ca2d491f97313f13fa1b692e/best.pt
+  sha256: c5a08925a6040a48a54c54d5775f27c3d30dd988ecb306ab1c73f87899e94e83
+association:
+  distance_limit_m: 0.03
+  embedding_weight_m: 0.01
+data:
+  manifest: outputs/spatial_temporal_corner_tracking/test_data/manifest.json
+  release_manifest: release/manifest.json
+  graph_cache_root: outputs/spatial_temporal_corner_tracking/test_graph_cache
+expected:
+  episodes: 450
+  frames: 86179
+evaluation:
+  cpu_threads: 4
+  episode_batch_size: 1
+  frame_batch_size: 96
+output:
+  root: outputs/spatial_temporal_held_out

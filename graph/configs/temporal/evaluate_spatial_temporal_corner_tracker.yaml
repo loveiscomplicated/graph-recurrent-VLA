@@ -1,0 +1,13 @@
+trainer: evaluation.spatial_temporal_corner_tracking:evaluate
+device: cuda:0
+checkpoint: /path/to/spatial_temporal_corner_tracker/best.pt
+checkpoint_sha256: null
+data:
+  manifest: outputs/spatial_temporal_corner_tracking/data/manifest.json
+association:
+  distance_limit_m: 0.03
+  embedding_weight_m: 0.01
+evaluation:
+  episode_batch_size: 1
+output:
+  root: outputs/spatial_temporal_corner_tracking_evaluation
