@@ -1232,6 +1232,130 @@ release. The experiment loader verifies identical original observations and
 supervision, and rejects missing object IDs or an unchanged Peg-only cache.
 See [C2 experiment setup](gnn_training.md#c2-expert-improvement-experiments).
 
+#### Additive Box/Hole surface cache
+
+Prepare the frozen supervised release, its `original_rgbd/<batch>/*.tar.zst`
+files, the official TAPNext++ 256 checkpoint, `zstd`, and the repository's
+PyTorch/OpenCV/NumPy environment. The existing tracking helper also imports the
+TAPNet and CoTracker submodules, so both need to be available on `PYTHONPATH`.
+From the repository root, run on a CUDA tracking host:
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config data_collection/configs/five_mode_box_surface.yaml
+```
+
+The CUDA config enables the measured optimized tracker path:
+`tap_adaptive_crop: true`, `tap_cuda_autocast: true`,
+`tap_cuda_graph: true`, and `tap_cache_cuda_autocast: true`. It selects the
+existing `AdaptiveCudaTracker`; the tracker and shared window-selection code
+are unchanged. The builder passes the current Box mask to that tracker.
+
+Each episode runs under `torch.no_grad()` and one outer
+`torch.autocast("cuda", enabled=False, cache_enabled=True)` scope. The outer
+scope preserves cached FP16 weight casts between the tracker's nested FP16
+calls; RGB-D loading, mask generation and 3D projection stay outside enabled
+autocast. The builder's outermost scope closes and releases the cast cache when the episode ends,
+including on failure. `inference_mode` bypasses PyTorch's cast cache, so an
+enclosing inference-mode caller is explicitly rejected when weight caching is
+requested. Incompatible CUDA autocast, Graph and weight-cache requests fail
+before source files are read. For an MLX config copy, disable the three
+`tap_cuda_autocast`, `tap_cache_cuda_autocast`, and `tap_cuda_graph` flags.
+For CPU, also disable `tap_adaptive_crop`.
+
+CUDA Graph replay still requires a stationary 144-patch window and an existing
+recurrent state. Initialization, window moves and larger windows use the
+existing eager FP16 path; the episode-level weight cache remains available to
+those calls. The historical 9.43 ms Peg measurement is not a measured Box/Hole
+latency. No crop is artificially reduced to force the Graph path.
+
+`data_collection.five_mode_box_surface:build` adds only Box/Hole non-corner
+points. Defaults select 3,600 train episodes / 681,842 frames and 450 validation
+episodes / 84,081 frames, including frames without usable Box points. There is
+no condition-based filtering or new split assignment. Set `mode: preflight` in
+a config copy to verify the pinned manifest/index, selection and counts without
+reading raw frames or loading a tracker. `episodes` can optionally select a
+small explicit list of `{seed, policy_mode}` records; update `expected_counts`
+in that copy to match. A test request, a cross-split seed, or a selected raw
+batch containing test data is rejected. The current release's selected 405
+batches contain only train or only validation episodes; test batches are never
+opened, listed or hashed.
+
+For each selected episode the builder verifies the original `corners`, `surface`
+and `targets` member SHA-256 values and contiguous frame IDs. The raw archive
+must match `raw_sha256`; its episode index, episode receipt and every staged frame
+must match the release identity and stored frame digests. Only selected episode
+files are staged, including when the TAR stores frames backwards. RGB-D is
+replayed independently of TAR member order: a metadata-only first pass locates
+the index, and frame hashes are checked before yielding an episode even when
+its receipt follows the frames. Test batches are rejected before episode
+payloads are opened. RGB-D is
+replayed by original numeric frame ID. Decoding reads only uint8 Main RGB,
+signed int16 depth, and CV intrinsics/extrinsics; embedded raw GT is not decoded.
+TCP and GT remain in the unchanged target member and are never tracker inputs.
+
+Box masks use the current detector's RGB material-mask function. Corners are
+not redetected or replaced. The first supported frame initializes 32 interior
+image-space FPS queries. Each emitted track must be visible, supported by the
+current Box mask and raw depth in `(0,4000)` mm, and more than 2 px from every
+current cached detector corner. Both the subpixel coordinate and rounded depth
+sample obey the exclusion. RGB-D/CV calibration supplies world XYZ; no simulator
+geometry, GT matching, motion extrapolation or prior corner insertion is used.
+Invisible, invalid-depth and unsupported points remain absent. An episode that
+never supports initialization still has all its frame IDs and empty offsets.
+These are task-material mask gates, not calibrated object-identity confidence.
+
+The output has two levels:
+
+- `identity.json`, `receipts/` and `box_surface/*.npz` form an additive overlay.
+  Its `manifest.json` preserves every selected original record and its three
+  original file receipts, adds a `box_surface` receipt and pins the source root,
+  manifest and condition index. The source release is never written.
+- With `export_candidate: true`, `candidate/manifest.json` and TAR shards form
+  a standalone typed `five_mode_supervised_v1` train/validation release.
+  `corners` and `targets` members are copied byte-for-byte with identical hashes.
+  Each frame's merged surface keeps original Peg rows first, unchanged in value,
+  dtype and order, then appends Box rows. Object IDs are 0/1; Box track IDs are
+  offset past the original Peg query namespace. Export verifies that projecting
+  back to Peg-only restores the original offsets, UV, XYZ and track IDs exactly.
+  The original surface NPZ remains untouched in the reference release.
+
+Output/scratch locations must be separate from the source release. The output
+writer uses the existing collection lock and `ExperimentLogger`; outputs remain
+local. Raw staging is temporary, and the configurable free-space floor defaults
+to 4 GiB. Committed episode caches resume only with the same source, code/runtime,
+tracking settings and verified bytes. An orphan output without its committed
+receipt fails explicitly. Export shards are atomic and verified on reuse.
+
+The candidate keeps the original condition-index SHA and original train/validation
+frame IDs, so the explicit `include_box_surface=True` experiment loader can read
+it. First run the existing surface audit with a config copy pointing at the new
+candidate manifest/hash, then pin both new manifest and audit hashes in the C2
+experiment config. Keep `reference_manifest` on the original release. The older
+Peg-surface model path continues to filter Box nodes; this job changes no model,
+training or evaluation implementation.
+
+Local verification on 2026-11-18 used real train/validation RGB-D episodes with
+159/101 frames. A deterministic injected tracker exercised source verification,
+current-frame mask/depth/corner gates, projection and candidate packaging,
+producing 5,010/3,075 Box rows. It did **not** run learned TAPNext++ inference.
+Injected-tracker outputs are explicitly `SMOKE_ONLY`; their candidate format is
+`five_mode_box_surface_smoke_v1`, which the production supervised loader rejects.
+[Smoke overlay](../outputs/five_mode_box_surface_smoke/ea8ada8c0e6d4750b19d58f7f0c01c7a/manifest.json) ·
+[Smoke candidate](../outputs/five_mode_box_surface_smoke/ea8ada8c0e6d4750b19d58f7f0c01c7a/candidate/manifest.json).
+Tests also verify unchanged source bytes, test-member exclusion, raw hash failure,
+numeric replay order, late initialization, absent points, resume/corruption, and
+exact compatibility with the experiment loader's Peg-only reference projection.
+Full CUDA/MLX tracker generation and simulator backends were not executed here.
+
+The 2026-11-18 optimized-builder checks additionally cover Graph backend routing,
+FP16 flag forwarding, cache scope restoration, and input-preservation exports
+with optimization flags both enabled and disabled. A CPU BF16 surrogate using
+three `Linear` calls confirms that the episode scope reuses weight casts; it is
+not CUDA inference or an accuracy/speed measurement for TAPNext++. Full generation
+was not started when applying these changes. Source/config changes deliberately
+invalidate earlier cache identities; use a fresh output for a different precision
+or tracking configuration rather than mixing cached episodes.
 
 ### Mixed trajectory collection with a moving Box
 

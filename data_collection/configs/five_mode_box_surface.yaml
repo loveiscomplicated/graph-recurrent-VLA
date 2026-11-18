@@ -1,0 +1,34 @@
+trainer: data_collection.five_mode_box_surface:build
+mode: build
+splits: [train, validation]
+resume: true
+export_candidate: true
+episodes_per_shard: 250
+manifest:
+  path: outputs/five_mode_recovery/release/manifest.json
+  sha256: be2db7841d823d89ba4044945a170c80bf5a316a53a58ccc153643f74b0098d8
+condition_index:
+  path: outputs/five_mode_recovery/release/condition_index.json
+  sha256: 9462b916e8000d8f060ea3ceb4f5a45558a9233eb10cbb1911bb450e0f25d29e
+raw_root: outputs/five_mode_recovery/release/original_rgbd
+output_root: outputs/five_mode_box_surface
+scratch_root: outputs/five_mode_box_surface_scratch
+minimum_free_gib: 4
+expected_counts:
+  train: {episodes: 3600, frames: 681842}
+  validation: {episodes: 450, frames: 84081}
+checkpoint_sha256: cb96a43444ccb4fbdb25d800b88c7ba196179a526e78f01b021a16b1c1eff6da
+tracking:
+  device: cuda:0
+  checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+  surface_queries: 32
+  corner_exclusion_px: 2
+  tap_input_resolution: 256
+  tap_adaptive_crop: true
+  tap_cuda_autocast: true
+  tap_cache_cuda_autocast: true
+  tap_cuda_graph: true
+  tap_mps_fp16_vit: false
+  tap_mps_fp16_recurrent_mlp: false
+  tap_mps_skip_past_query_embeddings: false
+  tap_mps_compile_recurrent: false

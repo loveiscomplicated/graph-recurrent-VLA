@@ -9,6 +9,21 @@ Five-mode에서 TAPNext++는 비꼭짓점 표면점만 추적한다. 아래 파�
 가림 복원 명령은 별도 Visual 실험을 재현할 때 사용한다.
 [Five-mode 입력 규칙](../docs/data_collection.md#five-mode-graph-input)
 
+기존 Five-mode release의 corners·Peg surface·TCP/GT를 보존하면서 Box/Hole
+비꼭짓점 surface만 추가하려면 원본 RGB-D, 공식 TAPNext++ 가중치, 두 tracker
+서브모듈과 `zstd`를 준비한 CUDA 호스트에서 실행한다.
+
+```bash
+PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker WANDB_MODE=disabled \
+  python main.py --config data_collection/configs/five_mode_box_surface.yaml
+```
+
+train/validation만 처리하며 test batch는 열지 않는다. 별도 추가 캐시와 typed
+candidate release의 형식, 재시작, 사전 검증은
+[Box/Hole surface 추가](../docs/data_collection.md#additive-boxhole-surface-cache)를 따른다.
+CUDA 기본값은 이동 영역·FP16·CUDA Graph와 에피소드 단위 FP16 가중치 캐시를
+사용한다. CPU/MLX 설정 복사본에서는 CUDA 전용 옵션 세 개를 꺼야 하며,
+CPU는 `tap_adaptive_crop`도 꺼야 한다.
 
 공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.
 가중치 다운로드와 두 프레임 추론 예제는 [TAPNext++ 가이드](../docs/tapnextpp.md)를 참고한다.
