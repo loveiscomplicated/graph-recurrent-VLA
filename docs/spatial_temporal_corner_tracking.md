@@ -21,6 +21,106 @@ by SHA-256, calibrates association on validation, evaluates the full validation
 split, freezes Stage A, and then trains/evaluates Stage B. It stops if full
 validation exceeds the 128-track guard. It never starts held-out test evaluation.
 
+## Common physical-corner comparison
+
+Run `python main.py --config graph/configs/temporal/compare_corner_trackers.yaml`
+with the pinned surface prediction bundle, its original 20-slot test dataset
+and surface sidecar, the certified 24-corner test dataset, the original release
+manifest and the frozen online checkpoint. Set the host paths in the config.
+The command uses `ExperimentLogger`, saves the effective config and source hashes,
+and performs no training, checkpoint selection, calibration or publishing.
+
+The surface predictions come from validation-selected epoch 443, source evaluation
+`5ed17150f590443ab01a2ec1e4482ebb`. Online tracking uses epoch 34 with its frozen
+30 mm gate and 10 mm embedding weight. Native preprocessing and association are
+retained. The default config reuses the hash-pinned FP32 online held-out rollout
+`07c77c1f1f4740aebde8c747b8d110c9`. It joins unchanged observed output rows to
+the exact detector coordinates and object types; duplicate or unmatched keys
+fail rather than guess an assignment. It reconstructs all original identity,
+association, reappearance and missing-target integer counts, track growth and
+missing RMSE. The cached pre-update reappearance forecasts are unavailable, so
+their RMSE remains the original reported value, outside the paired comparison.
+Removing `online_rollout` and choosing `device: cuda:0` instead runs fresh FP32
+inference with TF32 disabled and requires the published counts to reproduce
+exactly and missing/reappearance RMSE to agree within 0.001 mm.
+
+The audit joins episodes by seed and policy mode, checks their complete test
+inventory and seed separation, and verifies all member hashes. The first 20
+GT corners must match exactly: Peg 8, Box exterior 8 and front Hole rim 4.
+The rear rim's four corners are excluded from comparison. TCP and surface point
+sets must match exactly; every detector point accepted by the slot model must
+be an unchanged point from that same frame's raw detector output. Input IDs
+remain metadata for evaluation, never online inference features.
+
+The reference cohort uses cumulative actual, reference-certified detections
+within each episode: `ever_seen & ~observed`. Its mask is independent of the
+model's association decisions. Certificates can leave ambiguous detections
+unassigned, so "missing" also includes unresolved reference correspondence.
+The graph2 native slot mask and this reference mask are different; the historical
+173,765-target metrics must not be relabelled as this common-cohort result.
+
+The evaluator reports three clearly labelled populations:
+
+- `common_reference`: all reference-eligible targets. A finite surface output
+  before its own slot initialization is still scored, including its trained
+  fallback; the uninitialized count is reported separately.
+- `both_initialized`: the reference cohort where both models have started a
+  corresponding history. Exclusions are explicit, not silently dropped.
+- `both_native_missing`: the initialized cohort also missing a current accepted
+  surface-slot detection. This avoids comparing detector passthrough with an
+  online missing forecast when native association disagrees about visibility.
+
+Online predictions follow the track accepting the latest certified real
+detection, using the existing evaluator's causal binding convention. Forecasts
+are never reassigned to the nearest GT. ID-conflict errors therefore remain
+in the coordinates. Mean, 3D RMSE, P90 and P95 pool identical point-frames by
+Peg, Box, Hole and all bodies. Each summary reports eligible/scored counts,
+missing outputs and coverage; unequal coverage must accompany any comparison.
+These metrics evaluate the trackers before rigid correction or Object21.
+
+`predictions.npz` preserves aligned frame IDs, raw XYZ, GT, observed masks,
+eligibility, native surface initialization/detections and online availability.
+For independent float64 rescoring, create a YAML with
+`trainer: evaluation.corner_tracker_comparison_verification:verify` and
+`results_root: /path/to/comparison/results`, then pass it to root `main.py`.
+The verifier reconstructs causal masks per episode and checks every reported
+mean, RMSE and percentile against the saved coordinates.
+
+### Common-test results
+
+On 2026-11-18 KST, run `02b7264ca23849d9a69e252281a1f77f` completed all
+450 episodes / 86,179 frames using exact frozen-rollout recovery. Every observed
+coordinate/type join was unique. The original online counts, identity errors,
+track growth and missing RMSE reproduced. No new training, calibration or
+Object21 processing was performed. Final coordinate scoring ran on CPU; the
+server regression suite passed 32 tests including the CUDA contract. The Mac
+suite passed 31 tests with that CUDA test skipped.
+
+| Cohort | Point-frames | Surface mean / RMSE (mm) | Online mean / RMSE (mm) |
+| --- | ---: | ---: | ---: |
+| Common reference | 170,363 | 5.43 / 11.09 | 10.15 / 19.77 |
+| Both initialized | 170,170 | 5.26 / 9.69 | 10.15 / 19.78 |
+| Both native missing | 159,233 | 4.79 / 8.84 | 10.27 / 20.16 |
+
+Both models supplied finite coordinates for every reference-eligible target.
+There were 193 reference targets without a native surface-slot history and
+10,937 with a current native slot measurement. The first table includes their
+actual model outputs, including the train-fitted prior; the other cohorts make
+these initialization/association differences explicit. Surface wins the pooled
+and Peg mean/RMSE comparisons. On the reference cohort, online has lower Box
+and Hole means. On the both-missing cohort, Hole mean/RMSE favor surface,
+while Box mean remains lower online. These are paired system measurements,
+not a controlled isolation of architecture from training differences.
+
+The independent verifier rebuilt all episode-causal masks and reproduced all
+96 scalar means, RMSEs and percentiles from saved float32 XYZ in float64.
+[Results](../outputs/corner_tracker_comparison/results_recovered/results.json),
+[independent verification](../outputs/corner_tracker_comparison/results_recovered/independent_verification.json)
+and [the full per-body leaderboard](GNN_leaderboard_Nov_wee3.md#표면점-변형--시공간-온라인-추적기--공통-꼭짓점-평가)
+retain the exact counts and original source identities. The isolated server
+directory is `/workspace/corner_tracker_comparison`; the partial fresh replay
+was stopped after exact trace recovery was verified, and its files were retained.
+
 ## Model contract
 
 Each current frame contains two observed node roles:

@@ -1,0 +1,31 @@
+trainer: evaluation.corner_tracker_comparison:evaluate
+device: cpu
+online_rollout: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_held_out/07c77c1f1f4740aebde8c747b8d110c9/frozen_test_rollouts.pt
+tracker:
+  checkpoint: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_corner_tracker/52b03758bf794e3a859821ae67d54427/best.pt
+  sha256: ce43b0d36d3a8aee58cbcaa401cd28072d70b426b31666f663bc49d9e9702a72
+association:
+  distance_limit_m: 0.03
+  embedding_weight_m: 0.01
+online_reference:
+  results: /workspace/corner_tracker_comparison/inputs/online_results.json
+  sha256: f0b7055ec182abd034b18db948eb7a73d7dc08a69c1d14738737af4163a44a68
+data:
+  manifest: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_corner_tracking/test_data/manifest.json
+  manifest_sha256: 86971fa25ae752ac4e89a905b86df1c9992eaa246bdd12eff31abd4c9bd928f4
+  release_manifest: /workspace/spatial_temporal_corner_tracking/release/manifest.json
+  graph_cache_root: /workspace/spatial_temporal_corner_tracking/outputs/spatial_temporal_corner_tracking/test_graph_cache
+surface:
+  results: /workspace/corner_tracker_comparison/inputs/surface/results.json
+  results_sha256: 026890b0f7759afd67cbc02b380f53e33ea1d5304da2ce24ff07cb04d33246d4
+  predictions: /workspace/corner_tracker_comparison/inputs/surface/predictions.npz
+  checkpoint_sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  manifest: /workspace/corner_tracker_comparison/inputs/slots/manifest.json
+  surface_manifest: /workspace/corner_tracker_comparison/inputs/surface/test_surfaces/manifest.json
+expected:
+  episodes: 450
+  frames: 86179
+evaluation:
+  cpu_threads: 4
+output:
+  root: /workspace/corner_tracker_comparison/results_recovered

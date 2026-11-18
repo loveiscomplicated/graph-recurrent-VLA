@@ -1,5 +1,18 @@
 # Graph team
 
+To compare the frozen epoch-443 surface tracker with the epoch-34 spatial-temporal
+online tracker on common held-out physical corners, install the spatial-temporal
+evaluation dependencies below and prepare the hash-pinned test datasets, surface
+prediction bundle and published online result at the paths in this config:
+
+```bash
+WANDB_MODE=disabled .venv/bin/python main.py --config graph/configs/temporal/compare_corner_trackers.yaml
+```
+
+This reuses saved surface predictions and the verified online test rollout,
+without training or calibration. See [common tracker comparison](../docs/spatial_temporal_corner_tracking.md#common-physical-corner-comparison)
+for masks, initialization coverage and independent result verification.
+
 For full chronological spatial-temporal tracking followed by frozen-tracker
 Object21 training, install Torch/CUDA, NumPy, SciPy, PyYAML and OpenCV, prepare
 the full detector/surface episode dataset, and run from the repository root:

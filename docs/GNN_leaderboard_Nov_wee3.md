@@ -302,6 +302,32 @@ Object21 위치·상대벡터 오차의 단위는 **mm**이며, 낮을수록 좋
 
 평가 실행 ID: `07c77c1f1f4740aebde8c747b8d110c9`. [전체 결과](../outputs/spatial_temporal_corner_tracking/server_results/held_out/results.json) · [완료 검증](../outputs/spatial_temporal_corner_tracking/server_results/held_out/verification.json) · [모델과 평가 절차](spatial_temporal_corner_tracking.md#held-out-results)
 
+### 표면점 변형 ↔ 시공간 온라인 추적기 · 공통 꼭짓점 평가
+
+2026-11-18 KST에 같은 held-out **450개 에피소드 / 86,179프레임**의 공통 20개 꼭짓점(Peg 8·Box 외곽 8·앞쪽 Hole 림 4)을 재평가했습니다. 표면점 변형은 검증 best 443에포크, 시공간 온라인 추적기는 best 34에포크입니다. 고정된 FP32 예측과 온라인 rollout을 재사용했으며, 재학습·추가 calibration은 하지 않았습니다. GT·TCP·표면점 좌표와 검출점 출처를 대조하고, 온라인 track 연결은 실제 검출 좌표와 저장된 관측 좌표의 정확한 일대일 대응으로 복원했습니다. 모호한 대응은 86,179프레임 전체에서 0건이었습니다.
+
+공통 검출 인증 기준의 `ever_seen & ~observed`로 **170,363개 점·프레임**을 선정했습니다. 기존 graph2 표의 173,765건은 자체 slot association 기준이므로 평가 대상이 다릅니다. 아래 각 셀은 강체 보정·Object21 처리 전 **평균 / RMSE / P90 / P95**이고, 단위는 **mm**이며 낮을수록 좋습니다. 두 모델 모두 모든 평가 대상에 유한한 출력을 제공했습니다.
+
+| 대상 | 공통 평가 점·프레임 | 표면점 변형 · 평균 / RMSE / P90 / P95 ↓ | 시공간 온라인 · 평균 / RMSE / P90 / P95 ↓ |
+| --- | ---: | ---: | ---: |
+| Peg | 90,424 | **8.01 / 14.60 / 16.08 / 30.32** | 17.12 / 26.93 / 47.93 / 60.94 |
+| Box 외곽 | 43,257 | 2.79 / **3.90** / 4.98 / 6.11 | **2.60** / 3.96 / **4.31** / **5.12** |
+| Hole 림 | 36,682 | 2.19 / 5.23 / 4.63 / 6.10 | **1.86 / 2.97 / 3.50 / 5.50** |
+| 전체 | 170,363 | **5.43 / 11.09 / 10.23 / 17.27** | 10.15 / 19.77 / 30.92 / 49.09 |
+
+**전체와 Peg는 표면점 변형이 우세했고, Box·Hole의 평균은 시공간 온라인 추적기가 낮았습니다.** 표면점 변형이 자체 slot 추적을 아직 시작하지 못한 193건도 위 표에는 출력된 prior 좌표로 포함했습니다. 두 모델 모두 추적을 시작한 대상은 170,170건이며, 그중 표면점 변형이 현재 검출 좌표를 통과시킨 10,937건을 추가로 제외하면 **159,233건**입니다. 이 공통 미검출 부분집합의 좌표 오차는 다음과 같습니다.
+
+| 대상 | 공통 미검출 점·프레임 | 표면점 변형 · 평균 / RMSE ↓ | 시공간 온라인 · 평균 / RMSE ↓ |
+| --- | ---: | ---: | ---: |
+| Peg | 81,896 | **7.13 / 11.92** | 17.86 / 27.90 |
+| Box 외곽 | 42,808 | 2.76 / **3.88** | **2.57** / 3.94 |
+| Hole 림 | 34,529 | **1.75 / 2.14** | 1.79 / 2.87 |
+| 전체 | 159,233 | **4.79 / 8.84** | 10.27 / 20.16 |
+
+온라인 association·ID 오류·track count와 기존 missing RMSE가 보존됐습니다. 저장된 좌표에서 평가 마스크와 96개 평균·RMSE·백분위수 값을 float64로 독립 재계산해 일치를 확인했습니다. 로컬 회귀 테스트는 31 passed·CUDA 1 skipped, 서버 회귀 테스트는 CUDA 검증을 포함해 32 passed입니다. 최종 공통 평가는 저장된 FP32 좌표를 CPU에서 재집계했습니다.
+
+평가 실행 ID: `02b7264ca23849d9a69e252281a1f77f`. [전체 공통 평가 결과](../outputs/corner_tracker_comparison/results_recovered/results.json) · [독립 재계산 검증](../outputs/corner_tracker_comparison/results_recovered/independent_verification.json) · [평가 설정](../graph/configs/temporal/compare_corner_trackers.yaml) · [평가 기준](spatial_temporal_corner_tracking.md#common-physical-corner-comparison)
+
 ## Hugging Face 체크포인트
 
 아래 고정 Hole 모델의 체크포인트는 같은 비공개 모델 저장소에 있습니다. 각 행의 Transformer와 GNN을 한 쌍으로 사용합니다. 링크는 고정된 revision의 `best.pt`를 가리킵니다. [모델 저장소](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models)
