@@ -1,0 +1,19 @@
+# Environment for the Visual end-to-end baselines (separate from the shared
+# requirements because LeRobot pulls its own torch build). Python 3.12.
+#
+# torch is pinned to a CUDA 12.6 build so it runs on NVIDIA driver 550
+# (Vessl GRVLA workspaces); PyPI's default torch 2.15 wheel needs CUDA 13 and
+# driver >= 580. Install with:
+#   uv pip install -r visual/baseline/requirements.txt \
+#     --index-url https://download.pytorch.org/whl/cu126 \
+#     --extra-index-url https://pypi.org/simple --index-strategy unsafe-best-match
+# The first baseline run used torch 2.15.0 on a different host (its install.log).
+-r ../../requirements.txt
+-r ../../requirements-tracking.txt
+lerobot==0.7.0
+torch==2.14.1
+torchvision==0.29.2
+numpy==2.2.6
+sapien==3.0.3
+imageio==2.38.1
+imageio-ffmpeg==0.8.1

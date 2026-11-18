@@ -1,0 +1,37 @@
+# Smoke test of act.yaml: 10 collected episodes, 200 steps. It checks that
+# LeRobot accepts the policy keys and that train -> checkpoint -> evaluate runs;
+# its success rate means nothing.
+#
+# Run: bash visual/baseline/smoke_test.sh
+trainer: visual.baseline.train:train
+output_dir: outputs/visual_baseline_smoke/act
+
+data:
+  episodes: data/visual_baseline/episodes_smoke
+  validation_episodes: 2
+  max_train_episodes: 8
+  use_state: true
+  use_depth: false
+
+policy:
+  # Every key except type is passed to lerobot ACTConfig.
+  type: act
+  chunk_size: 50
+  n_action_steps: 1
+  temporal_ensemble_coeff: 0.01
+
+train:
+  seed: 0
+  steps: 200
+  batch_size: 32
+  lr: 1.0e-5
+  weight_decay: 1.0e-4
+  warmup_steps: 20
+  grad_clip: 10.0
+  # The camera is fixed, so translating images blurs absolute position; keep it small.
+  random_shift: 4
+  state_noise: 0.0
+  action_normalization: mean_std
+  log_every: 20
+  eval_every: 100
+  save_every: 200

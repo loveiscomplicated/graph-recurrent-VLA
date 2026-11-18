@@ -1,0 +1,31 @@
+# 900 scripted-expert episodes under the shared base camera, for the Visual
+# end-to-end baselines (visual/baseline/README.md).
+#
+# Same settings as visible_peg.yaml except:
+# - the camera is no longer set here: envs.maniskill has defaulted base_camera
+#   to the shared pose (eye [0.65, -0.30, 0.65]) since commit ec73248;
+# - start_seed 200000 uses the seed range of the paired Recurrent BC release
+#   (293fbe2c, seeds 200005-229115). The visibility gate depends on the camera,
+#   so the accepted seeds overlap that release only partly;
+# - publish is false: the result stays local until the team decides to publish.
+#
+# Run: python -m data_collection.collect_dataset --config data_collection/configs/visible_peg_shared_camera.yaml
+output: outputs/visible_peg_shared_camera
+num_episodes: 900
+episodes_per_shard: 30
+workers: 4
+start_seed: 200000
+attempts_per_shard: 1000
+resolution: 512
+steps: 250
+max_episode_steps: 250
+visibility_mode: ends_and_grasp
+policy: data_collection.scripted_policy:make_policy
+control_mode: pd_ee_delta_pose
+device: cpu
+render_backend: cuda
+observation_device: cuda
+require_success: true
+save_step_gt: true
+publish: false
+private: true
