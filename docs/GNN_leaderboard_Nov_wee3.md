@@ -242,6 +242,66 @@ P95 21.11 mm였습니다. 전체 P95를 초과하는 259프레임 중 168개는 
 [전체 지표](../outputs/five_mode_endpoint_diagnostics/36a7446e73c740eb9ac1751b3d94736c/results.json) ·
 [프레임별 예측과 검출 통계](../outputs/five_mode_endpoint_diagnostics/36a7446e73c740eb9ac1751b3d94736c/test_endpoint_diagnostics.npz)
 
+## 11/18 리더보드
+
+### 꼭짓점 추적기 · 첫 관측 이후 미검출 점 비교
+
+**기존 graph2 → 재학습 꼭짓점 전용 → 표면점 변형 순으로 Peg·Box·Hole 모두에서 평균과 P90 오차가 낮아졌습니다.**
+
+2026-11-18 KST의 두 비교 결과를 한 표로 합쳤습니다. 세 모델은 같은 테스트 **450개 에피소드 / 86,179프레임**에서 **첫 관측 이후 현재 미검출인 동일한 173,765개 점·프레임**을 평가했습니다. 각 셀은 트래커 단독 **3D 좌표 오차의 평균 / P90**이며, 단위는 **mm**이고 낮을수록 좋습니다.
+
+| 대상 | 평가 점·프레임 | 기존 graph2 평균 / P90 ↓ | 재학습 꼭짓점 전용 · 374에포크 평균 / P90 ↓ | 표면점 변형 · 443에포크 평균 / P90 ↓ |
+| --- | ---: | ---: | ---: | ---: |
+| Peg | 96,079 | 29.56 / 80.79 | 12.07 / 27.21 | **8.57 / 18.70** |
+| Box 외곽 | 43,124 | 9.04 / 16.73 | 3.07 / 5.10 | **2.78 / 4.83** |
+| Hole 림 | 34,562 | 4.80 / 9.33 | 1.92 / 3.28 | **1.75 / 3.14** |
+| 전체 | 173,765 | 19.54 / 54.66 | 7.82 / 16.07 | **5.78 / 12.46** |
+
+**표면점 변형 443에포크 모델 다운로드:** [best.pt](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/resolve/d444f69b37056bf5534fea4dd88d794afce632af/graph/3a94383216fd448b903946c57164170b/artifacts/checkpoint/f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc/best.pt) · [설정과 게시 manifest](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/d444f69b37056bf5534fea4dd88d794afce632af/graph/3a94383216fd448b903946c57164170b). 기존 비공개 모델 저장소에 학습 실행 ID `3a94383216fd448b903946c57164170b`를 유지해 게시했습니다. 링크는 고정 revision `d444f69b37056bf5534fea4dd88d794afce632af`를 가리킵니다. 체크포인트 SHA-256: `f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc`.
+
+평가 마스크는 세 모델 모두 `ever_seen & ~observed`입니다. 끝까지 미관측인 점, 첫 관측 이전과 첫 관측 프레임, 현재 검출된 점은 제외했습니다. 두 비교에서 같은 검출 좌표·TCP·에피소드 경계를 사용해 FP32로 추론했고, 강체 보정 전 좌표를 평가했습니다. graph2의 독립 검증에서 저장된 예측으로 평가 마스크와 대상별 평균·P90을 재계산해 일치를 확인했습니다.
+
+재학습 꼭짓점 전용 374에포크 모델은 두 비교에 공통으로 사용됐습니다. 꼭짓점 전용과 표면점 변형의 체크포인트는 검증으로 선택했으며, 평가 배치는 모두 16, 학습 배치는 각각 96·64였습니다. 기존 graph2와 꼭짓점 전용 비교에서는 TF32를 비활성화했습니다. **표면점 변형은 재학습 꼭짓점 전용 대비 Peg 평균 오차가 29.0%, P90이 31.3% 감소**했습니다.
+
+- 기존 graph2 ↔ 재학습 꼭짓점 전용: 평가 실행 ID `d3263c4b9d2c4102a6f01b77285e8013`. [상세 결과와 모드별 비교 · graph2 워크트리](/Users/jeong-yunseong/.codex/worktrees/graph2/graph-recurrent-VLA/docs/corner_prediction.md:128)
+- 재학습 꼭짓점 전용 ↔ 표면점 변형: 평가 실행 ID `5ed17150f590443ab01a2ec1e4482ebb`. [평가 결과 JSON · graph2 워크트리](/Users/jeong-yunseong/.codex/worktrees/graph2/graph-recurrent-VLA/outputs/observed_corner_surface_comparison/results.json)
+
+### 시공간 온라인 추적기 + Object21 · Train/validation 및 Held-out 테스트
+
+2026-11-18 **11:01 KST에 전체 train/validation workflow가 정상 완료됐습니다.**
+
+| 단계 | 완료 내역 |
+| --- | --- |
+| Stage A · 추적기 학습 | 40에포크 완료, best 34에포크 |
+| Frozen rollout | 4,050개 에피소드 / 765,923프레임 전체 완료 |
+| Stage B · Object21 학습 | 26에포크에서 조기 종료, best 16에포크 |
+| 최종 validation | 84,081프레임 평가 완료 |
+
+완료 검증에서 체크포인트·cache SHA-256과 평가 데이터 정렬을 확인했습니다. **11:01의 train/validation 완료 시점에는 test split을 실행하지 않았습니다.** [최종 validation 평가 결과](../outputs/spatial_temporal_corner_tracking/server_results/completed_workflow/outputs/spatial_temporal_object21_evaluation/d4c7ced08fd7491ab45ca8864cfeb00a/results.json) · [학습 완료 검증·SHA-256](../outputs/spatial_temporal_corner_tracking/server_results/completed_workflow/completion_verification.json)
+
+이후 같은 날 **13:09 KST에 고정된 설정으로 held-out test 450개 에피소드 / 86,179프레임 평가를 완료했습니다.** 검증에서 선택한 두 체크포인트와 association 설정을 유지했고, 재학습이나 추가 calibration은 하지 않았습니다.
+
+Object21 위치·상대벡터 오차의 단위는 **mm**이며, 낮을수록 좋습니다.
+
+| Object21 오차 | Validation 평균 ↓ | Validation P95 ↓ | Test 평균 ↓ | Test P95 ↓ |
+| --- | ---: | ---: | ---: | ---: |
+| Peg 위치 | 1.54 | 4.02 | **1.56** | 4.23 |
+| Hole 위치 | 5.56 | 38.48 | **6.43** | 45.91 |
+| Peg 끝점 위치 | 2.58 | 5.25 | **2.00** | 5.27 |
+| 끝점–Hole 상대벡터 | 7.02 | 39.45 | **7.22** | 49.18 |
+
+| 온라인 tracker 지표 | Test |
+| --- | ---: |
+| Missing RMSE ↓ | **19.77 mm** |
+| Reappearance RMSE ↓ | **10.48 mm** |
+| 재등장 same-ID 유지율 ↑ | **95.70%** |
+
+평균 성능은 validation과 대체로 비슷하지만, **Hole과 상대벡터의 큰 오차 구간은 여전히 남아 있습니다.**
+
+완료 검증에서 두 체크포인트 SHA-256과 association 설정 유지, 전체 결과의 ID·target·track count 정렬을 확인했습니다. 서버 GPU 회귀 테스트 기록은 **60 passed**입니다.
+
+평가 실행 ID: `07c77c1f1f4740aebde8c747b8d110c9`. [전체 결과](../outputs/spatial_temporal_corner_tracking/server_results/held_out/results.json) · [완료 검증](../outputs/spatial_temporal_corner_tracking/server_results/held_out/verification.json) · [모델과 평가 절차](spatial_temporal_corner_tracking.md#held-out-results)
+
 ## Hugging Face 체크포인트
 
 아래 고정 Hole 모델의 체크포인트는 같은 비공개 모델 저장소에 있습니다. 각 행의 Transformer와 GNN을 한 쌍으로 사용합니다. 링크는 고정된 revision의 `best.pt`를 가리킵니다. [모델 저장소](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models)
