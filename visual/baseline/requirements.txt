@@ -10,9 +10,12 @@
 # The first baseline run used torch 2.15.0 on a different host (its install.log).
 -r ../../requirements.txt
 -r ../../requirements-tracking.txt
-lerobot==0.7.0
+# The diffusion extra installs diffusers, which LeRobot's DiffusionPolicy requires.
+lerobot[diffusion]==0.7.0
 torch==2.14.1
-torchvision==0.29.2
+# 0.29.1 is the newest cu126 build; PyPI's 0.29.2 targets CUDA 13 torch and fails
+# to load against torch 2.14.1+cu126 ("operator torchvision::nms does not exist").
+torchvision==0.29.1
 numpy==2.2.6
 sapien==3.0.3
 imageio==2.38.1
