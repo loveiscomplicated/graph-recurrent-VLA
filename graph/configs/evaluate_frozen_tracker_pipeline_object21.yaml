@@ -1,0 +1,31 @@
+trainer: evaluation.frozen_tracker_pipeline_comparison:evaluate
+device: cuda:0
+cpu_threads: 4
+data_root: /workspace/observed_corner_surface_comparison/dataset
+test_manifest_sha256: 4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b
+surface_context: /workspace/observed_corner_surface_comparison/test_surfaces
+surface_manifest_sha256: e8f724d7558b282dd460d3e4922f6508eb59eba7de3c98c5c60eddd5fcb59755
+training_data_root: /workspace/five_mode_corner_tracking/dataset
+target_root: /workspace/surface_tracker_gnn/test_targets
+target_manifest_sha256: ccd934d1ea9a9cb7b887b91c1c06058c98e2dc3241d6cd08ddcc81ec01389b39
+tracker_batch_size: 16
+gnn_batch_size: 4096
+models:
+  corner_only:
+    tracker:
+      path: /workspace/observed_corner_surface_comparison/corner_only.pt
+      sha256: ea4df0c535e9ff908c7c2b0b98885128de80310f4a2ee91332991ee285e339cf
+    gnn:
+      path: /workspace/surface_tracker_gnn/corner_gnn.pt
+      sha256: a47139a38981113a86e31d03dc2f4409086c3958fdadd95396c841ae588e0123
+      epoch: 54
+  surface_context:
+    tracker:
+      path: /workspace/observed_surface_corner_tracker/training/best.pt
+      sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+    gnn:
+      path: /workspace/surface_tracker_gnn/training/59ec6322bb104095b2f4025afc5209b2/best.pt
+      sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241
+      epoch: 62
+      history: /workspace/surface_tracker_gnn/training/59ec6322bb104095b2f4025afc5209b2/history.json
+output: /workspace/surface_tracker_gnn/object21_pipeline_comparison

@@ -66,6 +66,29 @@ Transfer the test target sidecar to `target_root`; existing held-out corner and
 surface inputs and both hash-pinned checkpoints are required. The evaluation
 reports frame-pooled 3D means and P90s without tuning on test results.
 
+Compare the selected corner-only-input and surface-input pipelines with common
+strict FP32 execution and frame-pooled means/P90s:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_frozen_tracker_pipeline_comparison.yaml
+```
+
+This requires both frozen trackers and GNNs, the same test inputs/targets, and
+host paths set in the config. Each GNN retains its original trained graph and
+features. See [pipeline comparison](../docs/gnn_training.md#corner-only-versus-surface-input-pipeline-test).
+
+To compare all three pipelines by the existing GT insertion-depth bands, first
+export complete Object21 inference outputs (including endpoint residuals), then
+score the verified saved predictions alongside the original-pair test artifact:
+
+```bash
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_frozen_tracker_pipeline_object21.yaml
+WANDB_MODE=disabled python main.py --config graph/configs/evaluate_frozen_tracker_stage_comparison.yaml
+```
+
+The second config pins all inference-report hashes and preserves equal-mode
+aggregation. See [depth-sliced comparison](../docs/gnn_training.md#three-pipeline-comparison-by-insertion-depth).
+
 ## Five-mode spatial/temporal corner tracker
 
 Train the graph2 20-slot Transformer from random initialization using the

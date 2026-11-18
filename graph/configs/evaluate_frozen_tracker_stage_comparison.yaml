@@ -1,0 +1,30 @@
+trainer: evaluation.frozen_tracker_stage_comparison:evaluate
+cpu_threads: 4
+data_root: /workspace/observed_corner_surface_comparison/dataset
+test_manifest_sha256: 4dd41f5b1baf53658596058637360387dade1547f10e85695081e047d106e43b
+output: /workspace/surface_tracker_gnn/stage_comparison
+baseline: original
+loss:
+  pos_unit_m: 0.01
+  consistency_weight: 0.05
+  size_units_m:
+  - 0.04
+  - 0.01
+  - 0.01
+  - 0.02
+models:
+  original:
+    report: /workspace/surface_tracker_gnn/original_tracker_pair/results.json
+    report_sha256: 2e9fb62729456e558f0ed3e77c0b171baaa72cefb64f0ccad76a19552e6314aa
+    report_model: existing
+    predictions: /workspace/surface_tracker_gnn/original_tracker_pair/existing_predictions.npz
+  corner_only:
+    report: /workspace/surface_tracker_gnn/object21_pipeline_comparison/results.json
+    report_sha256: 61b7d5b4098c8256679dd4a530a1ca7f688bf54972a2fd2d6deb0113b3e49506
+    report_model: corner_only
+    predictions: /workspace/surface_tracker_gnn/object21_pipeline_comparison/corner_only_predictions.npz
+  surface_context:
+    report: /workspace/surface_tracker_gnn/object21_pipeline_comparison/results.json
+    report_sha256: 61b7d5b4098c8256679dd4a530a1ca7f688bf54972a2fd2d6deb0113b3e49506
+    report_model: surface_context
+    predictions: /workspace/surface_tracker_gnn/object21_pipeline_comparison/surface_context_predictions.npz

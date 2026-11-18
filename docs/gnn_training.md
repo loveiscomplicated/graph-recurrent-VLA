@@ -180,6 +180,133 @@ receipts. The newly trained pair agrees with the preceding shared-tracker
 evaluation to the displayed precision. This measures the two tracker/GNN
 pairings under the common graph/masking protocol described above.
 
+## Three-pipeline comparison by insertion depth
+
+Run the complete-output inference recipe
+`python main.py --config graph/configs/evaluate_frozen_tracker_pipeline_object21.yaml`,
+then `python main.py --config graph/configs/evaluate_frozen_tracker_stage_comparison.yaml`.
+Use `WANDB_MODE=disabled` for local-only logging. The first recipe requires the
+same two tracker/GNN pairs and test sidecars as the pipeline comparison below;
+the second needs its saved inference payloads, the original tracker/original
+GNN's paired-test payload, all pinned report checksums and the existing verified
+test corner dataset. Host paths must be adjusted in the configs.
+
+The original pair reuses test run `2449e359bd5247ae9c6324e601cac67f`, using the
+epoch-333 original tracker and original `final_gnn.pt`. The new corner-only and
+surface pairs retain their validation-selected epoch-54 and epoch-62 GNNs.
+Inference run `ac5e5d6ab4a94f73a8d87b164bc45b44` exported their actual Object21
+**and endpoint residual** outputs in strict FP32, with TF32 disabled, on the
+Korean RTX 3090. The new residual output is required for the existing Object21
+endpoint-consistency regularizer; no loss term is omitted or reconstructed.
+Earlier prediction artifacts remain unchanged. The optional residual-return
+argument preserves the inference helper's previous default interface.
+
+The user selected the existing GT axial insertion-depth split. The definition
+already used by the corner tracker is `d <= 0 mm` before insertion, `d > 0 mm`
+during axial insertion, with optional entry `(0,20] mm` and deep `>20 mm` bands.
+This is a geometry-based slice, not a contact or success label; pre-insertion
+includes approach/distant frames as well as alignment. Slice membership uses
+only the frozen test dataset's GT depth, identically for all three models.
+The 450-episode / 86,179-frame test set contains 79,503 pre-insertion frames
+from 449 episodes and 6,676 axial-insertion frames from 254 episodes.
+
+To match the user's reference table, first take frame means within each of the
+five modes, then average those mode means equally. Both requested slices have
+frames in all five modes. Optional deep-band results use four nonempty modes
+because the random mode has no deep frames. Frame-pooled and per-mode metrics
+and counts are retained separately. Every Object21 label remains eligible;
+first-observation eligibility masks graph inputs, not score-only Object21 GT.
+All errors below are Euclidean 3D errors in mm. All reduction percentages use
+the original pair as denominator.
+
+| Pre-insertion quantity | Original pair | New corner-only pair | Surface pair |
+| --- | ---: | ---: | ---: |
+| Object21 loss | 4.169995 | 0.781824 | 0.619517 |
+| Peg position mean | 15.877709 | 3.339992 | 2.466347 |
+| Hole position mean | 39.285328 | 6.993412 | 5.969528 |
+| Tip minus Hole vector mean | 30.442474 | 9.164290 | 7.416670 |
+
+| Axial-insertion quantity | Original pair | New corner-only pair | Surface pair |
+| --- | ---: | ---: | ---: |
+| Object21 loss | 3.721937 | 0.656668 | 0.282079 |
+| Peg position mean | 15.928909 | 4.279209 | 3.069404 |
+| Hole position mean | 33.982331 | 6.239079 | 3.837445 |
+| Tip minus Hole vector mean | 28.773628 | 9.251112 | 5.289428 |
+
+The full-set reference rows reproduce the supplied table exactly to its shown
+precision (original Object21 4.13650 versus corner-only 0.77708). The surface
+pair's full-set equal-mode loss is 0.595800, with Peg/Hole/tip-vector means
+2.541894/5.827453/7.312801 mm. These differ from frame-pooled figures by design.
+
+CPU scoring run `7dbbaa5ba6aa4950a58816dfdcf8161f` uses the shared
+`ExperimentLogger` and unchanged `training.gnn.loss.object21_loss`. It verifies
+input report/payload hashes, identical Object21 targets and frame order,
+prepared test receipts and GT/TCP consistency. Thirteen CPU tests passed,
+including depth boundaries, empty slices, unequal-mode weighting and endpoint
+regularization. Local artifact checks independently reproduced all requested
+losses and physical means from the saved per-frame outputs and score masks.
+No training, checkpoint reselection, simulator execution or publishing ran.
+
+Remote source and results are under
+`/workspace/surface_tracker_gnn/object21_pipeline_source` and
+`/workspace/surface_tracker_gnn/stage_comparison`. The local report and membership
+receipt are in `outputs/frozen_tracker_stage_comparison/results`; inference
+receipts and complete new-model outputs are in the sibling `inference` folder.
+The three pipelines retain their different trained graph features and training
+settings, as explained below; the comparison does not isolate surface context
+as the sole changed variable.
+
+## Corner-only versus surface-input pipeline test
+
+`python main.py --config graph/configs/evaluate_frozen_tracker_pipeline_comparison.yaml`
+compares the selected corner-only GNN (epoch 54, checkpoint SHA256
+`a47139a38981113a86e31d03dc2f4409086c3958fdadd95396c841ae588e0123`)
+with the selected surface-input GNN (epoch 62, checkpoint SHA256
+`0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241`).
+Prerequisites are CUDA PyTorch, NumPy, SciPy, PyYAML, both frozen trackers/GNNs,
+and the existing hash-pinned test corner, surface and Object21 sidecars. Host
+paths are explicit in the config. `evaluation/frozen_tracker_pipeline_comparison.py`
+reuses the existing causal tracker inference, each trained graph constructor,
+Object21 vector error calculation and the shared `ExperimentLogger`.
+
+Both pipelines were rerun on the Korean RTX 3090 using strict FP32 with TF32
+disabled, tracker batch 16 and GNN batch 4096. Membership, test-target TCP/frame
+alignment, seed separation and all checkpoint hashes were checked. Each GNN's
+parameter/buffer digest was unchanged after inference; checkpoint files were
+also rehashed. No optimizer or model selection used test results. First-seen
+eligibility excludes never-observed nodes and edges. Full Object21 targets
+remain valid for all 450 episodes / 86,179 test frames.
+
+The primary aggregation pools all frame errors, matching the preceding surface
+test report, rather than equally averaging the five mode means. The new common
+strict FP32 execution causes small numerical differences from the earlier
+surface-only report, whose GNN inference enabled TF32. P90 is the linear 90th
+percentile of per-frame Euclidean 3D errors in millimetres.
+
+| Quantity | Corner-only mean | Surface mean | Corner-only P90 | Surface P90 |
+| --- | ---: | ---: | ---: | ---: |
+| Peg center position | 3.458546 | 2.587934 | 5.429398 | 4.496061 |
+| Hole center position | 7.118253 | 5.978879 | 22.017580 | 17.869728 |
+| Peg-tip minus Hole vector | 9.357074 | 7.472276 | 27.074194 | 24.250250 |
+
+This is an as-trained pipeline comparison, not an isolated surface-context
+ablation. The corner-only GNN uses one provenance feature and groups Box/Hole
+under one object type; the surface GNN uses two provenance features and separate
+Box/Hole types. Weight decay is 0.01 versus 0.0001. The corner-only run used
+mode-balanced validation selection and plateau learning-rate changes, while the
+surface run used pooled validation selection and a step scheduler. Training
+batch sizes and stopping policies also differ. The result therefore cannot
+attribute the whole performance difference to surface points alone.
+
+The isolated execution snapshot is
+`/workspace/surface_tracker_gnn/pipeline_comparison_source`; reports and per-frame
+predictions are in `/workspace/surface_tracker_gnn/pipeline_comparison`, with a
+local copy under `outputs/frozen_tracker_pipeline_comparison/results`. Earlier
+training/evaluation sources and outputs are preserved. Nine relevant CPU
+contracts passed before both complete CUDA test inferences. Protected historical
+leaderboard implementations and dependencies were unchanged. No simulator or
+external artifact publishing was executed.
+
 ## Frozen surface tracker inputs
 
 `graph/configs/train_frozen_surface_tracker_gnn.yaml` uses the common GNN trainer,
