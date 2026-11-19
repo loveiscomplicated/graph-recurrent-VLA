@@ -17,7 +17,9 @@ apt-get update -q >/dev/null
 apt-get install -y -q curl git tmux >/dev/null
 
 if [ ! -d "$REPOSITORY_ROOT/.git" ]; then
-  git clone -q "$BOOTSTRAP_DIRECTORY/surface_mamba.bundle" "$REPOSITORY_ROOT"
+  git clone -q --branch develop \
+    "$BOOTSTRAP_DIRECTORY/surface_mamba.bundle" \
+    "$REPOSITORY_ROOT"
 fi
 cd "$REPOSITORY_ROOT"
 git submodule update --init --recursive
