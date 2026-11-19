@@ -81,6 +81,7 @@ print("surface imports PASS", torch.__version__, torchvision.__version__, cv2.__
 PY
 
 SURFACE_ENV="$REPOSITORY_ROOT/outputs/recurrent/surface_env.sh"
+mkdir -p "$(dirname "$SURFACE_ENV")"
 GPU_ICD=""
 for candidate in \
   /etc/vulkan/icd.d/nvidia_icd.json \
