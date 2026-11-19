@@ -52,7 +52,14 @@ fi
 
 if command -v apt-get >/dev/null 2>&1 && [ "$(id -u)" = 0 ]; then
   apt-get update -q >/dev/null
-  apt-get install -y -q libvulkan1 >/dev/null
+  apt-get install -y -q \
+    libglvnd0 \
+    libvulkan1 \
+    libx11-6 \
+    libxcb1 \
+    libxext6 \
+    libxrandr2 \
+    >/dev/null
 fi
 
 if [ ! -f /root/.secrets/hf.env ]; then
