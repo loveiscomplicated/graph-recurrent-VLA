@@ -1,0 +1,14 @@
+trainer: evaluation.hole_rim_ransac_fallback:evaluate
+device: cuda:0
+detector_device: cuda:0
+cpu_threads: 4
+expected_case: case_0146_521142120
+case_root: /workspace/hole_rim_cuda_eval/input/case_0146_521142120
+raw_archive: /workspace/hole_rim_cuda_eval/input/case_0146_521142120.tar.zst
+output: /workspace/hole_rim_cuda_eval/output
+tracker:
+  path: /workspace/hole_rim_cuda_eval/models/surface_tracker.pt
+  sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+gnn:
+  path: /workspace/hole_rim_cuda_eval/models/surface_gnn.pt
+  sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241

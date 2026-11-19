@@ -1,0 +1,13 @@
+trainer: evaluation.hole_rim_ransac_fallback:evaluate
+device: cpu
+cpu_threads: 4
+expected_case: case_0146_521142120
+case_root: /Users/jeong-yunseong/.codex/worktrees/graph2/graph-recurrent-VLA/outputs/new_seed_surface_evaluation/diagnostic_inputs/cases/case_0146_521142120
+raw_archive: /Users/jeong-yunseong/.codex/worktrees/graph2/graph-recurrent-VLA/outputs/new_seed_surface_evaluation/raw_error_probe/case_0146_521142120.tar.zst
+output: outputs/hole_rim_ransac_fallback_case_0146
+tracker:
+  path: /Users/jeong-yunseong/.cache/huggingface/hub/models--Graph-Recurrent-VLA--graph-recurrent-models/snapshots/d444f69b37056bf5534fea4dd88d794afce632af/graph/3a94383216fd448b903946c57164170b/artifacts/checkpoint/f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc/best.pt
+  sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+gnn:
+  path: /Users/jeong-yunseong/.codex/worktrees/graph2/graph-recurrent-VLA/outputs/surface_gnn_publication/artifacts/best.pt
+  sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241

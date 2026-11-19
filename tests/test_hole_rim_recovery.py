@@ -2,6 +2,7 @@
 
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import numpy as np
 import torch
@@ -108,6 +109,87 @@ class HoleRimRecoveryTest(unittest.TestCase):
             result, torch.cat((points[1:], points[:1], opening[:1]))
         )
         self.assertEqual(ids.tolist(), [1, 1, 0, 1])
+
+    def test_grid_hole_fallback_queues_verified_ransac_opening(self):
+        detector = TorchCornerDetector(
+            "cpu",
+            recover_hole_rim=True,
+            recover_small_geometry=True,
+            recover_fragmented_rim=True,
+            hole_rim_ransac_fallback=True,
+            plane_fit_method="grid",
+        )
+        detector.xyz = torch.zeros((65, 65, 3))
+        detector.depth_cpu = np.ones((65, 65))
+        detector.k = torch.as_tensor(self.intrinsic, dtype=torch.float32)
+        detector.k_cpu = self.intrinsic
+        detector.blocks, detector.rows = [], []
+        corners = np.array(
+            [
+                [-0.02, -0.02, 1],
+                [-0.02, 0.02, 1],
+                [0.02, -0.02, 1],
+                [0.02, 0.02, 1],
+            ]
+        )
+        rejected = [(0, corners, True, False)]
+        recovered = [(0, corners, True, True)]
+        box = SimpleNamespace(
+            oid=1,
+            support_cpu=self.support,
+            planes_cpu=self.planes[:1],
+            eligible_cpu={0},
+            points=torch.empty((0, 3)),
+            support=torch.as_tensor(self.support),
+        )
+
+        with patch.object(
+            detector, "_opening_proposals", side_effect=(rejected, recovered)
+        ) as proposals, patch.object(
+            detector,
+            "_ransac_hole_planes",
+            return_value=(self.planes, {0, 1}),
+        ) as fallback:
+            detector.box_openings(box)
+
+        self.assertEqual(proposals.call_count, 2)
+        fallback.assert_called_once_with(box)
+        self.assertEqual(len(detector.blocks), 2)
+        self.assertEqual(detector.blocks[0][3].tolist(), [False] * 4)
+        self.assertEqual(detector.blocks[1][3].tolist(), [True] * 4)
+        fallback_rows = [row for row in detector.rows if row["block"] == 1]
+        self.assertTrue(
+            all(
+                row["meta"]["plane_fit_method"] == "ransac_fallback"
+                for row in fallback_rows
+            )
+        )
+
+    def test_main_enables_fallback_only_for_grid_plane_fit_by_default(self):
+        grid = TorchCornerDetector.main(device="cpu", plane_fit_method="grid")
+        ransac = TorchCornerDetector.main(device="cpu", plane_fit_method="ransac")
+        historical_grid = TorchCornerDetector.main(
+            device="cpu",
+            plane_fit_method="grid",
+            hole_rim_ransac_fallback=False,
+        )
+
+        self.assertTrue(grid.hole_rim_ransac_fallback)
+        self.assertFalse(ransac.hole_rim_ransac_fallback)
+        self.assertFalse(historical_grid.hole_rim_ransac_fallback)
+
+    def test_main_cuda_preset_enables_grid_hole_fallback(self):
+        with patch(
+            "visual.corner_detection.detector.K.resolve_device",
+            return_value=torch.device("cuda"),
+        ), patch(
+            "visual.corner_detection.detector.validation_torch.validation_function",
+            return_value=lambda *args: None,
+        ):
+            detector = TorchCornerDetector.main(device="cuda")
+
+        self.assertEqual(detector.plane_fit_method, "grid")
+        self.assertTrue(detector.hole_rim_ransac_fallback)
 
     def test_peg_prism_requires_two_planes_and_depth_near_each_vertex(self):
         x, y = np.meshgrid(np.linspace(-0.1, 0.1, 11), np.linspace(-0.02, 0.02, 5))

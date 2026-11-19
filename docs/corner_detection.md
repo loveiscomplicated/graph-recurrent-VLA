@@ -173,6 +173,15 @@ the edge-only compilation preset and defaults to the RANSAC plane fit.
 CPU and MPS default to RANSAC. CUDA with `optimized=False` defaults to
 RANSAC and eager validation.
 
+The main CUDA grid preset enables the grazing-view Hole RANSAC fallback. The
+detector first runs the normal grid path. Only when that path has no
+depth-verified Hole opening does it refit the Box planes with deterministic
+RANSAC and queue verified opening corners. CPU and MPS already use RANSAC for
+the complete plane fit by default, so they do not run this secondary fit. Pass
+`hole_rim_ransac_fallback=False` to the main CUDA detector when reproducing the
+historical grid-only output. The fallback requires the Hole recovery path
+enabled by `TorchCornerDetector.main()`.
+
 Use `TorchCornerDetector.main(device="cuda", sample_cuda_box_planes=True)` to
 compare the experimental Box edge kernel. It tests plane membership at six
 pixels on each side of each candidate leg. One Triton launch handles the
@@ -189,6 +198,46 @@ longer-span replacement are applied by the trajectory replay workflow.
 A detector instance holds mutable per-call workspace. Construct a separate
 instance per concurrent stream. `detect_tensors` caches an instance per device
 when parameters are omitted.
+
+### 사선 Hole 입구의 RANSAC fallback 진단
+
+2026-11-19에 Hole을 끝까지 한 번도 관측하지 못한 보존 사례
+`case_0146_521142120`의 251개 원본 RGB-D 프레임을 재생했다. 기존 평가의
+CUDA 검출 후보는 그대로 두고, 2픽셀 CUDA grid 경로가 Hole 입구를 찾지
+못했을 때 RANSAC fallback이 새로 낸 후보만 뒤에 추가했다. 따라서 아래
+차이는 전체 검출기 재실행 차이가 아니라 새 후보의 효과를 분리한 결과다.
+Tracker와 GNN은 각각 체크섬이 고정된 epoch 443과 epoch 62 가중치를
+사용했고 둘 다 동일 RTX 3090에서 baseline과 fallback을 다시 실행했다.
+
+```bash
+WANDB_MODE=disabled python main.py \
+  --config graph/configs/temporal/hole_rim_ransac_fallback_cuda.yaml
+```
+
+fallback은 251/251프레임에서 네 점을 냈고, 1,004개 점의 GT Hole rim
+일대일 대응 오차는 평균 2.275 mm, P90 2.640 mm, 최대 3.234 mm였다. 모든
+프레임에서 6 mm 이내 점이 최소 세 개여서 물리 matcher가 프레임 0부터 Hole
+ID를 초기화했다. 기존 입력은 251프레임 모두 Hole 미관측이었다.
+
+| CUDA 동일 에피소드 251프레임 | 기존 고정 파이프라인 평균 / P90 | fallback 평균 / P90 |
+| --- | ---: | ---: |
+| GNN Hole 위치 | 92.620 / 92.620 mm | 0.753 / 0.752 mm |
+| GNN tip−Hole 벡터 | 92.323 / 92.323 mm | 1.323 / 1.322 mm |
+
+보존된 원본 출력과 CUDA baseline GNN 출력의 Object21 원소별 최대 차이는
+`1.79e-7` m였다. 앞서 실행한 CPU fallback과 CUDA fallback은 관측 마스크와
+프레임별 후보 수가 완전히 같았고, 최종 Object21 원소별 최대 차이는
+`2.68e-7` m였다. CUDA 실행은 Vast.ai 인스턴스 `61278571`의 RTX 3090,
+PyTorch `2.14.1+cu132`에서 수행했으며 결과 회수 후 인스턴스를 삭제했다.
+
+이 결과는 원본 RGB-D가 남은 한 개의 대표 실패 에피소드에 한정된다. 나머지
+62개 끝까지 미관측 사례의 일반화 및 정상 시점에서의 오검출 변화는 아직
+평가하지 않았다.
+
+[CUDA 수치 결과](../outputs/hole_rim_ransac_fallback_case_0146_cuda/results.json) ·
+[CUDA 프레임별 출력](../outputs/hole_rim_ransac_fallback_case_0146_cuda/predictions.npz) ·
+[실행 영수증](../outputs/hole_rim_ransac_fallback_case_0146_cuda/execution.json) ·
+[CPU 수치 결과](../outputs/hole_rim_ransac_fallback_case_0146/results.json)
 
 | Input | Meaning |
 | --- | --- |

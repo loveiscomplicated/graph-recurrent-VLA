@@ -116,6 +116,7 @@ class TorchCornerDetector:
         recover_small_geometry=False,
         recover_fragmented_rim=False,
         verify_rejected_rim_squares=False,
+        hole_rim_ransac_fallback=False,
         correct_box_exterior_pixel_center=False,
         correct_peg_position=False,
         center_peg_plane_bounds=False,
@@ -200,6 +201,9 @@ class TorchCornerDetector:
         if verify_rejected_rim_squares and not recover_fragmented_rim:
             raise ValueError("verify_rejected_rim_squares requires recover_fragmented_rim")
         self.verify_rejected_rim_squares = verify_rejected_rim_squares
+        if hole_rim_ransac_fallback and not recover_hole_rim:
+            raise ValueError("hole_rim_ransac_fallback requires recover_hole_rim")
+        self.hole_rim_ransac_fallback = hole_rim_ransac_fallback
 
     @classmethod
     def main(
@@ -213,6 +217,7 @@ class TorchCornerDetector:
         compile_cuda_edges=False,
         compile_cuda_validation=None,
         plane_fit_method=None,
+        hole_rim_ransac_fallback=None,
         timer=None,
         sample_cuda_box_planes=False,
     ):
@@ -230,6 +235,8 @@ class TorchCornerDetector:
         use_cuda_preset = optimized and device.type == "cuda" and not compile_cuda_edges
         if plane_fit_method is None:
             plane_fit_method = "grid" if use_cuda_preset else "ransac"
+        if hole_rim_ransac_fallback is None:
+            hole_rim_ransac_fallback = plane_fit_method == "grid"
         if compile_cuda_validation is None:
             compile_cuda_validation = use_cuda_preset
         return cls(
@@ -249,6 +256,7 @@ class TorchCornerDetector:
             compile_cuda_edges=compile_cuda_edges,
             compile_cuda_validation=compile_cuda_validation,
             plane_fit_method=plane_fit_method,
+            hole_rim_ransac_fallback=hole_rim_ransac_fallback,
             timer=timer,
             sample_cuda_box_planes=sample_cuda_box_planes,
         )
@@ -853,23 +861,80 @@ class TorchCornerDetector:
                 return points.to(self.device), uv.to(self.device), selected.to(self.device)
         return points, uv, selected
 
+    def _ransac_hole_planes(self, data):
+        """Refit only the Box planes used by Hole recovery with deterministic RANSAC."""
+        with self._measure("hole_rim_ransac_fallback"):
+            planes = K.fit_planes(
+                data.points,
+                self.parameters,
+                43,
+                8,
+                optimized=self.optimized,
+            )
+            _, cores = K.plane_masks(
+                self.xyz,
+                data.support,
+                planes,
+                self.parameters.plane_tolerance_m,
+            )
+            eligible = cores.flatten(1).sum(1) >= 20
+            plane_rows = planes.cpu().numpy().astype(float)
+            eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
+        return [(row[:3], float(row[3])) for row in plane_rows], eligible_cpu
+
+    def _opening_proposals(self, depth, data, planes, eligible):
+        """Return the complete proposal list for one set of Box planes."""
+        return list(
+            opening_corners(
+                depth,
+                data.support_cpu,
+                planes,
+                eligible,
+                self.k_cpu,
+                small_opening=self.recover_small_geometry,
+                fragmented=self.recover_fragmented_rim,
+                square_span=self._opening_square_span,
+                verify_rejected_square=self.verify_rejected_rim_squares,
+            )
+        )
+
     def box_openings(self, data):
-        """Queue verified opening corners after all existing Box candidates."""
+        """Queue opening corners, optionally refitting missing grid faces with RANSAC."""
         with self._measure("hole_depth_readback"):
             depth_cpu = getattr(self, "depth_cpu", None)
             if depth_cpu is None:
                 depth_cpu = self.depth.cpu().numpy()
-        for plane, corners, rectangular, verified in opening_corners(
-            depth_cpu,
-            data.support_cpu,
-            data.planes_cpu,
-            data.eligible_cpu,
-            self.k_cpu,
-            small_opening=self.recover_small_geometry,
-            fragmented=self.recover_fragmented_rim,
-            square_span=self._opening_square_span,
-            verify_rejected_square=self.verify_rejected_rim_squares,
+
+        proposal_groups = [
+            (
+                self._opening_proposals(
+                    depth_cpu, data, data.planes_cpu, data.eligible_cpu
+                ),
+                self.plane_fit_method,
+            )
+        ]
+        primary_verified = any(row[3] for row in proposal_groups[0][0])
+        if (
+            self.hole_rim_ransac_fallback
+            and self.plane_fit_method != "ransac"
+            and not primary_verified
         ):
+            fallback_planes, fallback_eligible = self._ransac_hole_planes(data)
+            proposal_groups.append(
+                (
+                    self._opening_proposals(
+                        depth_cpu, data, fallback_planes, fallback_eligible
+                    ),
+                    "ransac_fallback",
+                )
+            )
+
+        for proposals, plane_fit_method in proposal_groups:
+            self._queue_opening_proposals(data, proposals, plane_fit_method)
+
+    def _queue_opening_proposals(self, data, proposals, plane_fit_method):
+        """Add one plane fit's Hole proposals to the ordinary merge stages."""
+        for plane, corners, rectangular, verified in proposals:
             points = self.tensor(corners)
             if self._refine_opening:
                 # Counter the observed subpixel raster bias at fitted rim edges.
@@ -878,15 +943,17 @@ class TorchCornerDetector:
                 pixel_shift = correction_px / self.k.diag()[:2]
                 points[:, :2] += points[:, 2:] * pixel_shift
             uv = K.project(points, self.k)
-            metadata = [
-                {
+            metadata = []
+            for _ in corners:
+                row = {
                     "method": "box_opening",
                     "plane": plane,
                     "contour_hole": True,
                     "rectangular": rectangular,
                 }
-                for _ in corners
-            ]
+                if plane_fit_method == "ransac_fallback":
+                    row["plane_fit_method"] = plane_fit_method
+                metadata.append(row)
             selected = torch.full((len(corners),), verified, dtype=torch.bool, device=self.device)
             self.add(data, points, uv, selected, metadata, stage=3)
 
