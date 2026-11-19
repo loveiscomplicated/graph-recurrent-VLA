@@ -1,0 +1,6 @@
+trainer: data_collection.surface_mamba_dataset:create_seed_plan
+output: /workspace/surface_mamba
+historical_exclusion_files:
+  - /workspace/surface_mamba/historical_dataset_seeds.json
+evaluation_start_seed: 4060000
+evaluation_seed_count: 300

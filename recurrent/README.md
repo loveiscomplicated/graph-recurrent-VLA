@@ -1,6 +1,60 @@
 # Recurrent 팀 prototype: 관측 손상 조건에서 controller 7종 비교
 
-Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)와 다른 팀 코드는 수정하지 않았습니다.
+Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)는 변경하지 않습니다. Surface-Mamba
+workflow는 Graph 팀의 검증된 모델을 수정하지 않고 별도 online adapter로 불러옵니다.
+
+## Frozen Surface frontend + five-Mamba controller
+
+The Surface-Mamba workflow connects the validation-selected Surface-Context
+Tracker--GNN to five independently trained recurrent controllers. The tracker
+and GNN remain frozen. Training selects one alpha from `0, .25, .5, .75, 1`
+per complete episode to interpolate between GT and Graph State36 inputs.
+Closed-loop inference uses Graph input; the GT-input ensemble is an oracle
+diagnostic. The primary path does not use the recurrent kinematic filter.
+
+Run from the repository root on a Linux CUDA/Vulkan host after installing
+`requirements.txt` and `requirements-tracking.txt`. Provision at least 120 GiB
+of free persistent storage and stage the official TAPNext++ checkpoint plus the
+two frozen checkpoints named in the configs.
+
+```bash
+export PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker:${PYTHONPATH:-}
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/create_seed_plan.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/collect.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/export.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/train.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_offline.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop.yaml
+```
+
+Before collection, merge all historical data seeds into
+`/workspace/surface_mamba/historical_dataset_seeds.json`. The seed-plan command
+reserves 300 disjoint evaluation seeds and writes the exclusion inventory used
+by collection. Collection retains raw RGB-D, GT, clean expert actions and noisy
+executed actions. Its exact quotas are 360 clean train, 360 DART train, 90 clean
+validation and 90 clean test successful episodes. DART adds Gaussian noise with
+standard deviation 0.02 to the six motion axes, clips them to the action bounds,
+and leaves the gripper command unchanged.
+
+The exporter verifies these frozen checkpoint SHA-256 values before inference:
+
+- Surface tracker epoch 443: `f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc`
+- Surface GNN epoch 62: `0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241`
+
+Each Mamba uses the established 44D feature contract and the `96/16/4/2`,
+two-layer configuration. Seeds 0--4 train from scratch for 3,000 updates with
+batch size 8 and Adam at `1e-3`; graph-only validation loss selects `best.pt`.
+The paired closed-loop run evaluates all five singles, the Graph ensemble and
+the GT-input oracle ensemble on the same 300 reset seeds. It reports Wilson
+intervals and paired discordant success counts without a precommitted rate floor.
+
+```bash
+.venv/bin/python -m unittest tests.test_surface_mamba_pipeline -v
+```
+
+The current macOS host verified CPU model/data contracts only. TAPNext++ CUDA,
+CUDA rendering, the 900-episode collection, five full training runs and the
+300-seed closed-loop evaluation must run on the target Vast.ai host.
 
 **완료된 본 실험:** [84개 학습 실행·11,400 episode 재평가 공유 리포트](../docs/reports/recurrent_main_20261023/README.md).
 PNG 그림 12개와 CSV 표 8개, 원본 HF archive와 검증 hash를 포함합니다.

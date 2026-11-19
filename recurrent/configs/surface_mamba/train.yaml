@@ -1,0 +1,21 @@
+trainer: training.surface_mamba_controller:train
+dataset: /workspace/surface_mamba/state36
+output: /workspace/surface_mamba/training
+resume: true
+device: cuda:0
+cpu_threads: 2
+seeds: [0, 1, 2, 3, 4]
+mixing:
+  alphas: [0.0, 0.25, 0.5, 0.75, 1.0]
+model:
+  d_model: 96
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  layers: 2
+training:
+  steps: 3000
+  batch_size: 8
+  learning_rate: 0.001
+  gradient_clip_norm: 1.0
+  validation_interval: 100

@@ -1,0 +1,11 @@
+trainer: evaluation.surface_mamba_controller:evaluate
+mode: offline
+dataset: /workspace/surface_mamba/state36
+output: /workspace/surface_mamba/evaluation/offline
+device: cuda:0
+checkpoints:
+  - /workspace/surface_mamba/training/mamba_seed_0/best.pt
+  - /workspace/surface_mamba/training/mamba_seed_1/best.pt
+  - /workspace/surface_mamba/training/mamba_seed_2/best.pt
+  - /workspace/surface_mamba/training/mamba_seed_3/best.pt
+  - /workspace/surface_mamba/training/mamba_seed_4/best.pt

@@ -109,6 +109,27 @@ are retained as ignored verification artifacts.
 
 ## Full episodes for tracked corner completion
 
+### Surface-Mamba DART behavior-cloning dataset
+
+`data_collection.surface_mamba_dataset` provides the dedicated raw collection
+and frozen-frontend export used by the recurrent Surface-Mamba controller. It
+does not change the shared simulator or earlier Object21 releases. Commands and
+prerequisites are in [the Recurrent guide](../recurrent/README.md#frozen-surface-frontend--five-mamba-controller).
+
+The raw release keeps four seed-disjoint buckets: 360 clean training episodes,
+360 DART training episodes, 90 clean validation episodes and 90 clean test
+episodes. Every saved observation has simulator GT. Frame `t+1` contains both
+the clean expert target and the executed action applied to observation `t`.
+Only the first six action components receive DART noise; the gripper command is
+unchanged. Only successful trajectories enter the dataset manifest, while all
+attempts and rejection causes remain in the bucket ledger.
+
+The exporter runs the detector, GT-free physical association, online TAPNext++
+32-point Peg surface tracker, frozen Surface corner tracker and frozen GNN. It
+stores intermediate masks and coordinates alongside aligned GT and Graph
+State36 arrays, then packs train/validation/test NPZ files. State interpolation
+is deferred to the training loader so the exported endpoints remain auditable.
+
 `python main.py --config graph/configs/temporal/corner_tracking/prepare.yaml`
 packs an existing **full-frame** vertex-family dataset into checksummed temporal
 episodes. This preparation adapter also requires OpenCV for the existing label
