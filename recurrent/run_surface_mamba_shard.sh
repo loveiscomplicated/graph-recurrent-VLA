@@ -26,7 +26,10 @@ if [ ! -x "$PYTHON" ]; then
   exit 1
 fi
 
-if [ -f outputs/recurrent/env.sh ]; then
+if [ -f outputs/recurrent/surface_env.sh ]; then
+  # shellcheck disable=SC1091
+  source outputs/recurrent/surface_env.sh
+elif [ -f outputs/recurrent/env.sh ]; then
   # shellcheck disable=SC1091
   source outputs/recurrent/env.sh
 fi
