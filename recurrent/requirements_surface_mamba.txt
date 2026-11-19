@@ -1,0 +1,4 @@
+# Runtime dependencies used by the frozen CUDA detector and TAPNext++ exporter.
+einops>=0.8,<1
+opencv-python-headless>=4.8,<5
+torchvision>=0.17

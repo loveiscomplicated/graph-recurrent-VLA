@@ -1,0 +1,8 @@
+trainer: data_collection.surface_mamba_dataset:package_shard
+raw_root: /workspace/surface_mamba/shard_000/raw
+derived_root: /workspace/surface_mamba/shard_000/state36
+output: /workspace/surface_mamba/shard_000/package
+experiments_dir: /workspace/surface_mamba/shard_000/experiments
+resume: true
+publish: true
+repository: Graph-Recurrent-VLA/graph-recurrent-rollouts

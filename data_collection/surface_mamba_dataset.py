@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import tarfile
 import time
 from typing import Any
 
@@ -25,7 +26,10 @@ from utils.experiment_logger import ExperimentLogger
 
 
 DATASET_FORMAT = "surface_mamba_raw_v1"
+SHARDED_DATASET_FORMAT = "surface_mamba_raw_shard_v1"
 DERIVED_FORMAT = "surface_mamba_state36_v1"
+SHARDED_DERIVED_FORMAT = "surface_mamba_state36_shard_v1"
+SHARD_PACKAGE_FORMAT = "surface_mamba_shard_package_v1"
 EXPECTED_BUCKETS = {
     "train_clean": ("train", False, 360),
     "train_dart": ("train", True, 360),
@@ -99,6 +103,70 @@ def _validate_buckets(config: dict[str, Any]) -> list[dict[str, Any]]:
             if max(left.start, right.start) < min(left.stop, right.stop):
                 raise ValueError("Collection bucket seed ranges overlap")
     return [by_name[name] for name in EXPECTED_BUCKETS]
+
+
+def _validate_shard(config: dict[str, Any]) -> dict[str, int]:
+    """Return one validated distributed shard assignment.
+
+    Omitting ``shard`` preserves the original single-machine behavior. A
+    distributed run uses zero-based ``index`` and a shared positive ``count``.
+    Every worker must receive the same count and a different index.
+    """
+    assignment = config.get("shard")
+    if assignment is None:
+        return {"index": 0, "count": 1}
+    if not isinstance(assignment, dict):
+        raise ValueError("shard must be a mapping with integer index and count")
+    index = assignment.get("index")
+    count = assignment.get("count")
+    if type(index) is not int or type(count) is not int or count < 1:
+        raise ValueError("shard.index and shard.count must be integers with count >= 1")
+    if index < 0 or index >= count:
+        raise ValueError("shard.index must satisfy 0 <= index < shard.count")
+    return {"index": index, "count": count}
+
+
+def _partition_size(total: int, shard_count: int, shard_index: int) -> tuple[int, int]:
+    """Return the contiguous offset and size assigned to one shard."""
+    base, remainder = divmod(total, shard_count)
+    size = base + int(shard_index < remainder)
+    offset = shard_index * base + min(shard_index, remainder)
+    return offset, size
+
+
+def _partition_buckets(
+    buckets: list[dict[str, Any]],
+    assignment: dict[str, int],
+) -> list[dict[str, Any]]:
+    """Split bucket quotas and attempt ranges without overlapping reset seeds."""
+    shard_index = assignment["index"]
+    shard_count = assignment["count"]
+    partitioned = []
+    for bucket in buckets:
+        episode_offset, episode_count = _partition_size(
+            bucket["count"], shard_count, shard_index
+        )
+        attempt_offset, attempt_count = _partition_size(
+            bucket["max_attempts"], shard_count, shard_index
+        )
+        if episode_count and attempt_count < episode_count:
+            raise ValueError(
+                f"Shard attempt range is smaller than its quota for {bucket['name']}"
+            )
+        local = dict(bucket)
+        local.update(
+            count=episode_count,
+            start_seed=bucket["start_seed"] + attempt_offset,
+            max_attempts=attempt_count,
+            global_count=bucket["count"],
+            global_start_seed=bucket["start_seed"],
+            global_max_attempts=bucket["max_attempts"],
+            global_episode_offset=episode_offset,
+            shard_index=shard_index,
+            shard_count=shard_count,
+        )
+        partitioned.append(local)
+    return partitioned
 
 
 def _load_excluded_seeds(path: str | None) -> set[int]:
@@ -220,6 +288,10 @@ def _collect_bucket(
     manifest = _resume_bucket(directory, bucket)
     if manifest["status"] == "COMPLETE":
         return manifest
+    if bucket["count"] == 0:
+        manifest["status"] = "COMPLETE"
+        write_json(directory / "manifest.json", manifest)
+        return manifest
     accepted_seeds = {row["seed"] for row in manifest["episodes"]}
     next_seed = bucket["start_seed"] + manifest["attempted"]
     final_seed = bucket["start_seed"] + bucket["max_attempts"]
@@ -335,7 +407,12 @@ def _collect_bucket(
 def collect(config: dict[str, Any]) -> None:
     """Collect 720 training, 90 validation and 90 test successful episodes."""
     collection = config["collection"]
-    buckets = _validate_buckets(collection)
+    global_buckets = _validate_buckets(collection)
+    assignment = _validate_shard(config)
+    buckets = _partition_buckets(global_buckets, assignment)
+    expected_episode_count = sum(bucket["count"] for bucket in buckets)
+    if expected_episode_count < 1:
+        raise ValueError("This shard has no assigned episodes")
     excluded = _load_excluded_seeds(config.get("excluded_seeds"))
     output = Path(config["output"]).resolve()
     effective = {key: value for key, value in config.items() if key != "trainer"}
@@ -347,7 +424,14 @@ def collect(config: dict[str, Any]) -> None:
         completed_manifest = output / "dataset_manifest.json"
         if completed_manifest.exists():
             completed = json.loads(completed_manifest.read_text())
-            if completed.get("format") != DATASET_FORMAT or completed.get("episode_count") != 900:
+            expected_format = (
+                DATASET_FORMAT if assignment["count"] == 1 else SHARDED_DATASET_FORMAT
+            )
+            if (
+                completed.get("format") != expected_format
+                or completed.get("episode_count") != expected_episode_count
+                or completed.get("shard") != assignment
+            ):
                 raise ValueError("Existing collection manifest is not a complete Surface-Mamba release")
             print(f"Reusing completed raw dataset at {output}", flush=True)
             return
@@ -387,17 +471,34 @@ def collect(config: dict[str, Any]) -> None:
                 for row in manifest["episodes"]
             )
         seeds = [row["seed"] for row in episodes]
-        if len(episodes) != 900 or len(set(seeds)) != 900 or set(seeds) & excluded:
+        if (
+            len(episodes) != expected_episode_count
+            or len(set(seeds)) != expected_episode_count
+            or set(seeds) & excluded
+        ):
             raise ValueError("Final raw dataset count, uniqueness or exclusion check failed")
         manifest_path = output / "dataset_manifest.json"
+        local_counts = {
+            bucket["name"]: bucket["count"] for bucket in buckets
+        }
         write_json(
             manifest_path,
             {
-                "format": DATASET_FORMAT,
+                "format": (
+                    DATASET_FORMAT
+                    if assignment["count"] == 1
+                    else SHARDED_DATASET_FORMAT
+                ),
                 "run_id": logger.run_id,
+                "shard": assignment,
                 "episodes": episodes,
                 "episode_count": len(episodes),
-                "counts": {name: expected[2] for name, expected in EXPECTED_BUCKETS.items()},
+                "counts": local_counts,
+                "global_counts": {
+                    name: expected[2] for name, expected in EXPECTED_BUCKETS.items()
+                },
+                "global_buckets": global_buckets,
+                "bucket_assignments": buckets,
                 "action_alignment": "frame_t+1 stores clean/executed action applied to observation_t",
                 "config": effective,
             },
@@ -501,6 +602,8 @@ def _pack_split(
     records: list[dict[str, Any]],
     encoded: Path,
 ) -> dict[str, Any]:
+    if not records:
+        return {"file": None, "episodes": 0, "rows": 0, "sha256": None}
     episode_rows = []
     offsets = [0]
     for record in records:
@@ -555,8 +658,18 @@ def export(config: dict[str, Any]) -> None:
     raw_root = Path(config["raw_root"]).resolve()
     raw_manifest_path = raw_root / "dataset_manifest.json"
     raw_manifest = json.loads(raw_manifest_path.read_text())
-    if raw_manifest.get("format") != DATASET_FORMAT or raw_manifest.get("episode_count") != 900:
-        raise ValueError("Expected the completed 900-episode Surface-Mamba raw dataset")
+    raw_format = raw_manifest.get("format")
+    if raw_format not in (DATASET_FORMAT, SHARDED_DATASET_FORMAT):
+        raise ValueError("Expected a completed Surface-Mamba raw dataset or shard")
+    assignment = _validate_shard(raw_manifest.get("config", {}))
+    if raw_manifest.get("shard") != assignment:
+        raise ValueError("Raw dataset shard assignment differs from its effective config")
+    expected_episode_count = sum(raw_manifest.get("counts", {}).values())
+    if (
+        raw_manifest.get("episode_count") != expected_episode_count
+        or expected_episode_count < 1
+    ):
+        raise ValueError("Raw Surface-Mamba manifest episode count is incomplete")
     output = Path(config["output"]).resolve()
     effective = {k: v for k, v in config.items() if k != "trainer"}
     encoded = output / "episodes"
@@ -606,15 +719,23 @@ def export(config: dict[str, Any]) -> None:
         for split in ("train", "validation", "test"):
             selected = [row for row in records if row["split"] == split]
             splits[split] = _pack_split(output / f"{split}.npz", selected, encoded)
-        expected = {"train": 720, "validation": 90, "test": 90}
+        expected = {
+            split: sum(1 for row in records if row["split"] == split)
+            for split in ("train", "validation", "test")
+        }
         if {key: value["episodes"] for key, value in splits.items()} != expected:
-            raise ValueError("Derived dataset split counts differ from 720/90/90")
+            raise ValueError("Derived dataset split counts differ from the raw shard")
         manifest_path = output / "dataset_manifest.json"
         write_json(
             manifest_path,
             {
-                "format": DERIVED_FORMAT,
+                "format": (
+                    DERIVED_FORMAT
+                    if raw_format == DATASET_FORMAT
+                    else SHARDED_DERIVED_FORMAT
+                ),
                 "run_id": logger.run_id,
+                "shard": assignment,
                 "raw_manifest_sha256": file_sha256(raw_manifest_path),
                 "raw_run_id": raw_manifest["run_id"],
                 "frontend": config["frontend"],
@@ -626,10 +747,350 @@ def export(config: dict[str, Any]) -> None:
         )
         logger.link_output(manifest_path, kind="episode_metadata")
         for split in splits.values():
-            logger.link_output(output / split["file"], kind="trajectory")
+            if split["file"] is not None:
+                logger.link_output(output / split["file"], kind="trajectory")
         logger.log(
             {
                 "episodes": len(records),
                 "rows": sum(split["rows"] for split in splits.values()),
             }
         )
+
+
+def _validate_raw_shard_files(root: Path, manifest: dict[str, Any]) -> None:
+    """Recheck every approved raw frame before packaging a shard."""
+    for record in manifest["episodes"]:
+        directory = root / record["path"]
+        frames = sorted(directory.glob("frame_*.npz"))
+        expected_hashes = record.get("frame_sha256", [])
+        if len(frames) != record["observations"] or len(frames) != len(expected_hashes):
+            raise ValueError(f"Raw shard frame inventory differs: {directory}")
+        for frame, expected_hash in zip(frames, expected_hashes, strict=True):
+            if file_sha256(frame) != expected_hash:
+                raise ValueError(f"Raw shard frame checksum differs: {frame}")
+
+
+def _validate_derived_shard_files(root: Path, manifest: dict[str, Any]) -> None:
+    """Recheck encoded episodes and packed split files before packaging."""
+    for record in manifest["episodes"]:
+        path = root / "episodes" / record["file"]
+        if file_sha256(path) != record["sha256"]:
+            raise ValueError(f"Derived shard episode checksum differs: {path}")
+    for split in manifest["splits"].values():
+        if split["file"] is None:
+            continue
+        path = root / split["file"]
+        if file_sha256(path) != split["sha256"]:
+            raise ValueError(f"Derived shard split checksum differs: {path}")
+
+
+def _add_file(bundle: tarfile.TarFile, source: Path, archive_path: str) -> None:
+    if not source.is_file() or source.is_symlink():
+        raise ValueError(f"Shard package input must be a regular file: {source}")
+    bundle.add(source, arcname=archive_path, recursive=False)
+
+
+def _write_raw_shard_archive(
+    destination: Path,
+    root: Path,
+    manifest: dict[str, Any],
+) -> None:
+    """Archive only approved raw episodes and their audit ledgers."""
+    temporary = destination.with_suffix(destination.suffix + ".partial")
+    with tarfile.open(temporary, "w") as bundle:
+        for name in ("effective_config.json", "source.json", "dataset_manifest.json"):
+            _add_file(bundle, root / name, f"raw/{name}")
+        for bucket_name in EXPECTED_BUCKETS:
+            bucket_root = root / "buckets" / bucket_name
+            for name in ("manifest.json", "attempts.jsonl"):
+                _add_file(
+                    bundle,
+                    bucket_root / name,
+                    f"raw/buckets/{bucket_name}/{name}",
+                )
+        for record in manifest["episodes"]:
+            episode_root = root / record["path"]
+            for path in sorted(episode_root.iterdir()):
+                _add_file(bundle, path, f"raw/{record['path']}/{path.name}")
+    temporary.replace(destination)
+
+
+def _write_derived_shard_archive(
+    destination: Path,
+    root: Path,
+    manifest: dict[str, Any],
+) -> None:
+    """Archive encoded episodes, packed splits and their completion manifest."""
+    temporary = destination.with_suffix(destination.suffix + ".partial")
+    with tarfile.open(temporary, "w") as bundle:
+        for name in ("effective_config.json", "progress.json", "dataset_manifest.json"):
+            _add_file(bundle, root / name, f"state36/{name}")
+        for record in manifest["episodes"]:
+            _add_file(
+                bundle,
+                root / "episodes" / record["file"],
+                f"state36/episodes/{record['file']}",
+            )
+        for split in manifest["splits"].values():
+            if split["file"] is not None:
+                _add_file(bundle, root / split["file"], f"state36/{split['file']}")
+    temporary.replace(destination)
+
+
+def _publish_shard_package(
+    config: dict[str, Any],
+    experiments_root: Path,
+    run_id: str,
+    output: Path,
+) -> None:
+    """Publish one finished package through the shared immutable publisher."""
+    from utils.experiment_artifacts import (
+        DEFAULT_REPOSITORIES,
+        Repository,
+        publish,
+    )
+
+    repositories = dict(DEFAULT_REPOSITORIES)
+    repositories["rollouts"] = Repository(
+        config.get("repository", "Graph-Recurrent-VLA/graph-recurrent-rollouts"),
+        "dataset",
+    )
+    report = publish(
+        experiments_root / run_id,
+        ["trajectory"],
+        repositories=repositories,
+        retries=5,
+    )
+    write_json(output / "publication_report.json", report)
+    if report.get("status") != "complete":
+        raise RuntimeError("Hugging Face shard publication did not complete")
+
+
+def package_shard(config: dict[str, Any]) -> None:
+    """Verify, archive and optionally publish one completed raw/cache shard."""
+    raw_root = Path(config["raw_root"]).resolve()
+    derived_root = Path(config["derived_root"]).resolve()
+    raw_manifest_path = raw_root / "dataset_manifest.json"
+    derived_manifest_path = derived_root / "dataset_manifest.json"
+    raw_manifest = json.loads(raw_manifest_path.read_text())
+    derived_manifest = json.loads(derived_manifest_path.read_text())
+    if raw_manifest.get("format") != SHARDED_DATASET_FORMAT:
+        raise ValueError("Shard packaging requires a distributed raw dataset shard")
+    if derived_manifest.get("format") != SHARDED_DERIVED_FORMAT:
+        raise ValueError("Shard packaging requires a distributed State36 shard")
+    if raw_manifest.get("shard") != derived_manifest.get("shard"):
+        raise ValueError("Raw and derived shard assignments differ")
+    if derived_manifest.get("raw_manifest_sha256") != file_sha256(raw_manifest_path):
+        raise ValueError("Derived shard was exported from a different raw manifest")
+    raw_seeds = [row["seed"] for row in raw_manifest["episodes"]]
+    derived_seeds = [row["seed"] for row in derived_manifest["episodes"]]
+    if raw_seeds != derived_seeds:
+        raise ValueError("Raw and derived shard episode order differs")
+
+    _validate_raw_shard_files(raw_root, raw_manifest)
+    _validate_derived_shard_files(derived_root, derived_manifest)
+
+    output = Path(config["output"]).resolve()
+    shard_index = raw_manifest["shard"]["index"]
+    if output.exists():
+        if not config.get("resume", False):
+            raise FileExistsError(f"Shard package output already exists: {output}")
+        index_path = output / "shard_package.json"
+        request_path = output / "publication_request.json"
+        if not index_path.is_file() or not request_path.is_file():
+            raise ValueError("Existing shard package is incomplete; preserve it and use a new output")
+        existing = json.loads(index_path.read_text())
+        request = json.loads(request_path.read_text())
+        if (
+            existing.get("format") != SHARD_PACKAGE_FORMAT
+            or existing.get("shard") != raw_manifest["shard"]
+            or existing.get("raw_manifest_sha256") != file_sha256(raw_manifest_path)
+            or existing.get("derived_manifest_sha256") != file_sha256(derived_manifest_path)
+        ):
+            raise ValueError("Existing shard package was built from different inputs")
+        for archive in existing["archives"].values():
+            path = output / archive["file"]
+            if path.stat().st_size != archive["size"] or file_sha256(path) != archive["sha256"]:
+                raise ValueError(f"Existing shard package archive differs: {path}")
+        experiments_root = Path(request["experiments_dir"]).resolve()
+        if config.get("publish", False):
+            _publish_shard_package(
+                config, experiments_root, request["run_id"], output
+            )
+        print(f"Reused Surface-Mamba shard package at {output}", flush=True)
+        return
+
+    output.mkdir(parents=True)
+    raw_archive = output / f"raw_shard_{shard_index:03d}.tar"
+    derived_archive = output / f"state36_shard_{shard_index:03d}.tar"
+    experiments_root = Path(config.get("experiments_dir", output / "experiments")).resolve()
+
+    with ExperimentLogger(
+        team="recurrent",
+        model="surface_mamba_dataset_shard",
+        job_type="collection",
+        seed=shard_index,
+        config={key: value for key, value in config.items() if key != "trainer"},
+        root=experiments_root,
+    ) as logger:
+        _write_raw_shard_archive(raw_archive, raw_root, raw_manifest)
+        _write_derived_shard_archive(derived_archive, derived_root, derived_manifest)
+        package_index = {
+            "format": SHARD_PACKAGE_FORMAT,
+            "run_id": logger.run_id,
+            "shard": raw_manifest["shard"],
+            "counts": raw_manifest["counts"],
+            "global_counts": raw_manifest["global_counts"],
+            "global_buckets": raw_manifest["global_buckets"],
+            "bucket_assignments": raw_manifest["bucket_assignments"],
+            "episodes": raw_manifest["episodes"],
+            "raw_manifest_sha256": file_sha256(raw_manifest_path),
+            "derived_manifest_sha256": file_sha256(derived_manifest_path),
+            "archives": {
+                "raw": {
+                    "file": raw_archive.name,
+                    "size": raw_archive.stat().st_size,
+                    "sha256": file_sha256(raw_archive),
+                },
+                "state36": {
+                    "file": derived_archive.name,
+                    "size": derived_archive.stat().st_size,
+                    "sha256": file_sha256(derived_archive),
+                },
+            },
+        }
+        index_path = output / "shard_package.json"
+        write_json(index_path, package_index)
+        logger.link_output(raw_archive, kind="trajectory")
+        logger.link_output(derived_archive, kind="trajectory")
+        logger.link_output(index_path, kind="episode_metadata")
+        logger.log(
+            {
+                "episodes": len(raw_seeds),
+                "raw_bytes": raw_archive.stat().st_size,
+                "derived_bytes": derived_archive.stat().st_size,
+            }
+        )
+
+    write_json(
+        output / "publication_request.json",
+        {
+            "run_id": logger.run_id,
+            "experiments_dir": str(experiments_root),
+            "repository": config.get(
+                "repository", "Graph-Recurrent-VLA/graph-recurrent-rollouts"
+            ),
+        },
+    )
+    if config.get("publish", False):
+        _publish_shard_package(config, experiments_root, logger.run_id, output)
+
+
+def merge_shard_packages(config: dict[str, Any]) -> None:
+    """Validate every shard archive and produce one logical 900-episode index."""
+    index_paths = [Path(path).resolve() for path in config["shard_package_indexes"]]
+    if not index_paths:
+        raise ValueError("shard_package_indexes must contain every shard package index")
+    packages = [json.loads(path.read_text()) for path in index_paths]
+    if any(package.get("format") != SHARD_PACKAGE_FORMAT for package in packages):
+        raise ValueError("All inputs must be Surface-Mamba shard package indexes")
+    shard_counts = {package["shard"]["count"] for package in packages}
+    if len(shard_counts) != 1:
+        raise ValueError("Shard packages disagree on the global shard count")
+    shard_count = shard_counts.pop()
+    by_index = {
+        package["shard"]["index"]: (path, package)
+        for path, package in zip(index_paths, packages, strict=True)
+    }
+    if len(by_index) != len(packages) or set(by_index) != set(range(shard_count)):
+        raise ValueError("Shard package indexes must cover every index exactly once")
+
+    episodes = []
+    package_rows = []
+    expected_global_counts = {
+        name: expected[2] for name, expected in EXPECTED_BUCKETS.items()
+    }
+    global_buckets = packages[0].get("global_buckets")
+    validated_global_buckets = _validate_buckets({"buckets": global_buckets})
+    for shard_index in range(shard_count):
+        index_path, package = by_index[shard_index]
+        if (
+            package.get("global_counts") != expected_global_counts
+            or package.get("global_buckets") != global_buckets
+        ):
+            raise ValueError("Shard packages disagree on global bucket settings")
+        expected_assignments = _partition_buckets(
+            validated_global_buckets,
+            {"index": shard_index, "count": shard_count},
+        )
+        if package.get("bucket_assignments") != expected_assignments:
+            raise ValueError("Shard package bucket assignment is not deterministic")
+        expected_local_counts = {
+            bucket["name"]: bucket["count"] for bucket in expected_assignments
+        }
+        if package.get("counts") != expected_local_counts:
+            raise ValueError("Shard package quota counts differ from its assignment")
+        by_bucket = {bucket["name"]: bucket for bucket in expected_assignments}
+        observed_local_counts = {name: 0 for name in EXPECTED_BUCKETS}
+        for episode in package["episodes"]:
+            matches = [
+                name
+                for name, (split, dart, _) in EXPECTED_BUCKETS.items()
+                if episode["split"] == split and episode["dart"] == dart
+            ]
+            if len(matches) != 1:
+                raise ValueError("Shard episode does not identify one fixed bucket")
+            bucket_name = matches[0]
+            bucket = by_bucket[bucket_name]
+            if not bucket["start_seed"] <= episode["seed"] < (
+                bucket["start_seed"] + bucket["max_attempts"]
+            ):
+                raise ValueError("Shard episode seed falls outside its assigned range")
+            observed_local_counts[bucket_name] += 1
+        if observed_local_counts != expected_local_counts:
+            raise ValueError("Shard episode rows do not satisfy its local quotas")
+        for archive in package["archives"].values():
+            archive_path = index_path.parent / archive["file"]
+            if (
+                archive_path.stat().st_size != archive["size"]
+                or file_sha256(archive_path) != archive["sha256"]
+            ):
+                raise ValueError(f"Shard archive checksum differs: {archive_path}")
+        package_rows.append(
+            {
+                "shard": package["shard"],
+                "run_id": package["run_id"],
+                "index_sha256": file_sha256(index_path),
+                "archives": package["archives"],
+            }
+        )
+        episodes.extend(
+            dict(row, shard_index=shard_index) for row in package["episodes"]
+        )
+
+    seeds = [row["seed"] for row in episodes]
+    counts = {
+        name: sum(
+            1
+            for row in episodes
+            if row["split"] == expected[0] and row["dart"] == expected[1]
+        )
+        for name, expected in EXPECTED_BUCKETS.items()
+    }
+    expected_counts = expected_global_counts
+    if len(episodes) != 900 or len(set(seeds)) != 900 or counts != expected_counts:
+        raise ValueError("Merged shard packages do not form the exact 900-episode release")
+
+    output = Path(config["output"]).resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    write_json(
+        output / "dataset_manifest.json",
+        {
+            "format": DATASET_FORMAT,
+            "storage": "sharded_raw_and_state36_archives",
+            "episode_count": len(episodes),
+            "counts": counts,
+            "episodes": episodes,
+            "packages": package_rows,
+        },
+    )

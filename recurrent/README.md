@@ -27,6 +27,41 @@ WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/eval
 WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop.yaml
 ```
 
+### 여러 Vast.ai 인스턴스에서 수집
+
+`collect_distributed.yaml`은 전역 360/360/90/90 quota와 attempt seed 범위를
+`shard.index`/`shard.count`로 연속 분할합니다. 같은 `count`와 서로 다른 0-based
+`index`를 받은 worker는 reset seed가 겹치지 않습니다. 7개 shard의 episode 수는
+`130, 130, 130, 128, 128, 128, 126`이며 합계가 정확히 900입니다. 기존
+`collect.yaml`은 단일 머신 동작을 그대로 유지합니다.
+
+서버마다 checkpoint와 공통 exclusion 파일을 준비한 뒤 다음 runner를 독립 tmux
+session에서 실행합니다. Runner는 계약 테스트, raw RGB-D 수집, frozen frontend
+State36 export, 두 archive의 전체 checksum 재검증, 공용 HF publisher 순서로
+진행합니다. 마지막 게시까지 성공해야 shard status가 `COMPLETE`가 됩니다.
+
+```bash
+bash recurrent/setup_surface_mamba_server.sh
+tmux new-session -d -s surface_mamba_shard_000 \
+  "bash recurrent/run_surface_mamba_shard.sh 0 7"
+```
+
+각 worker의 상태는 `/workspace/surface_mamba/shard_NNN/status.json`, 로그는 같은
+디렉터리의 `logs/`에 있습니다. 산출물은 raw와 State36 TAR로 분리되어 공개
+`Graph-Recurrent-VLA/graph-recurrent-rollouts` Dataset repository의 immutable
+run prefix에 게시됩니다. Token은 `HF_TOKEN` 또는 `/root/.secrets/hf.env`로만
+주입하며 config·로그·archive에는 넣지 않습니다.
+
+모든 shard를 내려받은 뒤 `merge_distributed.example.yaml`의 일곱 index 경로를
+실제 위치로 맞추고 실행합니다. Merger는 shard index 완전성, quota, bucket별
+seed 범위, 900개 seed 유일성, raw/cache archive SHA-256을 확인한 뒤에만 최종
+논리 manifest를 만듭니다.
+
+```bash
+WANDB_MODE=disabled python main.py \
+  --config recurrent/configs/surface_mamba/merge_distributed.example.yaml
+```
+
 Before collection, merge all historical data seeds into
 `/workspace/surface_mamba/historical_dataset_seeds.json`. The seed-plan command
 reserves 300 disjoint evaluation seeds and writes the exclusion inventory used

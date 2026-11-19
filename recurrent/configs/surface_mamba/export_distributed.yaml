@@ -1,0 +1,25 @@
+trainer: data_collection.surface_mamba_dataset:export
+raw_root: /workspace/surface_mamba/shard_000/raw
+output: /workspace/surface_mamba/shard_000/state36
+resume: true
+frontend:
+  device: cuda:0
+  detector:
+    device: cuda:0
+    optimized: true
+  tracker:
+    path: /workspace/surface_mamba/checkpoints/surface_tracker_best.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  gnn:
+    path: /workspace/surface_mamba/checkpoints/surface_gnn_best.pt
+    sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241
+  tapnextpp:
+    device: cuda:0
+    checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+    tap_input_resolution: 256
+    tap_cuda_autocast: true
+    tap_cache_cuda_autocast: true
+    tap_mps_fp16_vit: false
+    tap_mps_fp16_recurrent_mlp: false
+    tap_adaptive_crop: true
+    tap_cuda_graph: true

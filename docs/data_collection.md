@@ -130,6 +130,14 @@ stores intermediate masks and coordinates alongside aligned GT and Graph
 State36 arrays, then packs train/validation/test NPZ files. State interpolation
 is deferred to the training loader so the exported endpoints remain auditable.
 
+Distributed collection uses the Recurrent guide's `collect_distributed.yaml` and
+`run_surface_mamba_shard.sh`. It partitions both successful-episode quotas and
+bounded attempt seed ranges, rather than starting identical 900-episode jobs on
+each host. Every worker packages only manifest-approved RGB-D episodes plus its
+State36 cache. The final merge rejects missing/duplicate shard indices, seeds
+outside their assigned ranges, quota differences, duplicate reset seeds and
+archive checksum mismatches. The original single-machine config remains valid.
+
 `python main.py --config graph/configs/temporal/corner_tracking/prepare.yaml`
 packs an existing **full-frame** vertex-family dataset into checksummed temporal
 episodes. This preparation adapter also requires OpenCV for the existing label

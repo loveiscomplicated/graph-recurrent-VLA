@@ -1,0 +1,10 @@
+trainer: data_collection.surface_mamba_dataset:merge_shard_packages
+output: /workspace/surface_mamba/release
+shard_package_indexes:
+  - /workspace/surface_mamba/shard_000/package/shard_package.json
+  - /workspace/surface_mamba/shard_001/package/shard_package.json
+  - /workspace/surface_mamba/shard_002/package/shard_package.json
+  - /workspace/surface_mamba/shard_003/package/shard_package.json
+  - /workspace/surface_mamba/shard_004/package/shard_package.json
+  - /workspace/surface_mamba/shard_005/package/shard_package.json
+  - /workspace/surface_mamba/shard_006/package/shard_package.json

@@ -1,0 +1,45 @@
+trainer: data_collection.surface_mamba_dataset:collect
+output: /workspace/surface_mamba/shard_000/raw
+resume: true
+excluded_seeds: /workspace/surface_mamba/excluded_and_evaluation_seeds.json
+shard:
+  index: 0
+  count: 7
+collection:
+  visibility_mode: ends_and_grasp
+  steps: 250
+  dart_noise_std: 0.02
+  noise_seed: 20261119
+  required_free_gib: 120
+  environment:
+    device: cpu
+    render_backend: cuda
+    observation_device: cuda
+    resolution: 512
+    control_mode: pd_ee_delta_pose
+    max_episode_steps: 250
+  buckets:
+    - name: train_clean
+      split: train
+      dart: false
+      count: 360
+      start_seed: 4000000
+      max_attempts: 20000
+    - name: train_dart
+      split: train
+      dart: true
+      count: 360
+      start_seed: 4020000
+      max_attempts: 20000
+    - name: validation_clean
+      split: validation
+      dart: false
+      count: 90
+      start_seed: 4040000
+      max_attempts: 10000
+    - name: test_clean
+      split: test
+      dart: false
+      count: 90
+      start_seed: 4050000
+      max_attempts: 10000
