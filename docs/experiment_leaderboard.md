@@ -1,4 +1,29 @@
-# 실험 결과 리더보드
+# NOV WEEK 3 LEADERBOARD
+
+<h1 align="center">🏆 SURFACE-CONTEXT TRACKER–GNN 🏆</h1>
+<h2 align="center">표면점 GNN · 현재 대표 모델</h2>
+
+> **기본 파이프라인:** CUDA grid → Hole RANSAC fallback → epoch-443
+> Surface Tracker → epoch-62 GNN
+
+| 공식 held-out 평가 · 450에피소드 / 86,179프레임 | 평균 | P90 |
+| --- | ---: | ---: |
+| Peg 위치 | **2.587 mm** | **4.495 mm** |
+| Hole 위치 | **5.981 mm** | **17.827 mm** |
+| tip−Hole 벡터 | **7.472 mm** | **24.245 mm** |
+
+**이 문서에서 “표면점 GNN”은 위 고정 Tracker–GNN 조합을 뜻한다.** CUDA
+기본 검출기는 grid에서 깊이 검증된 Hole을 찾지 못할 때만 RANSAC으로
+fallback한다. [모델·체크포인트와 held-out 평가](gnn_training.md#held-out-evaluation-of-the-surface-input-gnn) ·
+[사선 Hole CUDA 진단](corner_detection.md#사선-hole-입구의-ransac-fallback-진단)
+
+이 모델은 현재 대표 모델로 맨 앞에 고정한다. 아래 4,102프레임 표는 서로
+다른 개발 검증 cohort의 역사적 순위이므로, 86,179프레임 held-out 결과를 그
+종합 점수에 임의 대입하거나 숫자상 1위로 해석하지 않는다.
+
+---
+
+## 기존 실험 결과 리더보드
 
 대상: **2026-11-08 KST**에 정리한 Graph 평가와 **2026-11-09 KST**에 추가한 자동 코너 대응 + GNN 평가 및 조기 종료 재개 결과. 원격 학습의 실제 시작·종료 날짜를 로컬 파일 수정 시각으로 단정하지 않는다.
 
