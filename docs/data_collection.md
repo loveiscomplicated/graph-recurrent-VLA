@@ -114,7 +114,7 @@ are retained as ignored verification artifacts.
 `data_collection.surface_mamba_dataset` provides the dedicated raw collection
 and frozen-frontend export used by the recurrent Surface-Mamba controller. It
 does not change the shared simulator or earlier Object21 releases. Commands and
-prerequisites are in [the Recurrent guide](../recurrent/README.md#frozen-surface-frontend--five-mamba-controller).
+prerequisites are in [the Recurrent guide](../recurrent/README.md#frozen-surface-frontend--surface-mamba-controller-comparison).
 
 The raw release keeps four seed-disjoint buckets: 360 clean training episodes,
 360 DART training episodes, 90 clean validation episodes and 90 clean test
@@ -137,6 +137,14 @@ each host. Every worker packages only manifest-approved RGB-D episodes plus its
 State36 cache. The final merge rejects missing/duplicate shard indices, seeds
 outside their assigned ranges, quota differences, duplicate reset seeds and
 archive checksum mismatches. The original single-machine config remains valid.
+
+For controller training from the published release, run
+`recurrent/configs/surface_mamba/materialize_huggingface.yaml`. The config pins a
+full Hugging Face commit and all eight immutable run IDs. The materializer checks
+the package indexes and State36 LFS size/SHA-256, downloads no raw RGB-D archive,
+verifies every packed shard split, and rebuilds episode offsets while creating
+the final 720/90/90 train/validation/test files. Local archives can use the same
+entrypoint with `state36_archives` instead of `huggingface`.
 
 `python main.py --config graph/configs/temporal/corner_tracking/prepare.yaml`
 packs an existing **full-frame** vertex-family dataset into checksummed temporal
@@ -443,6 +451,33 @@ The lower-level `collect_episodes` CLI accepts the same mapping as a JSON string
 via `--hole-motion`; use `--save-step-gt` to save GT after every action. The
 sharded workflow passes the YAML mapping to each worker and retains its normal
 success filtering, verification and explicit publishing behavior.
+
+### Policy-independent moving-hole transfer protocol
+
+`data_collection.surface_mamba_motion` provides a second, step-indexed motion
+protocol for paired controller comparisons. It is intentionally independent of
+the policy even though its historical module name mentions Surface-Mamba.
+Surface-Mamba, ACT, and Diffusion Policy (DP) moving-hole collection,
+fine-tuning, and evaluation should all reuse `make_motion_plan` and
+`MovingSurfaceEpisode` rather than implement separate box motion.
+
+The current formal protocol samples a deterministic XY direction from each
+reserved reset seed, moves the box 60 mm over control steps 10–40, and uses a
+250-step horizon. It has no policy-dependent proximity or expert-phase guard.
+Every rollout records the trajectory SHA-256, planned translation, realized
+translation, completion flag, and control frequency. Formal paired comparisons
+must verify those receipts and use the same frozen 300-seed list, simulator
+settings, and Surface-Context Tracker–GNN frontend. Moving-hole training and
+validation seeds must remain disjoint from all reserved evaluation seeds.
+
+ACT and DP retain their own observation/action adapters, dataset formats,
+training loops, and checkpoints. Their collectors can wrap the same one-instance
+CPU-physics ManiSkill environment with `MovingSurfaceEpisode`; their evaluators
+must preserve the shared motion receipt fields. Any change to distance, step
+window, direction sampling, horizon, or motion guards defines a different
+protocol and requires a separately recorded config and result label. This
+step-indexed protocol is distinct from the wall-time, fixed-direction guarded
+`hole_motion` collection example above.
 
 ## GPU observations
 

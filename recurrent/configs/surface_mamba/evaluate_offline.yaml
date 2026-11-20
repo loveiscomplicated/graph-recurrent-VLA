@@ -1,11 +1,25 @@
 trainer: evaluation.surface_mamba_controller:evaluate
 mode: offline
 dataset: /workspace/surface_mamba/state36
-output: /workspace/surface_mamba/evaluation/offline
+output: /workspace/surface_mamba/evaluation_v2/offline
 device: cuda:0
-checkpoints:
-  - /workspace/surface_mamba/training/mamba_seed_0/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_1/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_2/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_3/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_4/best.pt
+comparison_reference: mixed_ensemble
+bootstrap_samples: 10000
+bootstrap_seed: 20261120
+candidates:
+  mixed_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+  mixed_ensemble:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_4/mamba_seed_4/best.pt
+  graph_only_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt

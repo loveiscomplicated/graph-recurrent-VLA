@@ -115,6 +115,12 @@ def mix_state36(ground_truth: np.ndarray, graph: np.ndarray, alpha: float) -> np
         raise ValueError("GT and Graph state arrays must have matching shape [T,36]")
     if not 0.0 <= alpha <= 1.0:
         raise ValueError("alpha must be in [0,1]")
+    # Preserve endpoint inputs exactly. In particular, Graph-only training must
+    # not acquire GT-dependent rounding through ``gt + (graph - gt)``.
+    if alpha == 0.0:
+        return ground_truth.copy()
+    if alpha == 1.0:
+        return graph.copy()
     return (ground_truth + np.float32(alpha) * (graph - ground_truth)).astype(np.float32)
 
 
@@ -325,7 +331,11 @@ def load_controller_checkpoint(path: str | Path, device: torch.device) -> Contro
     """Load one checkpoint without accepting an incompatible feature contract."""
     path = Path(path)
     payload = torch.load(path, map_location="cpu", weights_only=False)
-    if payload.get("format") != "surface_mamba_controller_v1":
+    supported_formats = {
+        "surface_mamba_controller_v1",
+        "surface_mamba_controller_v2",
+    }
+    if payload.get("format") not in supported_formats:
         raise ValueError(f"Unsupported controller checkpoint format: {path}")
     if payload.get("observation_dim") != OBSERVATION_DIM:
         raise ValueError(f"Controller checkpoint does not use 44D observations: {path}")

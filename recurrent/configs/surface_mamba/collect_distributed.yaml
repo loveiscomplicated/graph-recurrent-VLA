@@ -4,7 +4,7 @@ resume: true
 excluded_seeds: /workspace/surface_mamba/excluded_and_evaluation_seeds.json
 shard:
   index: 0
-  count: 7
+  count: 8
 collection:
   visibility_mode: ends_and_grasp
   steps: 250

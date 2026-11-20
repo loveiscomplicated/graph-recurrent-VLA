@@ -5,10 +5,12 @@ from __future__ import annotations
 import importlib.metadata
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
+import re
 import shutil
 import subprocess
 import tarfile
+import tempfile
 import time
 from typing import Any
 
@@ -986,12 +988,392 @@ def package_shard(config: dict[str, Any]) -> None:
         _publish_shard_package(config, experiments_root, logger.run_id, output)
 
 
+def _read_local_shard_package(index_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    package = json.loads(index_path.read_text())
+    if package.get("format") != SHARD_PACKAGE_FORMAT:
+        raise ValueError("All inputs must be Surface-Mamba shard package indexes")
+    for archive in package["archives"].values():
+        archive_path = index_path.parent / archive["file"]
+        if (
+            archive_path.stat().st_size != archive["size"]
+            or file_sha256(archive_path) != archive["sha256"]
+        ):
+            raise ValueError(f"Shard archive checksum differs: {archive_path}")
+    return package, {"index_sha256": file_sha256(index_path)}
+
+
+def _read_published_shard_packages(
+    source: dict[str, Any],
+) -> list[tuple[dict[str, Any], dict[str, Any]]]:
+    """Read public package indexes and verify pinned archive LFS metadata."""
+    from huggingface_hub import HfApi, hf_hub_download
+
+    repository = source["repository"]
+    revision = source["revision"]
+    run_ids = source["run_ids"]
+    if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("huggingface.revision must be a full commit SHA")
+    if not isinstance(run_ids, list) or not run_ids or any(
+        not isinstance(run_id, str) or not re.fullmatch(r"[0-9a-f]{32}", run_id)
+        for run_id in run_ids
+    ):
+        raise ValueError("huggingface.run_ids must list the published shard run IDs")
+
+    api = HfApi()
+    hub_options = {"repo_type": "dataset", "revision": revision, "token": False}
+    packages = []
+    for run_id in run_ids:
+        prefix = f"recurrent/{run_id}"
+        files = {
+            item.path: item
+            for item in api.list_repo_tree(
+                repository, path_in_repo=prefix, recursive=True, **hub_options
+            )
+            if hasattr(item, "blob_id")
+        }
+        indexes = [
+            path for path in files
+            if path.startswith(f"{prefix}/artifacts/episode_metadata/")
+            and PurePosixPath(path).name == "shard_package.json"
+        ]
+        if len(indexes) != 1:
+            raise ValueError(f"Expected one published shard package index under {prefix}")
+        remote_index = indexes[0]
+        local_index = Path(hf_hub_download(repository, remote_index, **hub_options))
+        index_sha256 = file_sha256(local_index)
+        if index_sha256 != PurePosixPath(remote_index).parent.name:
+            raise ValueError(f"Published shard package index checksum differs: {remote_index}")
+        package = json.loads(local_index.read_text())
+        if (
+            package.get("run_id") != run_id
+            or set(package.get("archives", {})) != {"raw", "state36"}
+        ):
+            raise ValueError(f"Published package must match run {run_id} and include both archives")
+        archive_paths = {}
+        for kind, archive in package["archives"].items():
+            path = f"{prefix}/artifacts/trajectory/{archive['sha256']}/{archive['file']}"
+            remote = files.get(path)
+            if (
+                remote is None
+                or remote.size != archive["size"]
+                or getattr(remote.lfs, "sha256", None) != archive["sha256"]
+            ):
+                raise ValueError(f"Published archive size or checksum differs: {path}")
+            archive_paths[kind] = path
+        packages.append((package, {
+            "index_sha256": index_sha256,
+            "huggingface": {
+                "repository": repository,
+                "revision": revision,
+                "index_path": remote_index,
+                "archive_paths": archive_paths,
+            },
+        }))
+    return packages
+
+
+def _state36_archives(config: dict[str, Any]) -> list[tuple[Path, dict[str, Any]]]:
+    """Resolve local archives or download pinned public State36 shard archives."""
+    local_paths = config.get("state36_archives")
+    source = config.get("huggingface")
+    if bool(local_paths) == bool(source):
+        raise ValueError("Provide either state36_archives or a huggingface source")
+    if local_paths:
+        if not isinstance(local_paths, list) or not local_paths:
+            raise ValueError("state36_archives must be a nonempty list")
+        return [
+            (
+                Path(path).resolve(),
+                {"archive_sha256": file_sha256(Path(path).resolve())},
+            )
+            for path in local_paths
+        ]
+
+    from huggingface_hub import hf_hub_download
+
+    archives = []
+    for package, provenance in _read_published_shard_packages(source):
+        remote_path = provenance["huggingface"]["archive_paths"]["state36"]
+        cached_path = Path(
+            hf_hub_download(
+                source["repository"],
+                remote_path,
+                repo_type="dataset",
+                revision=source["revision"],
+                token=False,
+            )
+        )
+        # Hugging Face snapshot paths are normally symlinks into its content-
+        # addressed blob cache. Resolve only after the pinned package metadata
+        # identifies the expected bytes; local user-supplied symlinks stay rejected.
+        local_path = cached_path.resolve()
+        expected = package["archives"]["state36"]
+        if (
+            local_path.stat().st_size != expected["size"]
+            or file_sha256(local_path) != expected["sha256"]
+        ):
+            raise ValueError(f"Downloaded State36 archive checksum differs: {remote_path}")
+        archives.append(
+            (
+                local_path,
+                {
+                    "archive_sha256": expected["sha256"],
+                    "run_id": package["run_id"],
+                    "huggingface": provenance["huggingface"],
+                },
+            )
+        )
+    return archives
+
+
+def _extract_state36_splits(archive_path: Path, destination: Path) -> dict[str, Any]:
+    """Extract only the manifest and packed splits from one verified shard archive."""
+    if not archive_path.is_file() or archive_path.is_symlink():
+        raise ValueError(f"State36 archive must be a regular file: {archive_path}")
+    destination.mkdir(parents=True)
+    with tarfile.open(archive_path, "r") as bundle:
+        members = bundle.getmembers()
+        by_name = {member.name: member for member in members}
+        if len(by_name) != len(members):
+            raise ValueError(f"State36 archive contains duplicate paths: {archive_path}")
+        manifest_name = "state36/dataset_manifest.json"
+        manifest_member = by_name.get(manifest_name)
+        if manifest_member is None or not manifest_member.isfile():
+            raise ValueError(f"State36 archive is missing {manifest_name}: {archive_path}")
+        manifest_stream = bundle.extractfile(manifest_member)
+        if manifest_stream is None:
+            raise ValueError(f"Cannot read State36 manifest: {archive_path}")
+        manifest = json.load(manifest_stream)
+        if manifest.get("format") != SHARDED_DERIVED_FORMAT:
+            raise ValueError(f"State36 archive has an unsupported manifest: {archive_path}")
+
+        for split_name in ("train", "validation", "test"):
+            split = manifest.get("splits", {}).get(split_name)
+            if not isinstance(split, dict) or not split.get("file"):
+                raise ValueError(f"State36 shard is missing packed {split_name} data")
+            member_name = f"state36/{split['file']}"
+            member = by_name.get(member_name)
+            if member is None or not member.isfile():
+                raise ValueError(f"State36 archive is missing {member_name}: {archive_path}")
+            source = bundle.extractfile(member)
+            if source is None:
+                raise ValueError(f"Cannot read {member_name}: {archive_path}")
+            split_path = destination / split["file"]
+            with split_path.open("wb") as stream:
+                shutil.copyfileobj(source, stream)
+            if (
+                split_path.stat().st_size != member.size
+                or file_sha256(split_path) != split["sha256"]
+            ):
+                raise ValueError(f"State36 packed split checksum differs: {member_name}")
+            records = [
+                record
+                for record in manifest.get("episodes", [])
+                if record.get("split") == split_name
+            ]
+            with np.load(split_path, allow_pickle=False) as archive:
+                required = {"episode_offsets", "reset_seed", "episode_dart"}
+                if not required <= set(archive.files):
+                    raise ValueError(f"State36 {split_name} split metadata is incomplete")
+                reset_seeds = archive["reset_seed"].tolist()
+                episode_dart = archive["episode_dart"].tolist()
+                offsets = archive["episode_offsets"]
+            if (
+                reset_seeds != [record["seed"] for record in records]
+                or episode_dart != [record["dart"] for record in records]
+                or split["episodes"] != len(records)
+                or split["rows"] != int(offsets[-1])
+            ):
+                raise ValueError(
+                    f"State36 {split_name} split differs from its shard manifest"
+                )
+    return manifest
+
+
+def _merge_state36_split(paths: list[Path], destination: Path) -> dict[str, Any]:
+    """Concatenate packed shard splits while rebuilding episode offsets."""
+    archives = []
+    for path in paths:
+        with np.load(path, allow_pickle=False) as archive:
+            archives.append({name: archive[name] for name in archive.files})
+    expected_keys = set(archives[0])
+    if any(set(archive) != expected_keys for archive in archives[1:]):
+        raise ValueError(f"State36 shard split schemas differ for {destination.name}")
+    metadata_keys = {"episode_offsets", "reset_seed", "episode_dart"}
+    if not metadata_keys <= expected_keys:
+        raise ValueError(f"State36 shard split metadata is incomplete for {destination.name}")
+
+    offsets = [0]
+    reset_seeds = []
+    episode_dart = []
+    data_keys = sorted(expected_keys - metadata_keys)
+    data_rows = {key: [] for key in data_keys}
+    for archive in archives:
+        shard_offsets = archive["episode_offsets"]
+        shard_seeds = archive["reset_seed"]
+        shard_dart = archive["episode_dart"]
+        if (
+            shard_offsets.ndim != 1
+            or len(shard_offsets) != len(shard_seeds) + 1
+            or shard_offsets[0] != 0
+            or np.any(np.diff(shard_offsets) <= 0)
+            or len(shard_dart) != len(shard_seeds)
+        ):
+            raise ValueError(f"State36 shard offsets are invalid for {destination.name}")
+        row_count = int(shard_offsets[-1])
+        if any(len(archive[key]) != row_count for key in data_keys):
+            raise ValueError(f"State36 shard arrays are misaligned for {destination.name}")
+        offsets.extend((shard_offsets[1:] + offsets[-1]).tolist())
+        reset_seeds.append(shard_seeds)
+        episode_dart.append(shard_dart)
+        for key in data_keys:
+            data_rows[key].append(archive[key])
+
+    merged_seeds = np.concatenate(reset_seeds).astype(np.int64, copy=False)
+    if len(set(merged_seeds.tolist())) != len(merged_seeds):
+        raise ValueError(f"State36 {destination.name} contains duplicate reset seeds")
+    packed = {
+        key: np.concatenate(rows) for key, rows in data_rows.items()
+    }
+    packed.update(
+        episode_offsets=np.asarray(offsets, dtype=np.int64),
+        reset_seed=merged_seeds,
+        episode_dart=np.concatenate(episode_dart).astype(bool, copy=False),
+    )
+    _write_npz(destination, **packed)
+    return {
+        "file": destination.name,
+        "episodes": len(merged_seeds),
+        "rows": int(offsets[-1]),
+        "sha256": file_sha256(destination),
+    }
+
+
+def materialize_state36_release(config: dict[str, Any]) -> None:
+    """Build one trainable State36 dataset from all eight verified shard archives."""
+    output = Path(config["output"]).resolve()
+    if output.exists():
+        raise FileExistsError(f"State36 release output already exists: {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    archive_rows = _state36_archives(config)
+
+    with tempfile.TemporaryDirectory(
+        prefix=f".{output.name}-materialize-", dir=output.parent
+    ) as temporary:
+        staging = Path(temporary)
+        extracted = []
+        for index, (archive_path, provenance) in enumerate(archive_rows):
+            shard_root = staging / f"input_{index:03d}"
+            manifest = _extract_state36_splits(archive_path, shard_root)
+            extracted.append((manifest, shard_root, archive_path, provenance))
+
+        shard_counts = {manifest["shard"]["count"] for manifest, *_ in extracted}
+        if len(shard_counts) != 1:
+            raise ValueError("State36 archives disagree on the global shard count")
+        shard_count = shard_counts.pop()
+        by_index = {}
+        for row in extracted:
+            manifest = row[0]
+            by_index[manifest["shard"]["index"]] = row
+        if len(by_index) != len(extracted) or set(by_index) != set(range(shard_count)):
+            raise ValueError("State36 archives must cover every shard index exactly once")
+
+        ordered = [by_index[index] for index in range(shard_count)]
+        frontends = [row[0].get("frontend") for row in ordered]
+        if any(frontend != frontends[0] for frontend in frontends[1:]):
+            raise ValueError("State36 archives were exported by different frontends")
+
+        release = staging / "release"
+        release.mkdir()
+        splits = {}
+        for split_name in ("train", "validation", "test"):
+            split_paths = [
+                root / manifest["splits"][split_name]["file"]
+                for manifest, root, _, _ in ordered
+            ]
+            splits[split_name] = _merge_state36_split(
+                split_paths, release / f"{split_name}.npz"
+            )
+
+        expected_episodes = {"train": 720, "validation": 90, "test": 90}
+        observed_episodes = {
+            name: split["episodes"] for name, split in splits.items()
+        }
+        if observed_episodes != expected_episodes:
+            raise ValueError(
+                f"Materialized State36 split counts differ: {observed_episodes}"
+            )
+        all_seeds = []
+        episodes = []
+        sources = []
+        for manifest, _, archive_path, provenance in ordered:
+            shard_index = manifest["shard"]["index"]
+            shard_seeds = [row["seed"] for row in manifest["episodes"]]
+            all_seeds.extend(shard_seeds)
+            episodes.extend(
+                {
+                    "seed": row["seed"],
+                    "split": row["split"],
+                    "dart": row["dart"],
+                    "steps": row["steps"],
+                    "shard_index": shard_index,
+                }
+                for row in manifest["episodes"]
+            )
+            sources.append(
+                {
+                    "shard": manifest["shard"],
+                    "derived_run_id": manifest.get("run_id"),
+                    "archive": str(archive_path),
+                    **provenance,
+                }
+            )
+        if len(all_seeds) != 900 or len(set(all_seeds)) != 900:
+            raise ValueError("Materialized State36 release must contain 900 unique seeds")
+        bucket_counts = {
+            name: sum(
+                row["split"] == split and row["dart"] == dart
+                for row in episodes
+            )
+            for name, (split, dart, _) in EXPECTED_BUCKETS.items()
+        }
+        expected_bucket_counts = {
+            name: expected for name, (_, _, expected) in EXPECTED_BUCKETS.items()
+        }
+        if bucket_counts != expected_bucket_counts:
+            raise ValueError(
+                f"Materialized State36 bucket counts differ: {bucket_counts}"
+            )
+
+        write_json(
+            release / "dataset_manifest.json",
+            {
+                "format": DERIVED_FORMAT,
+                "storage": "materialized_from_state36_shards",
+                "episode_count": 900,
+                "counts": bucket_counts,
+                "frontend": frontends[0],
+                "splits": splits,
+                "episodes": episodes,
+                "sources": sources,
+                "state36_layout": ordered[0][0].get("state36_layout"),
+                "controller_input": ordered[0][0].get("controller_input"),
+            },
+        )
+        release.replace(output)
+
+
 def merge_shard_packages(config: dict[str, Any]) -> None:
-    """Validate every shard archive and produce one logical 900-episode index."""
-    index_paths = [Path(path).resolve() for path in config["shard_package_indexes"]]
-    if not index_paths:
-        raise ValueError("shard_package_indexes must contain every shard package index")
-    packages = [json.loads(path.read_text()) for path in index_paths]
+    """Validate local or published shard packages and produce a 900-episode index."""
+    index_paths = config.get("shard_package_indexes")
+    source = config.get("huggingface")
+    if bool(index_paths) == bool(source):
+        raise ValueError("Provide either shard_package_indexes or a huggingface source")
+    if source:
+        inputs = _read_published_shard_packages(source)
+    else:
+        inputs = [_read_local_shard_package(Path(path).resolve()) for path in index_paths]
+    packages = [package for package, _ in inputs]
     if any(package.get("format") != SHARD_PACKAGE_FORMAT for package in packages):
         raise ValueError("All inputs must be Surface-Mamba shard package indexes")
     shard_counts = {package["shard"]["count"] for package in packages}
@@ -999,8 +1381,8 @@ def merge_shard_packages(config: dict[str, Any]) -> None:
         raise ValueError("Shard packages disagree on the global shard count")
     shard_count = shard_counts.pop()
     by_index = {
-        package["shard"]["index"]: (path, package)
-        for path, package in zip(index_paths, packages, strict=True)
+        package["shard"]["index"]: (package, provenance)
+        for package, provenance in inputs
     }
     if len(by_index) != len(packages) or set(by_index) != set(range(shard_count)):
         raise ValueError("Shard package indexes must cover every index exactly once")
@@ -1013,7 +1395,7 @@ def merge_shard_packages(config: dict[str, Any]) -> None:
     global_buckets = packages[0].get("global_buckets")
     validated_global_buckets = _validate_buckets({"buckets": global_buckets})
     for shard_index in range(shard_count):
-        index_path, package = by_index[shard_index]
+        package, provenance = by_index[shard_index]
         if (
             package.get("global_counts") != expected_global_counts
             or package.get("global_buckets") != global_buckets
@@ -1049,19 +1431,12 @@ def merge_shard_packages(config: dict[str, Any]) -> None:
             observed_local_counts[bucket_name] += 1
         if observed_local_counts != expected_local_counts:
             raise ValueError("Shard episode rows do not satisfy its local quotas")
-        for archive in package["archives"].values():
-            archive_path = index_path.parent / archive["file"]
-            if (
-                archive_path.stat().st_size != archive["size"]
-                or file_sha256(archive_path) != archive["sha256"]
-            ):
-                raise ValueError(f"Shard archive checksum differs: {archive_path}")
         package_rows.append(
             {
                 "shard": package["shard"],
                 "run_id": package["run_id"],
-                "index_sha256": file_sha256(index_path),
                 "archives": package["archives"],
+                **provenance,
             }
         )
         episodes.extend(

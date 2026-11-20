@@ -1,0 +1,22 @@
+trainer: recurrent.run_surface_mamba_moving:run
+output: /workspace/surface_mamba/moving_hole_smoke
+gpu_ids: [0, 1]
+fixed_evaluation_config: recurrent/configs/surface_mamba/evaluate_closed_loop_shard_0.yaml
+fixed_evaluation_metadata: /workspace/surface_mamba/evaluation_v2/closed_loop_shard_0/experiments/2b513fc4a5ed4cc7a20a23b29b81f01a/metadata.json
+fixed_dataset: /workspace/surface_mamba/state36
+tap_checkpoint_sha256: cb96a43444ccb4fbdb25d800b88c7ba196179a526e78f01b021a16b1c1eff6da
+base_training_config: recurrent/configs/surface_mamba/train_parallel.yaml
+seed_start: 0
+seed_count: 2
+motion: {start_step: 10, end_step: 40, distance_m: 0.06, seed_salt: 20261120}
+dataset_counts: [4, 2]
+collection_shards:
+  - - {name: train_clean, split: train, seed_start: 4260000, max_attempts: 100, count: 1, dart_noise: 0.0}
+    - {name: train_dart, split: train, seed_start: 4270000, max_attempts: 100, count: 1, dart_noise: 0.02}
+    - {name: validation, split: validation, seed_start: 4280000, max_attempts: 100, count: 1, dart_noise: 0.0}
+  - - {name: train_clean, split: train, seed_start: 4290000, max_attempts: 100, count: 1, dart_noise: 0.0}
+    - {name: train_dart, split: train, seed_start: 4300000, max_attempts: 100, count: 1, dart_noise: 0.02}
+    - {name: validation, split: validation, seed_start: 4310000, max_attempts: 100, count: 1, dart_noise: 0.0}
+fine_tuning:
+  learning_rate: 0.0001
+  settings: {max_steps: 2, validation_interval: 1, checkpoint_interval: 1}

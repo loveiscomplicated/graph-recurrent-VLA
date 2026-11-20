@@ -113,6 +113,20 @@ class MambaContractTests(unittest.TestCase):
         self.assertEqual(features.shape, (2, 44))
         self.assertTrue(np.isfinite(features).all())
 
+    def test_graph_only_endpoint_is_bit_exact_and_independent_of_gt_values(self):
+        graph = np.linspace(-0.25, 0.25, 72, dtype=np.float32).reshape(2, 36)
+        graph[:, 3] = 1
+        graph[:, 18] = 1
+        graph[:, 28] = 1
+        first_gt = np.full_like(graph, 1e10)
+        second_gt = np.full_like(graph, -1e10)
+
+        first = mix_state36(first_gt, graph, 1.0)
+        second = mix_state36(second_gt, graph, 1.0)
+
+        np.testing.assert_array_equal(first, graph)
+        np.testing.assert_array_equal(second, graph)
+
     def test_ensemble_averages_motion_and_votes_gripper(self):
         class FixedController:
             def __init__(self, action):

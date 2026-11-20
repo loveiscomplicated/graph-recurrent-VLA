@@ -2,6 +2,7 @@
 
 import argparse
 import importlib
+import json
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -10,9 +11,13 @@ import yaml
 
 
 def load_config(config_path: str | Path) -> dict[str, Any]:
-    """YAML 파일을 읽어 설정 딕셔너리를 반환한다."""
-    with Path(config_path).open(encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+    """Read a YAML or JSON configuration without changing scalar types."""
+    config_path = Path(config_path)
+    with config_path.open(encoding="utf-8") as file:
+        if config_path.suffix.lower() == ".json":
+            config = json.load(file)
+        else:
+            config = yaml.safe_load(file)
 
     if not isinstance(config, dict):
         raise ValueError("설정 파일은 YAML 딕셔너리 형식이어야 합니다.")

@@ -1,16 +1,28 @@
 trainer: evaluation.surface_mamba_controller:evaluate
 mode: closed_loop
-output: /workspace/surface_mamba/evaluation/closed_loop
+output: /workspace/surface_mamba/evaluation_v2/closed_loop
 resume: true
 controller_device: cuda:0
 seeds_file: /workspace/surface_mamba/evaluation_seeds.json
 horizon: 250
-checkpoints:
-  - /workspace/surface_mamba/training/mamba_seed_0/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_1/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_2/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_3/best.pt
-  - /workspace/surface_mamba/training/mamba_seed_4/best.pt
+comparison_reference: mixed_ensemble
+candidates:
+  mixed_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+  mixed_ensemble:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_4/mamba_seed_4/best.pt
+  graph_only_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt
 environment:
   device: cpu
   render_backend: cuda

@@ -34,3 +34,11 @@ Follow the independent team implementation and existing-code guidance in `AGENTS
 and saves checkpoints and metrics. `evaluation/` loads models and checkpoints,
 runs evaluation, and records results. The root `main.py` reads the config and
 dispatches to these workflows; team directories contain model definitions.
+
+For moving-hole collection, additional training, and evaluation, follow the
+**Moving-hole protocol reuse** section in `AGENTS.md`. Surface-Mamba, ACT, and
+Diffusion Policy (DP) must share
+`data_collection.surface_mamba_motion.make_motion_plan` and
+`MovingSurfaceEpisode`, including the reserved-seed, trajectory-hash, and
+realized-translation checks. Keep policy-specific learning code separate rather
+than creating another box-motion implementation.

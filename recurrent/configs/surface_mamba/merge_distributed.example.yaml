@@ -8,3 +8,4 @@ shard_package_indexes:
   - /workspace/surface_mamba/shard_004/package/shard_package.json
   - /workspace/surface_mamba/shard_005/package/shard_package.json
   - /workspace/surface_mamba/shard_006/package/shard_package.json
+  - /workspace/surface_mamba/shard_007/package/shard_package.json

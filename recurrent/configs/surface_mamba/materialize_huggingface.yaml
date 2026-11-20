@@ -1,0 +1,14 @@
+trainer: data_collection.surface_mamba_dataset:materialize_state36_release
+output: /workspace/surface_mamba/state36
+huggingface:
+  repository: Graph-Recurrent-VLA/graph-recurrent-rollouts
+  revision: 662a13b1929fb42f283a0557f35c731709f05e89
+  run_ids:
+    - 943ec5f45758460cb4228e86a41e166b
+    - 3c484fded5b147a9aa8805be2444e123
+    - 45c982f5c9f745b9b877b649707878ba
+    - aee09ef16abc4d15b52dd8be06574119
+    - 3d522f9850c44bd7823e927ca25a732c
+    - 87916d98d55b4cb08e6c0565aff459ec
+    - aebfe385578443ecbc02550ff48bc080
+    - dc8e2588d737464590e8173bc365da94

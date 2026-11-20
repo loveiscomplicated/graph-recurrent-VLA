@@ -3,36 +3,119 @@
 Recurrent 팀 코드입니다. 공용 simulator 코드(`envs/`)는 변경하지 않습니다. Surface-Mamba
 workflow는 Graph 팀의 검증된 모델을 수정하지 않고 별도 online adapter로 불러옵니다.
 
-## Frozen Surface frontend + five-Mamba controller
+## Frozen Surface frontend + Surface-Mamba controller comparison
 
 The Surface-Mamba workflow connects the validation-selected Surface-Context
-Tracker--GNN to five independently trained recurrent controllers. The tracker
-and GNN remain frozen. Training selects one alpha from `0, .25, .5, .75, 1`
-per complete episode to interpolate between GT and Graph State36 inputs.
-Closed-loop inference uses Graph input; the GT-input ensemble is an oracle
-diagnostic. The primary path does not use the recurrent kinematic filter.
+Tracker--GNN to recurrent controllers while leaving the tracker and GNN frozen.
+The formal comparison trains five mixed-input seeds and one Graph-only seed.
+The mixed single-model condition reuses mixed seed 0, so it does not create a
+seventh training run. Mixed training samples alpha from `0, .25, .5, .75, 1`
+per complete episode. Graph-only training uses only alpha `1` and computes its
+normalization from Graph input only. All three primary closed-loop candidates
+use Graph input and omit the recurrent kinematic filter.
 
-Run from the repository root on a Linux CUDA/Vulkan host after installing
-`requirements.txt` and `requirements-tracking.txt`. Provision at least 120 GiB
-of free persistent storage and stage the official TAPNext++ checkpoint plus the
-two frozen checkpoints named in the configs.
+Run from the repository root on a Linux CUDA host after installing
+`requirements.txt` and `requirements-tracking.txt`. Controller training uses the
+small State36 release and does not need raw RGB-D or frontend checkpoints.
+Closed-loop evaluation additionally needs Linux CUDA/Vulkan, TAPNext++ and the
+two frozen checkpoints named in the config.
 
 ```bash
 export PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker:${PYTHONPATH:-}
-WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/create_seed_plan.yaml
-WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/collect.yaml
-WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/export.yaml
-WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/train.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/materialize_huggingface.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/train_parallel_smoke.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/train_parallel.yaml
 WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_offline.yaml
 WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop.yaml
 ```
+
+On a fresh evaluation host, stage the two hash-pinned Surface checkpoints and
+the reserved evaluation-seed file, then run
+`bash recurrent/setup_surface_mamba_evaluation.sh`. It installs only runtime
+dependencies, downloads and verifies the official TAPNext++ checkpoint, checks
+CUDA/Vulkan observations, and executes one complete frozen-frontend step. It
+does not require publishing credentials.
+
+On a two-GPU host, the formal 300-seed closed-loop evaluation can run as two
+contiguous, non-overlapping 150-seed shards. Each process sees its assigned
+physical GPU as `cuda:0`; the configs otherwise keep identical candidates,
+checkpoints, frontend, environment and horizon settings.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 WANDB_MODE=disabled python main.py \
+  --config recurrent/configs/surface_mamba/evaluate_closed_loop_shard_0.yaml
+CUDA_VISIBLE_DEVICES=1 WANDB_MODE=disabled python main.py \
+  --config recurrent/configs/surface_mamba/evaluate_closed_loop_shard_1.yaml
+```
+
+Run the commands in separate terminal or tmux sessions. Shard 0 evaluates
+reserved seed indices 0--149 and shard 1 evaluates 150--299. Preserve both
+`rollouts.jsonl` files and require their `(candidate, seed)` union to contain
+exactly 900 unique rows before reporting the paired 300-seed result.
+
+For two independent two-GPU hosts, launch
+`train_parallel_partition_0.yaml` on the first and
+`train_parallel_partition_1.yaml` on the second. The partitions cover the same
+six jobs exactly once (mixed seeds 0--2; mixed seeds 3--4 plus Graph-only seed
+0) and retain separate launcher ledgers.
+
+The materialization config pins the public dataset commit and eight immutable
+run IDs. It downloads only the State36 archives, verifies their published size
+and SHA-256, and produces 720 train, 90 validation and 90 test episodes.
+
+### Moving-hole transfer
+
+On the Linux evaluation host with the fixed-hole checkpoints and completed
+evaluation metadata, run from the repository root:
+
+```bash
+export PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker:${PYTHONPATH:-}
+export VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/moving_hole_smoke.yaml
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/moving_hole.yaml
+```
+
+Tune the file paths for other hosts. The launcher first evaluates the saved
+five-model ensemble, then collects 160 successful moving training episodes
+(80 clean, 80 DART) and 40 clean validation episodes. The frozen frontend
+encodes RGB-D online; only compact State36 and action episodes are saved.
+Each model keeps its source weights and normalization and starts a fresh
+optimizer with the original episode-level GT mixture. Moving validation
+selects its best checkpoint. Baseline and adapted evaluators share the same
+300 reset seeds and a deterministic 60 mm XY translation over steps 10–40.
+The motion has no policy-dependent guard. Logs record the trajectory digest
+and realized terminal offset. The launcher reports the two success rates,
+paired gains and losses, and checkpoint hashes in `paired_summary.json`.
+
+Run the two-step smoke config first on a new GPU host. Both parallel configs
+expand to exactly six processes: mixed seeds 0--4 and Graph-only seed 0. They
+schedule at most one process per GPU. Use
+`CUDA_VISIBLE_DEVICES=0,2,4,6` to select GPUs; each child sees its assigned GPU
+as `cuda:0`. Per-job configs, logs and statuses are retained under
+`/workspace/surface_mamba/training_launcher_v2/jobs/`.
+
+The formal configs write to new `training_v2` and `training_launcher_v2`
+directories, so the earlier fixed-3,000-step artifacts are retained but are not
+treated as convergence evidence. `training.max_steps` is only a runaway safety
+cap. All six runs use the same Graph-validation rule: AdamW, ReduceLROnPlateau,
+and early stopping after 15 validations without an absolute `1e-4` improvement.
+Validation runs every 100 updates. `last.pt` is refreshed at every validation,
+archival checkpoints are written every 500 updates, and `best.pt` selects the
+lowest Graph-validation loss over the entire run.
+
+An interrupted job can be restarted with the identical config. Continuation
+restores model, optimizer, scheduler, update number, NumPy sampling state, and
+Torch device RNG from `last.pt`. `best.pt` is never replaced by a worse resumed
+checkpoint. `segment_best.pt` and `segments/segment_NNN_best.pt` separately
+record the best validation checkpoint reached after each process restart.
 
 ### 여러 Vast.ai 인스턴스에서 수집
 
 `collect_distributed.yaml`은 전역 360/360/90/90 quota와 attempt seed 범위를
 `shard.index`/`shard.count`로 연속 분할합니다. 같은 `count`와 서로 다른 0-based
-`index`를 받은 worker는 reset seed가 겹치지 않습니다. 7개 shard의 episode 수는
-`130, 130, 130, 128, 128, 128, 126`이며 합계가 정확히 900입니다. 기존
+`index`를 받은 worker는 reset seed가 겹치지 않습니다. 공개 release와 같은 8개
+shard의 episode 수는 `114, 114, 112, 112, 112, 112, 112, 112`이며 합계가
+정확히 900입니다. 기존
 `collect.yaml`은 단일 머신 동작을 그대로 유지합니다.
 
 서버마다 checkpoint와 공통 exclusion 파일을 준비한 뒤 다음 runner를 독립 tmux
@@ -43,7 +126,7 @@ State36 export, 두 archive의 전체 checksum 재검증, 공용 HF publisher �
 ```bash
 bash recurrent/setup_surface_mamba_server.sh
 tmux new-session -d -s surface_mamba_shard_000 \
-  "bash recurrent/run_surface_mamba_shard.sh 0 7"
+  "bash recurrent/run_surface_mamba_shard.sh 0 8"
 ```
 
 각 worker의 상태는 `/workspace/surface_mamba/shard_NNN/status.json`, 로그는 같은
@@ -52,7 +135,7 @@ tmux new-session -d -s surface_mamba_shard_000 \
 run prefix에 게시됩니다. Token은 `HF_TOKEN` 또는 `/root/.secrets/hf.env`로만
 주입하며 config·로그·archive에는 넣지 않습니다.
 
-모든 shard를 내려받은 뒤 `merge_distributed.example.yaml`의 일곱 index 경로를
+모든 shard를 내려받은 뒤 `merge_distributed.example.yaml`의 여덟 index 경로를
 실제 위치로 맞추고 실행합니다. Merger는 shard index 완전성, quota, bucket별
 seed 범위, 900개 seed 유일성, raw/cache archive SHA-256을 확인한 뒤에만 최종
 논리 manifest를 만듭니다.
@@ -61,6 +144,11 @@ seed 범위, 900개 seed 유일성, raw/cache archive SHA-256을 확인한 뒤�
 WANDB_MODE=disabled python main.py \
   --config recurrent/configs/surface_mamba/merge_distributed.example.yaml
 ```
+
+공개 저장소에서 통합할 때는 `shard_package_indexes` 대신 `huggingface`에
+`repository`, 40자리 커밋 SHA인 `revision`, 모든 shard의 `run_ids` 목록을 지정합니다.
+이 모드는 고정된 revision에서 package index만 다운로드하고 archive의 크기와
+LFS SHA-256을 대조합니다. 출력의 `packages`에 다운로드 경로와 revision을 기록합니다.
 
 Before collection, merge all historical data seeds into
 `/workspace/surface_mamba/historical_dataset_seeds.json`. The seed-plan command
@@ -77,19 +165,23 @@ The exporter verifies these frozen checkpoint SHA-256 values before inference:
 - Surface GNN epoch 62: `0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241`
 
 Each Mamba uses the established 44D feature contract and the `96/16/4/2`,
-two-layer configuration. Seeds 0--4 train from scratch for 3,000 updates with
-batch size 8 and Adam at `1e-3`; graph-only validation loss selects `best.pt`.
-The paired closed-loop run evaluates all five singles, the Graph ensemble and
-the GT-input oracle ensemble on the same 300 reset seeds. It reports Wilson
-intervals and paired discordant success counts without a precommitted rate floor.
+two-layer configuration. Every formal v2 job starts from scratch with batch size
+8 and AdamW at `1e-3`; the scheduler and shared early-stopping rule above decide
+its final update. Graph-input validation loss selects `best.pt`.
+The paired closed-loop run evaluates mixed seed 0, the mixed five-model ensemble
+and Graph-only seed 0 on the same 300 reset seeds. It reports Wilson intervals
+and paired discordant success counts relative to the mixed ensemble.
 
 ```bash
-.venv/bin/python -m unittest tests.test_surface_mamba_pipeline -v
+.venv/bin/python -m unittest \
+  tests.test_surface_mamba_pipeline \
+  tests.test_surface_mamba_distributed \
+  tests.test_surface_mamba_experiments -v
 ```
 
-The current macOS host verified CPU model/data contracts only. TAPNext++ CUDA,
-CUDA rendering, the 900-episode collection, five full training runs and the
-300-seed closed-loop evaluation must run on the target Vast.ai host.
+The current macOS host verified CPU model/data/orchestration contracts only.
+TAPNext++ CUDA, CUDA rendering, the six full training runs and the 300-seed
+closed-loop evaluation must run on the target Vast.ai host.
 
 **완료된 본 실험:** [84개 학습 실행·11,400 episode 재평가 공유 리포트](../docs/reports/recurrent_main_20261023/README.md).
 PNG 그림 12개와 CSV 표 8개, 원본 HF archive와 검증 hash를 포함합니다.

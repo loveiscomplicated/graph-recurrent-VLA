@@ -88,6 +88,29 @@ simulator. Preserve the ends-plus-grasp versus full-surface visibility modes
 and raw RGB/depth shape, dtype and device behavior. Reuse these extracted
 features without importing legacy experiment packages.
 
+## Moving-hole protocol reuse
+
+- Treat `data_collection.surface_mamba_motion.make_motion_plan` and
+  `MovingSurfaceEpisode` as the policy-independent moving-hole protocol for
+  Surface-Mamba, ACT, and Diffusion Policy (DP). Despite the module's historical
+  name, reuse it when adding moving-hole data collection, fine-tuning, or
+  evaluation for ACT/DP; do not copy or reimplement the box trajectory in a
+  model-specific package.
+- For comparable formal results, keep the reserved evaluation seed file,
+  horizon, motion settings, Surface-Context Tracker–GNN frontend, and simulator
+  settings identical across policies. Record and verify the trajectory SHA-256
+  and realized box translation for every rollout. Keep moving-hole
+  training/validation seeds disjoint from all reserved evaluation seeds.
+- The current formal protocol is a deterministic 60 mm XY translation per
+  reset seed over control steps 10–40 with horizon 250. A changed distance,
+  timing, direction sampler, guard, or horizon is a different protocol and must
+  use a separately recorded config and result label. Do not overwrite the
+  fixed-hole or five-model moving-hole baselines.
+- Policy-specific observation encoding, action chunking, diffusion sampling,
+  optimization, and checkpoint formats remain team-owned. Reuse only the
+  environment motion and paired-evaluation contract; adapt each policy through
+  its own collector, trainer, and evaluator.
+
 ## Development and experiment infrastructure
 
 - For new training/evaluation workflows, keep experiment

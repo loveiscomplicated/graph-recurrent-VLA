@@ -1,0 +1,53 @@
+trainer: evaluation.surface_mamba_controller:evaluate
+mode: closed_loop
+output: /workspace/surface_mamba/evaluation_v2/closed_loop_shard_0
+resume: true
+controller_device: cuda:0
+seeds_file: /workspace/surface_mamba/evaluation_seeds.json
+seed_start: 0
+seed_limit: 150
+horizon: 250
+comparison_reference: mixed_ensemble
+candidates:
+  mixed_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+  mixed_ensemble:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_4/mamba_seed_4/best.pt
+  graph_only_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt
+environment:
+  device: cpu
+  render_backend: cuda
+  observation_device: cuda
+  max_episode_steps: 250
+frontend:
+  device: cuda:0
+  detector:
+    device: cuda:0
+    optimized: true
+  tracker:
+    path: /workspace/surface_mamba/checkpoints/surface_tracker_best.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  gnn:
+    path: /workspace/surface_mamba/checkpoints/surface_gnn_best.pt
+    sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241
+  tapnextpp:
+    device: cuda:0
+    checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+    tap_input_resolution: 256
+    tap_cuda_autocast: true
+    tap_cache_cuda_autocast: true
+    tap_mps_fp16_vit: false
+    tap_mps_fp16_recurrent_mlp: false
+    tap_adaptive_crop: true
+    tap_cuda_graph: true
