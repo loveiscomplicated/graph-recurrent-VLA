@@ -254,7 +254,8 @@ def failure_details(exc):
     reason = {401: 'Hugging Face authentication rejected; configure HF_TOKEN or hf auth login',
               403: 'Hugging Face write access denied; check token scope and organization role',
               404: 'repository missing or inaccessible; check access and run --init-repos explicitly',
-              409: 'repository changed concurrently; rerun the same command'}.get(status,
+              409: 'repository changed concurrently; rerun the same command',
+              412: 'parent commit no longer matches; rerun the same command'}.get(status,
               'publish failed; verify selected files, repository access and connectivity, then rerun')
     return dict(error_type=type(exc).__name__, http_status=status, reason=reason)
 
@@ -329,7 +330,10 @@ def publish(directory, include, *, repositories=None, dry_run=False, private=Fal
                 # Exception strings may include credentials or request headers.
                 result.update(status='failed', **failure_details(exc), attempts=attempt + 1)
                 status = result['http_status']
-                if isinstance(exc, ValueError) or (status and 400 <= status < 500 and status not in (409, 429)):
+                non_retryable_http_error = (
+                    status is not None and 400 <= status < 500 and status not in (409, 412, 429)
+                )
+                if isinstance(exc, ValueError) or non_retryable_http_error:
                     break
                 if attempt < retries:
                     time.sleep(min(2 ** attempt, 8))

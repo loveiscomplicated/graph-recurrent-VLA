@@ -275,6 +275,26 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual(report['repositories']['rollouts']['status'], 'unchanged')
         self.assertEqual(self.hub.commits, 2)
 
+    def test_retry_refreshes_parent_after_http_412(self):
+        log = self.experiment()
+        create_commit = self.hub.create_commit
+
+        def commit(repo_id, operations, parent_commit, **kwargs):
+            if parent_commit == 'initial':
+                self.hub.revisions[repo_id] = 'concurrent-commit'
+                conflict = RuntimeError('stale parent commit')
+                conflict.response = SimpleNamespace(status_code=412)
+                raise conflict
+            return create_commit(repo_id, operations, parent_commit, **kwargs)
+
+        with self.transport(), patch.object(self.hub, 'create_commit', side_effect=commit) as mocked:
+            with patch('utils.experiment_artifacts.time.sleep'):
+                report = publish(log.directory, ['trajectory'], retries=1)
+
+        self.assertEqual(report['status'], 'complete')
+        self.assertEqual([call.kwargs['parent_commit'] for call in mocked.call_args_list],
+                         ['initial', 'concurrent-commit'])
+
     def test_partial_success_receipt_survives_other_repo_failure(self):
         log = self.experiment()
         original = self.hub.create_commit

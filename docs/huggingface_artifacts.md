@@ -266,6 +266,7 @@ Token/SDK 누락은 원인을 출력하고 `skipped`로 종료한다(exit 0).
 성공할 때마다 `huggingface_uploads.json`에 URL, revision, manifest 경로를 저장한다.
 
 일시적인 실패에는 제한된 재시도를 수행한다(`--retries 0..5`, 기본 2).
+동시 커밋으로 HTTP 409 또는 412가 발생하면 최신 revision과 원격 파일 목록을 다시 읽고 재시도한다.
 인증/권한/파일 검증 오류에는 즉시 반환한다. 복구 후 같은 명령을 재실행하면 이미 성공한 대상과
 응답 유실 전에 commit된 파일도 원격에서 확인하여 다시 보내지 않는다. 서로 다른 선택의 성공 기록을
 receipt에 함께 보존한다. 서버에 쌓인 이전 버전 삭제나 garbage collection은 이번 MVP 범위에 없다.
