@@ -1,0 +1,24 @@
+# 10-episode version of visible_peg_shared_camera.yaml for the baseline smoke
+# test (2 shards x 5 episodes). Seeds start far from the full collection so
+# both outputs can coexist.
+#
+# Run: python -m data_collection.collect_dataset --config data_collection/configs/visible_peg_shared_camera_smoke.yaml
+output: outputs/visible_peg_shared_camera_smoke
+num_episodes: 10
+episodes_per_shard: 5
+workers: 2
+start_seed: 900000
+attempts_per_shard: 200
+resolution: 512
+steps: 250
+max_episode_steps: 250
+visibility_mode: ends_and_grasp
+policy: data_collection.scripted_policy:make_policy
+control_mode: pd_ee_delta_pose
+device: cpu
+render_backend: cuda
+observation_device: cuda
+require_success: true
+save_step_gt: true
+publish: false
+private: true

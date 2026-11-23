@@ -1,0 +1,46 @@
+# Diffusion Policy baseline on the shared-camera expert episodes.
+#
+# The original run's YAML was never committed. Values below come from
+# visual_baseline/FINDINGS.md on branch feature/visual-baseline-results
+# (n_obs 2, horizon 16, DDIM 16 steps, 256 px main+wrist RGB + robot state,
+# 100k steps) and otherwise LeRobot 0.7 Diffusion defaults. Results are
+# therefore not an exact reproduction of the 2026-11 run.
+#
+# Run: python main.py --config visual/baseline/configs/diffusion.yaml
+trainer: visual.baseline.train:train
+output_dir: outputs/visual_baseline_shared/diffusion
+
+data:
+  episodes: data/visual_baseline/episodes_shared_camera
+  validation_episodes: 45
+  use_state: true
+  use_depth: false
+
+policy:
+  # Every key except type is passed to lerobot DiffusionConfig.
+  type: diffusion
+  n_obs_steps: 2
+  horizon: 16
+  n_action_steps: 8
+  noise_scheduler_type: DDIM
+  num_inference_steps: 16
+  # Random 248 px crop of the 256 px input = at most ±4 px shift, like ACT's
+  # random_shift; evaluation uses the center crop.
+  crop_shape: [248, 248]
+  crop_is_random: true
+
+train:
+  seed: 0
+  steps: 100000
+  batch_size: 64
+  lr: 1.0e-4
+  weight_decay: 1.0e-6
+  warmup_steps: 500
+  grad_clip: 10.0
+  random_shift: 0
+  state_noise: 0.0
+  # Diffusion clips samples to [-1, 1], so actions use min/max scaling.
+  action_normalization: min_max
+  log_every: 200
+  eval_every: 5000
+  save_every: 25000
