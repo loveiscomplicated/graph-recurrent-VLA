@@ -2,6 +2,18 @@
 
 ManiSkill3 `PegInsertionSide-v1`에서 **RGB-D → Grounding DINO(초기 검출) → SAM2(추적) → 물체별 point cloud와 6D pose**를 만드는 Vision prototype이다. 공용 코드(`envs/`)와 다른 팀 폴더는 건드리지 않는다.
 
+## MPS 네이티브 RANSAC 비교
+
+Apple Silicon, MPS 지원 PyTorch, `xcrun clang++`과 Metal SDK, 저장 RGB-D
+홀드아웃이 필요하다. 입력 매니페스트와 출력 경로는 설정 파일에서 지정한다.
+
+```bash
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python main.py --config visual/configs/native_mps_ransac.yaml
+```
+
+[네이티브 확장과 재생 조건](../docs/corner_detection.md#mps-objective-cmetal-ransac-비교)
+
 ## TAPNext++ 포인트 추적
 
 공식 PyTorch 구현은 `visual/third_party/tapnet` Git 서브모듈에서 불러온다.

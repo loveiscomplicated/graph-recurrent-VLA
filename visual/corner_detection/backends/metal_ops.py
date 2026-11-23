@@ -5,9 +5,13 @@ on observed RGB-D, with explicit host transfers for CPU contour processing.
 CPU/CUDA use the portable Torch implementations.
 """
 
+from contextvars import ContextVar
 from functools import lru_cache
 import numpy as np
 import torch
+
+
+_native_ransac = ContextVar("native_mps_ransac", default=None)
 
 
 SOURCE = r"""
@@ -1016,6 +1020,8 @@ def physical_edges(
 
 
 def fit_planes(points, parameters, seed, maximum, *, optimized=False):
+    if optimized and (native := _native_ransac.get()) is not None:
+        return native.fit_planes(points, parameters, seed, maximum)
     current = points.contiguous()
     result = []
     rng = np.random.default_rng(seed)

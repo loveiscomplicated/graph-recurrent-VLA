@@ -1,0 +1,6 @@
+trainer: evaluation.native_mps_ransac:evaluate
+source: outputs/corner_detection_holdout/frames/manifest.json
+output_root: outputs/native_mps_ransac
+threads: 1
+warmup_frames: 6
+moving_case_result: outputs/hole_rim_ransac_fallback_case_0146/results.json

@@ -1691,6 +1691,46 @@ PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
 [Metal 선택 시제품](../outputs/corner_latency_investigation/box_fused_bounds_probe.json) ·
 [Hole 성분 범위 비교](../outputs/corner_latency_investigation/hole_component_bounds_probe.json)
 
+### MPS Objective-C++/Metal RANSAC 비교
+
+실험용 `NativeRansac.activate()` 범위에서 `detect()`, `detect_tensors()`와
+`TorchCornerDetector.main()`이 사용하는 최적화 MPS RANSAC만 네이티브 확장으로
+선택한다. 입력 점군과 출력 평면은 기존 MPS 텐서 버퍼를 사용한다. 확장은
+기존 Metal 투표·선택·재피팅 셰이더를 같은 PyTorch 스트림에 제출하며,
+동점은 첫 가설에 주고 제외되지 않은 점의 순서를 유지한다. 다음 반복의 표본이
+남은 점 수에 의존하므로 각 반복 완료 시점에 보고된 inlier 수를 읽어 기존
+NumPy 난수 생성기에 전달한다. [PyTorch MPS 스트림 구현](https://github.com/pytorch/pytorch/blob/5c4886908584029761b579af026dcfb627c84070/aten/src/ATen/mps/MPSStream.mm)
+
+Apple Silicon에서 활성 PyTorch의 MPS 헤더와 라이브러리, `xcrun clang++`,
+Metal SDK를 사용한다. 설정의 `source`는 체크섬이 있는 RGB-D 매니페스트다.
+`moving_case_result`를 지정하면 해당 기록의 원본 아카이브도 체크섬을 확인해
+재생한다. 이 항목을 생략하면 홀드아웃만 비교한다.
+
+```bash
+WANDB_MODE=disabled OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python main.py --config visual/configs/native_mps_ransac.yaml
+```
+
+빌드, CPU 입력 파일 읽기, 워밍업과 출력 비교는 계측 밖이다. 각 장면의 두
+검출기를 교대 순서로 실행하고, 입력부터 CPU 딕셔너리 출력까지 측정한다.
+좌표 float32 비트와 후보 순서·물체 ID·마스크·메타데이터·진단을 비교하며
+지연 필드는 비교 대상에서 제외한다. 실행 기록은 `outputs/native_mps_ransac/`
+아래의 run ID 디렉터리에 저장한다.
+
+2026-11-24 Apple M4 Pro, PyTorch 2.14.1에서 최적화 MPS 기본 경로와
+네이티브 확장을 비교했다. 단위는 ms/프레임이다.
+
+| 동일 RGB-D 입력 | 프레임 | 전체 평균 전 → 후 | 전체 p95 전 → 후 |
+| --- | ---: | ---: | ---: |
+| NumPy 홀드아웃 | 2,073 | 18.84 → 17.78 | 29.16 → 28.70 |
+| MPS 상주 홀드아웃 | 48 | 16.49 → 15.63 | 18.96 → 18.06 |
+| 사선 이동 Hole | 251 | 17.97 → 16.63 | 18.85 → 17.34 |
+
+2,372프레임 모두에서 검출 결과가 일치했다. 별도 동기화 계측의 NumPy
+48프레임에서는 평면 피팅 합계 평균이 3.05 → 1.52 ms,
+p95가 3.64 → 1.90 ms였다. CUDA와 폐루프 제어는 실행하지 않았다.
+[프레임별 시간과 비교 해시](../outputs/native_mps_ransac/d71360b55f0e4c9192ab89e8f440598f/results.json)
+
 ### 원본과 계측 기록
 
 - 기본 GPU 경로 최적화 [MPS 삽입](../outputs/corner_detector_optimization/mps_holdout_final.json) · [MPS 일반 궤적](../outputs/corner_detector_optimization/mps_trajectory.json) · [CUDA 삽입](../outputs/corner_detector_optimization/cuda_holdout_final.json) · [비교 기준 소스](../outputs/corner_detector_optimization/original/corner_detection/detector.py)
