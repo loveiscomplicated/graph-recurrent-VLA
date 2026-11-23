@@ -5,6 +5,24 @@ workflow는 Graph 팀의 검증된 모델을 수정하지 않고 별도 online a
 
 ## Frozen Surface frontend + Surface-Mamba controller comparison
 
+### macOS MPS 기본 실행
+
+Apple Silicon Mac에서 고정 Hole 메인 모델 `graph_only_single`과 성능 개선
+모델 `mixed_ensemble`을 실행한다. 저장소 루트에서 실행하며, MPS를 지원하는
+PyTorch, OpenCV, ManiSkill/MoltenVK가 필요하다. 고정 Hole 릴리스의 체크포인트와
+예약 평가 시드 파일을 설정에 적힌 경로에 준비한다.
+
+```bash
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop_mps.yaml
+```
+
+두 모델 모두 꼭짓점 검출기와 Mamba를 MPS에서 실행하고, LK 표면점 추적,
+Surface Corner Tracker와 GNN은 CPU에서 실행한다. 이 설정은 모델별로
+같은 고정 Hole 예약 시드 300개를 평가한다. 짧게 확인하려면 설정을 복사하고
+`seed_limit`과 별도 `output` 경로를 지정한다.
+
+### Workflow
+
 The Surface-Mamba workflow connects the validation-selected Surface-Context
 Tracker--GNN to recurrent controllers while leaving the tracker and GNN frozen.
 The formal comparison trains five mixed-input seeds and one Graph-only seed.
@@ -35,6 +53,21 @@ the reserved evaluation-seed file, then run
 dependencies, downloads and verifies the official TAPNext++ checkpoint, checks
 CUDA/Vulkan observations, and executes one complete frozen-frontend step. It
 does not require publishing credentials.
+
+#### LK surface tracking comparison
+
+On the same evaluation host, reuse the frozen Surface tracker, GNN,
+`graph_only_single` controller, and fixed-hole evaluation seeds:
+
+```bash
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop_lk.yaml
+```
+
+`frontend.surface_tracking: lk` selects OpenCV pyramidal Lucas–Kanade on CPU.
+The frontend defaults to LK when its model or detector uses MPS. On other
+devices, the default is TAPNext++. Either backend can be selected explicitly.
+The Linux LK config writes to its own output directory. Compare `graph_only_single` rows in the
+two `rollouts.jsonl` files by seed. See the [surface tracking details](../docs/tapnextpp.md#lk-alternative-for-the-integrated-frontend).
 
 On a two-GPU host, the formal 300-seed closed-loop evaluation can run as two
 contiguous, non-overlapping 150-seed shards. Each process sees its assigned

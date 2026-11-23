@@ -1,5 +1,46 @@
 # TAPNext++ point tracking
 
+## LK alternative for the integrated frontend
+
+Setting `frontend.surface_tracking: lk` selects OpenCV pyramidal Lucas–Kanade
+for the frozen Surface-Context frontend's 32 Peg surface-point slots.
+LK uses consecutive native-resolution grayscale frames,
+a 15 × 15 window, up to three pyramid levels above the original image, and
+a 1 px forward–backward consistency threshold. A tracked pixel also needs
+current Peg-mask support and valid depth.
+
+The frontend defaults to LK when its detector or model runs on MPS.
+The [Mac MPS config](../recurrent/README.md#macos-mps-기본-실행) uses LK for
+both the single controller and the five-controller ensemble.
+
+The updater fills lost slots with spaced samples from the current eroded Peg
+mask and valid depth. A reseeded slot represents a new point. If too few points
+are available, the other slots stay invalid. Both backends use the same RGB-D
+back-projection, world-frame conversion and frozen downstream models. Episode
+reset clears LK history. The
+[fixed-hole LK evaluation recipe](../recurrent/README.md#lk-surface-tracking-comparison)
+uses the same checkpoint paths and seeds as the fixed-hole Graph-only policy.
+
+On 2026-11-24, both variants replayed the same 149 recorded expert frames
+(seed 12615147, including 21 insertion frames) with checksum-verified RGB-D,
+the same CPU detector and frozen Surface Tracker–GNN checkpoints. TAPNext++
+used adaptive MLX tracking on the Mac GPU and LK used OpenCV on CPU.
+
+| Mean metric | TAPNext++ | LK |
+| --- | ---: | ---: |
+| Surface-point processing, including back-projection (ms) | 22.907 | 1.168 |
+| Full frontend (ms) | 88.391 | 66.497 |
+| Valid surface points per frame | 24.32 | 31.11 |
+| Peg-center error, all frames (mm) | 1.889 | 1.893 |
+| Peg-tip-to-hole vector error, all frames (mm) | 2.442 | 2.446 |
+| Peg-tip-to-hole vector error, insertion (mm) | 4.111 | 4.599 |
+
+These are open-loop frontend measurements from one recorded trajectory.
+The Mac MPS closed-loop configuration is documented in the Recurrent README.
+[Replay summary](../outputs/surface_point_tracking_replay/31032817023540e8badc55b74cd1bae2/summary.json)
+and [effective replay config](../outputs/surface_point_tracking_replay/31032817023540e8badc55b74cd1bae2/config.yaml)
+are local experiment artifacts.
+
 The Visual prototype uses the upstream PyTorch tracker in the `visual/third_party/tapnet`
 submodule. The submodule pins the same upstream revision used by the original
 local benchmark. Run the commands below from the team repository root.

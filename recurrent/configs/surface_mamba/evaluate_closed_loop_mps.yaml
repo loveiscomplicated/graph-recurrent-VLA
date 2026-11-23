@@ -1,0 +1,38 @@
+trainer: evaluation.surface_mamba_controller:evaluate
+mode: closed_loop
+output: outputs/surface_mamba_closed_loop_mps_lk
+resume: true
+controller_device: mps
+seeds_file: outputs/paired_policy_evaluation/reserved_baseline_comparison/evaluation_seeds.json
+horizon: 250
+comparison_reference: graph_only_single
+candidates:
+  graph_only_single:
+    input: graph
+    checkpoints:
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/graph_only_seed_0.pt
+  mixed_ensemble:
+    input: graph
+    checkpoints:
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/mixed_seed_0.pt
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/mixed_seed_1.pt
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/mixed_seed_2.pt
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/mixed_seed_3.pt
+      - outputs/surface_mamba_fixed_hole_final_release/checkpoints/mixed_seed_4.pt
+environment:
+  device: cpu
+  render_backend: cpu
+  observation_device: cpu
+  max_episode_steps: 250
+frontend:
+  device: cpu
+  surface_tracking: lk
+  detector:
+    device: mps
+    optimized: true
+  tracker:
+    path: outputs/surface_mamba_fixed_hole_final_release/checkpoints/surface_tracker_epoch_443.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  gnn:
+    path: outputs/surface_mamba_fixed_hole_final_release/checkpoints/surface_gnn_epoch_62.pt
+    sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241

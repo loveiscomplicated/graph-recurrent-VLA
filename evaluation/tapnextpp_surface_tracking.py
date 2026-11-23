@@ -15,38 +15,9 @@ from tapnet.tapnextpp.votsp2026.model import TAPNextPP
 from data_collection.episode_dataset import file_sha256
 from utils.experiment_logger import ExperimentLogger
 from visual.corner_detection import TorchCornerDetector
+from visual.peg_surface_points import choose_points, lift
 from visual.tapnextpp_mps import crop_native_patches, enable_mps_fp16_vit, run_block_in_fp16
 from evaluation.tapnextpp_support import RGB_KEY, synchronize
-
-
-def choose_points(mask, depth, count):
-    """Spread queries over interior Peg pixels with valid depth."""
-    core = cv2.erode(mask.astype(np.uint8), np.ones((5, 5), np.uint8))
-    candidates = np.argwhere((core > 0) & (depth > 0))[:, ::-1].astype(np.float32)
-    if len(candidates) < count:
-        raise ValueError(f"Only {len(candidates)} interior surface pixels for {count} queries")
-    index = np.linalg.norm(candidates - candidates.mean(0), axis=1).argmin()
-    distance = np.full(len(candidates), np.inf)
-    selected = []
-    for _ in range(count):
-        point = candidates[index]
-        selected.append(point)
-        distance = np.minimum(distance, np.sum((candidates - point) ** 2, axis=1))
-        index = distance.argmax()
-    return np.asarray(selected)
-
-
-def lift(xy, depth, mask, intrinsic, visible):
-    """Recover camera XYZ for track coordinates supported by current RGB-D."""
-    finite = np.isfinite(xy).all(axis=1)
-    uv = np.rint(np.where(finite[:, None], xy, 0)).astype(int)
-    u, v = uv.T
-    h, w = depth.shape
-    usable = finite & visible & (u >= 0) & (v >= 0) & (u < w) & (v < h)
-    ids = np.flatnonzero(usable)
-    ids = ids[(depth[v[ids], u[ids]] > 0) & mask[v[ids], u[ids]]]
-    rays = np.column_stack((xy[ids], np.ones(len(ids)))) @ np.linalg.inv(intrinsic).T
-    return ids, rays * (depth[v[ids], u[ids]] * .001)[:, None]
 
 
 def fit_rigid(reference, current):

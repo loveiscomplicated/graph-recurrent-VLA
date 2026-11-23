@@ -18,6 +18,8 @@ from graph.temporal.causal_transformer import sinusoidal_positions
 from graph.temporal.surface_spatial_corner import SurfaceSpatialCornerTracker
 from training.gnn.trainer import build_model
 from visual.corner_detection import TorchCornerDetector
+from visual.lk_surface_tracking import LKSurfaceTracker
+from visual.peg_surface_points import choose_points, lift
 
 
 TRACKER_SHA256 = "f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc"
@@ -192,11 +194,17 @@ class SurfaceTrackerStream:
 
 
 class SurfaceContextFrontend:
-    """Detector, physical association, TAPNext++, Surface tracker and Object21 GNN."""
+    """Detector, physical association, surface tracking and Object21 GNN."""
 
     def __init__(self, config: dict[str, Any]):
         self.config = config
         self.device = torch.device(config["device"])
+        if (
+            "surface_tracking" in config
+            and config["surface_tracking"] not in ("tapnextpp", "lk")
+        ):
+            raise ValueError("frontend.surface_tracking must be 'tapnextpp' or 'lk'")
+
         tracker_path = Path(config["tracker"]["path"])
         gnn_path = Path(config["gnn"]["path"])
         self._verify_checkpoint(tracker_path, config["tracker"].get("sha256", TRACKER_SHA256), "tracker")
@@ -231,6 +239,18 @@ class SurfaceContextFrontend:
             device=detector_config.get("device", config["device"]),
             optimized=detector_config.get("optimized", True),
         )
+        uses_mps = self.device.type == "mps" or self.detector.device.type == "mps"
+        default_surface_tracking = "lk" if uses_mps else "tapnextpp"
+        surface_tracking = config.get("surface_tracking", default_surface_tracking)
+        self.lk = None
+        if surface_tracking == "lk":
+            self.lk = LKSurfaceTracker(SURFACE_POINT_COUNT)
+        else:
+            self._load_tapnextpp(config["tapnextpp"])
+        self.reset()
+
+    def _load_tapnextpp(self, options: dict[str, Any]) -> None:
+        """Initialize the TAPNext++ backend with its existing defaults."""
         from evaluation.tapnextpp_surface_tracking import load_tracker
 
         self.tap_config = {
@@ -241,10 +261,9 @@ class SurfaceContextFrontend:
             "tap_mps_fp16_recurrent_mlp": False,
             "tap_adaptive_crop": False,
             "tap_cuda_graph": False,
-            **config["tapnextpp"],
+            **options,
         }
         self.tap = load_tracker(self.tap_config)
-        self.reset()
 
     @staticmethod
     def _verify_checkpoint(path: Path, expected: str, label: str) -> None:
@@ -261,6 +280,8 @@ class SurfaceContextFrontend:
         self.tracker.reset()
         self.tap_state = None
         self.query = None
+        if self.lk is not None:
+            self.lk.reset()
 
     @staticmethod
     def observation_arrays(observation: dict[str, Any]):
@@ -274,19 +295,9 @@ class SurfaceContextFrontend:
             _numpy(parameters["extrinsic_cv"])[0],
         )
 
-    def _surface_points(
-        self,
-        rgb: np.ndarray,
-        depth: np.ndarray,
-        intrinsic: np.ndarray,
-        extrinsic: np.ndarray,
-        peg_mask: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray]:
-        from evaluation.tapnextpp_surface_tracking import (
-            choose_points,
-            lift,
-            track_surface_frame,
-        )
+    def _track_tapnextpp(self, rgb, depth, peg_mask):
+        """Track reset-frame surface queries in source-image pixels."""
+        from evaluation.tapnextpp_surface_tracking import track_surface_frame
 
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         if self.query is None:
@@ -299,6 +310,21 @@ class SurfaceContextFrontend:
             self.tap_state,
             observation_mask=peg_mask,
         )
+        return tracked, visible
+
+    def _surface_points(
+        self,
+        rgb: np.ndarray,
+        depth: np.ndarray,
+        intrinsic: np.ndarray,
+        extrinsic: np.ndarray,
+        peg_mask: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        if self.lk is None:
+            tracked, visible = self._track_tapnextpp(rgb, depth, peg_mask)
+        else:
+            tracked, visible = self.lk.step(rgb, depth, peg_mask)
+
         valid_indices, camera_xyz = lift(
             tracked, depth, peg_mask, intrinsic, visible
         )
