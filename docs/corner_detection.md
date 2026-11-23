@@ -155,9 +155,11 @@ using the current depth frame. To replay the previous main preset, use
 `TorchCornerDetector.main(device="cpu", reject_peg_box_cut=False)`.
 The [Expert comparison video](../outputs/corner_detector_video/corner_detector_comparison.mp4)
 uses this same preset with MPS.
-The main preset enables the optimized GPU execution path. To run the original
-execution path with the same recovery and filtering settings, use
-`TorchCornerDetector.main(device="mps", optimized=False)`.
+When MPS is selected, the main preset uses the optimized Metal RANSAC,
+frame-level candidate validation, Box tail quantiles, and bounded Hole
+component processing. `detect()` and `detect_tensors()` select the same MPS
+preset. Use `TorchCornerDetector.main(device="mps", optimized=False)` to
+compare the individual validation path with the same recovery settings.
 The default CUDA preset uses the 2-pixel grid plane fit and TorchInductor
 validation. It compiles the tensor validation for contour boundaries, three-plane
 junctions, observed face envelopes, RGB Box candidates, and fitted Box vertices.
@@ -1419,6 +1421,275 @@ CUDA, MPS, Torch CPU 순으로 자동 선택한다. CUDA 기본 경로는 2픽�
 
 앞선 삽입 416프레임의 **RGB-D 전처리 소계**는 MPS 17.71 ms와 CUDA
 16.69 ms였다. [CPU·GPU 단계별 계측](#현재-검출기-cpugpu-처리-시간)
+
+### MPS RANSAC 평면 종료 판정
+
+최적화된 Metal 경로는 피팅된 평면의 inlier 수를 별도로 CPU에 복사하는
+대신, 다음 평면을 찾기 위해 이미 만드는 잔여 점군의 길이 차를 사용한다.
+마지막 재피팅이 집계한 inlier와 잔여 점군에서 제외되는 점은 같은 마스크를
+사용한다. 이 변경은 `graph`의 `b81d0e3`에서 가져왔다.
+
+2026-11-24 Apple M4 Pro, PyTorch 2.14.1에서 `f1947b1`을 기준으로
+Expert·Random·Expert→Random 48개 저장 에피소드마다 등간격 5프레임을
+재생했다. Torch와 OpenCV는 CPU 스레드를 하나씩 사용했다. 두 구현을
+워밍업한 뒤 프레임마다 실행 순서를 교대했다. 전체 시간에는 NumPy 입력을
+받아 CPU 딕셔너리를 내보내기까지가 포함되며 파일 로딩은 제외했다. 평면
+피팅은 에피소드별 가운데 프레임의 별도 호출에서 MPS를 동기화해 측정했다.
+
+| 구간 | 프레임 | 평균 전 → 후 (ms) | p50 전 → 후 (ms) | p95 전 → 후 (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| 전체 검출 | 240 | 30.36 → 29.06 | 28.08 → 26.91 | 41.43 → 41.01 |
+| 평면 피팅 합계 | 48 | 5.11 → 4.06 | 4.97 → 4.09 | 6.98 → 4.89 |
+
+NumPy 240프레임과 MPS 상주 48프레임에서 픽셀·카메라·월드 좌표,
+물체 ID와 순서, 마스크, 메타데이터, 진단 정보가 일치했다. CUDA는
+이 호스트에서 실행하지 않았다. [입력 매니페스트](../outputs/corner_detection_holdout/frames/manifest.json)
+
+### MPS 단일 프레임 10 ms 목표 진단
+
+2026-11-24 M4 Pro, PyTorch 2.14.1, OpenCV 5.0.0에서 위 48개 에피소드의
+512×512 RGB-D를 각각 등간격 4프레임씩 재생했다. 워밍업 후 동일 프레임에서
+모드 실행 순서를 돌려가며 측정했다. 일반 지연은 CPU 딕셔너리 출력까지이며,
+입력 파일 읽기, 채점, 시뮬레이터, ID 매칭을 제외했다. 두 비교는 각각의
+기본 검출 시간을 다시 쟀다. 3 mm 평가는 가시 GT와 같은 물체 ID 내에서
+일대일 대응했다. 아래 분모는 Peg 1,100, Box 외곽 844, Hole 림 694다.
+
+| 경로 | 평균 / p95 (ms) | Peg / Box 외곽 / Hole 림 3 mm 매칭 |
+| --- | ---: | ---: |
+| 기본 MPS, NumPy 입력 | 23.95 / 28.18 | 1,058 / 760 / 573 |
+| 기본 MPS, GPU 상주 입력 | 22.47 / 26.96 | 1,058 / 760 / 573 |
+| 기본 검출에서 평면 피팅만 사전 계산 | 20.18 / 23.92 | 1,058 / 760 / 573 |
+| 윤곽 후보 검증 생략 | 20.94 / 24.61 | 1,028 / 668 / 560 |
+| Box 외곽 후보 검증 생략 | 20.66 / 24.25 | 1,058 / 595 / 573 |
+| 후보 검증 일부 생략 및 RANSAC 40회 | 18.39 / 22.23 | 993 / 669 / 560 |
+| 기본 검출, RANSAC 40회 | 31.38 / 37.96 | 1,058 / 760 / 573 |
+| Torch 2픽셀 격자 피팅, MPS | 35.67 / 46.73 | 959 / 760 / 517 |
+| Torch CPU | 88.83 / 113.39 | 1,058 / 763 / 573 |
+
+사전 계산 진단은 같은 프레임에서 얻은 기본 경로의 평면을 재사용하며,
+192프레임의 전체 검출 결과가 일치했다. 실제 운용에서 이전 프레임의
+평면을 재사용하는 방법과는 조건이 다르다. 후보 검증을 생략한 행은
+병목을 확인하기 위한 진단이다.
+
+별도 동기화 호출 48프레임에서 전처리·평면 준비는 평균 10.31 ms였으며
+그 안에 평면 피팅 4.13 ms, CPU 재질 마스크 1.58 ms, 평면 정보 회수
+0.90 ms가 포함된다. 윤곽 후보 5.35 ms, Box 외곽 3.99 ms, Hole 림
+1.76 ms, Peg 뒤쪽 복구 1.85 ms, 병합 1.27 ms였다. 구간 타이머는 GPU
+작업 사이에 대기를 추가하므로 이 값을 일반 호출의 지연과 합산하지 않는다.
+
+추가 24프레임에서 장치 경계를 계측했다. 프레임당 사용자 정의 Metal
+커널 호출이 평균 34.6회였고, 이 중 RANSAC 투표·선택·재피팅이 19.4회였다.
+명시적 MPS→CPU 읽기는 13회, RANSAC의 불리언 인덱싱은 6.46회였다.
+후보 병합의 첫 읽기와 불리언 인덱싱에서 관측된 호출 시간은 각각 1.38,
+1.29 ms/프레임이다. 읽기에는 앞서 제출된 GPU 작업을 기다리는 시간도
+포함된다. 이 호스트에서 `xctrace`를 사용할 수 없어 GPU 점유율은 계측하지
+않았다.
+
+별도 Metal 시제품은 모든 가설을 한 번에 채점하고, 선택한 평면들을 별도
+스레드그룹에서 재피팅했다. 단일 투표 집합에서 큰 면이 표본을 지배할 수
+있고, 반복 제거 전략이 빠져 있어 기본 RANSAC과 검출 결과가 달라진다.
+Box 극단 분위수의 대안은 전체 정렬 대신 양쪽 꼬리의 `topk`와 선형 보간을
+사용했다.
+
+| 두 번째 비교 | 전체 평균 / p95 (ms) | 평면 피팅 평균 (ms) | Peg / Box 외곽 / Hole 림 3 mm 매칭 |
+| --- | ---: | ---: | ---: |
+| 기본 MPS | 23.66 / 25.69 | 4.01 | 1,058 / 760 / 573 |
+| Metal 병렬 피팅, 가설 160개 | 22.54 / 26.79 | 1.59 | 512 / 751 / 468 |
+| Metal 병렬 피팅, 가설 320개 | 21.51 / 25.53 | 1.73 | 517 / 762 / 488 |
+| Box 분위수에 `topk` 사용 | 24.92 / 25.47 | — | 1,058 / 760 / 573 |
+
+`topk`는 192프레임의 좌표, 순서, 마스크, 메타데이터 및 진단을
+보존했지만 평균 지연은 줄지 않았다. 시제품은 진단 코드에서만 실행했다.
+CUDA와 closed-loop 평가는 이 비교에 포함하지 않았다.
+
+10 ms 단일 프레임 목표로는 다음 GPU 경로를 우선 검증할 수 있다.
+
+1. **전처리와 평면 준비.** RGB-D, 재질 마스크, 점군을 GPU에 유지하고 Peg와
+   Box를 한 번에 처리한다. 유효 점군과 평면은 최대 용량 버퍼 및 GPU
+   카운터로 넘긴다. 기존 순차 inlier 제거를 유지하되 다음 패스를 GPU에서
+   이어가고, 작은 Peg 평면의 탐색을 큰 면의 점수와 분리한다. 정리된 깊이
+   영상에서는 타일별 법선·평면 투표도 후보 생성에 쓸 수 있다.
+2. **후보 생성과 검증.** 윤곽 선분, Box 깊이·에지, Peg와 Hole의 기하
+   후보를 `(물체, 평면, 후보)` 단위로 묶는다. 여러 후보가 공유하는 깊이
+   패치와 평면 마스크를 재사용하고, 가시성·경계 검증은 동일한 GPU 버퍼에
+   기록한다. Box 외곽 검증을 통째로 건너뛰면 위 표처럼 외곽 매칭이 줄어든다.
+   OpenCV 윤곽과 Hole 피팅의 출력을 보존해야 한다면 CPU 작업을 독립 GPU
+   검증과 겹치는 경로부터 비교한다.
+3. **출력.** 후보 플래그·좌표·필요한 ID를 한 버퍼로 묶어 CPU가 필요할 때
+   한 번 읽는다. GPU 소비 경로에서는 중간 좌표 복사를 피한다. 입력부터
+   최종 소비자가 읽을 수 있을 때까지 측정해 비동기 제출 시간과 실제
+   단일 프레임 지연을 구분한다.
+
+[A/B 계측](../outputs/corner_latency_investigation/results.json) ·
+[Metal 시제품 비교](../outputs/corner_latency_investigation/parallel_results.json) ·
+[장치 경계 계측](../outputs/corner_latency_investigation/boundaries.json) ·
+[Apple 간접 디스패치](https://developer.apple.com/documentation/metal/specifying-drawing-and-dispatch-arguments-indirectly) ·
+[Apple GPU 타임라인](https://developer.apple.com/documentation/xcode/analyzing-apple-gpu-performance-using-a-visual-timeline)
+
+저장 RGB-D 매니페스트가 있는 MPS 호스트에서는 저장소 루트에서 재생한다.
+
+```bash
+export PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
+.venv/bin/python outputs/corner_latency_investigation/benchmark.py
+.venv/bin/python outputs/corner_latency_investigation/benchmark_parallel.py
+.venv/bin/python outputs/corner_latency_investigation/trace_boundaries.py
+```
+
+### 꼭짓점 직접 LK 추적과 출력 보존 비교
+
+2026-11-24 M4 Pro에서 Main 카메라의 저장된 Expert 4개와
+Random-after-lift 4개 에피소드의 연속 782프레임을 재생했다. 전체 검출
+프레임에서 얻은 꼭짓점 픽셀을 시작점으로 양방향 pyramidal LK를 적용했다.
+중간 프레임은 현재 RGB 재질 마스크와 5×5 깊이 이웃을 확인해 3D로
+복원했다. 세 프레임 간격의 보수적 변형은 이전 Peg·Box 후보를 각각 85%
+이상 유지하지 못하면 현재 프레임을 다시 검출한다. GT는 채점에만 썼다.
+
+| 경로 | 평균 / p95 (ms) | Peg / Box 외곽 / Hole 림 3 mm 매칭 |
+| --- | ---: | ---: |
+| 매 프레임 기본 검출 | 30.96 / 39.06 | 4,148 / 4,105 / 2,625 |
+| 검출 간격 2, 중간 프레임 LK | 16.34 / 37.57 | 3,545 / 4,105 / 2,607 |
+| 검출 간격 3, 중간 프레임 LK | 11.25 / 36.17 | 3,241 / 4,101 / 2,596 |
+| 검출 간격 3, 후보 손실 시 재검출 | 12.41 / 37.41 | 3,368 / 4,103 / 2,595 |
+
+매칭은 동일 물체의 전체 GT 꼭짓점과 3 mm 이내 일대일 대응으로 계산했다.
+LK 구간은 평균 0.88–0.98 ms였다. 표의 하이브리드 시간은 측정한 LK 및
+초기화 시간에 해당 프레임의 검출 시간을 더해 산출했다. 보수적 변형은
+69프레임에서 추가 재검출했다. Box 매칭 총계가 같아도 프레임별 매칭은
+달랐다. 간격 2의 LK 프레임 중 기본 검출이 매칭한 Box 외곽 2,047개 가운데
+2,039개가 동일 GT ID를 유지했다. 이 실험은 연속 영상 재생이며 closed-loop
+제어 성공률과 moving-hole 정확도는 검증 범위 밖이다.
+
+[LK 비교 결과](../outputs/corner_latency_investigation/corner_lk_results.json) ·
+[재생 스크립트](../outputs/corner_latency_investigation/benchmark_corner_lk.py) ·
+[원본 프레임 매니페스트](../outputs/main_camera_held_out/raw/manifest.json)
+
+같은 날, MPS 검출기에 NumPy RGB-D를 넣는 경로의 재질 연결 성분 처리를
+색상 마스크의 foreground를 감싸는 사각형으로 줄였다. 사각형 밖은 모두
+배경이므로 8방향 연결 성분과 픽셀 수 기준은 같다. 연산한 마스크는 원래
+영상 크기로 되돌린다. 앞의 192프레임 A/B 조건에서 평균 **29.69 → 27.89 ms**,
+p95 **37.48 → 35.26 ms**였다. 192프레임 모두 좌표, 후보 순서, 마스크,
+메타데이터와 진단 정보가 일치했다. Box 외곽의 사각형 계산도 따로 비교했으나
+재질 마스크 변경 위에 추가했을 때의 개선 방향이 두 실행에서 달라 진단으로
+남겼다. [출력 보존 A/B](../outputs/corner_latency_investigation/exact_results.json) ·
+[A/B 스크립트](../outputs/corner_latency_investigation/benchmark_exact.py)
+
+### MPS 후보 전송과 평면 마스크 회수 일괄 처리
+
+2026-11-24에 기존 RGB-D 검출 규칙으로 MPS 입력과 회수 경계를 줄였다.
+RANSAC의 결정적 표본과 세 점 가설 인덱스를 한 번에 올린다. 윤곽 경계,
+세 평면 교차점, 관측 면 외곽, Box RGB 후보는 검증 호출마다 입력 배열을
+한 번씩 올리고 Metal 커널은 같은 타입의 텐서 뷰를 읽는다. 평면 계수,
+유효 플래그, 비트 압축한 평면 마스크는 한 버퍼로 회수한다. CPU에서
+지지 마스크를 이미 가지고 있으면 재사용한다. 평면 라벨링과 팽창은
+16×16 타일과 한 픽셀 겹침 영역으로 한 번에 실행하고, 두 침식 결과를
+다음 커널에서 함께 계산한다. 이 경로의 마스크 처리 호출은 평면 준비당
+4회에서 2회로 줄었다. 별도 24프레임 계측에서 프레임당 명시적 MPS→CPU
+읽기는 13회에서 9회, 자체 Metal 커널 호출은 평균 34.6회에서 32.6회로
+줄었다. [변경 후 장치 경계 계측](../outputs/corner_latency_investigation/batched_boundaries.json)
+
+M4 Pro, PyTorch 2.14.1에서 체크섬을 검증한 기존 48개 에피소드 전체를
+재생했다. 프레임별 전후 실행 순서를 교대했고 파일 읽기와 첫 호출 워밍업을
+제외했다. 시간은 검출 호출에서 CPU 딕셔너리 출력까지다.
+
+| 입력 | 프레임 | 평균 전 → 후 (ms) | p50 전 → 후 (ms) | p95 전 → 후 (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| NumPy RGB-D | 2,073 | 24.19 → 21.01 | 22.42 → 18.94 | 34.12 → 31.18 |
+| MPS 상주 RGB-D | 48 | 22.40 → 18.73 | 21.90 → 18.25 | 26.53 → 22.18 |
+
+검출 개수와 순서, 물체 ID, 카메라·월드·픽셀 좌표의 float32 비트,
+마스크, 메타데이터와 진단 정보가 모든 프레임에서 일치했다. NumPy 재생의
+2,073프레임 중 10 ms 이내 호출은 0건이었다. 후보 병합에서 플래그와 좌표를
+한 번에 읽는 시제품은 192프레임의 출력을 보존했으나 반복 비교의 평균
+이득이 약 0.1 ms로 작아 진단 코드로 남겼다. 이 재생에서는 CUDA와 폐루프
+제어를 실행하지 않았다.
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python outputs/corner_latency_investigation/verify_batched_mps.py --all
+```
+
+[전체 프레임 측정](../outputs/corner_latency_investigation/batched_mps_full.json) ·
+[후보 회수 시제품](../outputs/corner_latency_investigation/fusion_isolation_results.json) ·
+[평면 마스크 회수 비교](../outputs/corner_latency_investigation/plane_readback_results.json) ·
+[마스크 커널 병합 비교](../outputs/corner_latency_investigation/morphology_results.json)
+
+### MPS 프레임 단위 후보 검증
+
+최적화된 MPS 검출기는 윤곽 경계, 세 평면 교차점, 관측 면 외곽, Box의
+RGB·큐브 후보를 순서대로 모아 하나의 Metal 커널로 검사한다. 각 후보는
+자신의 평면, 지지 마스크, 기본·복구 플래그를 참조한다. 후보별 검증식은
+개별 커널과 공유한다. 커널 출력을 원래 후보 묶음 순서대로 등록하므로
+겹치는 후보에 적용하는 기존 병합 우선순위를 유지한다. 별도 24프레임
+계측에서 이 검증 단계의 Metal 호출은 프레임당 평균 6.25회에서 1회로
+줄었다. [커널 호출 계측](../outputs/corner_latency_investigation/frame_batch_boundaries.json)
+
+192프레임에서 Metal 기본 스레드그룹 크기와 32·64·128을 비교했다.
+128에서 같은 출력을 유지하며 평균 17.59 → 17.10 ms,
+p95 20.18 → 19.27 ms를 기록해 이 크기를 적용했다.
+[스레드그룹 비교](../outputs/corner_latency_investigation/frame_batch_workgroups.json)
+
+2026-11-24 M4 Pro에서 직전 MPS 전송 최적화 소스를 기준으로 한 쌍별
+비교다. 파일 읽기와 워밍업을 제외한 검출 호출부터 CPU 딕셔너리 출력까지
+측정했다. 단위는 ms/프레임이다.
+
+| 입력 | 프레임 | 평균 전 → 후 | p50 전 → 후 | p95 전 → 후 |
+| --- | ---: | ---: | ---: | ---: |
+| NumPy RGB-D | 2,073 | 24.73 → 23.22 | 22.89 → 21.31 | 36.41 → 35.13 |
+| MPS 상주 RGB-D | 48 | 22.22 → 20.73 | 20.79 → 18.92 | 31.42 → 28.01 |
+| NumPy RGB-D, 사선 이동 Hole 사례 | 251 | 25.22 → 23.94 | 24.28 → 23.16 | 30.31 → 28.94 |
+
+모든 재생 프레임에서 후보 수와 순서, 물체 ID, 픽셀·카메라·월드 좌표의
+float32 비트, 마스크, 메타데이터, 진단 정보가 일치했다. CUDA와 폐루프
+제어는 이 비교에서 실행하지 않았다. 이동 Hole은 체크섬을 확인한
+`case_0146_521142120`의 RGB-D를 재생했다.
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python outputs/corner_latency_investigation/verify_frame_batch.py --all
+```
+
+[전체 프레임 측정](../outputs/corner_latency_investigation/frame_batch_full.json) ·
+[이동 Hole 측정](../outputs/corner_latency_investigation/frame_batch_moving_case.json) ·
+[이동 Hole 재생 스크립트](../outputs/corner_latency_investigation/verify_moving_case_frame_batch.py)
+
+### MPS Box 외곽 분위수와 Hole 성분 처리
+
+Box에서 기존 회전 좌표의 0.1%와 99.9% 분위수를 계산한다. Metal 커널은
+좌표 열을 정렬하지 않고 각 분위수 보간에 필요한 인접 순위 두 개만 찾는다.
+순위 계산은 float32를 사용하며, 보간은 설치된 PyTorch MPS의 텐서 가중치
+`lerp`와 같은 FMA를 사용한다. 0, 비정규 수 또는 비유한 경계가 나오면
+기존 `torch.quantile`을 호출한다. CPU 분할 시제품은 일반 프레임에서는
+출력을 맞췄으나 극단 입력에서 MPS와 보간 반올림이 달랐다.
+[PyTorch 2.14.1 MPS 보간 소스](https://github.com/pytorch/pytorch/blob/5c4886908584029761b579af026dcfb627c84070/aten/src/ATen/native/mps/kernels/BinaryKernel.metal#L664-L688)
+
+Hole 림은 연결 성분의 경계 상자와 1픽셀 여유 영역에서 경계 중점을 구하고,
+깊이 지지는 경계 상자 내부의 성분 픽셀만 순서대로 읽는다. 기존 4방향
+연결 성분 판정과 경계 중점, 사각형 피팅, 깊이 게이트를 유지한다.
+
+2026-11-24 M4 Pro에서 프레임 단위 후보 검증을 적용한 직전 검출기를
+기준으로 비교했다. 한 프레임씩 실행 순서를 교대하고 CPU 딕셔너리 출력까지
+측정했다. 파일 읽기와 워밍업은 제외했다.
+
+| 입력 | 프레임 | 평균 전 → 후 (ms) | p95 전 → 후 (ms) |
+| --- | ---: | ---: | ---: |
+| NumPy RGB-D | 2,073 | 20.65 → 19.76 | 31.77 → 30.59 |
+| MPS 상주 RGB-D | 48 | 18.50 → 17.30 | 29.05 → 26.21 |
+| NumPy RGB-D, 사선 이동 Hole 사례 | 251 | 20.48 → 19.10 | 30.08 → 26.97 |
+
+모든 프레임에서 검출 개수·순서, 물체 ID, 픽셀·카메라·월드 좌표의 float32
+비트, 마스크, 메타데이터와 진단이 일치했다. CUDA와 폐루프 제어는 이
+비교에서 실행하지 않았다.
+
+```bash
+PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 \
+  .venv/bin/python outputs/corner_latency_investigation/verify_box_bounds.py --all
+```
+
+[전체 프레임 측정](../outputs/corner_latency_investigation/box_bounds_full.json) ·
+[사선 이동 Hole 측정](../outputs/corner_latency_investigation/box_bounds_moving_case.json) ·
+[Box 분위수 단독 비교](../outputs/corner_latency_investigation/box_bounds_only_full.json) ·
+[Metal 선택 시제품](../outputs/corner_latency_investigation/box_fused_bounds_probe.json) ·
+[Hole 성분 범위 비교](../outputs/corner_latency_investigation/hole_component_bounds_probe.json)
 
 ### 원본과 계측 기록
 

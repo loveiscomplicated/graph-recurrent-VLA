@@ -6,13 +6,15 @@ import numpy as np
 from .backends import torch_ops as K
 
 
-def material_masks(hsv, *, optimized=False):
+def material_masks(hsv, *, optimized=False, crop_components=False):
     """One CPU topology pass, preserving the two original component cutoffs."""
     if optimized:
         orange = cv2.inRange(hsv, (0, 85, 60), (8, 190, 255))
         white = cv2.inRange(hsv, (90, 8, 65), (105, 22, 255))
         box = cv2.inRange(hsv, (14, 65, 50), (30, 195, 255))
-        return filter_material_components(cv2.bitwise_or(orange, white), box, optimized=True)
+        return filter_material_components(
+            cv2.bitwise_or(orange, white), box, optimized=True, crop=crop_components
+        )
 
     h, s, v = np.moveaxis(hsv, -1, 0)
     orange = (h <= 8) & (s >= 85) & (s <= 190) & (v >= 60)
@@ -21,20 +23,35 @@ def material_masks(hsv, *, optimized=False):
     return filter_material_components(orange | white, box, optimized=optimized)
 
 
-def filter_material_components(peg_colors, box_colors, *, optimized=False):
+def filter_material_components(peg_colors, box_colors, *, optimized=False, crop=False):
     """Apply the original contour component area thresholds to color masks."""
     if optimized:
         # Component labels are dense indices into their statistics array.
         # Index a boolean table directly instead of searching the label set.
         def components(colors, thresholds):
-            _, labels, stats, _ = cv2.connectedComponentsWithStats(
-                colors.astype(np.uint8, copy=False), 8
-            )
+            colors = colors.astype(np.uint8, copy=False)
+            if crop:
+                # Pixels outside the bounding rectangle are all background.
+                x, y, width, height = cv2.boundingRect(colors)
+                if not width:
+                    return [np.zeros(colors.shape, dtype=bool) for _ in thresholds]
+                region = np.s_[y:y + height, x:x + width]
+                _, labels, stats, _ = cv2.connectedComponentsWithStatsWithAlgorithm(
+                    colors[region], 8, cv2.CV_32S, cv2.CCL_GRANA
+                )
+            else:
+                _, labels, stats, _ = cv2.connectedComponentsWithStats(colors, 8)
+
             masks = []
             for threshold in thresholds:
                 keep = stats[:, cv2.CC_STAT_AREA] >= threshold
                 keep[0] = False
-                masks.append(keep[labels])
+                mask = keep[labels]
+                if crop:
+                    image_mask = np.zeros(colors.shape, dtype=bool)
+                    image_mask[region] = mask
+                    mask = image_mask
+                masks.append(mask)
             return masks
 
         peg, = components(peg_colors, (35,))

@@ -113,14 +113,20 @@ def opening_corners(
     fragmented=False,
     square_span="mean",
     verify_rejected_square=False,
+    crop_components=False,
 ):
     """Try enclosed contours first, then depth components with real face edges."""
     inputs = (depth, support, planes, eligible, intrinsic)
-    proposals = list(_opening_corners(*inputs, small_opening, fragmented, square_span))
+    proposals = list(_opening_corners(
+        *inputs, small_opening, fragmented, square_span, crop_components=crop_components
+    ))
     yield from proposals
     if fragmented and not any(row[3] for row in proposals):
         depth_proposals = list(
-            _opening_corners(*inputs, small_opening, fragmented, square_span, depth_component=True)
+            _opening_corners(
+                *inputs, small_opening, fragmented, square_span,
+                depth_component=True, crop_components=crop_components,
+            )
         )
         yield from depth_proposals
         if verify_rejected_square and not any(row[3] for row in depth_proposals):
@@ -147,6 +153,7 @@ def _opening_corners(
     square_span,
     *,
     depth_component=False,
+    crop_components=False,
 ):
     """Yield rim proposals with cumulative rectangularity and depth checks.
 
@@ -155,12 +162,19 @@ def _opening_corners(
     The Box model has a square opening. Its width and position are fit from
     image evidence, using a perpendicular observed Box face only for axes.
     """
-    y, x = np.nonzero(support)
-    if not len(x):
-        return
     height, width = depth.shape
-    x0, x1 = max(0, x.min() - 1), min(width, x.max() + 2)
-    y0, y1 = max(0, y.min() - 1), min(height, y.max() + 2)
+    if crop_components:
+        x, y, w, h = cv2.boundingRect(support.view(np.uint8))
+        if not w:
+            return
+        x0, x1 = max(0, x - 1), min(width, x + w + 1)
+        y0, y1 = max(0, y - 1), min(height, y + h + 1)
+    else:
+        y, x = np.nonzero(support)
+        if not len(x):
+            return
+        x0, x1 = max(0, x.min() - 1), min(width, x.max() + 2)
+        y0, y1 = max(0, y.min() - 1), min(height, y.max() + 2)
     y_grid, x_grid = np.mgrid[y0:y1, x0:x1]
     uv = np.column_stack((x_grid.ravel(), y_grid.ravel()))
     crop = np.s_[y0:y1, x0:x1]
@@ -203,7 +217,14 @@ def _opening_corners(
                 or top + h == face.shape[0]
             ):
                 continue
-            boundary = _opening_boundary(labels, label)
+            if crop_components:
+                # The accepted component is interior to the crop. A one-pixel
+                # halo keeps all its edge midpoints, including exterior ones.
+                halo = np.s_[top - 1:top + h + 1, left - 1:left + w + 1]
+                boundary = _opening_boundary(labels[halo], label)
+                boundary += [left - 1, top - 1]
+            else:
+                boundary = _opening_boundary(labels, label)
             if depth_component:
                 # Reject crop/dilation boundaries that border no observed face.
                 lower = np.floor(boundary).astype(int)
@@ -227,9 +248,10 @@ def _opening_corners(
             if rectangle is None:
                 continue
             corners = rectangle @ basis - offset * normal
-            component = labels == label
-            opening_delta = depth_delta[component]
-            opening_depth = depth[crop][component]
+            region_slice = np.s_[top:top + h, left:left + w] if crop_components else np.s_[:, :]
+            component = labels[region_slice] == label
+            opening_delta = depth_delta[region_slice][component]
+            opening_depth = depth[crop][region_slice][component]
             behind = opening_delta > 0.003
             occluding = (opening_depth > 0) & (opening_delta < -0.003)
             verified = (

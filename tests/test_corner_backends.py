@@ -12,6 +12,25 @@ from visual.corner_detection.detector import TorchCornerDetector, default_detect
 from visual.corner_detection.geometry import _line, Parameters
 
 
+class MaterialMaskTests(unittest.TestCase):
+    def test_cropped_components_preserve_connectivity_area_and_image_coordinates(self):
+        empty = np.zeros((512, 512), dtype=bool)
+        peg = empty.copy()
+        np.fill_diagonal(peg[477:512, 90:125], True)
+        np.fill_diagonal(peg[463:497, 180:214], True)
+        box = empty.copy()
+        box[302, 191:199] = True
+        box[312, 210:217] = True
+        box[328:335, 226:231] = True
+
+        for colors in ((peg, box), (empty, box), (peg, empty), (empty, empty)):
+            expected = filter_material_components(*colors, optimized=True)
+            actual = filter_material_components(*colors, optimized=True, crop=True)
+            for before, after in zip(expected, actual, strict=True):
+                self.assertEqual(after.dtype, np.bool_)
+                np.testing.assert_array_equal(after, before)
+
+
 class TorchDetectorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -223,18 +242,86 @@ class MetalKernelTests(unittest.TestCase):
             [[500.0, 0.0, 256.0], [0.0, 500.0, 256.0], [0.0, 0.0, 1.0]]
         )
 
+    def test_public_mps_detector_uses_frame_validation_by_default(self):
+        from visual.corner_detection.backends.metal_candidates import FrameCandidates
+
+        rgb = np.zeros((512, 512, 3), dtype=np.uint8)
+        depth = np.full((512, 512), 2000, dtype=np.int16)
+        masks = np.zeros((2, 512, 512), dtype=bool)
+        depth[100:200, 120:240] = 1000
+        masks[0, 100:200, 120:240] = True
+        extrinsic = np.eye(4, dtype=np.float32)[:3]
+
+        self.assertTrue(default_detector("mps").optimized)
+        with patch.object(
+            FrameCandidates, "validate", autospec=True, side_effect=FrameCandidates.validate
+        ) as validate:
+            result = detect_tensors(rgb, depth, self.k, extrinsic, masks=masks, device="mps")
+
+        validate.assert_called_once()
+        self.assertGreater(len(result.xyz), 0)
+
     def test_plane_masks_and_morphology_match_cpu(self):
         depth = torch.full((512, 512), 2.0)
         depth[80:280, 110:310] = 1.0
+        depth[:12, :18] = 1.0
+        depth[500:, 500:] = 1.0
         mask = torch.zeros((512, 512), dtype=torch.bool)
         mask[80:280, 110:310] = True
         mask[120, 140] = False
+        mask[:12, :18] = True
+        mask[500:, 500:] = True
         xyz = K.unproject(depth, self.k)
         planes = torch.tensor([[0.0, 0.0, 1.0, -1.0], [1.0, 0.0, 0.0, -0.2]])
         expected = K.plane_masks(xyz, mask, planes, 0.001)
         actual = K.plane_masks(xyz.to("mps"), mask.to("mps"), planes.to("mps"), 0.001)
         for a, b in zip(actual, expected):
             self.assertTrue(torch.equal(a.cpu(), b))
+
+    def test_box_tail_quantiles_match_mps_sort_and_interpolation_exactly(self):
+        from visual.corner_detection.backends import metal_ops
+
+        generator = torch.Generator().manual_seed(21)
+        quantiles = torch.tensor([0.001, 0.999], device="mps")
+        for size in (2, 80, 999, 1001, 4097):
+            points = torch.randn((size, 3), generator=generator)
+            points[0] *= -1000
+            points[-1] *= 1000
+            cases = {"outliers": points, "repeated": points.round()}
+            exceptional = points.clone()
+            exceptional[:, 0] = -0.0
+            exceptional[0, 0] = 0.0
+            exceptional[0, 1] = float("nan")
+            exceptional[0, 2] = float("inf")
+            cases["exceptional"] = exceptional
+            for kind, coords in cases.items():
+                with self.subTest(size=size, kind=kind):
+                    coords = coords.to("mps")
+                    expected = torch.quantile(coords, quantiles, dim=0).cpu()
+                    actual = metal_ops.box_tail_quantiles(coords)
+                    self.assertTrue(torch.equal(actual.view(torch.int32), expected.view(torch.int32)))
+
+    def test_packed_plane_descriptors_preserve_coefficients_and_mask_bits(self):
+        from visual.corner_detection.backends import metal_ops
+
+        planes = np.array([[0.0, -0.0, 1.0, -0.9], [0.0, 1.0, 0.0, 0.4]], np.float32)
+        eligible = np.array([False, True])
+        masks = np.zeros((2, 512, 512), bool)
+        masks[0, 0, [0, 7, 8, 511]] = True
+        masks[1, 511, [0, 6, 9, 510]] = True
+        support = masks.any(0)
+        inputs = [
+            torch.as_tensor(value, device="mps") for value in (planes, eligible, masks, support)
+        ]
+
+        for host_support in (None, support):
+            rows, ids, host_masks, actual_support = metal_ops.read_plane_descriptors(
+                *inputs, host_support
+            )
+            self.assertEqual(rows.astype(np.float32).tobytes(), planes.tobytes())
+            self.assertEqual(ids, {1})
+            np.testing.assert_array_equal(host_masks, masks)
+            np.testing.assert_array_equal(actual_support, support)
 
     def test_snap_to_observed_planes_matches_cpu(self):
         generator = torch.Generator().manual_seed(9)
@@ -284,19 +371,26 @@ class MetalKernelTests(unittest.TestCase):
         a[:, 2] = 1.0 + 0.1 * a[:, 0] - 0.2 * a[:, 1]
         b[:, 0] = 0.3 + 0.2 * b[:, 1]
         b[:, 2] += 0.8
-        outliers = torch.rand((30, 3), generator=generator)
+        # Leave enough outliers for a final RANSAC pass that must reject the fit.
+        outliers = torch.rand((70, 3), generator=generator)
         points = torch.cat((a, b, outliers))
         expected = K.fit_planes(points, Parameters(), 42, 4)
-        actual = K.fit_planes(points.to("mps"), Parameters(), 42, 4).cpu()
-        self.assertEqual(len(actual), len(expected))
-        for plane, reference in zip(actual, expected):
-            sign = 1 if plane[:3] @ reference[:3] > 0 else -1
-            np.testing.assert_allclose(plane * sign, reference, atol=2e-6)
+        self.assertEqual(len(expected), 2)
+        device_points = points.to("mps")
+        for optimized in (False, True):
+            with self.subTest(optimized=optimized):
+                actual = K.fit_planes(
+                    device_points, Parameters(), 42, 4, optimized=optimized
+                ).cpu()
+                self.assertEqual(len(actual), len(expected))
+                for plane, reference in zip(actual, expected):
+                    sign = 1 if plane[:3] @ reference[:3] > 0 else -1
+                    np.testing.assert_allclose(plane * sign, reference, atol=2e-6)
 
-    def stage_outputs(self, device, stage):
+    def stage_outputs(self, device, stage, *, frame_batch=False):
         """Same synthetic buffers, portable Torch CPU vs candidate-batch MPS."""
         m = TorchCornerDetector(device)
-        bottom = 220 if stage == "box_cube" else 200
+        bottom = 220 if stage in ("box_cube", "frame") else 200
         target = torch.zeros((512, 512), dtype=torch.bool)
         target[100:bottom, 120:240] = True
         masks = torch.stack((target, target.clone(), target.clone()))
@@ -352,7 +446,7 @@ class MetalKernelTests(unittest.TestCase):
             core=True,
             recovery=True,
         )
-        if stage in ("box_rgb", "box_cube"):
+        if stage in ("box_rgb", "box_cube", "frame"):
             features = [
                 (np.array(uv), "mask")
                 for uv in [
@@ -363,13 +457,41 @@ class MetalKernelTests(unittest.TestCase):
                     [180.0, 150.0],
                 ]
             ]
-            getattr(m, stage)(data, features)
+            if stage == "frame":
+                from visual.corner_detection.backends.metal_candidates import FrameCandidates
+
+                # Use all three slots, including distinct Box core and recovery planes.
+                box_core = SimpleNamespace(**(vars(data) | {"oid": 1, "recovery": False}))
+                box_recovery = SimpleNamespace(**(vars(data) | {"oid": 1, "core": False}))
+                box_core.masks = masks.flip(0).to(device)
+                groups = [data, box_core, box_recovery]
+                core = m.current_masks
+                recovery = core.clone()
+                recovery[1, 110:130, 130:150] = False
+                batch = FrameCandidates(groups, core, recovery) if frame_batch else None
+                m.optimized = True
+                for group in groups:
+                    m.current_masks = core if group.core else recovery
+                    m.boundary(group, batch)
+                    m.junctions(group, batch)
+                    m.envelopes(group, batch)
+                m.current_masks = recovery
+                m.box_cube(box_recovery, features, batch)
+                m.box_rgb(box_recovery, features, batch)
+                if batch is not None:
+                    m._merge_frame_candidates(batch)
+            else:
+                getattr(m, stage)(data, features)
         else:
             getattr(m, stage)(data)
-        return [
+        outputs = [
             (b[0].cpu(), b[1].cpu(), b[3].cpu(), None if b[4] is None else b[4].cpu())
             for b in m.blocks
         ]
+        if stage == "frame":
+            rgb_block, holes = m.box_rgb_holes
+            return outputs, m.rows, rgb_block, holes.cpu()
+        return outputs
 
     def compare_stage(self, stage):
         reference = self.stage_outputs("cpu", stage)
@@ -397,6 +519,26 @@ class MetalKernelTests(unittest.TestCase):
 
     def test_fused_box_cube_matches_portable_stage(self):
         self.compare_stage("box_cube")
+
+    def test_frame_batch_preserves_order_and_outputs_across_plane_data_slots(self):
+        reference, reference_rows, reference_rgb, reference_holes = self.stage_outputs("mps", "frame")
+        actual, actual_rows, actual_rgb, actual_holes = self.stage_outputs(
+            "mps", "frame", frame_batch=True
+        )
+
+        self.assertEqual(actual_rows, reference_rows)
+        self.assertEqual(actual_rgb, reference_rgb)
+        self.assertTrue(torch.equal(actual_holes, reference_holes))
+        self.assertEqual(len(actual), len(reference))
+        self.assertGreater(sum(int(block[2].sum()) for block in reference), 0)
+        for (points, uv, selected, counts), (ref_points, ref_uv, ref_selected, ref_counts) in zip(
+            actual, reference, strict=True
+        ):
+            self.assertTrue(torch.equal(selected, ref_selected))
+            self.assertTrue(torch.equal(points[selected].view(torch.int32), ref_points[selected].view(torch.int32)))
+            self.assertTrue(torch.equal(uv[selected].view(torch.int32), ref_uv[selected].view(torch.int32)))
+            if counts is not None:
+                self.assertTrue(torch.equal(counts[selected], ref_counts[selected]))
 
 
 class CpuDetectorTests(TorchDetectorTests):

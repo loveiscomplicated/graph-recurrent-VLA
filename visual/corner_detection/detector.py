@@ -300,12 +300,20 @@ class TorchCornerDetector:
             masks, cores = K.plane_masks(self.xyz, support, planes, p.plane_tolerance_m)
             eligible = cores.flatten(1).sum(1) >= 20
         with self._measure("plane_descriptor_readback"):
-            small = planes.cpu().numpy().astype(float)
-            eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
-            masks_cpu = masks.cpu().numpy()
-            cores_cpu = None if self.optimized else cores.cpu().numpy()
-            if support_cpu is None:
-                support_cpu = support.cpu().numpy()
+            if self.optimized and self.device.type == "mps" and len(planes):
+                from .backends import metal_ops
+
+                small, eligible_cpu, masks_cpu, support_cpu = metal_ops.read_plane_descriptors(
+                    planes, eligible, masks, support, support_cpu
+                )
+                cores_cpu = None
+            else:
+                small = planes.cpu().numpy().astype(float)
+                eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
+                masks_cpu = masks.cpu().numpy()
+                cores_cpu = None if self.optimized else cores.cpu().numpy()
+                if support_cpu is None:
+                    support_cpu = support.cpu().numpy()
         return PlaneData(
             oid,
             support,
@@ -359,24 +367,23 @@ class TorchCornerDetector:
                 )
             )
 
-    def boundary(self, data):
+    def boundary(self, data, batch=None):
         ps = data.proposals
         if not ps or not len(data.planes):
             return
-        uv = self.tensor(np.array([p["uv"] for p in ps]))
-        pi = self.tensor([p["plane"] for p in ps], torch.int64)
-        adjacent = self.tensor(np.array([p["adjacent"] for p in ps]))
+        if batch is not None:
+            batch.boundary(data, ps)
+            return
         if self.device.type == "mps":
             from .backends import metal_ops
 
-            methods = self.tensor(
-                [
-                    {"boundary": 0, "local_boundary": 1, "short_boundary": 2}[
-                        p["method"]
-                    ]
-                    for p in ps
-                ],
-                torch.int32,
+            method_codes = {"boundary": 0, "local_boundary": 1, "short_boundary": 2}
+            pi, methods, uv, adjacent = metal_ops.upload_candidate_arrays(
+                self.device,
+                np.array([p["plane"] for p in ps], dtype=np.int64),
+                np.array([method_codes[p["method"]] for p in ps], dtype=np.int32),
+                np.array([p["uv"] for p in ps], dtype=np.float32),
+                np.array([p["adjacent"] for p in ps], dtype=np.float32),
             )
             points, image, counts, core, recovered = metal_ops.boundary_batch(
                 uv,
@@ -397,6 +404,9 @@ class TorchCornerDetector:
             if data.recovery:
                 self.add(data, points, image, recovered, ps, counts, stage=1)
             return
+        uv = self.tensor(np.array([p["uv"] for p in ps]))
+        pi = self.tensor([p["plane"] for p in ps], torch.int64)
+        adjacent = self.tensor(np.array([p["adjacent"] for p in ps]))
         boundary = self.tensor([p["method"] == "boundary" for p in ps], torch.bool)
         short = self.tensor([p["method"] == "short_boundary" for p in ps], torch.bool)
         points, image, counts, core, recovered = self._validate_boundary(
@@ -410,7 +420,7 @@ class TorchCornerDetector:
         if data.recovery:
             self.add(data, points, image, recovered, ps, counts, stage=1)
 
-    def junctions(self, data):
+    def junctions(self, data, batch=None):
         ps = []
         for indices in combinations(sorted(data.eligible_cpu), 3):
             normals = np.stack([data.planes_cpu[i][0] for i in indices])
@@ -435,11 +445,17 @@ class TorchCornerDetector:
             )
         if not ps:
             return
-        points = self.tensor(np.array([p["point"] for p in ps]))
+        if batch is not None:
+            batch.junctions(data, ps)
+            return
         if self.device.type == "mps":
             from .backends import metal_ops
 
-            indices = self.tensor([p["indices"] for p in ps], torch.int64)
+            indices, points = metal_ops.upload_candidate_arrays(
+                self.device,
+                np.array([p["indices"] for p in ps], dtype=np.int64),
+                np.array([p["point"] for p in ps], dtype=np.float32),
+            )
             uv, selected, recovered = metal_ops.junction_batch(
                 points, indices, data, self.xyz, self.depth, self.valid, self.k
             )
@@ -448,6 +464,7 @@ class TorchCornerDetector:
             if data.recovery:
                 self.add(data, points, uv, recovered, ps, stage=1)
             return
+        points = self.tensor(np.array([p["point"] for p in ps]))
         indices = self.tensor([p["indices"] for p in ps], torch.int64)
         uv, selected, recovered = self._validate_junctions(
             points, indices, data, self.depth, self.valid, self.xyz, self.k
@@ -457,7 +474,7 @@ class TorchCornerDetector:
         if data.recovery:
             self.add(data, points, uv, recovered, ps, stage=1)
 
-    def envelopes(self, data):
+    def envelopes(self, data, batch=None):
         if data.oid != 0 or not data.recovery:
             return
         ps = []
@@ -484,13 +501,19 @@ class TorchCornerDetector:
                 )
         if not ps:
             return
-        points = self.tensor(np.array([p["point"] for p in ps]))
-        uv = self.tensor(np.array([p["uv"] for p in ps]))
-        pi = self.tensor([p["plane"] for p in ps], torch.int64)
-        adjacent = self.tensor(np.array([p["adjacent"] for p in ps]))
+        if batch is not None:
+            batch.envelopes(data, ps)
+            return
         if self.device.type == "mps":
             from .backends import metal_ops
 
+            pi, points, uv, adjacent = metal_ops.upload_candidate_arrays(
+                self.device,
+                np.array([p["plane"] for p in ps], dtype=np.int64),
+                np.array([p["point"] for p in ps], dtype=np.float32),
+                np.array([p["uv"] for p in ps], dtype=np.float32),
+                np.array([p["adjacent"] for p in ps], dtype=np.float32),
+            )
             points, image, counts, selected = metal_ops.envelope_batch(
                 points,
                 uv,
@@ -506,16 +529,18 @@ class TorchCornerDetector:
             )
             self.add(data, points, image, selected, ps, counts)
             return
+        points = self.tensor(np.array([p["point"] for p in ps]))
+        uv = self.tensor(np.array([p["uv"] for p in ps]))
+        pi = self.tensor([p["plane"] for p in ps], torch.int64)
+        adjacent = self.tensor(np.array([p["adjacent"] for p in ps]))
         points, image, counts, selected = self._validate_envelopes(
             points, uv, adjacent, pi, data, self.current_masks[0], self.depth,
             self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
         )
         self.add(data, points, image, selected, ps, counts)
 
-    def box_rgb(self, data, features):
+    def box_rgb(self, data, features, batch=None):
         ps = []
-        signs = np.array(list(product((-1, 1), repeat=2)))
-        distances = np.array(list(product((0.002, 0.004), repeat=2)))
         bases = []
         for pi in sorted(data.eligible_cpu):
             n, d = data.planes_cpu[pi]
@@ -547,12 +572,18 @@ class TorchCornerDetector:
                 )
         if not ps:
             return
-        uv = self.tensor(np.array([p["uv"] for p in ps]))
-        pi = self.tensor([p["plane"] for p in ps], torch.int64)
-        axes = self.tensor(np.array([p["axes"] for p in ps]))
+        if batch is not None:
+            batch.box_rgb(data, ps)
+            return
         if self.device.type == "mps":
             from .backends import metal_ops
 
+            pi, uv, axes = metal_ops.upload_candidate_arrays(
+                self.device,
+                np.array([p["plane"] for p in ps], dtype=np.int64),
+                np.array([p["uv"] for p in ps], dtype=np.float32),
+                np.array([p["axes"] for p in ps], dtype=np.float32),
+            )
             points, selected, holes = metal_ops.box_rgb_batch(
                 uv,
                 pi,
@@ -566,6 +597,11 @@ class TorchCornerDetector:
             )
             self._add_box_rgb(data, points, uv, selected, holes, ps)
             return
+        uv = self.tensor(np.array([p["uv"] for p in ps]))
+        pi = self.tensor([p["plane"] for p in ps], torch.int64)
+        axes = self.tensor(np.array([p["axes"] for p in ps]))
+        signs = np.array(list(product((-1, 1), repeat=2)))
+        distances = np.array(list(product((0.002, 0.004), repeat=2)))
         points, selected, holes = self._validate_box_rgb(
             uv, pi, axes, self.tensor(signs), self.tensor(distances), data, self.depth,
             self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
@@ -586,7 +622,7 @@ class TorchCornerDetector:
             proposal.pop("axes")
         self.add(data, points, uv, selected, proposals, stage=2, feature_ids=feature_ids)
 
-    def box_cube(self, data, features):
+    def box_cube(self, data, features, batch=None):
         y, x = np.nonzero(data.support_cpu)
         if not len(x) or x.min() < 2 or y.min() < 2 or x.max() > 509 or y.max() > 509:
             return
@@ -608,12 +644,13 @@ class TorchCornerDetector:
         if observed_points is None:
             observed_points = self.xyz[data.support]
         coords = observed_points @ self.tensor(rotation)
-        lo, hi = (
-            torch.quantile(coords, self.tensor([0.001, 0.999]), dim=0)
-            .cpu()
-            .numpy()
-            .astype(float)
-        )
+        if self.optimized and self.device.type == "mps":
+            from .backends import metal_ops
+
+            bounds = metal_ops.box_tail_quantiles(coords)
+        else:
+            bounds = torch.quantile(coords, self.tensor([0.001, 0.999]), dim=0).cpu()
+        lo, hi = bounds.numpy().astype(float)
         widths = hi - lo
         size = float(max(widths[1:])) + 0.0015
         if not 0.16 <= size <= 0.27 or min(widths[1:]) < 0.8 * size:
@@ -621,7 +658,23 @@ class TorchCornerDetector:
         center = (lo + hi) / 2
         center[0] = -d + (size / 2 if hi[0] + d > -d - lo[0] else -size / 2)
         signs = np.array(list(product((-1, 1), repeat=3)))
-        points = self.tensor((center + signs * size / 2) @ rotation.T)
+        candidate_points = (center + signs * size / 2) @ rotation.T
+        metadata = [
+            dict(
+                plane=0,
+                line_residual_px=0.25,
+                contour_hole=False,
+                supporting_planes=2,
+                method="box_observed_cube",
+                estimated_size_m=size,
+            )
+            for _ in range(8)
+        ]
+        if batch is not None:
+            batch.box_cube(data, metadata, candidate_points, rotation, signs, features)
+            return
+
+        points = self.tensor(candidate_points)
         if self.device.type == "mps":
             from .backends import metal_ops
 
@@ -640,17 +693,6 @@ class TorchCornerDetector:
                 self.k,
                 self.neutral,
             )
-            metadata = [
-                dict(
-                    plane=0,
-                    line_residual_px=0.25,
-                    contour_hole=False,
-                    supporting_planes=2,
-                    method="box_observed_cube",
-                    estimated_size_m=size,
-                )
-                for _ in range(8)
-            ]
             self.add(data, points, uv, selected, metadata, stage=2)
             return
         features = self.tensor(np.array([item[0] for item in features])).reshape(-1, 2)
@@ -665,18 +707,29 @@ class TorchCornerDetector:
                 points, uv, image_corner, rotation_tensor, signs_tensor, data,
                 self.depth, self.valid, self.xyz, self.k, self.neutral, self._validation_edges,
             )
-        metadata = [
-            dict(
-                plane=0,
-                line_residual_px=0.25,
-                contour_hole=False,
-                supporting_planes=2,
-                method="box_observed_cube",
-                estimated_size_m=size,
-            )
-            for _ in range(8)
-        ]
         self.add(data, points, uv, selected, metadata, stage=2)
+
+    def _merge_frame_candidates(self, batch):
+        """Submit independent checks together and keep their original merge order."""
+        from .backends.metal_candidates import CandidateKind
+
+        groups = batch.validate(
+            self.depth, self.valid, self.xyz, self.k, self.neutral, self.parameters
+        )
+        for group, points, uv, counts, primary, secondary in groups:
+            data, metadata, kind = group.data, group.metadata, group.kind
+            if kind in (CandidateKind.BOUNDARY, CandidateKind.JUNCTION):
+                support_counts = counts if kind == CandidateKind.BOUNDARY else None
+                if data.core:
+                    self.add(data, points, uv, primary, metadata, support_counts, stage=0)
+                if data.recovery:
+                    self.add(data, points, uv, secondary, metadata, support_counts, stage=1)
+            elif kind == CandidateKind.ENVELOPE:
+                self.add(data, points, uv, primary, metadata, counts)
+            elif kind == CandidateKind.BOX_RGB:
+                self._add_box_rgb(data, points, uv, primary, secondary, metadata)
+            else:
+                self.add(data, points, uv, primary, metadata, stage=2)
 
     def correct_box_exterior(self, points, uv, object_id, metadata):
         """Apply the observed half-pixel offset only near proposed cube vertices."""
@@ -895,6 +948,7 @@ class TorchCornerDetector:
                 fragmented=self.recover_fragmented_rim,
                 square_span=self._opening_square_span,
                 verify_rejected_square=self.verify_rejected_rim_squares,
+                crop_components=self.optimized and self.device.type == "mps",
             )
         )
 
@@ -1170,7 +1224,11 @@ class TorchCornerDetector:
                     neutral = hsv[..., 1] < 8
                 if masks is None:
                     with self._measure("rgb_material_masks"):
-                        core_cpu, recovery_cpu = material_masks(hsv, optimized=self.optimized)
+                        core_cpu, recovery_cpu = material_masks(
+                            hsv,
+                            optimized=self.optimized,
+                            crop_components=self.device.type == "mps",
+                        )
             if masks is not None:
                 if tuple(masks.shape) != (2, 512, 512):
                     raise ValueError("masks must have shape [2,512,512]")
@@ -1230,6 +1288,13 @@ class TorchCornerDetector:
                     extra.recovery = True
                     data_list.append(extra)
                     recovery_data.append(extra)
+        batch = None
+        if self.optimized and self.device.type == "mps":
+            from .backends.metal_candidates import MAX_PLANE_DATA, FrameCandidates
+
+            if len(data_list) <= MAX_PLANE_DATA:
+                batch = FrameCandidates(data_list, core, recovery)
+        batch_args = (batch,) if batch is not None else ()
         with self._measure("contour_candidates"):
             contours = ContourProposals()
             for data in data_list:
@@ -1237,9 +1302,9 @@ class TorchCornerDetector:
             contours.finish(self.device, batched=self.optimized)
             for data in data_list:
                 self.current_masks = core if data.core else recovery
-                self.boundary(data)
-                self.junctions(data)
-                self.envelopes(data)
+                self.boundary(data, *batch_args)
+                self.junctions(data, *batch_args)
+                self.envelopes(data, *batch_args)
         with self._measure("box_exterior"):
             self.current_masks = recovery
             box = recovery_data[1]
@@ -1254,9 +1319,12 @@ class TorchCornerDetector:
                     feature_image, box.support_cpu, optimized=self.optimized
                 )
                 with self._measure("box_cube"):
-                    self.box_cube(box, features)
+                    self.box_cube(box, features, *batch_args)
                 with self._measure("box_rgb"):
-                    self.box_rgb(box, features)
+                    self.box_rgb(box, features, *batch_args)
+        if batch is not None:
+            with self._measure("candidate_validation"):
+                self._merge_frame_candidates(batch)
         if self.recover_hole_rim:
             with self._measure("hole_rim"):
                 self.box_openings(box)

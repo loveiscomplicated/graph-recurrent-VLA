@@ -223,3 +223,19 @@ class HoleRimRecoveryTest(unittest.TestCase):
         ]
         self.assertEqual(len(recovered), 1)
         np.testing.assert_allclose(np.abs(recovered[0][1][:, :2]), 5.5 / 256)
+
+    def test_component_windows_preserve_enclosed_and_open_seam_proposals(self):
+        self.depth[self.opening] = 1.1
+        inputs = self.depth, self.support, self.planes, {0, 1}, self.intrinsic
+        options = dict(small_opening=True, fragmented=True, verify_rejected_square=True)
+        for open_seam in (False, True):
+            with self.subTest(open_seam=open_seam):
+                if open_seam:
+                    self.support[14:27, 32] = False
+                reference = list(opening_corners(*inputs, **options))
+                cropped = list(opening_corners(*inputs, **options, crop_components=True))
+                self.assertTrue(any(row[3] for row in reference))
+                self.assertEqual(len(cropped), len(reference))
+                for actual, expected in zip(cropped, reference, strict=True):
+                    self.assertEqual((actual[0], *actual[2:]), (expected[0], *expected[2:]))
+                    np.testing.assert_array_equal(actual[1], expected[1])
