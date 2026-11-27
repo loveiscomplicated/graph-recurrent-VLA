@@ -1,5 +1,9 @@
 # Graph–Recurrent VLA 최종 파이프라인
 
+이 문서는 GT 없는 앞단과 Mamba 앙상블을 연결한 당시의 32시드 실험을 기록한다.
+최종 메인 모델과 성능 개선 모델의 선정 및 300시드 비교 결과는
+[Surface-Mamba 통합 모델 문서](../../recurrent/README.md#최종-통합-모델과-비교-결과)에 정리했다.
+
 ## 전체 파이프라인 소개
 
 목표는 ManiSkill3의 `PegInsertionSide-v1`에서 RGB-D로 Peg와 Hole의 3D 상태를 추정하고, 그 상태를 받은 Recurrent 정책으로 Peg를 삽입하는 것이다. 고정 Box와 평행이동하는 Box를 평가했다.

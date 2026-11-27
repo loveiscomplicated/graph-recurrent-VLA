@@ -1,0 +1,49 @@
+trainer: training.surface_mamba_moving:fine_tune
+output: /workspace/surface_mamba/moving_hole_graph_only_single/training/seed_0
+dataset: /workspace/surface_mamba/moving_hole_graph_only_single/state36
+resume: true
+device: cuda:0
+cpu_threads: 2
+
+seeds: [0]
+model:
+  d_model: 96
+  d_state: 16
+  d_conv: 4
+  expand: 2
+  layers: 2
+
+mixing:
+  alphas: [1.0]
+
+initial_checkpoint: /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt
+initial_checkpoint_sha256: 48d07bbc9c86cc4476cd3e32c5b13aa4a6270af80fe924b804cf783dfc64e4ec
+
+training:
+  max_steps: 2000
+  batch_size: 8
+  gradient_clip_norm: 1.0
+  validation_interval: 50
+  checkpoint_interval: 250
+  optimizer:
+    type: adamw
+    learning_rate: 0.00001
+    weight_decay: 0.0
+  scheduler:
+    type: reduce_on_plateau
+    factor: 0.5
+    patience_validations: 3
+    min_learning_rate: 0.0000001
+  early_stopping:
+    patience_validations: 10
+    min_delta: 0.0001
+
+dataset_contract:
+  motion:
+    start_step: 10
+    end_step: 40
+    distance_m: 0.06
+    seed_salt: 20261120
+  counts: [160, 40]
+  evaluation_seeds_file: /workspace/surface_mamba/evaluation_seeds.json
+  evaluation_seeds_sha256: 7fe07e3645117a7cd897751fd4a4917f05bd648175a0db16219b6d95b7013765

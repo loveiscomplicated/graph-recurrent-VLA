@@ -12,6 +12,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
+from data_collection.episode_dataset import file_sha256
 from evaluation.surface_mamba_controller import (
     _aggregate_predictions,
     _bootstrap_episode_metrics,
@@ -21,6 +22,7 @@ from evaluation.surface_mamba_controller import (
     _paired_bootstrap_differences,
 )
 from main import load_config
+from recurrent.surface_mamba import ACTION_DIM, OBSERVATION_DIM, MambaController
 from training.surface_mamba_controller import _validate_config, train
 from training.surface_mamba_parallel import _build_jobs, _resolve_gpu_ids
 
@@ -165,6 +167,89 @@ class GraphOnlyTrainingIntegrationTests(unittest.TestCase):
         self._write_split(dataset / "train.npz", 720, 0)
         self._write_split(dataset / "validation.npz", 90, 1000)
         return dataset
+
+    @staticmethod
+    def _warm_start(config: dict) -> dict[int, dict]:
+        """Build a valid source checkpoint payload without a preparatory run."""
+        model_config = {
+            "observation_dim": OBSERVATION_DIM,
+            "action_dim": ACTION_DIM,
+            **config["model"],
+        }
+        torch.manual_seed(91)
+        model = MambaController(**model_config)
+        statistics = {
+            "obs_mean": np.zeros(OBSERVATION_DIM, dtype=np.float32).tolist(),
+            "obs_std": np.ones(OBSERVATION_DIM, dtype=np.float32).tolist(),
+            "obs_keep": np.ones(OBSERVATION_DIM, dtype=np.float32).tolist(),
+            "act_mean": np.zeros(6, dtype=np.float32).tolist(),
+            "act_std": np.ones(6, dtype=np.float32).tolist(),
+        }
+        payload = {
+            "seed": 0,
+            "model_config": model_config,
+            "model": {
+                name: value.detach().clone()
+                for name, value in model.state_dict().items()
+            },
+            "statistics": statistics,
+            "identity": {"alphas": [1.0]},
+        }
+        return {0: {"payload": payload, "sha256": "warm-start-test"}}
+
+    def test_warm_start_step_zero_remains_best_when_updates_regress(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dataset = self._dataset(root)
+            output = root / "training"
+            config = self._config(dataset, output, max_steps=2)
+            config["training"]["early_stopping"]["patience_validations"] = 2
+            warm_starts = self._warm_start(config)
+            source_model = warm_starts[0]["payload"]["model"]
+
+            with patch.dict(os.environ, {"WANDB_MODE": "disabled"}, clear=False), patch(
+                "training.surface_mamba_controller._validation_loss",
+                side_effect=[0.5, 1.0, 1.0],
+            ):
+                train(config, warm_starts=warm_starts)
+
+            run = output / "mamba_seed_0"
+            summary = json.loads((run / "summary.json").read_text())
+            history = json.loads((run / "history.json").read_text())["history"]
+            best = torch.load(run / "best.pt", map_location="cpu", weights_only=False)
+            last = torch.load(run / "last.pt", map_location="cpu", weights_only=False)
+
+        self.assertEqual(summary["best_step"], 0)
+        self.assertEqual(summary["best_graph_loss"], 0.5)
+        self.assertEqual(summary["stop_reason"], "early_stopping")
+        self.assertEqual(best["step"], 0)
+        self.assertEqual(last["step"], 2)
+        self.assertTrue(history[0]["initial_checkpoint"])
+        self.assertIsNone(history[0]["training_loss"])
+        for name, expected in source_model.items():
+            torch.testing.assert_close(best["model"][name], expected, rtol=0, atol=0)
+
+    def test_warm_start_step_zero_is_replaced_by_a_real_improvement(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dataset = self._dataset(root)
+            output = root / "training"
+            config = self._config(dataset, output, max_steps=2)
+            warm_starts = self._warm_start(config)
+
+            with patch.dict(os.environ, {"WANDB_MODE": "disabled"}, clear=False), patch(
+                "training.surface_mamba_controller._validation_loss",
+                side_effect=[1.0, 0.5, 0.6],
+            ):
+                train(config, warm_starts=warm_starts)
+
+            run = output / "mamba_seed_0"
+            summary = json.loads((run / "summary.json").read_text())
+            best = torch.load(run / "best.pt", map_location="cpu", weights_only=False)
+
+        self.assertEqual(summary["best_step"], 1)
+        self.assertEqual(summary["best_graph_loss"], 0.5)
+        self.assertEqual(best["step"], 1)
 
     def test_one_step_graph_only_training_never_reports_gt_validation(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -460,6 +545,55 @@ class ParallelLauncherTests(unittest.TestCase):
             / "seed_0"
             / "mamba_seed_0"
             / "best.pt",
+        )
+
+    def test_warm_start_sources_are_verified_and_added_to_each_job(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            checkpoint = root / "source.pt"
+            checkpoint.write_bytes(b"source checkpoint")
+            config = {
+                "output": str(root / "launcher"),
+                "warm_start_sources": [
+                    {
+                        "seed": 0,
+                        "checkpoint": str(checkpoint),
+                        "sha256": file_sha256(checkpoint),
+                    }
+                ],
+                "base_training": {
+                    "trainer": "training.surface_mamba_moving:fine_tune",
+                    "dataset": "/data/moving_state36",
+                    "resume": True,
+                    "device": "cuda:0",
+                    "cpu_threads": 2,
+                    "model": {"d_model": 8},
+                    "training": training_config(seeds=[0], alphas=[1.0])["training"],
+                },
+                "experiments": [
+                    {
+                        "name": "graph_only",
+                        "output": str(root / "graph_only"),
+                        "seeds": [0],
+                        "mixing": {
+                            "alphas": [1.0],
+                            "allow_warm_start_alpha_change": True,
+                        },
+                    }
+                ],
+            }
+
+            jobs = _build_jobs(config)
+
+        self.assertEqual(len(jobs), 1)
+        self.assertEqual(
+            jobs[0].config["trainer"],
+            "training.surface_mamba_moving:fine_tune",
+        )
+        self.assertEqual(jobs[0].config["initial_checkpoint"], str(checkpoint))
+        self.assertEqual(
+            jobs[0].config["initial_checkpoint_sha256"],
+            config["warm_start_sources"][0]["sha256"],
         )
 
     def test_gpu_auto_respects_parent_cuda_visibility(self):

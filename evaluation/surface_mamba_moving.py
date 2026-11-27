@@ -11,12 +11,24 @@ from data_collection.surface_mamba_motion import MovingSurfaceEpisode, make_moti
 from evaluation.surface_mamba_controller import _wilson_interval, evaluate_closed_loop
 
 
+def _verify_candidate_checkpoints(config):
+    """Verify legacy single-candidate or named multi-candidate checkpoint hashes."""
+    actual = {
+        name: [file_sha256(Path(path)) for path in spec["checkpoints"]]
+        for name, spec in config["candidates"].items()
+    }
+    expected = config["checkpoint_sha256"]
+    if isinstance(expected, list):
+        if set(actual) != {"ensemble"} or actual["ensemble"] != expected:
+            raise ValueError("Moving evaluation checkpoint digest differs")
+    elif actual != expected:
+        raise ValueError("Moving evaluation candidate checkpoint digests differ")
+    return actual
+
+
 def evaluate(config):
     """Reuse the fixed controller evaluator with an exogenous box trajectory."""
-    paths = config["candidates"]["ensemble"]["checkpoints"]
-    hashes = [file_sha256(Path(path)) for path in paths]
-    if hashes != config["checkpoint_sha256"]:
-        raise ValueError("Moving evaluation checkpoint digest differs")
+    _verify_candidate_checkpoints(config)
     if file_sha256(Path(config["seeds_file"])) != config["seeds_sha256"]:
         raise ValueError("Moving evaluation seed file changed")
     evaluate_closed_loop(

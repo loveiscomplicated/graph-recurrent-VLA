@@ -1,0 +1,61 @@
+trainer: evaluation.surface_mamba_moving:evaluate
+mode: closed_loop
+output: /workspace/surface_mamba/moving_hole_graph_only_single/evaluation/shard_0
+resume: true
+controller_device: cuda:0
+seeds_file: /workspace/surface_mamba/evaluation_seeds.json
+seeds_sha256: 7fe07e3645117a7cd897751fd4a4917f05bd648175a0db16219b6d95b7013765
+seed_start: 0
+seed_limit: 150
+horizon: 250
+comparison_reference: fixed_graph_only_single
+
+motion:
+  start_step: 10
+  end_step: 40
+  distance_m: 0.06
+  seed_salt: 20261120
+
+candidates:
+  fixed_graph_only_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt
+  moving_adapted_graph_only_single:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/moving_hole_graph_only_single/training/seed_0/mamba_seed_0/best.pt
+
+checkpoint_sha256:
+  fixed_graph_only_single:
+    - 48d07bbc9c86cc4476cd3e32c5b13aa4a6270af80fe924b804cf783dfc64e4ec
+  moving_adapted_graph_only_single:
+    - 5e35d7e68c2dbf9fa4cf98377d9f39aeaabba659d1ebfd3979cab31da10714e4
+
+environment:
+  device: cpu
+  render_backend: cuda
+  observation_device: cuda
+  max_episode_steps: 250
+
+frontend:
+  device: cuda:0
+  detector:
+    device: cuda:0
+    optimized: true
+  tracker:
+    path: /workspace/surface_mamba/checkpoints/surface_tracker_best.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  gnn:
+    path: /workspace/surface_mamba/checkpoints/surface_gnn_best.pt
+    sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241
+  tapnextpp:
+    device: cuda:0
+    checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+    tap_input_resolution: 256
+    tap_cuda_autocast: true
+    tap_cache_cuda_autocast: true
+    tap_mps_fp16_vit: false
+    tap_mps_fp16_recurrent_mlp: false
+    tap_adaptive_crop: true
+    tap_cuda_graph: true

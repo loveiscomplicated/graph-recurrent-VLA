@@ -5,6 +5,41 @@ workflow는 Graph 팀의 검증된 모델을 수정하지 않고 별도 online a
 
 ## Frozen Surface frontend + Surface-Mamba controller comparison
 
+### 최종 통합 모델과 비교 결과
+
+**최종 메인 모델은 3번, GNN의 Object21 추정치로 학습한 단일 Mamba
+(`graph_only_single`)다.** ACT·Diffusion Policy와 비교할 때는 시뮬레이터 물체
+GT를 학습 입력으로 섞지 않고 컨트롤러 하나만 쓰는 이 구성을 대표 모델로 제시한다.
+**성능 개선 모델은 1번, 물체 GT와 GNN 추정치를 혼합해 학습한 Mamba 5개
+앙상블 (`mixed_ensemble`)이다.** 2번은 혼합 학습의 seed 0 모델 하나를 사용하며,
+3번과 비교하면 단일 모델에서 학습 입력을 혼합한 효과를, 1번과 비교하면 혼합 학습에서
+앙상블을 적용한 효과를 볼 수 있다.
+
+세 모델 모두 고정 Hole에서 학습했다. 아래 고정 Hole 결과는 같은 예약 평가 시드
+300개에서 확인한 폐루프 성공률이다. 이동 Hole 열은 고정 Hole 가중치로 이동 조건을
+평가한 결과다.
+
+| 구성 | 발표에서의 역할 | 고정 Hole (300시드) | 이동 Hole (추가 학습 전) |
+| --- | --- | ---: | ---: |
+| 3번 · GNN 추정 Object21 · 단일 Mamba | 최종 메인 모델 | 193/300 (64.3%) | 165/300 (55.0%) |
+| 2번 · GT/Graph 혼합 학습 · 단일 Mamba | 비교 모델 | 209/300 (69.7%) | 공유 수치 없음 |
+| 1번 · GT/Graph 혼합 학습 · Mamba 5개 | 성능 개선 모델 | 241/300 (80.3%) | 222/300 (74.0%) |
+
+여기서 **Graph-only는 물체 상태 21차원의 출처**를 뜻한다. 세 구성 모두 제어 시
+GNN이 추정한 Object21과 Robot15를 사용한다. 혼합 모델의 물체 GT는 학습 입력에만
+들어간다. 고정 Hole ACT·DP의 31/100과 32/100은 각각의 100개 장면 평가에서
+기록한 최고점이다. 통합 모델과의 직접 비교는 동일한 시드와 시뮬레이터 설정에서 보고한다.
+
+기존 [HF 고정 Hole 릴리스](https://huggingface.co/Graph-Recurrent-VLA/graph-recurrent-models/tree/773a667aea3ee7d665b7175b0bfdb03ea9261dcd/fixed_hole_final)는
+게시 당시 1번을 선택 정책으로 표기하며, 세 구성의 평가 결과와 3번의
+`graph_only_seed_0.pt`도 수록한다. 이동 Hole의 1번 수치는 로컬
+`outputs/moving_hole_hf_publication/moving_hole/paired_summary.json`에서
+확인했다. 3번의 고정 학습본과 이동 데이터 추가학습본을 동일한 이동 Hole 시드
+300개에서 비교한 결과는 165/300 (55.0%)과 180/300 (60.0%)이다. 고정 학습본만
+성공한 시드는 21개, 추가학습본만 성공한 시드는 36개였다
+(정확 McNemar 검정 양측 `p = 0.0627`).
+[3번 이동 Hole 평가 기록](../outputs/moving_hole_graph_only_single/evaluation/paired_summary.json)
+
 ### macOS MPS 기본 실행
 
 Apple Silicon Mac에서 고정 Hole 메인 모델 `graph_only_single`과 성능 개선
@@ -21,6 +56,25 @@ Surface Corner Tracker와 GNN은 CPU에서 실행한다. 이 설정은 모델별
 같은 고정 Hole 예약 시드 300개를 평가한다. 짧게 확인하려면 설정을 복사하고
 `seed_limit`과 별도 `output` 경로를 지정한다.
 
+### CUDA 기본 실행
+
+Run the fixed-hole main model `graph_only_single` and enhanced
+`mixed_ensemble` on Linux with CUDA/Vulkan, OpenCV, the frozen Surface Tracker
+and GNN, the six controller checkpoints, and the reserved evaluation seeds.
+
+```bash
+WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop_lk.yaml
+```
+
+This recipe uses CUDA for the detector, Surface Corner Tracker, GNN and Mamba,
+and OpenCV pyramidal Lucas–Kanade on CPU for Peg surface points. It writes both
+models' 300-seed results to `evaluation_v2/closed_loop_lk_comparison`.
+On CUDA, the frontend defaults to LK. Existing CUDA configs with a
+`tapnextpp` options block use TAPNext++ when `surface_tracking` is omitted,
+which preserves the published fixed-hole and moving-hole protocols.
+An explicit `frontend.surface_tracking` value chooses either backend.
+See the [surface tracking details](../docs/tapnextpp.md#lk-alternative-for-the-integrated-frontend).
+
 ### Workflow
 
 The Surface-Mamba workflow connects the validation-selected Surface-Context
@@ -35,8 +89,8 @@ use Graph input and omit the recurrent kinematic filter.
 Run from the repository root on a Linux CUDA host after installing
 `requirements.txt` and `requirements-tracking.txt`. Controller training uses the
 small State36 release and does not need raw RGB-D or frontend checkpoints.
-Closed-loop evaluation additionally needs Linux CUDA/Vulkan, TAPNext++ and the
-two frozen checkpoints named in the config.
+The original TAPNext++ evaluation below needs Linux CUDA/Vulkan and the two
+frozen checkpoints named in the config.
 
 ```bash
 export PYTHONPATH=visual/third_party/tapnet:visual/third_party/co_tracker:${PYTHONPATH:-}
@@ -53,21 +107,6 @@ the reserved evaluation-seed file, then run
 dependencies, downloads and verifies the official TAPNext++ checkpoint, checks
 CUDA/Vulkan observations, and executes one complete frozen-frontend step. It
 does not require publishing credentials.
-
-#### LK surface tracking comparison
-
-On the same evaluation host, reuse the frozen Surface tracker, GNN,
-`graph_only_single` controller, and fixed-hole evaluation seeds:
-
-```bash
-WANDB_MODE=disabled python main.py --config recurrent/configs/surface_mamba/evaluate_closed_loop_lk.yaml
-```
-
-`frontend.surface_tracking: lk` selects OpenCV pyramidal Lucas–Kanade on CPU.
-The frontend defaults to LK when its model or detector uses MPS. On other
-devices, the default is TAPNext++. Either backend can be selected explicitly.
-The Linux LK config writes to its own output directory. Compare `graph_only_single` rows in the
-two `rollouts.jsonl` files by seed. See the [surface tracking details](../docs/tapnextpp.md#lk-alternative-for-the-integrated-frontend).
 
 On a two-GPU host, the formal 300-seed closed-loop evaluation can run as two
 contiguous, non-overlapping 150-seed shards. Each process sees its assigned
@@ -119,6 +158,66 @@ selects its best checkpoint. Baseline and adapted evaluators share the same
 The motion has no policy-dependent guard. Logs record the trajectory digest
 and realized terminal offset. The launcher reports the two success rates,
 paired gains and losses, and checkpoint hashes in `paired_summary.json`.
+
+Moving-hole collection intentionally runs the CUDA candidate-validation stages
+in eager mode. Long episodes reach both ordinary and recovery branches and can
+exceed TorchInductor's full-graph specialization limit; eager mode calls the
+same tensor validation functions without compiling those branches. The
+launcher scopes `SURFACE_CONTEXT_EAGER_CUDA_VALIDATION=1` to collection child
+processes and removes it from baseline, fine-tuning, and adapted-evaluation
+children. An interrupted collection can therefore be restarted with the same
+config and retains all receipt-backed episodes already written.
+
+To compare conservative warm-start fine-tuning without collecting more data,
+run the hash-pinned three-recipe matrix after the moving State36 dataset exists:
+
+```bash
+WANDB_MODE=disabled python main.py --config \
+  recurrent/configs/surface_mamba/moving_hole_fine_tuning_comparison.yaml
+```
+
+The matrix reuses the same five fixed-hole source checkpoints and moving
+160/40 train/validation episodes. It compares the original five-level mixture,
+a Graph-heavy mixture, and Graph-only input at `1e-5`. Every warm-start model
+evaluates and saves step 0 before its first optimizer update, so fine-tuning can
+select the unchanged source model when all updates regress. Changed alpha sets
+require the explicit `allow_warm_start_alpha_change` flag and both source and
+fine-tuning alpha identities are retained in checkpoints.
+
+After training, evaluate the three selected ensembles on the two disjoint
+reserved-seed shards:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 WANDB_MODE=disabled python main.py --config \
+  recurrent/configs/surface_mamba/moving_hole_fine_tuning_evaluate_shard_0.yaml
+CUDA_VISIBLE_DEVICES=1 WANDB_MODE=disabled python main.py --config \
+  recurrent/configs/surface_mamba/moving_hole_fine_tuning_evaluate_shard_1.yaml
+```
+
+Both configs hash-pin all fifteen checkpoints and preserve the formal 60 mm
+motion protocol. Each shard evaluates the same three candidate ensembles on
+its 150-seed slice; combine only after verifying 900 unique candidate/seed
+rollout rows across the two outputs.
+
+To adapt the fixed-hole configuration-3 controller without changing its
+Graph-only lineage, first recreate the disjoint moving dataset and then
+fine-tune the single seed-0 controller:
+
+```bash
+WANDB_MODE=disabled python main.py --config \
+  recurrent/configs/surface_mamba/moving_hole_graph_only_single_collect.yaml
+CUDA_VISIBLE_DEVICES=0 WANDB_MODE=disabled python main.py --config \
+  recurrent/configs/surface_mamba/moving_hole_graph_only_single_train.yaml
+```
+
+The training config starts from the hash-pinned fixed-hole
+`training_v2/graph_only/seed_0` checkpoint and retains `alphas: [1.0]`; it is
+not initialized from any mixed controller. Collection reuses the formal 60 mm
+motion, reserved evaluation seeds, and the original 160/40 split contract.
+The warm-start checkpoint is evaluated and saved at step 0, so `best.pt`
+remains the unchanged source when all fine-tuning updates regress. The merged
+`train.npz`, `validation.npz`, and `dataset_manifest.json` are registered as
+experiment artifacts for explicit publication after validation.
 
 Run the two-step smoke config first on a new GPU host. Both parallel configs
 expand to exactly six processes: mixed seeds 0--4 and Graph-only seed 0. They

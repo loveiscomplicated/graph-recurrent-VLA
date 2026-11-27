@@ -125,6 +125,25 @@ def _validation_loss(
     return weighted_loss / timesteps
 
 
+def _validation_metrics(
+    model: MambaController,
+    validation_levels: list[list[tuple[np.ndarray, np.ndarray, np.ndarray]]],
+    alphas: list[float],
+    batch_size: int,
+    device: torch.device,
+) -> tuple[dict[float, float], float | None, float, float]:
+    """Evaluate every configured observation mixture and identify Graph loss."""
+    validation_by_alpha = [
+        _validation_loss(model, episodes, batch_size, device)
+        for episodes in validation_levels
+    ]
+    loss_by_alpha = dict(zip(alphas, validation_by_alpha, strict=True))
+    ground_truth_loss = loss_by_alpha.get(0.0)
+    graph_loss = loss_by_alpha[1.0]
+    mixed_loss = float(np.mean(validation_by_alpha))
+    return loss_by_alpha, ground_truth_loss, graph_loss, mixed_loss
+
+
 def _checkpoint_payload(
     model: MambaController,
     optimizer: torch.optim.Optimizer,
@@ -390,6 +409,8 @@ def _train_seed(
         source = initial_checkpoint["payload"]
         if source["seed"] != seed or source["model_config"] != model_config:
             raise ValueError("Warm-start checkpoint has a different seed or model configuration")
+        identity["source_alphas"] = source.get("identity", {}).get("alphas")
+        identity["fine_tuning_alphas"] = alphas
         model.load_state_dict(source["model"], strict=True)
     started = monotonic()
     progress = _initial_progress()
@@ -434,6 +455,77 @@ def _train_seed(
             torch_version=str(torch.__version__),
             gpu=torch.cuda.get_device_name(device) if device.type == "cuda" else None,
         )
+        if initial_checkpoint is not None and not last_path.is_file():
+            (
+                loss_by_alpha,
+                ground_truth_loss,
+                graph_loss,
+                mixed_loss,
+            ) = _validation_metrics(
+                model,
+                validation_levels,
+                alphas,
+                settings["batch_size"],
+                device,
+            )
+            scheduler.step(graph_loss)
+            progress["global_best_loss"] = graph_loss
+            progress["global_best_step"] = 0
+            progress["early_stopping_best_loss"] = graph_loss
+            progress["validations_without_improvement"] = 0
+            progress["current_segment"]["best_graph_loss"] = graph_loss
+            progress["current_segment"]["best_step"] = 0
+
+            current_learning_rate = float(optimizer.param_groups[0]["lr"])
+            initial_row = {
+                "step": 0,
+                "training_loss": None,
+                "validation_graph_loss": graph_loss,
+                "validation_gt_loss": ground_truth_loss,
+                "validation_mixed_loss": mixed_loss,
+                "validation_by_alpha": {
+                    str(alpha): value for alpha, value in loss_by_alpha.items()
+                },
+                "elapsed_seconds": monotonic() - started,
+                "learning_rate_before_scheduler": current_learning_rate,
+                "learning_rate": current_learning_rate,
+                "global_best_step": 0,
+                "validations_without_improvement": 0,
+                "initial_checkpoint": True,
+            }
+            progress["history"].append(initial_row)
+            logger.log(
+                {"graph_loss": graph_loss, "mixed_loss": mixed_loss},
+                step=0,
+                prefix="validation",
+            )
+            _save_training_state(
+                run_directory,
+                model,
+                optimizer,
+                scheduler,
+                statistics,
+                seed,
+                0,
+                model_config,
+                identity,
+                generator,
+                progress,
+                save_periodic=False,
+                save_global_best=True,
+                save_segment_best=True,
+            )
+            write_json(
+                run_directory / "history.json",
+                _history_document(progress, 0),
+            )
+            print(
+                f"Mamba seed={seed} step=0 warm_start "
+                f"graph_val={graph_loss:.5f} mixed_val={mixed_loss:.5f} "
+                f"lr={current_learning_rate:.3g}",
+                flush=True,
+            )
+
         final_training_step = settings["max_steps"] if work_remains else start_step
         for step in range(start_step + 1, final_training_step + 1):
             final_step = step
@@ -484,14 +576,18 @@ def _train_seed(
                         save_segment_best=False,
                     )
                 continue
-            validation_by_alpha = [
-                _validation_loss(model, episodes, settings["batch_size"], device)
-                for episodes in validation_levels
-            ]
-            loss_by_alpha = dict(zip(alphas, validation_by_alpha, strict=True))
-            ground_truth_loss = loss_by_alpha.get(0.0)
-            graph_loss = loss_by_alpha[1.0]
-            mixed_loss = float(np.mean(validation_by_alpha))
+            (
+                loss_by_alpha,
+                ground_truth_loss,
+                graph_loss,
+                mixed_loss,
+            ) = _validation_metrics(
+                model,
+                validation_levels,
+                alphas,
+                settings["batch_size"],
+                device,
+            )
             previous_learning_rate = float(optimizer.param_groups[0]["lr"])
             scheduler.step(graph_loss)
             current_learning_rate = float(optimizer.param_groups[0]["lr"])

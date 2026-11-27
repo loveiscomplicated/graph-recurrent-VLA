@@ -1,0 +1,83 @@
+trainer: training.surface_mamba_parallel:launch
+output: /workspace/surface_mamba/moving_hole_fine_tuning/launcher
+resume: true
+gpu_ids: [0, 1]
+python: .venv/bin/python
+
+base_training:
+  trainer: training.surface_mamba_moving:fine_tune
+  dataset: /workspace/surface_mamba/moving_hole/state36
+  resume: true
+  device: cuda:0
+  cpu_threads: 2
+  model:
+    d_model: 96
+    d_state: 16
+    d_conv: 4
+    expand: 2
+    layers: 2
+  training:
+    max_steps: 2000
+    batch_size: 8
+    gradient_clip_norm: 1.0
+    validation_interval: 50
+    checkpoint_interval: 250
+    optimizer:
+      type: adamw
+      learning_rate: 0.00001
+      weight_decay: 0.0
+    scheduler:
+      type: reduce_on_plateau
+      factor: 0.5
+      patience_validations: 3
+      min_learning_rate: 0.0000001
+    early_stopping:
+      patience_validations: 10
+      min_delta: 0.0001
+  dataset_contract:
+    motion:
+      start_step: 10
+      end_step: 40
+      distance_m: 0.06
+      seed_salt: 20261120
+    counts: [160, 40]
+    evaluation_seeds_file: /workspace/surface_mamba/evaluation_seeds.json
+    evaluation_seeds_sha256: 7fe07e3645117a7cd897751fd4a4917f05bd648175a0db16219b6d95b7013765
+
+warm_start_sources:
+  - seed: 0
+    checkpoint: /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+    sha256: f742f8e2cdc8e551d414b55fcbe0396e790e0fb94f433dabe56a95a5f121ada7
+  - seed: 1
+    checkpoint: /workspace/surface_mamba/training_v2/mixed/seed_1/mamba_seed_1/best.pt
+    sha256: 7bcc7b0ab9e7d64e16990a667c22265fb6301ef0efd67fbbc4e92362559ab29f
+  - seed: 2
+    checkpoint: /workspace/surface_mamba/training_v2/mixed/seed_2/mamba_seed_2/best.pt
+    sha256: 1b4004e19f0e23af3c83af28036253438284eb06620f110b3b2a664bf3c713cf
+  - seed: 3
+    checkpoint: /workspace/surface_mamba/training_v2/mixed/seed_3/mamba_seed_3/best.pt
+    sha256: 70a73d352190ca454988e5cb41ca27bc4b61249e9c2339a25a75adfe00dfcece
+  - seed: 4
+    checkpoint: /workspace/surface_mamba/training_v2/mixed/seed_4/mamba_seed_4/best.pt
+    sha256: e6f5be9998722f4369c08822ba87d928b44f681a97da551c531eaa0445478fb2
+
+experiments:
+  - name: conservative_mixed
+    output: /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed
+    seeds: [0, 1, 2, 3, 4]
+    mixing:
+      alphas: [0.0, 0.25, 0.5, 0.75, 1.0]
+
+  - name: graph_heavy
+    output: /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy
+    seeds: [0, 1, 2, 3, 4]
+    mixing:
+      alphas: [0.5, 0.75, 1.0]
+      allow_warm_start_alpha_change: true
+
+  - name: graph_only
+    output: /workspace/surface_mamba/moving_hole_fine_tuning/graph_only
+    seeds: [0, 1, 2, 3, 4]
+    mixing:
+      alphas: [1.0]
+      allow_warm_start_alpha_change: true

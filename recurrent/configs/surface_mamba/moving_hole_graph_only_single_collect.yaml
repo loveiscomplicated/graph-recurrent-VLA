@@ -1,0 +1,53 @@
+trainer: recurrent.run_surface_mamba_moving:collect_dataset
+output: /workspace/surface_mamba/moving_hole_graph_only_single
+dataset_output: /workspace/surface_mamba/moving_hole_graph_only_single/state36
+gpu_ids: [0, 1]
+
+fixed_evaluation_config: recurrent/configs/surface_mamba/evaluate_closed_loop_shard_0.yaml
+fixed_dataset: /workspace/surface_mamba/state36
+tap_checkpoint_sha256: cb96a43444ccb4fbdb25d800b88c7ba196179a526e78f01b021a16b1c1eff6da
+
+motion:
+  start_step: 10
+  end_step: 40
+  distance_m: 0.06
+  seed_salt: 20261120
+
+dataset_counts: [160, 40]
+collection_shards:
+  - - name: train_clean
+      split: train
+      seed_start: 4200000
+      max_attempts: 1500
+      count: 40
+      dart_noise: 0.0
+    - name: train_dart
+      split: train
+      seed_start: 4210000
+      max_attempts: 1500
+      count: 40
+      dart_noise: 0.02
+    - name: validation
+      split: validation
+      seed_start: 4220000
+      max_attempts: 800
+      count: 20
+      dart_noise: 0.0
+  - - name: train_clean
+      split: train
+      seed_start: 4230000
+      max_attempts: 1500
+      count: 40
+      dart_noise: 0.0
+    - name: train_dart
+      split: train
+      seed_start: 4240000
+      max_attempts: 1500
+      count: 40
+      dart_noise: 0.02
+    - name: validation
+      split: validation
+      seed_start: 4250000
+      max_attempts: 800
+      count: 20
+      dart_noise: 0.0

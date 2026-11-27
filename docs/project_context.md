@@ -1,5 +1,16 @@
 # Project context: reusable simulation and data collection
 
+## Final integrated model
+
+The main model for the integrated comparison is the frozen Surface-Context
+Tracker–GNN frontend with one Mamba controller trained on Graph-estimated
+Object21 (`graph_only_single`). The five-controller ensemble trained on a
+mixture of Graph-estimated and ground-truth object state (`mixed_ensemble`) is
+the performance-enhanced variant. Both use Graph-estimated Object21 and Robot15
+at inference. See the [model selection and evaluation results](../recurrent/README.md#최종-통합-모델과-비교-결과)
+for the 300-seed fixed-hole comparison and the moving-hole results before
+additional training.
+
 ## Reusable capabilities on graph
 
 The `graph` branch carries the standalone [corner detector](corner_detection.md)

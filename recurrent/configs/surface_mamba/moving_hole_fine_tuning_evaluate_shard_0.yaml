@@ -1,0 +1,80 @@
+trainer: evaluation.surface_mamba_moving:evaluate
+mode: closed_loop
+output: /workspace/surface_mamba/moving_hole_fine_tuning/evaluation/shard_0
+resume: true
+controller_device: cuda:0
+seeds_file: /workspace/surface_mamba/evaluation_seeds.json
+seeds_sha256: 7fe07e3645117a7cd897751fd4a4917f05bd648175a0db16219b6d95b7013765
+seed_start: 0
+seed_limit: 150
+horizon: 250
+comparison_reference: conservative_mixed
+motion: {start_step: 10, end_step: 40, distance_m: 0.06, seed_salt: 20261120}
+candidates:
+  conservative_mixed:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/conservative_mixed/seed_4/mamba_seed_4/best.pt
+  graph_heavy:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_heavy/seed_4/mamba_seed_4/best.pt
+  graph_only:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_only/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_only/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_only/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_only/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/moving_hole_fine_tuning/graph_only/seed_4/mamba_seed_4/best.pt
+checkpoint_sha256:
+  conservative_mixed:
+    - 0b3a85ba509e1bce9825b2be68ba8f0b6321b346fc1dc5116d85dce681b72143
+    - c8cc575c54250d73d5d955af46f994eae024dd054ba4ed3d4b945bd7ee457cb1
+    - b159f00adf375f5f5a951dcec073551d8f2aa0ed5662677cb8e2059809d9ea15
+    - 00925c230ad47d53341f6b987c0e06a2c81f37fb802e4f845c985e6dfa776774
+    - 4aad3064bcf36c68bfb8f491860a825a5cdcd1c1c1b11970ffaf5a92ae872b67
+  graph_heavy:
+    - 9d7ff6ac0c86838ca577611d8993de4057141701538bfbffcbf137bc1c40b00e
+    - 1050e6f69a4eb0a4f664d370fdfb0dec5d800cb63010018aa693f19afbf6152a
+    - 6304733c4ffdd6a093c1d4a5d994ca05497c4fada9b8d0406f87e6912677cfc7
+    - f102d80f354eb06b7157258b25b918943832e272e2c274da3f8273c43174fc02
+    - 404225aa2b0f418eb87b4858b72846f5abb4c481a01850b4f9e03938bf84856f
+  graph_only:
+    - 68d42e0fee167338681a667331c4adb2ed42704df1c1c6433e99a5ccf1f95e2b
+    - 1295d84a328b6f86895fc5f50d79869dac0d72f39e8ae19798023e974e89e470
+    - c50974336a8330c889875fbc0eceb56d8347284f574cb2a68bb117e6b59fdf04
+    - 58ffc186b3e6d303c4cd1073927aa9a8ef3c31d65f60752096e22fccafdcd935
+    - 1f76a00f4717d3345171bf85afcb586c8c5efe658baf8c162661361acf079b54
+environment:
+  device: cpu
+  render_backend: cuda
+  observation_device: cuda
+  max_episode_steps: 250
+frontend:
+  device: cuda:0
+  detector: {device: cuda:0, optimized: true}
+  tracker:
+    path: /workspace/surface_mamba/checkpoints/surface_tracker_best.pt
+    sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc
+  gnn:
+    path: /workspace/surface_mamba/checkpoints/surface_gnn_best.pt
+    sha256: 0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241
+  tapnextpp:
+    device: cuda:0
+    checkpoint: visual/checkpoints/tapnextpp/tapnextpp_256_official.pt
+    tap_input_resolution: 256
+    tap_cuda_autocast: true
+    tap_cache_cuda_autocast: true
+    tap_mps_fp16_vit: false
+    tap_mps_fp16_recurrent_mlp: false
+    tap_adaptive_crop: true
+    tap_cuda_graph: true

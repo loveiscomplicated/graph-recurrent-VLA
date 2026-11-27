@@ -13,6 +13,7 @@ from typing import Any
 
 import torch
 
+from data_collection.episode_dataset import file_sha256
 from data_collection.storage import write_json
 from training.surface_mamba_controller import _validate_config
 
@@ -50,6 +51,29 @@ def _build_jobs(config: dict[str, Any]) -> list[TrainingJob]:
     if not isinstance(experiments, list) or not experiments:
         raise ValueError("experiments must be a nonempty list")
 
+    warm_start_sources = config.get("warm_start_sources", [])
+    if not isinstance(warm_start_sources, list):
+        raise ValueError("warm_start_sources must be a list when provided")
+    sources_by_seed = {}
+    for source in warm_start_sources:
+        if not isinstance(source, dict):
+            raise ValueError("Each warm-start source must be a mapping")
+        seed = source.get("seed")
+        path = source.get("checkpoint")
+        digest = source.get("sha256")
+        if (
+            type(seed) is not int
+            or seed < 0
+            or not isinstance(path, str)
+            or not path
+            or not isinstance(digest, str)
+            or len(digest) != 64
+        ):
+            raise ValueError("Warm-start sources need seed, checkpoint, and SHA-256")
+        if seed in sources_by_seed:
+            raise ValueError(f"Duplicate warm-start source seed: {seed}")
+        sources_by_seed[seed] = source
+
     jobs = []
     seen_names = set()
     seen_outputs = set()
@@ -80,13 +104,30 @@ def _build_jobs(config: dict[str, Any]) -> list[TrainingJob]:
             job_config = _deep_merge(base, overrides)
             job_config.update(
                 {
-                    "trainer": "training.surface_mamba_controller:train",
+                    "trainer": job_config.get(
+                        "trainer", "training.surface_mamba_controller:train"
+                    ),
                     "output": job_output,
                     "seeds": [seed],
                     # CUDA_VISIBLE_DEVICES remaps the assigned GPU to local cuda:0.
                     "device": "cuda:0",
                 }
             )
+            if sources_by_seed:
+                if seed not in sources_by_seed:
+                    raise ValueError(f"Warm-start source is missing for seed {seed}")
+                source = sources_by_seed[seed]
+                checkpoint = Path(source["checkpoint"])
+                if not checkpoint.is_file():
+                    raise FileNotFoundError(
+                        f"Warm-start checkpoint not found: {checkpoint}"
+                    )
+                if file_sha256(checkpoint) != source["sha256"]:
+                    raise ValueError(
+                        f"Warm-start checkpoint digest changed: {checkpoint}"
+                    )
+                job_config["initial_checkpoint"] = str(checkpoint)
+                job_config["initial_checkpoint_sha256"] = source["sha256"]
             _validate_config(job_config)
             jobs.append(TrainingJob(job_name, job_config))
             seen_names.add(job_name)
