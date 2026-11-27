@@ -95,11 +95,16 @@ def plane_fit(points, selected=None):
     return torch.cat((normal, -(normal @ center)[None]))
 
 
-def fit_planes(points, parameters, seed, maximum, *, optimized=False):
+def fit_planes(
+    points, parameters, seed, maximum, *, optimized=False, reduce_cuda_sync=False,
+    stop_when_stable=False,
+):
+    """Fit planes with deterministic RANSAC and optional batched CUDA indexing."""
     if points.device.type == "mps":
         from . import metal_ops
 
         return metal_ops.fit_planes(points, parameters, seed, maximum, optimized=optimized)
+    reduce_cuda_sync = reduce_cuda_sync and points.is_cuda
     remaining = torch.arange(len(points), device=points.device)
     result = []
     rng = np.random.default_rng(seed)
@@ -108,45 +113,84 @@ def fit_planes(points, parameters, seed, maximum, *, optimized=False):
             break
         # Small deterministic index schedules preserve the frozen CPU seed and
         # do not copy the point cloud to the host.
-        sample_index = torch.as_tensor(
-            rng.choice(len(remaining), min(len(remaining), 1300), replace=False),
-            device=points.device,
-        )
-        sample = remaining[sample_index]
-        triples = torch.as_tensor(
-            rng.choice(len(sample), (parameters.ransac_trials, 3), replace=True),
-            device=points.device,
-        )
-        a, b, c = points[sample[triples]].unbind(1)
+        if reduce_cuda_sync:
+            current = points[remaining]
+            sample_index = rng.choice(
+                len(current), min(len(current), 1300), replace=False
+            )
+            triples = rng.choice(
+                len(sample_index), (parameters.ransac_trials, 3), replace=True
+            )
+            schedule = np.concatenate((sample_index, sample_index[triples].ravel()))
+            sampled = current.index_select(
+                0, torch.as_tensor(schedule, device=points.device)
+            )
+            sample_points, triple_points = sampled.split(
+                (len(sample_index), triples.size)
+            )
+            a, b, c = triple_points.reshape(-1, 3, 3).unbind(1)
+        else:
+            sample_index = torch.as_tensor(
+                rng.choice(len(remaining), min(len(remaining), 1300), replace=False),
+                device=points.device,
+            )
+            sample = remaining[sample_index]
+            triples = torch.as_tensor(
+                rng.choice(len(sample), (parameters.ransac_trials, 3), replace=True),
+                device=points.device,
+            )
+            a, b, c = points[sample[triples]].unbind(1)
+            sample_points = points[sample]
+            current = points[remaining]
         normal = torch.linalg.cross(b - a, c - a)
         lengths = torch.linalg.vector_norm(normal, dim=1)
         normal = normal / lengths.clamp_min(1e-7)[:, None]
         offsets = -(normal * a).sum(1)
-        residual = (points[sample] @ normal.T + offsets).abs()
+        residual = (sample_points @ normal.T + offsets).abs()
         counts = (
             (residual < parameters.plane_tolerance_m) & (lengths > 1e-7)[None]
         ).sum(0)
         winner = counts.argmax()
-        current = points[remaining]
+        if reduce_cuda_sync:
+            # Index-select keeps the scalar winning hypothesis on the device.
+            winner_index = winner.view(1)
+            winner_normal = normal.index_select(0, winner_index)[0]
+            winner_offset = offsets.index_select(0, winner_index)[0]
+        else:
+            winner_normal = normal[winner]
+            winner_offset = offsets[winner]
         selected = (
-            current @ normal[winner] + offsets[winner]
+            current @ winner_normal + winner_offset
         ).abs() < parameters.plane_tolerance_m
         sufficient = selected.sum() >= parameters.minimum_plane_pixels
-        for _ in range(3):
+        stable_plane = None
+        for refinement in range(3):
             # Fixed-shape weighted reductions avoid a GPU -> CPU size sync for
             # every dynamic compaction in each refinement iteration.
+            previous = selected
             plane = plane_fit(current, selected)
             selected = (
                 (current @ plane[:3] + plane[3]).abs() < parameters.plane_tolerance_m
             ) & sufficient
-            sufficient = sufficient & (
-                selected.sum() >= parameters.minimum_plane_pixels
-            )
-        if not bool(sufficient):
+            if not reduce_cuda_sync or refinement < 2:
+                sufficient = sufficient & (
+                    selected.sum() >= parameters.minimum_plane_pixels
+                )
+            if stop_when_stable and torch.equal(previous, selected):
+                # Another pass would fit the same points with the same weights.
+                stable_plane = plane
+                break
+        if reduce_cuda_sync:
+            # The compacted size checks final support without a separate scalar read.
+            remainder = remaining[~selected]
+            if len(remaining) - len(remainder) < parameters.minimum_plane_pixels:
+                break
+        elif not bool(sufficient):
             break
-        plane = plane_fit(current, selected)
-        result.append(plane)
-        remaining = remaining[~selected]
+        if stable_plane is None:
+            stable_plane = plane_fit(current, selected)
+        result.append(stable_plane)
+        remaining = remainder if reduce_cuda_sync else remaining[~selected]
     return torch.stack(result) if result else points.new_empty((0, 4))
 
 
@@ -158,15 +202,18 @@ def erode(mask, size=3):
     return -F.max_pool2d(-mask.float(), size, 1, size // 2) > 0.5
 
 
-def plane_masks(xyz, support, planes, tolerance):
+def plane_masks(xyz, support, planes, tolerance, *, compact_support=None):
     if not len(planes):
         return support.new_empty((0, 512, 512)), support.new_empty((0, 512, 512))
     if xyz.device.type == "mps":
         from . import metal_ops
 
         return metal_ops.plane_masks(xyz, support, planes, tolerance)
-    pixels = support.flatten().nonzero()[:, 0]
-    points = xyz.reshape(-1, 3)[pixels]
+    if compact_support is None:
+        pixels = support.flatten().nonzero()[:, 0]
+        points = xyz.reshape(-1, 3)[pixels]
+    else:
+        pixels, points = compact_support
     distances = (points @ planes[:, :3].T + planes[:, 3]).abs()
     labels = distances.argmin(1)
     masks = torch.zeros((len(planes), 512 * 512), dtype=torch.bool, device=xyz.device)
@@ -174,6 +221,26 @@ def plane_masks(xyz, support, planes, tolerance):
     masks[:, pixels] = (labels[None] == ids) & (distances.T < tolerance)
     masks = erode(dilate(masks.reshape(-1, 512, 512)))
     return masks, erode(masks)
+
+
+def read_cuda_plane_descriptors(planes, eligible, masks, support, support_cpu):
+    """Queue plane descriptors into pinned host memory and wait once."""
+    buffers = [planes, eligible, masks]
+    if support_cpu is None:
+        buffers.append(support)
+    copies = [
+        torch.empty_like(buffer, device="cpu", pin_memory=True).copy_(
+            buffer, non_blocking=True
+        )
+        for buffer in buffers
+    ]
+    torch.cuda.current_stream(planes.device).synchronize()
+    plane_rows = copies[0].numpy().astype(float)
+    eligible_cpu = set(np.flatnonzero(copies[1].numpy()))
+    masks_cpu = copies[2].numpy()
+    if support_cpu is None:
+        support_cpu = copies[3].numpy()
+    return plane_rows, eligible_cpu, masks_cpu, support_cpu
 
 
 def fit_lines(parts, device):
@@ -257,7 +324,7 @@ def unoccluded(points, uv, depth, valid):
     return bounds & (foreground.sum(1) < 2)
 
 
-def snap(points, primary, planes, eligible):
+def snap(points, primary, planes, eligible, *, check_errors=True):
     if len(planes) < 2 or not len(points):
         return points, torch.ones(len(points), dtype=torch.int64, device=points.device)
     if points.device.type == "mps":
@@ -281,7 +348,13 @@ def snap(points, primary, planes, eligible):
     gram = normals @ normals.transpose(1, 2) + torch.diag_embed(
         (~active).to(points.dtype)
     )
-    weights = torch.linalg.solve(gram, residual[..., None])[..., 0]
+    if check_errors:
+        weights = torch.linalg.solve(gram, residual[..., None])[..., 0]
+    else:
+        # Unit fitted normals with pairwise dot products below 0.25 give a
+        # strictly diagonally dominant Gram matrix, including inactive slots.
+        weights, _ = torch.linalg.solve_ex(gram, residual[..., None])
+        weights = weights[..., 0]
     refined = points - (weights[..., None] * normals).sum(1)
     ok = (refined - points).square().sum(-1) < 0.0045**2
     return torch.where(ok[:, None], refined, points), torch.where(ok, active.sum(1), 1)

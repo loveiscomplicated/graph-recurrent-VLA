@@ -4,9 +4,28 @@ import unittest
 
 import cv2
 import numpy as np
+import torch
 
+from graph.surface_context_frontend import _default_surface_tracking
 from visual.lk_surface_tracking import LKSurfaceTracker
 from visual.peg_surface_points import choose_points, lift
+
+
+class SurfaceTrackingDefaultTests(unittest.TestCase):
+    def test_device_defaults_preserve_legacy_cuda_evaluations(self):
+        cases = (
+            ("cuda:0", "cuda:0", {}, "lk"),
+            ("cpu", "cuda:1", {}, "lk"),
+            ("cuda:0", "cuda:0", {"tapnextpp": {}}, "tapnextpp"),
+            ("cpu", "mps", {}, "lk"),
+            ("cpu", "cpu", {}, "tapnextpp"),
+        )
+        for model, detector, config, expected in cases:
+            with self.subTest(model=model, detector=detector, config=config):
+                actual = _default_surface_tracking(
+                    config, torch.device(model), torch.device(detector)
+                )
+                self.assertEqual(actual, expected)
 
 
 class LKSurfaceTrackingTests(unittest.TestCase):

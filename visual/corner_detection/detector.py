@@ -7,7 +7,7 @@ boundary explicitly. Dense XYZ stays on the selected device.
 
 import time
 from contextlib import nullcontext
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from functools import lru_cache
 from itertools import combinations, product
 
@@ -47,6 +47,18 @@ class PlaneData:
     recovery: bool = False
     points: torch.Tensor | None = None
     contours: dict = field(default_factory=dict)
+    compact_support: tuple[torch.Tensor, torch.Tensor] | None = None
+
+
+@dataclass
+class CachedPlaneData:
+    """One MPS plane preparation and the exact host inputs it depends on."""
+
+    intrinsic_bytes: bytes
+    raw_depth_bits: np.ndarray
+    parameters: Parameters
+    fitter: object
+    data: PlaneData
 
 
 @dataclass
@@ -129,6 +141,12 @@ class TorchCornerDetector:
         plane_fit_method="ransac",
         timer=None,
         sample_cuda_box_planes=False,
+        crop_cuda_host_components=False,
+        batch_cuda_hole_ransac=False,
+        optimize_cuda_box_cube=False,
+        optimize_cuda_plane_preparation=False,
+        batch_cuda_contour_validation=False,
+        skip_stable_cuda_hole_refits=False,
     ):
         self.device = K.resolve_device(device)
         if compile_cuda_edges and self.device.type != "cuda":
@@ -187,6 +205,16 @@ class TorchCornerDetector:
         self._accelerate_rgb = self.device.type != "cpu" and recover_peg_rear_end
         self.reject_peg_box_cut = reject_peg_box_cut
         self.optimized = optimized
+        self._batch_cuda_contour_validation = (
+            batch_cuda_contour_validation and optimized and compile_cuda_validation
+        )
+        self._optimize_cuda_plane_preparation = (
+            optimize_cuda_plane_preparation and optimized and self.device.type == "cuda"
+        )
+        self._crop_host_components = optimized and (
+            self.device.type == "mps"
+            or (self.device.type == "cuda" and crop_cuda_host_components)
+        )
         self.timer = timer
         self.recover_peg_rear_end = recover_peg_rear_end
         self.center_peg_plane_bounds = center_peg_plane_bounds
@@ -204,6 +232,22 @@ class TorchCornerDetector:
         if hole_rim_ransac_fallback and not recover_hole_rim:
             raise ValueError("hole_rim_ransac_fallback requires recover_hole_rim")
         self.hole_rim_ransac_fallback = hole_rim_ransac_fallback
+        self._batch_cuda_hole_ransac = batch_cuda_hole_ransac and self.device.type == "cuda"
+        self._skip_stable_cuda_hole_refits = (
+            skip_stable_cuda_hole_refits and self.device.type == "cuda"
+        )
+        self._optimize_cuda_box_cube = optimize_cuda_box_cube and self.device.type == "cuda"
+        self._native_cuda_hole_ransac = None
+        self._mps_plane_cache = {}
+        self._mps_box_bounds = None
+
+    def _enable_native_cuda_hole_ransac(self):
+        """Bind the native implementation of the batched CUDA retry loop."""
+        if not self._batch_cuda_hole_ransac or not self.hole_rim_ransac_fallback:
+            raise ValueError("native_cuda_hole_ransac requires batched CUDA Hole RANSAC")
+        from .backends.native_cuda_ransac import load_cuda_hole_ransac
+
+        self._native_cuda_hole_ransac = load_cuda_hole_ransac()
 
     @classmethod
     def main(
@@ -220,6 +264,12 @@ class TorchCornerDetector:
         hole_rim_ransac_fallback=None,
         timer=None,
         sample_cuda_box_planes=False,
+        crop_cuda_host_components=False,
+        batch_cuda_hole_ransac=False,
+        optimize_cuda_box_cube=False,
+        optimize_cuda_plane_preparation=False,
+        batch_cuda_contour_validation=False,
+        skip_stable_cuda_hole_refits=False,
     ):
         """Build the main frame detector with device-specific performance defaults."""
         if str(device) == "auto":
@@ -259,6 +309,12 @@ class TorchCornerDetector:
             hole_rim_ransac_fallback=hole_rim_ransac_fallback,
             timer=timer,
             sample_cuda_box_planes=sample_cuda_box_planes,
+            crop_cuda_host_components=crop_cuda_host_components,
+            batch_cuda_hole_ransac=batch_cuda_hole_ransac,
+            optimize_cuda_box_cube=optimize_cuda_box_cube,
+            optimize_cuda_plane_preparation=optimize_cuda_plane_preparation,
+            batch_cuda_contour_validation=batch_cuda_contour_validation,
+            skip_stable_cuda_hole_refits=skip_stable_cuda_hole_refits,
         )
 
     def _measure(self, name):
@@ -274,7 +330,9 @@ class TorchCornerDetector:
         p = self.parameters
         with self._measure("point_cloud_and_plane_fit"):
             support = mask & self.valid
-            if self.plane_fit_method == "pca_normals":
+            if self.plane_fit_method == "pca_normals" or (
+                self._optimize_cuda_plane_preparation and support_cpu is None
+            ):
                 pixels = support.flatten().nonzero().flatten()
                 points = self.xyz.reshape(-1, 3).index_select(0, pixels)
             elif support_cpu is None:
@@ -296,14 +354,25 @@ class TorchCornerDetector:
                     planes = K.fit_planes(
                         points, p, 42 + oid, maximum, optimized=self.optimized
                     )
+        compact_support = (
+            (pixels, points) if self._optimize_cuda_plane_preparation else None
+        )
         with self._measure("plane_masks"):
-            masks, cores = K.plane_masks(self.xyz, support, planes, p.plane_tolerance_m)
+            masks, cores = K.plane_masks(
+                self.xyz, support, planes, p.plane_tolerance_m,
+                compact_support=compact_support,
+            )
             eligible = cores.flatten(1).sum(1) >= 20
         with self._measure("plane_descriptor_readback"):
             if self.optimized and self.device.type == "mps" and len(planes):
                 from .backends import metal_ops
 
                 small, eligible_cpu, masks_cpu, support_cpu = metal_ops.read_plane_descriptors(
+                    planes, eligible, masks, support, support_cpu
+                )
+                cores_cpu = None
+            elif self._optimize_cuda_plane_preparation:
+                small, eligible_cpu, masks_cpu, support_cpu = K.read_cuda_plane_descriptors(
                     planes, eligible, masks, support, support_cpu
                 )
                 cores_cpu = None
@@ -328,7 +397,33 @@ class TorchCornerDetector:
             eligible_cpu,
             [],
             points=points,
+            compact_support=compact_support,
         )
+
+    def _prepare_mps_host_planes(self, oid, mask, support_cpu, raw, role, intrinsic_bytes):
+        """Reuse a fit only when every pixel it read and its calibration match."""
+        from .backends import metal_ops
+
+        depth_bits = raw.view(np.uint32)[support_cpu]
+        key = (oid, role)
+        cached = self._mps_plane_cache.get(key)
+        fitter = metal_ops._native_ransac.get()
+        if (
+            cached is not None
+            and cached.fitter is fitter
+            and cached.parameters == self.parameters
+            and cached.intrinsic_bytes == intrinsic_bytes
+            and np.array_equal(cached.data.support_cpu, support_cpu)
+            and np.array_equal(cached.raw_depth_bits, depth_bits)
+        ):
+            # Plane tensors and contour traces are read-only. Proposals and
+            # core/recovery flags describe the current frame.
+            return replace(cached.data, proposals=[])
+        data = self.prepare(oid, mask, support_cpu)
+        self._mps_plane_cache[key] = CachedPlaneData(
+            intrinsic_bytes, depth_bits, self.parameters, fitter, data
+        )
+        return replace(data, proposals=[])
 
     def add(
         self,
@@ -623,9 +718,15 @@ class TorchCornerDetector:
         self.add(data, points, uv, selected, proposals, stage=2, feature_ids=feature_ids)
 
     def box_cube(self, data, features, batch=None):
-        y, x = np.nonzero(data.support_cpu)
-        if not len(x) or x.min() < 2 or y.min() < 2 or x.max() > 509 or y.max() > 509:
-            return
+        optimized_mps = self.optimized and self.device.type == "mps"
+        if self._optimize_cuda_box_cube or optimized_mps:
+            x, y, width, height = cv2.boundingRect(data.support_cpu.view(np.uint8))
+            if not width or x < 2 or y < 2 or x + width > 510 or y + height > 510:
+                return
+        else:
+            y, x = np.nonzero(data.support_cpu)
+            if not len(x) or x.min() < 2 or y.min() < 2 or x.max() > 509 or y.max() > 509:
+                return
         n, d = data.planes_cpu[0]
         other = next(
             (
@@ -643,12 +744,18 @@ class TorchCornerDetector:
         observed_points = getattr(data, "points", None)
         if observed_points is None:
             observed_points = self.xyz[data.support]
-        coords = observed_points @ self.tensor(rotation)
-        if self.optimized and self.device.type == "mps":
+        if optimized_mps:
             from .backends import metal_ops
 
-            bounds = metal_ops.box_tail_quantiles(coords)
+            cached = self._mps_box_bounds
+            if cached is not None and cached[0] is observed_points and cached[1] is data.planes:
+                bounds = cached[2]
+            else:
+                coords = observed_points @ self.tensor(rotation)
+                bounds = metal_ops.box_tail_quantiles(coords)
+                self._mps_box_bounds = (observed_points, data.planes, bounds)
         else:
+            coords = observed_points @ self.tensor(rotation)
             bounds = torch.quantile(coords, self.tensor([0.001, 0.999]), dim=0).cpu()
         lo, hi = bounds.numpy().astype(float)
         widths = hi - lo
@@ -698,7 +805,8 @@ class TorchCornerDetector:
         features = self.tensor(np.array([item[0] for item in features])).reshape(-1, 2)
         eligible = self.tensor(sorted(data.eligible_cpu), torch.int64)
         points, uv, image_corner = validation_torch.box_cube_coordinates(
-            points, features, eligible, data, self.k
+            points, features, eligible, data, self.k,
+            optimize_cuda=self._optimize_cuda_box_cube,
         )
         rotation_tensor = self.tensor(rotation)
         signs_tensor = self.tensor(signs)
@@ -787,6 +895,47 @@ class TorchCornerDetector:
             peg_points[:, 2:3] + 0.0005
         )
         return corrected, corrected_uv
+
+    def _correct_mps_positions(self, points, uv, metadata):
+        """Queue both position corrections before reading Box metadata flags."""
+        from .backends import metal_ops
+
+        if not len(points):
+            return points, uv
+        # Negative values describe the Peg correction or an untouched row.
+        # Nonnegative values index the original exterior-to-cube distance test.
+        correction = [
+            -1 if oid == 0 and self.correct_peg_position else -2
+            for oid in self.merged_object_ids
+        ]
+        near_cube = self.valid.flatten()[:0]
+        exterior_ids = []
+        if self.correct_box_exterior_pixel_center:
+            cube_blocks = dict.fromkeys(
+                row["block"] for row in self.rows
+                if row["meta"]["method"] == "box_observed_cube"
+            )
+            exterior_ids = [
+                i for i, meta in enumerate(metadata)
+                if meta["method"] != "box_opening" and not meta.get("contour_hole")
+            ]
+            if cube_blocks and exterior_ids:
+                anchors = torch.cat([self.blocks[block][0] for block in cube_blocks])
+                indices = self.tensor(exterior_ids, torch.int64)
+                near_cube = torch.cdist(points[indices], anchors).amin(dim=1) < 0.012
+                for index, row in enumerate(exterior_ids):
+                    if self.merged_object_ids[row] == 1:
+                        correction[row] = index
+        if all(kind == -2 for kind in correction):
+            return points, uv
+        corrected = metal_ops.correct_positions(
+            points, uv, self.tensor(correction, torch.int32), near_cube, self.k
+        )
+        if near_cube.numel():
+            for index, near in zip(exterior_ids, near_cube.tolist(), strict=True):
+                if near and self.merged_object_ids[index] == 1:
+                    metadata[index]["box_exterior_pixel_center_corrected"] = True
+        return corrected
 
     def peg_vertices(self, data):
         """Fit supported Peg vertices from this frame."""
@@ -917,22 +1066,37 @@ class TorchCornerDetector:
     def _ransac_hole_planes(self, data):
         """Refit only the Box planes used by Hole recovery with deterministic RANSAC."""
         with self._measure("hole_rim_ransac_fallback"):
-            planes = K.fit_planes(
-                data.points,
-                self.parameters,
-                43,
-                8,
-                optimized=self.optimized,
-            )
+            if self._native_cuda_hole_ransac is not None:
+                planes = self._native_cuda_hole_ransac(
+                    data.points, self.parameters, 43, 8,
+                    stop_when_stable=self._skip_stable_cuda_hole_refits,
+                )
+            else:
+                planes = K.fit_planes(
+                    data.points,
+                    self.parameters,
+                    43,
+                    8,
+                    optimized=self.optimized,
+                    reduce_cuda_sync=self._batch_cuda_hole_ransac,
+                    stop_when_stable=self._skip_stable_cuda_hole_refits,
+                )
             _, cores = K.plane_masks(
                 self.xyz,
                 data.support,
                 planes,
                 self.parameters.plane_tolerance_m,
+                compact_support=data.compact_support,
             )
             eligible = cores.flatten(1).sum(1) >= 20
-            plane_rows = planes.cpu().numpy().astype(float)
-            eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
+            if self._batch_cuda_hole_ransac:
+                # Transfer the small plane coefficients and eligibility flags together.
+                descriptors = torch.cat((planes, eligible[:, None]), dim=1).cpu().numpy()
+                plane_rows = descriptors[:, :4].astype(float)
+                eligible_cpu = set(np.flatnonzero(descriptors[:, 4]))
+            else:
+                plane_rows = planes.cpu().numpy().astype(float)
+                eligible_cpu = set(np.flatnonzero(eligible.cpu().numpy()))
         return [(row[:3], float(row[3])) for row in plane_rows], eligible_cpu
 
     def _opening_proposals(self, depth, data, planes, eligible):
@@ -948,7 +1112,7 @@ class TorchCornerDetector:
                 fragmented=self.recover_fragmented_rim,
                 square_span=self._opening_square_span,
                 verify_rejected_square=self.verify_rejected_rim_squares,
-                crop_components=self.optimized and self.device.type == "mps",
+                crop_components=self._crop_host_components,
             )
         )
 
@@ -1174,9 +1338,14 @@ class TorchCornerDetector:
                 self.k_cpu = self.k.cpu().numpy().astype(float)
             self.depth_cpu = None
             with self._measure("depth_unprojection"):
-                self.depth = raw * 0.001
-                self.valid = (raw > 0) & (self.depth < 4) & torch.isfinite(self.depth)
-                self.xyz = K.unproject(self.depth, self.k)
+                if self.optimized and self.device.type == "mps":
+                    from .backends import metal_ops
+
+                    self.depth, self.valid, self.xyz = metal_ops.prepare_depth(raw, self.k)
+                else:
+                    self.depth = raw * 0.001
+                    self.valid = (raw > 0) & (self.depth < 4) & torch.isfinite(self.depth)
+                    self.xyz = K.unproject(self.depth, self.k)
             gpu_gray = (
                 self.optimized
                 and self._accelerate_rgb
@@ -1227,7 +1396,7 @@ class TorchCornerDetector:
                         core_cpu, recovery_cpu = material_masks(
                             hsv,
                             optimized=self.optimized,
-                            crop_components=self.device.type == "mps",
+                            crop_components=self._crop_host_components,
                         )
             if masks is not None:
                 if tuple(masks.shape) != (2, 512, 512):
@@ -1254,6 +1423,7 @@ class TorchCornerDetector:
             data_list = []
             recovery_data = []
             valid_cpu = None
+            cache_intrinsic = None
             if (
                 self.optimized
                 and self.device.type != "cpu"
@@ -1266,6 +1436,9 @@ class TorchCornerDetector:
                 valid_cpu = (
                     (raw_cpu > 0) & (self.depth_cpu < 4) & np.isfinite(self.depth_cpu)
                 )
+                if self.device.type == "mps" and self.plane_fit_method == "ransac":
+                    if not torch.is_tensor(intrinsic):
+                        cache_intrinsic = np.asarray(intrinsic, dtype=np.float32).tobytes()
             if filter_components is None or valid_cpu is not None:
                 shared_masks = tuple(np.array_equal(a, b) for a, b in zip(core_cpu, recovery_cpu))
             for oid in (0, 1):
@@ -1273,7 +1446,12 @@ class TorchCornerDetector:
                     core_cpu[oid].astype(bool, copy=False) & valid_cpu
                     if valid_cpu is not None else None
                 )
-                data = self.prepare(oid, core[oid], support_cpu)
+                if cache_intrinsic is None:
+                    data = self.prepare(oid, core[oid], support_cpu)
+                else:
+                    data = self._prepare_mps_host_planes(
+                        oid, core[oid], support_cpu, raw_cpu, "core", cache_intrinsic
+                    )
                 data.core = True
                 data_list.append(data)
                 if shared_masks[oid]:
@@ -1284,7 +1462,12 @@ class TorchCornerDetector:
                         recovery_cpu[oid].astype(bool, copy=False) & valid_cpu
                         if valid_cpu is not None else None
                     )
-                    extra = self.prepare(oid, recovery[oid], support_cpu)
+                    if cache_intrinsic is None:
+                        extra = self.prepare(oid, recovery[oid], support_cpu)
+                    else:
+                        extra = self._prepare_mps_host_planes(
+                            oid, recovery[oid], support_cpu, raw_cpu, "recovery", cache_intrinsic
+                        )
                     extra.recovery = True
                     data_list.append(extra)
                     recovery_data.append(extra)
@@ -1300,11 +1483,20 @@ class TorchCornerDetector:
             for data in data_list:
                 contours.add(data, self.parameters, reuse_contours=self.optimized)
             contours.finish(self.device, batched=self.optimized)
+            cuda_contours = None
+            if self._batch_cuda_contour_validation:
+                from .backends.cuda_contours import CudaContourBatch
+
+                cuda_contours = CudaContourBatch(self)
+            contour_args = (cuda_contours,) if cuda_contours is not None else batch_args
             for data in data_list:
                 self.current_masks = core if data.core else recovery
-                self.boundary(data, *batch_args)
-                self.junctions(data, *batch_args)
-                self.envelopes(data, *batch_args)
+                self.boundary(data, *contour_args)
+                self.junctions(data, *contour_args)
+                self.envelopes(data, *contour_args)
+            if cuda_contours is not None:
+                with self._measure("cuda_contour_validation"):
+                    cuda_contours.validate()
         with self._measure("box_exterior"):
             self.current_masks = recovery
             box = recovery_data[1]
@@ -1337,10 +1529,13 @@ class TorchCornerDetector:
         with self._measure("merge"):
             points, uv, object_id, metadata = self.merge()
         with self._measure("position_correction"):
-            if self.correct_box_exterior_pixel_center:
-                points, uv = self.correct_box_exterior(points, uv, object_id, metadata)
-            if self.correct_peg_position:
-                points, uv = self.apply_peg_position_correction(points, uv, object_id)
+            if self.optimized and self.device.type == "mps":
+                points, uv = self._correct_mps_positions(points, uv, metadata)
+            else:
+                if self.correct_box_exterior_pixel_center:
+                    points, uv = self.correct_box_exterior(points, uv, object_id, metadata)
+                if self.correct_peg_position:
+                    points, uv = self.apply_peg_position_correction(points, uv, object_id)
             world = (points - self.ext[:, 3]) @ self.ext[:, :3]
         if self.reject_peg_box_cut:
             with self._measure("peg_box_cut"):

@@ -9,17 +9,20 @@ a 15 × 15 window, up to three pyramid levels above the original image, and
 a 1 px forward–backward consistency threshold. A tracked pixel also needs
 current Peg-mask support and valid depth.
 
-The frontend defaults to LK when its detector or model runs on MPS.
-The [Mac MPS config](../recurrent/README.md#macos-mps-기본-실행) uses LK for
-both the single controller and the five-controller ensemble.
+The frontend defaults to LK when its detector or model runs on MPS or CUDA.
+Existing CUDA configs with a `tapnextpp` options block select TAPNext++ unless
+`surface_tracking` is set explicitly. The
+[Mac MPS config](../recurrent/README.md#macos-mps-기본-실행) and
+[Linux CUDA config](../recurrent/README.md#cuda-기본-실행) use LK for both the
+single controller and the five-controller ensemble.
 
 The updater fills lost slots with spaced samples from the current eroded Peg
 mask and valid depth. A reseeded slot represents a new point. If too few points
 are available, the other slots stay invalid. Both backends use the same RGB-D
 back-projection, world-frame conversion and frozen downstream models. Episode
 reset clears LK history. The
-[fixed-hole LK evaluation recipe](../recurrent/README.md#lk-surface-tracking-comparison)
-uses the same checkpoint paths and seeds as the fixed-hole Graph-only policy.
+[fixed-hole LK evaluation recipe](../recurrent/README.md#cuda-기본-실행)
+uses the same checkpoint paths and seeds as the recorded fixed-hole evaluation.
 
 On 2026-11-24, both variants replayed the same 149 recorded expert frames
 (seed 12615147, including 21 insertion frames) with checksum-verified RGB-D,

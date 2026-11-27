@@ -241,9 +241,12 @@ class ContourProposals:
 
     def add(self, data, params, *, reuse_contours=False):
         for pi, mask in enumerate(data.masks_cpu):
-            contours, hierarchy = plane_contours(mask, crop=reuse_contours)
-            if reuse_contours:
-                data.contours[pi] = (contours, hierarchy)
+            if reuse_contours and pi in data.contours:
+                contours, hierarchy = data.contours[pi]
+            else:
+                contours, hierarchy = plane_contours(mask, crop=reuse_contours)
+                if reuse_contours:
+                    data.contours[pi] = (contours, hierarchy)
             for ci, contour in enumerate(contours):
                 if abs(cv2.contourArea(contour)) < 22:
                     continue

@@ -261,6 +261,52 @@ class MetalKernelTests(unittest.TestCase):
         validate.assert_called_once()
         self.assertGreater(len(result.xyz), 0)
 
+    def test_mps_plane_cache_checks_support_depth_and_intrinsic(self):
+        detector = TorchCornerDetector.main(device="mps")
+        rgb = np.zeros((512, 512, 3), dtype=np.uint8)
+        depth = np.full((512, 512), 2000, dtype=np.int16)
+        masks = np.zeros((2, 512, 512), dtype=bool)
+        masks[0, 100:129, 120:149] = True
+        intrinsic = self.k.numpy().copy()
+        extrinsic = np.eye(4, dtype=np.float32)[:3]
+
+        with patch.object(detector, "prepare", wraps=detector.prepare) as prepare:
+            first = detector(rgb, depth, intrinsic, extrinsic, masks=masks)
+            repeated = detector(rgb, depth, intrinsic, extrinsic, masks=masks)
+            self.assertEqual(prepare.call_count, 2)
+            self.assertTrue(torch.equal(
+                first.xyz.cpu().view(torch.int32), repeated.xyz.cpu().view(torch.int32)
+            ))
+            depth[105, 125] -= 10
+            detector(rgb, depth, intrinsic, extrinsic, masks=masks)
+            self.assertEqual(prepare.call_count, 3)
+            masks[0, 105, 126] = False
+            detector(rgb, depth, intrinsic, extrinsic, masks=masks)
+            self.assertEqual(prepare.call_count, 4)
+            intrinsic[0, 2] += 0.25
+            detector(rgb, depth, intrinsic, extrinsic, masks=masks)
+            self.assertEqual(prepare.call_count, 6)
+
+    def test_fused_mps_depth_preserves_validity_and_camera_coordinates(self):
+        from visual.corner_detection.backends import metal_ops
+
+        generator = torch.Generator().manual_seed(41)
+        raw = torch.rand((512, 512), generator=generator) * 4100
+        raw[0, :7] = torch.tensor([0., -0., -1., 4000., float("inf"), float("nan"), 3999.])
+        raw = raw.to("mps")
+        intrinsic = self.k.to("mps")
+        expected_depth = raw * 0.001
+        expected_valid = (raw > 0) & (expected_depth < 4) & torch.isfinite(expected_depth)
+        expected_xyz = K.unproject(expected_depth, intrinsic)
+        depth, valid, xyz = metal_ops.prepare_depth(raw, intrinsic)
+        expected_valid = expected_valid.cpu()
+        self.assertTrue(torch.equal(valid.cpu(), expected_valid))
+        for actual, expected in ((depth, expected_depth), (xyz, expected_xyz)):
+            self.assertTrue(torch.equal(
+                actual.cpu()[expected_valid].view(torch.int32),
+                expected.cpu()[expected_valid].view(torch.int32),
+            ))
+
     def test_plane_masks_and_morphology_match_cpu(self):
         depth = torch.full((512, 512), 2.0)
         depth[80:280, 110:310] = 1.0

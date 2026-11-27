@@ -230,25 +230,40 @@ def box_rgb(
     return points, selected, interior
 
 
-def box_cube_coordinates(points, features, eligible, data, k):
+def box_cube_coordinates(points, features, eligible, data, k, *, optimize_cuda=False):
     """Preserve eager plane selection and RGB snapping for Box vertices."""
-    distances = (
-        points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
-    ).abs()
-    nearest = eligible[distances.argmin(1)]
-    snapped, _ = K.snap(points, nearest, data.planes, data.eligible)
-    points = torch.where(
-        (distances.min(1).values < 0.003)[:, None], snapped, points
+    if optimize_cuda:
+        eligible_planes = data.planes.index_select(0, eligible)
+        normals, offsets = eligible_planes[:, :3], eligible_planes[:, 3]
+        distances = (points @ normals.T + offsets).abs()
+        distance, nearest_index = distances.min(1)
+    else:
+        distances = (
+            points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
+        ).abs()
+        nearest_index = distances.argmin(1)
+    nearest = eligible[nearest_index]
+    snapped, _ = K.snap(
+        points, nearest, data.planes, data.eligible, check_errors=not optimize_cuda
     )
+    if not optimize_cuda:
+        distance = distances.min(1).values
+    points = torch.where((distance < 0.003)[:, None], snapped, points)
     uv = K.project(points, k)
     if len(features):
         f = features
         diff = (uv[:, None] - f[None]).square().sum(-1)
-        closest = f[diff.argmin(1)]
-        close = diff.min(1).values < 2.5**2
-        distances = (
-            points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
-        ).abs()
+        if optimize_cuda:
+            distance, closest_index = diff.min(1)
+            closest = f[closest_index]
+            close = distance < 2.5**2
+            distances = (points @ normals.T + offsets).abs()
+        else:
+            closest = f[diff.argmin(1)]
+            close = diff.min(1).values < 2.5**2
+            distances = (
+                points @ data.planes[eligible, :3].T + data.planes[eligible, 3]
+            ).abs()
         pi = eligible[distances.argmin(1)]
         normal = data.planes[pi, :3]
         ray = K.rays(closest, k)
@@ -358,3 +373,32 @@ def validation_function(name, compiled):
     if not compiled:
         return function
     return torch.compile(function, dynamic=True, fullgraph=True)
+
+
+@lru_cache(maxsize=None)
+def contour_frame_function(kind):
+    """Compile one validation kind across the frame's plane groups."""
+    if kind == "boundary":
+        def validate(groups, depth, valid, xyz, k, neutral, support_gap, max_angle, physical):
+            return tuple(
+                boundary(
+                    *args, data, object_mask, depth, valid, xyz, k, neutral,
+                    support_gap, max_angle, physical,
+                )
+                for args, data, object_mask in groups
+            )
+    elif kind == "junctions":
+        def validate(groups, depth, valid, xyz, k, neutral, support_gap, max_angle, physical):
+            return tuple(
+                junctions(*args, data, depth, valid, xyz, k)
+                for args, data, _ in groups
+            )
+    else:
+        def validate(groups, depth, valid, xyz, k, neutral, support_gap, max_angle, physical):
+            return tuple(
+                envelopes(
+                    *args, data, object_mask, depth, valid, xyz, k, neutral, physical
+                )
+                for args, data, object_mask in groups
+            )
+    return torch.compile(validate, dynamic=True, fullgraph=True)

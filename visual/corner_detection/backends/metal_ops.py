@@ -41,6 +41,42 @@ kernel void backproject(device const float* depth, device const float* k,
     xyz[3*i+1]=(float(i/512)-k[5])*z/k[4]; xyz[3*i+2]=z;
 }
 
+kernel void prepare_depth(device const float* raw, device const float* k,
+    device float* depth, device bool* valid, device float* xyz,
+    uint i [[thread_position_in_grid]]) {
+    float input = raw[i];
+    float z = input * 0.001f;
+    depth[i] = z;
+    valid[i] = input > 0.f && z < 4.f && isfinite(z);
+    xyz[3*i] = (float(i%512) - k[2]) * z / k[0];
+    xyz[3*i+1] = (float(i/512) - k[5]) * z / k[4];
+    xyz[3*i+2] = z;
+}
+
+kernel void correct_positions(
+    device const float* points, device const float* uv, device const int* correction,
+    device const bool* near_cube, device const float* k,
+    device float* output, device float* output_uv, uint i [[thread_position_in_grid]]) {
+    float3 point = xyz_at(points, i);
+    float2 pixel_uv = float2(uv[2*i], uv[2*i+1]);
+    float2 focal = float2(k[0], k[4]);
+    int kind = correction[i];
+    if (kind == -1) {
+        float2 center = float2(k[2], k[5]);
+        pixel_uv = (point.xy / point.z * focal + center) + 0.25f;
+        float corrected_depth = point.z + 0.0005f;
+        point = float3((pixel_uv - center) / focal * corrected_depth, corrected_depth);
+    } else if (kind >= 0 && near_cube[kind]) {
+        point.xy += (0.5f * point.z) / focal;
+        pixel_uv += 0.5f;
+    }
+    output[3*i] = point.x;
+    output[3*i+1] = point.y;
+    output[3*i+2] = point.z;
+    output_uv[2*i] = pixel_uv.x;
+    output_uv[2*i+1] = pixel_uv.y;
+}
+
 kernel void label_planes(device const float* xyz, device const bool* support,
     device const float* planes, device bool* masks, constant int& count,
     constant float& tolerance, uint i [[thread_position_in_grid]]) {
@@ -876,6 +912,27 @@ def unproject(depth, k):
         depth.contiguous(), k.contiguous(), out, threads=depth.numel()
     )
     return out
+
+
+def prepare_depth(raw, k):
+    """Scale, validate and backproject depth in a single pass."""
+    depth = raw.new_empty(raw.shape)
+    valid = torch.empty_like(depth, dtype=torch.bool)
+    xyz = raw.new_empty((*raw.shape, 3))
+    library().prepare_depth(
+        raw.contiguous(), k.contiguous(), depth, valid, xyz, threads=raw.numel()
+    )
+    return depth, valid, xyz
+
+
+def correct_positions(points, uv, correction, near_cube, k):
+    """Apply the ordered Box pixel and Peg ray/depth corrections."""
+    corrected_points, corrected_uv = torch.empty_like(points), torch.empty_like(uv)
+    library().correct_positions(
+        points.contiguous(), uv.contiguous(), correction, near_cube, k.contiguous(),
+        corrected_points, corrected_uv, threads=len(points),
+    )
+    return corrected_points, corrected_uv
 
 
 def plane_masks(xyz, support, planes, tolerance):

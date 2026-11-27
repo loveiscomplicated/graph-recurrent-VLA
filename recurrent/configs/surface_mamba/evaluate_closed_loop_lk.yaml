@@ -1,6 +1,6 @@
 trainer: evaluation.surface_mamba_controller:evaluate
 mode: closed_loop
-output: /workspace/surface_mamba/evaluation_v2/closed_loop_lk
+output: /workspace/surface_mamba/evaluation_v2/closed_loop_lk_comparison
 resume: true
 controller_device: cuda:0
 seeds_file: /workspace/surface_mamba/evaluation_seeds.json
@@ -11,6 +11,14 @@ candidates:
     input: graph
     checkpoints:
       - /workspace/surface_mamba/training_v2/graph_only/seed_0/mamba_seed_0/best.pt
+  mixed_ensemble:
+    input: graph
+    checkpoints:
+      - /workspace/surface_mamba/training_v2/mixed/seed_0/mamba_seed_0/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_1/mamba_seed_1/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_2/mamba_seed_2/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_3/mamba_seed_3/best.pt
+      - /workspace/surface_mamba/training_v2/mixed/seed_4/mamba_seed_4/best.pt
 environment:
   device: cpu
   render_backend: cuda
@@ -22,6 +30,13 @@ frontend:
   detector:
     device: cuda:0
     optimized: true
+    crop_cuda_host_components: true
+    batch_cuda_hole_ransac: true
+    optimize_cuda_box_cube: true
+    optimize_cuda_plane_preparation: true
+    batch_cuda_contour_validation: true
+    skip_stable_cuda_hole_refits: true
+    native_cuda_hole_ransac: true
   tracker:
     path: /workspace/surface_mamba/checkpoints/surface_tracker_best.pt
     sha256: f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236afc

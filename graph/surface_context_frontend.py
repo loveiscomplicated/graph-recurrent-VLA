@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from time import perf_counter
@@ -26,6 +27,7 @@ TRACKER_SHA256 = "f98c4ef1c77d25fa059e9f9cf048fb1f190bcf74302a0fe1367bfe1341236a
 GNN_SHA256 = "0f4d9d6fd6ce615125698e243b259fad92557a3f5c5848aafe24a85277720241"
 SLOT_COUNT = 20
 SURFACE_POINT_COUNT = 32
+EAGER_CUDA_VALIDATION_ENV = "SURFACE_CONTEXT_EAGER_CUDA_VALIDATION"
 
 
 def _numpy(value: Any) -> np.ndarray:
@@ -59,6 +61,44 @@ def camera_to_world(camera_xyz: np.ndarray, extrinsic_cv: np.ndarray) -> np.ndar
     return ((camera_xyz - translation) @ rotation).astype(np.float32)
 
 
+def _detector_main_options(config: dict[str, Any]) -> dict[str, Any]:
+    """Resolve detector options, including the collection-only eager escape hatch."""
+    detector_config = config.get("detector", {})
+    options = {
+        "device": detector_config.get("device", config["device"]),
+        "optimized": detector_config.get("optimized", True),
+    }
+    for name in (
+        "crop_cuda_host_components",
+        "batch_cuda_hole_ransac",
+        "optimize_cuda_box_cube",
+        "optimize_cuda_plane_preparation",
+        "batch_cuda_contour_validation",
+        "skip_stable_cuda_hole_refits",
+    ):
+        if name in detector_config:
+            value = detector_config[name]
+            if not isinstance(value, bool):
+                raise ValueError(f"detector.{name} must be a boolean")
+            options[name] = value
+
+    compile_validation = detector_config.get("compile_cuda_validation")
+    if compile_validation is not None:
+        if not isinstance(compile_validation, bool):
+            raise ValueError("detector.compile_cuda_validation must be a boolean")
+        options["compile_cuda_validation"] = compile_validation
+        return options
+
+    eager_validation = os.environ.get(EAGER_CUDA_VALIDATION_ENV)
+    if eager_validation not in (None, "0", "1"):
+        raise ValueError(
+            f"{EAGER_CUDA_VALIDATION_ENV} must be '0' or '1' when set"
+        )
+    if eager_validation == "1":
+        options["compile_cuda_validation"] = False
+    return options
+
+
 @dataclass
 class SurfaceFrontendFrame:
     """One causal frontend result and its exportable intermediate arrays."""
@@ -72,6 +112,19 @@ class SurfaceFrontendFrame:
     endpoint_residual: np.ndarray
     counts: np.ndarray
     timing_ms: np.ndarray
+
+
+def _default_surface_tracking(
+    config: dict[str, Any], device: torch.device, detector_device: torch.device
+) -> str:
+    """Choose LK for GPU inference while preserving legacy CUDA TAPNext++ runs."""
+    device_types = (device.type, detector_device.type)
+    if "mps" in device_types:
+        return "lk"
+    # Existing CUDA evaluation receipts selected TAPNext++ via its options block.
+    if "cuda" in device_types and "tapnextpp" not in config:
+        return "lk"
+    return "tapnextpp"
 
 
 class SurfaceTrackerStream:
@@ -199,6 +252,11 @@ class SurfaceContextFrontend:
     def __init__(self, config: dict[str, Any]):
         self.config = config
         self.device = torch.device(config["device"])
+        native_cuda_hole_ransac = config.get("detector", {}).get(
+            "native_cuda_hole_ransac", False
+        )
+        if not isinstance(native_cuda_hole_ransac, bool):
+            raise ValueError("detector.native_cuda_hole_ransac must be a boolean")
         if (
             "surface_tracking" in config
             and config["surface_tracking"] not in ("tapnextpp", "lk")
@@ -234,13 +292,12 @@ class SurfaceContextFrontend:
         self.gnn.load_state_dict(gnn_checkpoint["model"], strict=True)
         self.gnn.eval().requires_grad_(False)
 
-        detector_config = config.get("detector", {})
-        self.detector = TorchCornerDetector.main(
-            device=detector_config.get("device", config["device"]),
-            optimized=detector_config.get("optimized", True),
+        self.detector = TorchCornerDetector.main(**_detector_main_options(config))
+        if native_cuda_hole_ransac:
+            self.detector._enable_native_cuda_hole_ransac()
+        default_surface_tracking = _default_surface_tracking(
+            config, self.device, self.detector.device
         )
-        uses_mps = self.device.type == "mps" or self.detector.device.type == "mps"
-        default_surface_tracking = "lk" if uses_mps else "tapnextpp"
         surface_tracking = config.get("surface_tracking", default_surface_tracking)
         self.lk = None
         if surface_tracking == "lk":
