@@ -29,7 +29,7 @@ from visual.baseline.policy import CAMERA_NAMES, DEPTH_KEY, Normalizer, build_po
 from visual.baseline.prepare_data import DEPTH_SIZE
 
 
-def load_policy(checkpoint_path: str, overrides: dict | None = None):
+def load_policy(checkpoint_path: str, overrides: dict | None = None, *, image_size=None):
     """Rebuild the policy and its normalizer from a training checkpoint.
 
     ``overrides`` replaces inference-only policy settings, e.g.
@@ -38,7 +38,9 @@ def load_policy(checkpoint_path: str, overrides: dict | None = None):
     checkpoint = torch.load(checkpoint_path, map_location="cuda", weights_only=False)
     config = checkpoint["config"]
     config["policy"].update(overrides or {})
-    image_size = json.loads((Path(config["data"]["episodes"]) / "index.json").read_text())["rgb_size"]
+    if image_size is None:
+        index_path = Path(config["data"]["episodes"]) / "index.json"
+        image_size = json.loads(index_path.read_text())["rgb_size"]
     policy = build_policy(config["policy"], image_size, config["data"].get("use_state", True),
                           config["data"].get("use_depth", False)).cuda()
     policy.load_state_dict(checkpoint["model"])
@@ -89,7 +91,16 @@ def video_frame(observation) -> np.ndarray:
     return torch.cat(images, dim=-1).permute(1, 2, 0).numpy()
 
 
-def evaluate_seeds(task: tuple) -> list[dict]:
+def evaluate_seeds(
+    task: tuple,
+    *,
+    image_size=None,
+    horizon=HORIZON,
+    observation_device=None,
+    motion=None,
+    seed_inference=False,
+    on_result=None,
+) -> list[dict]:
     """Roll out the policy once per seed in a worker process.
 
     ``task`` is (checkpoint path, seeds, seeds to record as video, video directory).
@@ -97,21 +108,28 @@ def evaluate_seeds(task: tuple) -> list[dict]:
     checkpoint_path, seeds, video_seeds, video_dir, overrides, binary_gripper = task
     # nproc reports 256 host cores but the pod gets 36; default threading oversubscribes badly.
     torch.set_num_threads(2)
-    policy, normalizer, image_size = load_policy(checkpoint_path, overrides)
-    env = make_env()
-    low = torch.as_tensor(env.action_space.low, device="cuda")
-    high = torch.as_tensor(env.action_space.high, device="cuda")
+    policy, normalizer, image_size = load_policy(checkpoint_path, overrides, image_size=image_size)
+    env = make_env(observation_device=observation_device, horizon=horizon)
+    action_space = env.action_space
+    if motion is not None:
+        from data_collection.surface_mamba_motion import MovingSurfaceEpisode
+
+        env = MovingSurfaceEpisode(env, motion, horizon)
+    low = torch.as_tensor(action_space.low, device="cuda")
+    high = torch.as_tensor(action_space.high, device="cuda")
     results = []
     try:
         for seed in seeds:
             observation, _ = env.reset(seed=seed)
+            if seed_inference:
+                torch.manual_seed(seed)
             policy.reset()
             success_step = None
             step_times = []
             start_height = float(get_gt_state(env).peg_pose[0, 2])
             lift, max_depth, min_lateral = 0.0, -1.0, float("inf")
             frames = [video_frame(observation)] if seed in video_seeds else None
-            for step in range(HORIZON):
+            for step in range(horizon):
                 # Time observation → action (preprocessing + policy), excluding the simulator step.
                 torch.cuda.synchronize()
                 started = time.perf_counter()
@@ -141,10 +159,15 @@ def evaluate_seeds(task: tuple) -> list[dict]:
             stage = failure_stage(success, lift, max_depth, min_lateral)
             if frames is not None:
                 imageio.mimsave(Path(video_dir) / f"seed_{seed}_{stage}.mp4", frames, fps=20)
-            results.append(dict(seed=seed, success=success, steps=success_step, stage=stage,
-                                max_lift_m=round(lift, 4), max_head_depth_m=round(max_depth, 4),
-                                min_lateral_at_depth_m=round(min_lateral, 4) if min_lateral < 1 else None,
-                                step_ms=[round(t * 1000, 2) for t in step_times]))
+            row = dict(seed=seed, success=success, steps=success_step, stage=stage,
+                       max_lift_m=round(lift, 4), max_head_depth_m=round(max_depth, 4),
+                       min_lateral_at_depth_m=round(min_lateral, 4) if min_lateral < 1 else None,
+                       step_ms=[round(t * 1000, 2) for t in step_times])
+            if motion is not None:
+                row.update(env.motion_receipt())
+            if on_result is not None:
+                on_result({**row, "steps": step + 1, "success_step": success_step})
+            results.append(row)
             print(f"seed {seed} {stage}", flush=True)
     finally:
         env.close()

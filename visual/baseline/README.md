@@ -5,6 +5,9 @@ the end-to-end comparison for the integrated model. Inputs are main and wrist
 RGB at 256 px plus the 17D robot state; output is the 7D `pd_ee_delta_pose`
 action.
 
+For the shared 300-seed fixed/moving comparison, see the
+[paired policy evaluation guide](../../docs/paired_policy_evaluation.md).
+
 ## Commands
 
 Prerequisites: a Linux CUDA host with Vulkan, at least 64 GB RAM (training holds

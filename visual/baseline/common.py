@@ -19,7 +19,7 @@ __all__ = ["CAMERAS", "CONTROL_MODE", "HORIZON", "RESOLUTION", "ROBOT_DIM",
            "live_robot_state", "make_env", "resize_depth", "resize_rgb", "robot_state"]
 
 
-def make_env(render_backend: str = "cuda"):
+def make_env(render_backend: str = "cuda", *, observation_device=None, horizon=HORIZON):
     """Create the 512×512 RGB-D environment used to collect the expert dataset.
 
     Only the resolution is overridden here, so ``base_camera`` keeps the shared
@@ -29,12 +29,13 @@ def make_env(render_backend: str = "cuda"):
     return make_peg_insertion_env(
         device="cpu",
         render_backend=render_backend,
+        observation_device=observation_device,
         obs_mode="rgb+depth",
         control_mode=CONTROL_MODE,
         sensor_configs={
             name: dict(width=RESOLUTION, height=RESOLUTION) for name in CAMERAS
         },
-        max_episode_steps=HORIZON,
+        max_episode_steps=horizon,
     )
 
 
